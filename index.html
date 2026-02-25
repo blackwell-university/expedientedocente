@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expediente Docente Premium | BGU</title>
-    <!-- Bootstrap 5 & Google Fonts -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
@@ -48,6 +47,7 @@
 </head>
 <body>
 
+
 <div class="utility-box">
     <button class="btn-font-adj" onclick="changeFontSize(-2)">A -</button>
     <button class="btn-font-adj" onclick="changeFontSize(2)">A +</button>
@@ -56,24 +56,22 @@
 <div id="loading-overlay">
     <div class="spinner-border text-warning mb-4" style="width: 5rem; height: 5rem;"></div>
     <h2 id="loading-title">TERMINANDO DE PROCESAR...</h2>
-    <p id="loading-desc" class="fs-5">Un momento por favor, la IA está terminando de leer su CV.</p>
+    <p id="loading-desc" class="fs-5">Un momento por favor, estamos terminando de analizar sus archivos.</p>
 </div>
 
 <header class="bgu-header">
-    <img src="https://cdn.bitrix24.es/b15495391/landing/46b/46b5cbaf9e1efd30d1866c50bbf395b6/logo_bgu_1x.png" class="bgu-logo">
+    <img src="https://cdn.bitrix24.es/b15495391/landing/46b/46b5cbaf9e1efd30d1866c50bbf395b6/logo_bgu_1x.png"
+    class="bgu-logo">
 </header>
 
 <div class="container" style="max-width: 1000px;">
-    
     <div class="stepper-wrapper">
-        <div class="step-item active" id="st-1"><div class="step-counter">1</div><div class="step-label">Identidad</div></div>
-        <div class="step-item" id="st-2"><div class="step-counter">2</div><div class="step-label">Pago</div></div>
-        <div class="step-item" id="st-3"><div class="step-counter">3</div><div class="step-label">Validación</div></div>
+        <div class="step-item active" id="st-1"><div class="step-counter">1</div><div class="step-label text-white">Identidad</div></div>
+        <div class="step-item" id="st-2"><div class="step-counter">2</div><div class="step-label text-white">Pago</div></div>
+        <div class="step-item" id="st-3"><div class="step-counter">3</div><div class="step-label text-white">Validación</div></div>
     </div>
 
     <form id="docenteWizard" novalidate>
-        
-        <!-- PASO 1: IDENTIDAD -->
         <div class="form-section active" id="step-1">
             <div class="section-header">
                 <h2>1. Datos de Identidad</h2>
@@ -86,6 +84,7 @@
                 <div class="col-md-6"><label>Fecha de Nacimiento *</label><input type="date" id="fecha_nacimiento" class="form-control"></div>
                 <div class="col-md-6"><label>Correo Electrónico *</label><input type="email" id="correo" class="form-control"></div>
                 <div class="col-md-6"><label>Teléfono Móvil *</label><input type="tel" id="celular" class="form-control"></div>
+
                 <div class="col-md-6"><label>CV (PDF) *</label><input type="file" id="cv_file" class="form-control" accept=".pdf" required></div>
                 <div class="col-md-6"><label>Faculty Handbook *</label><input type="file" id="handbook_file" class="form-control" accept=".pdf"></div>
 
@@ -95,7 +94,8 @@
                         <div class="edu-card bg-light border-primary border-opacity-25 edu-item">
                             <div class="row g-3">
                                 <div class="col-md-12"><label>Grado *</label><select class="form-select grado-select" required><option value="">Seleccione...</option><option>Bachelor</option><option>Master</option><option>Doctorado</option></select></div>
-                                <div class="col-md-12"><label>Diploma *</label><input type="file" class="form-control diploma-file" required></div>
+                                <div class="col-md-6"><label>Diploma *</label><input type="file" class="form-control diploma-file" required></div>
+                                <div class="col-md-6"><label>Transcript</label><input type="file" class="form-control transcript-file"></div>
                             </div>
                         </div>
                     </div>
@@ -106,7 +106,7 @@
                 <button type="button" class="btn btn-luxury" onclick="procesarIA()">Siguiente Paso <i class="bi bi-arrow-right-short"></i></button>
             </div>
         </div>
-
+        
         <!-- PASO 2: INFORMACIÓN DE PAGO -->
         <div class="form-section" id="step-2">
             <div class="section-header">
@@ -116,6 +116,7 @@
             <div class="row g-4">
                 <div class="col-md-4"><label>Código Postal *</label><input type="text" id="codigo_postal" class="form-control" required></div>
                 <div class="col-md-8"><label>Dirección *</label><input type="text" id="direccion" class="form-control" required></div>
+
                 <div class="col-md-6"><label>Banco *</label><input type="text" id="banco" class="form-control" required></div>
                 <div class="col-md-6"><label>Número de Cuenta *</label><input type="text" id="cuenta" class="form-control" required></div>
             </div>
@@ -149,7 +150,6 @@
 <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
     const N8N_URL = "https://n8n.balticec.com/webhook/ad08f4fd-2709-460a-9368-238395ad8533";
-
     let iaListo = false;
 
     function changeFontSize(n) {
@@ -162,36 +162,118 @@
         const container = document.getElementById('edu-container');
         const div = document.createElement('div');
         div.className = 'edu-card edu-item bg-light border-primary border-opacity-25';
-        div.innerHTML = `<button type="button" class="btn-remove-edu" onclick="this.parentElement.remove()">Eliminar</button>
+        div.innerHTML = `
+            <button type="button" class="btn-remove-edu" onclick="this.parentElement.remove()">Eliminar</button>
             <div class="row g-3"><div class="col-md-12"><label>Grado *</label><select class="form-select grado-select" required><option>Bachelor</option><option>Master</option><option>Doctorado</option></select></div>
-            <div class="col-md-12"><label>Diploma *</label><input type="file" class="form-control diploma-file" required></div></div>`;
+            <div class="col-md-6"><label>Diploma *</label><input type="file" class="form-control diploma-file"></div>
+            <div class="col-md-6"><label>Transcript</label><input type="file" class="form-control transcript-file"></div></div>`;
         container.appendChild(div);
     }
 
     function addExpField(data = {}) {
         const container = document.getElementById('experience-results-container');
         const div = document.createElement('div');
-        div.className = 'edu-card shadow-sm border-0 bg-white exp-item mb-4';
-        
-        let inicioVal = data.inicio || "";
-        if (inicioVal.length === 4 && !isNaN(inicioVal)) inicioVal += "-01";
-        const esActualidad = data.fin === "Actualidad";
+        div.className = 'edu-card shadow-sm bg-white exp-item mb-4';
+
+        const esActualidad = data.fin === "Actualidad" || data.fin === "";
         const finVal = esActualidad ? "" : (data.fin || "");
 
         div.innerHTML = `
             <button type="button" class="btn-remove-edu" onclick="this.parentElement.remove()">Eliminar</button>
             <div class="row g-3">
-                <div class="col-md-6"><label>Empresa *</label><input type="text" class="form-control exp-empresa" value="${data.empresa || ''}" required></div>
-                <div class="col-md-6"><label>Cargo *</label><input type="text" class="form-control exp-cargo" value="${data.cargo || ''}" required></div>
-                <div class="col-md-12"><label>Área</label><input type="text" class="form-control exp-area" value="${data.area_ensenanza || ''}"></div>
-                <div class="col-md-6"><label>Inicio *</label><input type="month" class="form-control exp-inicio" value="${inicioVal}" required></div>
+                <div class="col-md-6"><label>Empresa</label><input type="text" class="form-control exp-empresa" value="${data.empresa || ''}" required></div>
+                <div class="col-md-6"><label>Cargo</label><input type="text" class="form-control exp-cargo" value="${data.cargo || ''}" required></div>
+                <div class="col-md-12"><label>Área de enseñanza</label><input type="text" class="form-control exp-area" value="${data.area_ensenanza || ''}"></div>
+                <div class="col-md-6"><label>Inicio</label><input type="month" class="form-control exp-inicio" value="${data.inicio || ''}" required></div>
                 <div class="col-md-6">
-                    <div class="d-flex justify-content-between align-items-center mb-1"><label>Culminación</label>
-                    <div class="form-check form-switch"><input class="form-check-input exp-actualidad-check" type="checkbox" ${esActualidad?'checked':''} onchange="toggleFin(this)"><label class="form-check-label small fw-bold text-primary">Actualidad</label></div></div>
-                    <input type="month" class="form-control exp-fin" value="${finVal}" ${esActualidad?'disabled':'required'}>
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <label>Culminación</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input exp-actualidad-check" type="checkbox" ${esActualidad ? 'checked' : ''} onchange="toggleFin(this)">
+                            <label class="form-check-label small fw-bold text-primary">Actualidad</label>
+                        </div>
+                    </div>
+                    <input type="month" class="form-control exp-fin" value="${finVal}" ${esActualidad ? 'disabled' : 'required'}>
                 </div>
             </div>`;
         container.appendChild(div);
+    }
+
+    const toB64 = f => new Promise((res) => {
+        const r = new FileReader(); r.readAsDataURL(f);
+        r.onload = () => res({ base64: r.result.split(',')[1], name: f.name, type: f.type });
+    });
+
+    async function procesarIA() {
+        const step1 = document.getElementById('step-1');
+        const requiredFields = step1.querySelectorAll('[required]');
+        let valid = true;
+        requiredFields.forEach(f => { if(!f.checkValidity()){ f.reportValidity(); valid = false; }});
+        if (!valid) return;
+    
+        goNext(2);
+        iaListo = false;
+
+        try {
+            const diplomaItems = document.querySelectorAll('.edu-item');
+            for (let item of diplomaItems) {
+                const file = item.querySelector('.diploma-file').files[0];
+                if (!file) continue;
+                const currentGrado = item.querySelector('.grado-select').value;
+                const b64 = await toB64(file);
+                
+                const gas = await fetch(GAS_URL, { method:'POST', body: JSON.stringify({ action: "get_url", file: b64.base64, name: b64.name, type: b64.type })}).then(r=>r.json());
+                const n8n = await fetch(N8N_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ fileUrl: gas.url, id: document.getElementById('id_documento').value, grado: currentGrado })}).then(r=>r.json());
+                
+                let text = (n8n.content && n8n.content[0]) ? n8n.content[0].text : n8n;
+                let data = typeof text === 'string' ? JSON.parse(text.replace(/```json|```/g, "")) : text;
+
+                // CORRECCIÓN: Se cambió grado por currentGrado y se eliminó duplicado de Carrera
+                document.getElementById('ai-results-container').insertAdjacentHTML('beforeend', 
+                `<div class="edu-card shadow-sm bg-white ai-edu-record" data-grado="${currentGrado}">
+                    <h6 class="fw-bold text-primary">Grado: ${currentGrado}</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6"><label>Carrera *</label><input type="text" class="form-control ai-rama" value="${data.carrera||''}" required></div>
+                        <div class="col-md-6"><label>Institución *</label><input type="text" class="form-control ai-institucion" value="${data.instituto||''}" required></div>
+                        <div class="col-md-3"><label>Inicio *</label><input type="month" class="form-control ai-inicio" value="${data.fecha_inicio||''}" required></div>
+                        <div class="col-md-3"><label>Fin *</label><input type="month" class="form-control ai-fin" value="${data.fecha_fin||''}" required></div>
+                    </div>
+                </div>`
+                );
+            }
+
+            const cvFile = document.getElementById('cv_file').files[0];
+            const cvB64 = await toB64(cvFile);
+            const gasCv = await fetch(GAS_URL, { method:'POST', body: JSON.stringify({ action:"get_url", file: cvB64.base64, name: cvB64.name, type: cvB64.type })}).then(r=>r.json());
+            const n8nCv = await fetch(N8N_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ fileUrl: gasCv.url, id: document.getElementById('id_documento').value, grado: "CV" })}).then(r=>r.json());
+            
+            let cvText = (n8nCv.content && n8nCv.content[0]) ? n8nCv.content[0].text : (Array.isArray(n8nCv) && n8nCv[0]?.content ? n8nCv[0].content[0].text : n8nCv);
+            if (typeof cvText !== 'string' && cvText.text) cvText = cvText.text;
+            let parsed = typeof cvText === 'string' ? JSON.parse(cvText.replace(/```json|```/g, "")) : cvText;
+            
+            const expArray = parsed.experiencias || (Array.isArray(parsed) ? parsed : []);
+            expArray.forEach(e => addExpField(e));
+
+            iaListo = true;
+        } catch (e) { console.error("Error en el procesado:", e); iaListo = true; }
+    }
+
+    function verificarIAParaPaso3() {
+        const requiredFields = document.getElementById('step-2').querySelectorAll('[required]');
+        let valid = true;
+        requiredFields.forEach(f => { if(!f.checkValidity()){ f.reportValidity(); valid = false; }});
+        if (!valid) return;
+
+        if (!iaListo) {
+            document.getElementById('loading-overlay').style.display = 'flex';
+            const check = setInterval(() => { 
+                if(iaListo){ 
+                    clearInterval(check);
+                    document.getElementById('loading-overlay').style.display = 'none';  
+                    goNext(3); 
+                }
+            }, 1000);
+        } else { goNext(3); }
     }
 
     function toggleFin(checkbox) {
@@ -208,150 +290,55 @@
     }
 
     function goNext(n) {
-        document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.form-section').forEach( s => s.classList.remove('active'));
         document.getElementById('step-' + n).classList.add('active');
-        document.querySelectorAll('.step-item').forEach((item, i) => {
-            item.classList.toggle('active', i + 1 === n);
-            item.classList.toggle('completed', i + 1 < n);
-        });
-        window.scrollTo(0, 0);
+        document.querySelectorAll('.step-item').forEach((s, i) => { s.classList.toggle('active', i+1===n); s.classList.toggle('completed', i+1<n); } );
+        window.scrollTo(0,0);
     }
 
     function goBack(n) { goNext(n); }
 
-    const toB64 = f => new Promise((res) => {
-        const r = new FileReader(); r.readAsDataURL(f);
-        r.onload = () => res({ base64: r.result.split(',')[1], name: f.name });
-    });
-
-    async function procesarIA() {
-        const requiredFields = document.getElementById('step-1').querySelectorAll('[required]');
-        let valid = true;
-        requiredFields.forEach(f => { if(!f.checkValidity()){ f.reportValidity(); valid = false; }});
-        if (!valid) return;
-
-        goNext(2);
-        iaListo = false;
-
-        try {
-            const eduItems = document.querySelectorAll('.edu-item');
-            for (let item of eduItems) {
-                const diplomaFile = item.querySelector('.diploma-file').files[0];
-                if (!diplomaFile) continue;
-                const grado = item.querySelector('.grado-select').value;
-                const b64 = await toB64(diplomaFile);
-                const gas = await fetch(GAS_URL, { method:'POST', body: JSON.stringify({ action: "get_url", file: b64.base64, name: b64.name })}).then(r=>r.json());
-                const n8n = await fetch(N8N_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ fileUrl: gas.url, id: document.getElementById('id_documento').value, grado: grado })}).then(r=>r.json());
-                
-                let textContent = (n8n.content && n8n.content[0]) ? n8n.content[0].text : n8n;
-                if(typeof textContent === 'string') textContent = textContent.replace(/```json/g, "").replace(/```/g, "").trim();
-                let data = (typeof textContent === 'string') ? JSON.parse(textContent) : textContent;
-
-                document.getElementById('ai-results-container').insertAdjacentHTML('beforeend', `
-                    <div class="edu-card shadow-sm bg-white ai-edu-record" data-grado="${grado}">
-                        <h6 class="fw-bold text-primary">Grado: ${grado}</h6>
-                        <div class="row g-3">
-                            <div class="col-md-6"><label>Carrera *</label><input type="text" class="form-control ai-rama" value="${data.carrera||''}" required></div>
-                            <div class="col-md-6"><label>Institución *</label><input type="text" class="form-control ai-institucion" value="${data.instituto||''}" required></div>
-                            <div class="col-md-3"><label>Inicio *</label><input type="month" class="form-control ai-inicio" value="${data.fecha_inicio||''}" required></div>
-                            <div class="col-md-3"><label>Fin *</label><input type="month" class="form-control ai-fin" value="${data.fecha_fin||''}" required></div>
-                        </div>
-                    </div>`);
-            }
-
-            const cvFile = document.getElementById('cv_file').files[0];
-            const cvB64 = await toB64(cvFile);
-            const gasCv = await fetch(GAS_URL, { method:'POST', body: JSON.stringify({ action:"get_url", file: cvB64.base64, name: cvB64.name })}).then(r=>r.json());
-            const n8nCv = await fetch(N8N_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ fileUrl: gasCv.url, id: document.getElementById('id_documento').value, grado: "CV" })}).then(r=>r.json());
-            
-            let textContentCv = (n8nCv.content && n8nCv[0]?.content) ? n8nCv[0].content[0].text : (n8nCv.content ? n8nCv.content[0].text : n8nCv);
-            if(typeof textContentCv === 'string') textContentCv = textContentCv.replace(/```json/g, "").replace(/```/g, "").trim();
-            let parsedCv = (typeof textContentCv === 'string') ? JSON.parse(textContentCv) : textContentCv;
-            let exps = parsedCv.experiencias || [];
-            
-            if (exps.length > 0) exps.forEach(exp => addExpField(exp));
-            else addExpField();
-
-            iaListo = true;
-        } catch (e) {
-            console.error(e);
-            iaListo = true;
-        }
-    }
-
-    function verificarIAParaPaso3() {
-        const requiredFields = document.getElementById('step-2').querySelectorAll('[required]');
-        let valid = true;
-        requiredFields.forEach(f => { if(!f.checkValidity()){ f.reportValidity(); valid = false; }});
-        if (!valid) return;
-
-        if (!iaListo) {
-            document.getElementById('loading-overlay').style.display = 'flex';
-            const checkInterval = setInterval(() => {
-                if (iaListo) {
-                    clearInterval(checkInterval);
-                    document.getElementById('loading-overlay').style.display = 'none';
-                    goNext(3);
-                }
-            }, 500);
-        } else {
-            goNext(3);
-        }
-    }
-
     document.getElementById('docenteWizard').addEventListener('submit', async (e) => {
         e.preventDefault();
-        
-        // Validación de Paso 3
-        const step3 = document.getElementById('step-3');
-        const requiredFields = step3.querySelectorAll('[required]');
+
+        const inputsStep3 = document.getElementById('step-3').querySelectorAll('[required]');
         let valid = true;
-
-        requiredFields.forEach(field => {
-            if (!field.value.trim()) {
-                field.classList.add('missing-data-field');
-                valid = false;
-            } else {
-                field.classList.remove('missing-data-field');
-            }
-        });
-
-        if (!valid) {
-            alert("Por favor complete todos los campos obligatorios en la validación.");
-            return;
-        }
+        inputsStep3.forEach(i => { if(!i.value && !i.disabled){ i.classList.add('missing-data-field'); valid = false; } else { i.classList.remove('missing-data-field'); } });
+        if(!valid) { alert("Complete los campos obligatorios."); return; }
 
         document.getElementById('loading-overlay').style.display = 'flex';
-        document.getElementById('loading-title').innerText = "GUARDANDO REGISTRO...";
-
-        const educaciones = [];
-        document.querySelectorAll('.ai-edu-record').forEach(record => {
-            educaciones.push({
-                grado: record.dataset.grado, rama: record.querySelector('.ai-rama').value,
-                instituto: record.querySelector('.ai-institucion').value, 
-                inicio: record.querySelector('.ai-inicio').value, fin: record.querySelector('.ai-fin').value
-            });
-        });
-
-        const experiencias = [];
-        document.querySelectorAll('.exp-item').forEach(item => {
-            const esActualidad = item.querySelector('.exp-actualidad-check').checked;
-            experiencias.push({
-                empresa: item.querySelector('.exp-empresa').value, cargo: item.querySelector('.exp-cargo').value,
-                area: item.querySelector('.exp-area').value,
-                inicio: item.querySelector('.exp-inicio').value, fin: esActualidad ? "Actualidad" : item.querySelector('.exp-fin').value
-            });
-        });
+        document.getElementById('loading-title').innerText = "GUARDANDO...";
 
         const payload = {
             docente: {
-                id: document.getElementById('id_documento').value, nombres: document.getElementById('nombres').value,
-                apellidos: document.getElementById('apellidos').value, correo: document.getElementById('correo').value,
-                celular: document.getElementById('celular').value, cp: document.getElementById('codigo_postal').value,
-                direccion: document.getElementById('direccion').value, banco: document.getElementById('banco').value, cuenta: document.getElementById('cuenta').value
+                id: document.getElementById('id_documento').value,
+                nombres: document.getElementById('nombres').value,
+                apellidos: document.getElementById('apellidos').value,
+                correo: document.getElementById('correo').value,
+                celular: document.getElementById('celular').value,
+                banco: document.getElementById('banco').value,
+                cuenta: document.getElementById('cuenta').value,
+                cp: document.getElementById('codigo_postal').value,
+                direccion: document.getElementById('direccion').value
             },
-            educacion: educaciones,
-            experiencia: experiencias
+            educacion: Array.from(document.querySelectorAll('.ai-edu-record')).map(r => ({
+                grado: r.dataset.grado, 
+                rama: r.querySelector('.ai-rama').value,
+                instituto: r.querySelector('.ai-institucion').value,
+                inicio: r.querySelector('.ai-inicio').value,
+                fin: r.querySelector('.ai-fin').value
+            })),
+            experiencia: Array.from(document.querySelectorAll('.exp-item')).map(i => {
+                // CORRECCIÓN: Lógica para enviar "Actualidad" si el switch está marcado
+                const checkActualidad = i.querySelector('.exp-actualidad-check').checked;
+                return {
+                    empresa: i.querySelector('.exp-empresa').value, 
+                    cargo: i.querySelector('.exp-cargo').value,
+                    area: i.querySelector('.exp-area').value,
+                    inicio: i.querySelector('.exp-inicio').value,
+                    fin: checkActualidad ? "Actualidad" : i.querySelector('.exp-fin').value
+                };
+            })
         };
 
         try {
