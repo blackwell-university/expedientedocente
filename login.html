@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Blackwell - Universidad Blackwell</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-color: #1a3da2; 
+            --card-header-bg: #1e3a8a;
+            --primary-blue: #223f93; 
+            --text-gray: #6c757d;
+            --border-color: #dee2e6;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            background-color: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header-custom {
+            background-color: var(--card-header-bg);
+            padding: 40px 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .icon-circle {
+            background-color: white;
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 15px;
+        }
+
+        .icon-circle i { color: var(--card-header-bg); font-size: 30px; }
+
+        .card-header-custom h1 { font-size: 1.5rem; font-weight: 700; margin: 0; }
+        .card-header-custom p { font-size: 0.85rem; opacity: 0.8; margin-top: 5px; }
+
+        .card-body { padding: 30px 35px; }
+
+        .form-label { font-size: 0.8rem; font-weight: 600; color: #333; }
+
+        .user-type-container { display: flex; gap: 10px; margin-bottom: 20px; }
+
+        .btn-toggle {
+            flex: 1;
+            border: 1px solid var(--border-color);
+            background: white;
+            padding: 10px;
+            font-size: 0.85rem;
+            border-radius: 6px;
+            color: var(--text-gray);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-toggle.active {
+            border-color: var(--primary-blue);
+            background-color: #f0f4ff;
+            color: var(--primary-blue);
+            font-weight: 600;
+        }
+
+        .form-control { border-radius: 6px; font-size: 0.9rem; padding: 10px; }
+        .form-control:focus { border-color: var(--primary-blue); box-shadow: none; }
+
+        .btn-login {
+            background-color: var(--primary-blue);
+            color: white; width: 100%; padding: 12px;
+            border-radius: 6px; font-weight: 600; border: none;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            transition: 0.3s;
+        }
+        .btn-login:hover { background-color: #162d6b; transform: translateY(-1px); }
+
+        .demo-accounts {
+            margin-top: 25px; text-align: center; font-size: 0.75rem; color: var(--text-gray);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="card-header-custom">
+            <div class="icon-circle"><i class="fa-solid fa-graduation-cap"></i></div>
+            <h1>Universidad Blackwell</h1>
+            <p>Sistema de Gestión de Expedientes</p>
+        </div>
+
+        <div class="card-body">
+            <label class="form-label">Tipo de Usuario</label>
+            <div class="user-type-container">
+                <button type="button" id="btnDocente" class="btn-toggle active" onclick="setRole('docente')">Docente</button>
+                <button type="button" id="btnAdmin" class="btn-toggle" onclick="setRole('administrativo')">Administrativo</button>
+            </div>
+
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label class="form-label">Correo Electrónico</label>
+                    <input type="email" class="form-control" id="emailInput" placeholder="profesor@blackwell.edu" required>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Contraseña</label>
+                    <input type="password" class="form-control" id="passwordInput" placeholder="********" required>
+                </div>
+
+                <button type="submit" class="btn-login">
+                    <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
+                </button>
+            </form>
+
+            <div class="demo-accounts">
+                <span id="demoText"><b>Cuentas de prueba (Docente):</b><br>profesor@blackwell.edu</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentRole = 'docente';
+
+        function setRole(role) {
+            currentRole = role;
+            const btnDocente = document.getElementById('btnDocente');
+            const btnAdmin = document.getElementById('btnAdmin');
+            const emailInput = document.getElementById('emailInput');
+            const demoText = document.getElementById('demoText');
+
+            if (role === 'docente') {
+                btnDocente.classList.add('active');
+                btnAdmin.classList.remove('active');
+                emailInput.placeholder = 'profesor@blackwell.edu';
+                demoText.innerHTML = '<b>Cuentas de prueba (Docente):</b><br>profesor@blackwell.edu';
+            } else {
+                btnAdmin.classList.add('active');
+                btnDocente.classList.remove('active');
+                emailInput.placeholder = 'admin@blackwell.edu';
+                demoText.innerHTML = '<b>Cuentas de prueba (Admin):</b><br>admin@blackwell.edu';
+            }
+        }
+
+        // --- CAMBIO CLAVE AQUÍ ---
+        document.getElementById('loginForm').onsubmit = function(e) {
+            e.preventDefault(); // Evita que la página se recargue
+            
+            if (currentRole === 'docente') {
+                // Si es docente, redirige a la página que creamos antes
+                window.location.href = "docente.html";
+            } else {
+                // Si es administrativo, por ahora mostramos alerta
+                alert("Acceso Administrativo: Esta vista aún no ha sido creada en el demo.");
+            }
+        };
+    </script>
+
+</body>
+</html>
