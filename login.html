@@ -141,7 +141,8 @@
 
     <script>
         let currentRole = 'docente';
-
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
+        
         function setRole(role) {
             currentRole = role;
             const btnDocente = document.getElementById('btnDocente');
@@ -152,29 +153,69 @@
             if (role === 'docente') {
                 btnDocente.classList.add('active');
                 btnAdmin.classList.remove('active');
-                emailInput.placeholder = 'profesor@blackwell.edu';
-                demoText.innerHTML = '<b>Cuentas de prueba (Docente):</b><br>profesor@blackwell.edu';
+                emailInput.placeholder = '74500027'; // Ejemplo de tu Excel
+                demoText.innerHTML = '<b>Acceso Docente:</b><br>Usa tu DNI y clave';
             } else {
                 btnAdmin.classList.add('active');
                 btnDocente.classList.remove('active');
-                emailInput.placeholder = 'admin@blackwell.edu';
-                demoText.innerHTML = '<b>Cuentas de prueba (Admin):</b><br>admin@blackwell.edu';
+                emailInput.placeholder = 'adminsoporte';
+                demoText.innerHTML = '<b>Acceso Administrativo:</b><br>Usa tu usuario admin';
             }
         }
 
         // --- CAMBIO CLAVE AQUÍ ---
         document.getElementById('loginForm').onsubmit = function(e) {
-            e.preventDefault(); // Evita que la página se recargue
+            e.preventDefault();
             
-            if (currentRole === 'docente') {
-                // Si es docente, redirige a la página que creamos antes
-                window.location.href = "docente.html";
-            } else {
-                // Si es administrativo, por ahora mostramos alerta
-                alert("Acceso Administrativo: Esta vista aún no ha sido creada en el demo.");
-            }
+            const email = document.getElementById('emailInput').value;
+            const password = document.getElementById('passwordInput').value;
+            const btn = e.target.querySelector('button');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Validando...';
+
+            fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors', // Necesario para Google Script desde otros dominios
+                body: JSON.stringify({
+                    action: "login",
+                    email: email,
+                    password: password
+                })
+            })
+            fetch(WEB_APP_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "login", email: email, password: password })
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.status === "success") {
+                    // GUARDAMOS LA SESIÓN
+                    sessionStorage.setItem('isLoggedIn', 'true');
+                    sessionStorage.setItem('userRole', response.role);
+                    sessionStorage.setItem('userName', response.user);
+
+                    if (response.role === 'Docente') {
+                        window.location.href = "docente.html";
+                    } else if (response.role === 'Administrador') {
+                        alert("Bienvenido Admin. Redirigiendo...");
+                        // window.location.href = "admin.html";
+                    }
+                } else {
+                    alert("Usuario o contraseña incorrectos.");
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión';
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Error de conexión con el servidor.");
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión';
+            });
         };
     </script>
 
 </body>
+
 </html>
