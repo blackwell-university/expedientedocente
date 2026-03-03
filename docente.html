@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <script>
+        if (sessionStorage.getItem('isLoggedIn') !== 'true' || sessionStorage.getItem('userRole') !== 'Docente') {
+            window.location.href = "login.html";
+        }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal del Docente - Universidad Blackwell</title>
@@ -367,10 +372,18 @@
         // Función para cerrar sesión
         function logout() {
             if(confirm("¿Estás seguro que deseas cerrar sesión?")) {
-                // Redirige al login.html
+                // Limpiamos la sesión
+                sessionStorage.clear();
                 window.location.href = "login.html";
             }
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const userName = sessionStorage.getItem('userName');
+            if(userName) {
+                document.querySelector('.user-info b').innerText = userName;
+            }
+        });
 
         // Función de prueba para botones
         function testAction(action) {
@@ -408,4 +421,5 @@
         }
     </script>
 </body>
+
 </html>
