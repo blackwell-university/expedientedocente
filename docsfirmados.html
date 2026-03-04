@@ -145,7 +145,16 @@
     <!-- Contenido Principal -->
     <main class="main-wrapper">
         <header>
-            <div><h2>Sistema de Gestión de Expedientes</h2><p>Portal del Docente</p></div>
+            <div>
+                <h2>Sistema de Gestión de Expedientes</h2>
+                <p>Portal del Docente</p>
+            </div>
+            <div class="font-controls">
+                <i class="fa-solid fa-text-height"></i>
+                <button onclick="changeFontSize(-1)" class="btn-font">—</button>
+                <span id="fontSizeLabel">Normal</span>
+                <button onclick="changeFontSize(1)" class="btn-font">+</button>
+            </div>
         </header>
 
         <div class="content-area">
