@@ -590,9 +590,15 @@
         }
 
         // NAVEGACIÓN Y TAMAÑO
-        const navItems = document.querySelectorAll('.nav-item');
-        navItems.forEach(item => { item.addEventListener('click', (e) => { e.preventDefault(); navItems.forEach(i => i.classList.remove('active')); item.classList.add('active'); }); });
 
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => { 
+            item.addEventListener('click', (e) => { 
+                // Permite seguir la ruta en los href (evita preventDefault si tiene un destino válido)
+                if(item.getAttribute('href') === '#') e.preventDefault(); 
+            }); 
+        });
+        
         let currentSizeIndex = 1; 
         const sizes =["0.85rem", "1rem", "1.2rem"];
         const labels = ["Pequeño", "Normal", "Grande"];
@@ -607,6 +613,7 @@
     
 </body>
 </html>
+
 
 
 
