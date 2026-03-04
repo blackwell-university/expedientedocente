@@ -243,6 +243,15 @@
             color: var(--text-dark);
         }
 
+        .section-subtitle {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+        }
+
         @media (max-width: 768px) {
             .sidebar { display: none; }
         }
@@ -309,7 +318,7 @@
             <div class="page-title-section">
                 <div>
                     <h3>Información Personal</h3>
-                    <p>Gestiona tu perfil y datos personales</p>
+                    <p>Gestiona tu perfil y datos registrados</p>
                 </div>
                 <button class="btn-edit" onclick="testAction('Editar Perfil')">
                     <i class="fa-solid fa-pencil"></i> Editar Perfil
@@ -318,51 +327,74 @@
 
             <div class="info-card">
                 <div class="row">
-                    <!-- Fila 1 -->
-                    <div class="col-md-6 info-group">
-                        <div class="info-label"><i class="fa-solid fa-user"></i> Nombre Completo</div>
-                        <div class="info-value">Dr. Maria González Pérez</div>
+                    <!-- SECCIÓN 1: DATOS PERSONALES -->
+                    <div class="col-12">
+                        <h4 class="section-subtitle"><i class="fa-regular fa-address-card me-2"></i>Datos Generales</h4>
                     </div>
+
+                    <div class="col-md-6 info-group">
+                        <div class="info-label"><i class="fa-solid fa-id-badge"></i> ID / Documento</div>
+                        <div class="info-value">74581226</div>
+                    </div>
+                    <div class="col-md-6 info-group">
+                        <div class="info-label"><i class="fa-solid fa-user"></i> Nombres y Apellidos</div>
+                        <div class="info-value">Sharon Bedoya</div>
+                    </div>
+
                     <div class="col-md-6 info-group">
                         <div class="info-label"><i class="fa-solid fa-envelope"></i> Correo Electrónico</div>
-                        <div class="info-value">maria.gonzalez@blackwell.edu</div>
-                    </div>
-
-                    <!-- Fila 2 -->
-                    <div class="col-md-6 info-group">
-                        <div class="info-label"><i class="fa-solid fa-phone"></i> Teléfono</div>
-                        <div class="info-value">+34 612 345 678</div>
+                        <div class="info-value">sharon.sosa@ejemplo.com</div>
                     </div>
                     <div class="col-md-6 info-group">
-                        <div class="info-label"><i class="fa-solid fa-calendar-days"></i> Fecha de Nacimiento</div>
-                        <div class="info-value">14 de marzo de 1985</div>
+                        <div class="info-label"><i class="fa-solid fa-phone"></i> Celular</div>
+                        <div class="info-value">51910852228</div>
                     </div>
 
-                    <!-- Fila 3 (Full Width) -->
-                    <div class="col-12 info-group">
+                    <div class="col-md-8 info-group">
                         <div class="info-label"><i class="fa-solid fa-location-dot"></i> Dirección</div>
-                        <div class="info-value">Calle Universidad 123, Madrid, España</div>
+                        <div class="info-value">av litoral k-10</div>
+                    </div>
+                    <div class="col-md-4 info-group">
+                        <div class="info-label"><i class="fa-solid fa-map-pin"></i> Código Postal (CP)</div>
+                        <div class="info-value">25350</div>
                     </div>
 
-                    <!-- Fila 4
-                    <div class="col-md-6 info-group">
-                        <div class="info-label"><i class="fa-solid fa-book"></i> Departamento</div>
-                        <div class="info-value">Ciencias de la Computación</div>
-                    </div> -->
-                    <div class="col-md-6 info-group">
-                        <div class="info-label"><i class="fa-solid fa-microchip"></i> Especialidad</div>
-                        <div class="info-value">Inteligencia Artificial y Machine Learning</div>
+                    <!-- SECCIÓN 2: INFORMACIÓN BANCARIA -->
+                    <div class="col-12 mt-3">
+                        <h4 class="section-subtitle"><i class="fa-solid fa-building-columns me-2"></i>Información Bancaria</h4>
                     </div>
 
-                    <!-- Fila 5 -->
                     <div class="col-md-6 info-group">
-                        <div class="info-label"><i class="fa-solid fa-briefcase"></i> Años de Experiencia</div>
-                        <div class="info-value">8 años</div>
+                        <div class="info-label"><i class="fa-solid fa-piggy-bank"></i> Entidad Bancaria</div>
+                        <div class="info-value text-capitalize">interbank</div>
                     </div>
                     <div class="col-md-6 info-group">
-                        <div class="info-label"><i class="fa-solid fa-graduation-cap"></i> Nivel Educativo</div>
-                        <div class="info-value">Doctorado en Ciencias de la Computación</div>
+                        <div class="info-label"><i class="fa-solid fa-hashtag"></i> Número de Cuenta</div>
+                        <div class="info-value">2629893</div>
                     </div>
+
+                    <!-- SECCIÓN 3: ARCHIVOS ADJUNTOS -->
+                    <div class="col-12 mt-3">
+                        <h4 class="section-subtitle"><i class="fa-solid fa-file-pdf me-2"></i>Documentos Adjuntos</h4>
+                    </div>
+
+                    <div class="col-md-6 info-group">
+                        <div class="info-label"><i class="fa-solid fa-file-lines"></i> Curriculum Vitae (CV)</div>
+                        <div class="info-value">
+                            <a href="#" class="text-decoration-none d-flex align-items-center gap-2" onclick="testAction('Abrir URL CV')">
+                                <i class="fa-solid fa-link text-primary"></i> Ver Documento
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-6 info-group">
+                        <div class="info-label"><i class="fa-solid fa-book-open"></i> Faculty Handbook</div>
+                        <div class="info-value">
+                            <a href="#" class="text-decoration-none d-flex align-items-center gap-2" onclick="testAction('Abrir URL Handbook')">
+                                <i class="fa-solid fa-link text-primary"></i> Ver Documento
+                            </a>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -402,8 +434,8 @@
 
         // Lógica para el tamaño de letra
         let currentSizeIndex = 1; // 0: Pequeño, 1: Normal, 2: Grande
-        const sizes = ["0.85rem", "1rem", "1.2rem"];
-        const labels = ["Pequeño", "Normal", "Grande"];
+        const sizes =["0.85rem", "1rem", "1.2rem"];
+        const labels =["Pequeño", "Normal", "Grande"];
 
         function changeFontSize(direction) {
             // Calculamos el nuevo índice (mínimo 0, máximo 2)
@@ -421,5 +453,4 @@
         }
     </script>
 </body>
-
 </html>
