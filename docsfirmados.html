@@ -149,11 +149,16 @@
         </header>
 
         <div class="content-area">
-            <h3>Mis Documentos</h3>
-            <p class="text-muted">Lista de tus documentos académicos y oficiales.</p>
-            
-            <div id="docs-container">
-                <p>Cargando documentos...</p>
+            <div class="page-title-section">
+                <h3>Docmuentos Contratación</h3>
+                <p>Lista de tus documentos académicos y oficiales.</p>
+            </div>
+            <div class="row g-4" id="documents-container">
+                <!-- Se llenará dinámicamente con JS -->
+                <div class="col-12 text-center" id="loading-msg">
+                    <i class="fa-solid fa-spinner fa-spin fa-2x text-primary mb-3"></i>
+                    <p class="text-muted">Cargando documentos...</p>
+                </div>
             </div>
         </div>
     </main>
