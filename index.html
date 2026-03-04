@@ -272,7 +272,7 @@
                 let data = typeof dipText === 'string' ? JSON.parse(dipText.replace(/```json|```/g, "")) : dipText;
 
                 document.getElementById('ai-results-container').insertAdjacentHTML('beforeend', 
-                `<div class="edu-card shadow-sm bg-white ai-edu-record" data-grado="${currentGrado}">
+                `<div class="edu-card shadow-sm bg-white ai-edu-record" data-grado="${currentGrado}" data-url="${diplomaUrl}">
                     <h6 class="fw-bold text-primary">Grado: ${currentGrado}</h6>
                     <div class="row g-3">
                         <div class="col-md-6"><label>Carrera *</label><input type="text" class="form-control ai-rama" value="${data.carrera||''}" required></div>
@@ -345,7 +345,8 @@
                 instituto: r.querySelector('.ai-institucion').value,
                 ubicacion: r.querySelector('.ai-ubicacion').value,
                 inicio: r.querySelector('.ai-inicio').value,
-                fin: r.querySelector('.ai-fin').value
+                fin: r.querySelector('.ai-fin').value,
+                url_diploma: r.dataset.url
             })),
             experiencia: Array.from(document.querySelectorAll('.exp-item')).map(i => ({
                 empresa: i.querySelector('.exp-empresa').value, 
@@ -367,4 +368,5 @@
 </script>
 </body>
 </html>
+
 
