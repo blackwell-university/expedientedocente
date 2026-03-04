@@ -262,8 +262,12 @@
                                 <div class="doc-size">Tamaño: ${size}</div>
                             </div>
                             <div class="doc-actions">
-                                <a href="${url}" target="_blank" class="btn-view"><i class="fa-solid fa-eye"></i> Ver</a>
-                                <a href="${url}" target="_blank" class="btn-download"><i class="fa-solid fa-download"></i></a>
+                                <button onclick="abrirVisor('${viewUrl}')" class="btn-view">
+                                    <i class="fa-solid fa-eye"></i> Ver
+                                </button>
+                                <a href="${downloadUrl}" target="_blank" class="btn-download">
+                                    <i class="fa-solid fa-download"></i>
+                                </a>
                             </div>
                         </div>
                     </div>
