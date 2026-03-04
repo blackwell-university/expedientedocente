@@ -130,6 +130,14 @@
                 <div class="col-md-8"><label>Dirección *</label><input type="text" id="direccion" class="form-control" required></div>
 
                 <div class="col-md-6"><label>Banco *</label><input type="text" id="banco" class="form-control" required></div>
+                <div class="col-md-6"><label>Tipo de Cuenta *</label>
+                    <select id="tipo_cuenta" class="form-select" required>
+                        <option value="">Seleccione...</option>
+                        <option value="Soles">Soles</option>
+                        <option value="Dólares">Dólares</option>
+                    </select>
+                </div>
+                <div class="col-md-6"><label>Cuenta Interbancaria (CCI) *</label><input type="text" id="cci" class="form-control" required></div>
                 <div class="col-md-6"><label>Número de Cuenta *</label><input type="text" id="cuenta" class="form-control" required></div>
             </div>
             <div class="text-end mt-5">
@@ -332,10 +340,12 @@
                 apellidos: document.getElementById('apellidos').value,
                 correo: document.getElementById('correo').value,
                 celular: document.getElementById('celular').value,
-                banco: document.getElementById('banco').value,
-                cuenta: document.getElementById('cuenta').value,
                 cp: document.getElementById('codigo_postal').value,
                 direccion: document.getElementById('direccion').value,
+                banco: document.getElementById('banco').value,
+                tipo_cuenta: document.getElementById('tipo_cuenta').value, 
+                cuenta: document.getElementById('cuenta').value,
+                cci: document.getElementById('cci').value,
                 url_cv: urlCVFinal,
                 url_handbook: urlHandbookFinal
             },
@@ -368,6 +378,7 @@
 </script>
 </body>
 </html>
+
 
 
 
