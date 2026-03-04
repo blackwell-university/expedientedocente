@@ -201,6 +201,7 @@
                 <div class="col-md-6"><label>Empresa</label><input type="text" class="form-control exp-empresa" value="${data.empresa || ''}" required></div>
                 <div class="col-md-6"><label>Cargo</label><input type="text" class="form-control exp-cargo" value="${data.cargo || ''}" required></div>
                 <div class="col-md-12"><label>Área de enseñanza</label><input type="text" class="form-control exp-area" value="${data.area_ensenanza || ''}"></div>
+                <div class="col-md-12"><label>Dirección (Calle, Ciudad, Pais, Código postal*Opcional)</label><input type="text" class="form-control exp-direccion" value="${data.direccion || ''}"></div>
                 <div class="col-md-6"><label>Inicio</label><input type="month" class="form-control exp-inicio" value="${data.inicio || ''}" required></div>
                 <div class="col-md-6">
                     <div class="d-flex justify-content-between align-items-center mb-1">
@@ -276,6 +277,7 @@
                     <div class="row g-3">
                         <div class="col-md-6"><label>Carrera *</label><input type="text" class="form-control ai-rama" value="${data.carrera||''}" required></div>
                         <div class="col-md-6"><label>Institución *</label><input type="text" class="form-control ai-institucion" value="${data.instituto||''}" required></div>
+                        <div class="col-md-6"><label>Ubicacion (Ciudad, País) *</label><input type="text" class="form-control ai-ubicacion" value="${data.ubicacion||''}" required></div>
                         <div class="col-md-3"><label>Inicio *</label><input type="month" class="form-control ai-inicio" value="${data.fecha_inicio||''}" required></div>
                         <div class="col-md-3"><label>Fin *</label><input type="month" class="form-control ai-fin" value="${data.fecha_fin||''}" required></div>
                     </div>
@@ -341,11 +343,17 @@
                 grado: r.dataset.grado, 
                 rama: r.querySelector('.ai-rama').value,
                 instituto: r.querySelector('.ai-institucion').value,
+                ubicacion: r.querySelector('.ai-ubicacion').value,
                 inicio: r.querySelector('.ai-inicio').value,
                 fin: r.querySelector('.ai-fin').value
             })),
             experiencia: Array.from(document.querySelectorAll('.exp-item')).map(i => ({
-                empresa: i.querySelector('.exp-empresa').value, cargo: i.querySelector('.exp-cargo').value, area: i.querySelector('.exp-area').value, inicio: i.querySelector('.exp-inicio').value, fin: i.querySelector('.exp-actualidad-check').checked ? "Actualidad" : i.querySelector('.exp-fin').value
+                empresa: i.querySelector('.exp-empresa').value, 
+                cargo: i.querySelector('.exp-cargo').value, 
+                area: i.querySelector('.exp-area').value,
+                direccion: i.querySelector('.exp-direccion').value,
+                inicio: i.querySelector('.exp-inicio').value, 
+                fin: i.querySelector('.exp-actualidad-check').checked ? "Actualidad" : i.querySelector('.exp-fin').value
             })),
             fileIdsToMove: fileIdsToMove
         };
@@ -359,3 +367,4 @@
 </script>
 </body>
 </html>
+
