@@ -246,9 +246,8 @@
             container.innerHTML = ''; // Limpiar el loading
             
             // Función generadora de HTML para las Cards
-            // Usamos un tamaño simulado (size) porque eso no está en el Excel
-            const createCard = (title, typeTag, date, size, url) => {
-                if (!url) return ''; // Si no hay URL, no se muestra la tarjeta
+            const createCard = (title, typeTag, date, size, viewUrl, downloadUrl) => {
+                if (!viewUrl && !downloadUrl) return ''; 
                 return `
                     <div class="col-md-6 col-lg-4">
                         <div class="doc-card">
@@ -262,9 +261,9 @@
                                 <div class="doc-size">Tamaño: ${size}</div>
                             </div>
                             <div class="doc-actions">
-                                <button onclick="abrirVisor('${viewUrl}')" class="btn-view">
+                                <a href="${viewUrl}" target="_blank" class="btn-view">
                                     <i class="fa-solid fa-eye"></i> Ver
-                                </button>
+                                </a>
                                 <a href="${downloadUrl}" target="_blank" class="btn-download">
                                     <i class="fa-solid fa-download"></i>
                                 </a>
@@ -273,6 +272,31 @@
                     </div>
                 `;
             };
+
+            let htmlContent = '';
+
+                // 1. Tarjeta: CV (Accediendo a las nuevas propiedades .view y .download)
+                htmlContent += createCard("Curriculum Vitae Actualizado", "CV", data.fecha, "2.3 MB", data.cv.view, data.cv.download);
+                
+                // 2. Tarjeta: Faculty Handbook
+                htmlContent += createCard("Faculty Handbook Form", "Manual", data.fecha, "1.1 MB", data.handbook.view, data.handbook.download);
+    
+                // 3. Tarjetas: Diplomas
+                if (data.diplomas && data.diplomas.length > 0) {
+                    data.diplomas.forEach((dip) => {
+                        const randomSize = (Math.random() * (3.5 - 1.2) + 1.2).toFixed(1) + " MB";
+                        const title = `Título de ${dip.grado || 'Grado'} ${dip.rama ? '- ' + dip.rama : ''}`;
+                        // Para los diplomas, como no vienen en objeto, pasamos la misma URL a ambos
+                        htmlContent += createCard(title, "Diploma", data.fecha, randomSize, dip.url, dip.url);
+                    });
+                }
+    
+                if(htmlContent === '') {
+                    container.innerHTML = `<div class="col-12 text-muted">No se encontraron documentos adjuntos en su expediente.</div>`;
+                } else {
+                    container.innerHTML = htmlContent;
+                }
+            }
 
             let htmlContent = '';
 
