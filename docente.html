@@ -295,7 +295,7 @@
         <div class="sidebar-footer">
             <div class="user-info">
                 <span>Sesión activa:</span>
-                <b>profesor@blackwell.edu</b>
+                <b id="sidebar-userid">Cargando...</b>
                 <span class="badge bg-light text-dark mt-1">Docente</span>
             </div>
             <button class="btn-logout" onclick="logout()">
@@ -327,8 +327,9 @@
                 </div>
                 <!-- Contenedor de Botones de Acción -->
                 <div class="d-flex gap-2" id="action-buttons">
-                    <button id="btnEditProfile" class="btn-edit" onclick="toggleEditProfile()">
-                        <i class="fa-solid fa-pencil"></i> Editar Perfil
+                    <button id="btnEditProfile" class="btn-edit" onclick="toggleEditProfile()" disabled>
+                        <i class="fa-solid fa-spinner fa-spin d-none" id="edit-spinner"></i> 
+                        <span id="edit-btn-text">Cargando...</span>
                     </button>
                 </div>
             </div>
@@ -343,33 +344,33 @@
                     <!-- El ID no lleva la clase "view-mode" porque NO es editable -->
                     <div class="col-md-6 info-group">
                         <div class="info-label"><i class="fa-solid fa-id-badge"></i> ID / Documento</div>
-                        <div class="info-value" id="view-id">74581226</div>
+                        <div class="info-value loading-skeleton" id="view-id">Cargando...</div>
                     </div>
                     <div class="col-md-6 info-group">
                         <div class="info-label"><i class="fa-solid fa-user"></i> Nombres y Apellidos</div>
-                        <div class="info-value view-mode" id="view-nombres">Sharon Bedoya</div>
+                        <div class="info-value view-mode loading-skeleton" id="view-nombres">Cargando...</div>
                         <div class="edit-mode d-none"><input type="text" class="form-control" id="edit-nombres"></div>
                     </div>
 
                     <div class="col-md-6 info-group">
                         <div class="info-label"><i class="fa-solid fa-envelope"></i> Correo Electrónico</div>
-                        <div class="info-value view-mode" id="view-correo">sharon.sosa@ejemplo.com</div>
+                        <div class="info-value view-mode loading-skeleton" id="view-correo">Cargando...</div>
                         <div class="edit-mode d-none"><input type="email" class="form-control" id="edit-correo"></div>
                     </div>
                     <div class="col-md-6 info-group">
                         <div class="info-label"><i class="fa-solid fa-phone"></i> Celular</div>
-                        <div class="info-value view-mode" id="view-celular">51910852228</div>
+                        <div class="info-value view-mode loading-skeleton" id="view-celular">Cargando...</div>
                         <div class="edit-mode d-none"><input type="text" class="form-control" id="edit-celular"></div>
                     </div>
 
                     <div class="col-md-8 info-group">
                         <div class="info-label"><i class="fa-solid fa-location-dot"></i> Dirección</div>
-                        <div class="info-value view-mode" id="view-direccion">av litoral k-10</div>
+                        <div class="info-value view-mode loading-skeleton" id="view-direccion">Cargando...</div>
                         <div class="edit-mode d-none"><input type="text" class="form-control" id="edit-direccion"></div>
                     </div>
                     <div class="col-md-4 info-group">
                         <div class="info-label"><i class="fa-solid fa-map-pin"></i> Código Postal (CP)</div>
-                        <div class="info-value view-mode" id="view-cp">25350</div>
+                        <div class="info-value view-mode loading-skeleton" id="view-cp">Cargando...</div>
                         <div class="edit-mode d-none"><input type="text" class="form-control" id="edit-cp"></div>
                     </div>
 
@@ -380,13 +381,13 @@
 
                     <div class="col-md-6 info-group">
                         <div class="info-label"><i class="fa-solid fa-piggy-bank"></i> Entidad Bancaria</div>
-                        <div class="info-value view-mode text-capitalize" id="view-banco">Interbank</div>
+                        <div class="info-value view-mode text-capitalize loading-skeleton" id="view-banco">Cargando...</div>
                         <div class="edit-mode d-none"><input type="text" class="form-control" id="edit-banco"></div>
                     </div>
                     
                     <div class="col-md-6 info-group">
                         <div class="info-label"><i class="fa-solid fa-credit-card"></i> Tipo de Cuenta</div>
-                        <div class="info-value view-mode" id="view-tipocuenta">Cuenta de Ahorros</div>
+                        <div class="info-value view-mode loading-skeleton" id="view-tipocuenta">Cargando...</div>
                         <div class="edit-mode d-none">
                             <select class="form-select" id="edit-tipocuenta">
                                 <option value="Soles">Soles</option>
@@ -397,13 +398,13 @@
 
                     <div class="col-md-6 info-group">
                         <div class="info-label"><i class="fa-solid fa-hashtag"></i> Número de Cuenta</div>
-                        <div class="info-value view-mode" id="view-cuenta">2629893</div>
+                        <div class="info-value view-mode loading-skeleton" id="view-cuenta">Cargando...</div>
                         <div class="edit-mode d-none"><input type="text" class="form-control" id="edit-cuenta"></div>
                     </div>
                     
                     <div class="col-md-6 info-group">
                         <div class="info-label"><i class="fa-solid fa-money-bill-transfer"></i> Cuenta Interbancaria (CCI)</div>
-                        <div class="info-value view-mode" id="view-cci">003-262-00000000-93</div>
+                        <div class="info-value view-mode loading-skeleton" id="view-cci">Cargando...</div>
                         <div class="edit-mode d-none"><input type="text" class="form-control" id="edit-cci"></div>
                     </div>
 
@@ -416,16 +417,16 @@
                     <div class="col-md-6 info-group">
                         <div class="info-label"><i class="fa-solid fa-file-lines"></i> Curriculum Vitae (CV)</div>
                         <div class="info-value">
-                            <a href="#" class="text-decoration-none d-flex align-items-center gap-2">
-                                <i class="fa-solid fa-link text-primary"></i> Ver Documento
+                            <a href="#" id="link-cv" class="text-decoration-none d-flex align-items-center gap-2" style="pointer-events: none; color: gray;">
+                                <i class="fa-solid fa-link"></i> No disponible
                             </a>
                         </div>
                     </div>
                     <div class="col-md-6 info-group">
                         <div class="info-label"><i class="fa-solid fa-book-open"></i> Faculty Handbook</div>
                         <div class="info-value">
-                            <a href="#" class="text-decoration-none d-flex align-items-center gap-2">
-                                <i class="fa-solid fa-link text-primary"></i> Ver Documento
+                            <a href="#" id="link-handbook" class="text-decoration-none d-flex align-items-center gap-2" style="pointer-events: none; color: gray;">
+                                <i class="fa-solid fa-link"></i> No disponible
                             </a>
                         </div>
                     </div>
@@ -436,7 +437,8 @@
     </main>
 
     <script>
-        // Función para cerrar sesión
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
+
         function logout() {
             if(confirm("¿Estás seguro que deseas cerrar sesión?")) {
                 sessionStorage.clear();
@@ -445,18 +447,68 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const userName = sessionStorage.getItem('userName');
+            const userName = sessionStorage.getItem('userName'); // Esto es el DNI
             if(userName) {
-                document.querySelector('.user-info b').innerText = userName;
+                document.getElementById('sidebar-userid').innerText = userName;
+                loadProfileData(userName); // <-- LLAMADA AL BACKEND AUTOMÁTICA
             }
         });
 
-        // ----------------------------------------------------
-        // LÓGICA PARA MODO EDICIÓN DE PERFIL
-        // ----------------------------------------------------
+        async function loadProfileData(userId) {
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'get_profile', id: userId })
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    const d = result.data;
+                    
+                    // Llenar campos y quitar clase "loading-skeleton"
+                    const campos =['id', 'nombres', 'correo', 'celular', 'direccion', 'cp', 'banco', 'tipocuenta', 'cuenta', 'cci'];
+                    
+                    document.getElementById('view-id').innerText = userId;
+                    document.getElementById('view-nombres').innerText = d.nombres || '';
+                    document.getElementById('view-correo').innerText = d.correo || '';
+                    document.getElementById('view-celular').innerText = d.celular || '';
+                    document.getElementById('view-direccion').innerText = d.direccion || '';
+                    document.getElementById('view-cp').innerText = d.cp || '';
+                    document.getElementById('view-banco').innerText = d.banco || '';
+                    document.getElementById('view-tipocuenta').innerText = d.tipo_cuenta || '';
+                    document.getElementById('view-cuenta').innerText = d.cuenta || '';
+                    document.getElementById('view-cci').innerText = d.cci || '';
+
+                    campos.forEach(c => document.getElementById(`view-${c}`).classList.remove('loading-skeleton'));
+
+                    // Habilitar links de archivos
+                    if(d.url_cv) {
+                        const linkCv = document.getElementById('link-cv');
+                        linkCv.href = d.url_cv; linkCv.target = "_blank"; linkCv.style.pointerEvents = "auto"; linkCv.style.color = "";
+                        linkCv.innerHTML = '<i class="fa-solid fa-link text-primary"></i> Ver Documento';
+                    }
+                    if(d.url_handbook) {
+                        const linkHb = document.getElementById('link-handbook');
+                        linkHb.href = d.url_handbook; linkHb.target = "_blank"; linkHb.style.pointerEvents = "auto"; linkHb.style.color = "";
+                        linkHb.innerHTML = '<i class="fa-solid fa-link text-primary"></i> Ver Documento';
+                    }
+
+                    // Habilitar Botón de Edición
+                    const btnEdit = document.getElementById('btnEditProfile');
+                    btnEdit.disabled = false;
+                    document.getElementById('edit-btn-text').innerText = " Editar Perfil";
+                    document.getElementById('edit-spinner').classList.add('d-none');
+                    btnEdit.innerHTML = '<i class="fa-solid fa-pencil"></i> Editar Perfil';
+                }
+            } catch (e) {
+                console.error("Error obteniendo perfil:", e);
+                alert("Error al cargar tus datos. Revisa tu conexión.");
+            }
+        }
+
+        // --- LÓGICA DE EDICIÓN (Mantenida igual) ---
         let isEditing = false;
-        
-        // Lista de los campos que pueden editarse
         const editableFields =['nombres', 'correo', 'celular', 'direccion', 'cp', 'banco', 'tipocuenta', 'cuenta', 'cci'];
 
         function toggleEditProfile() {
@@ -464,23 +516,17 @@
             const actionContainer = document.getElementById('action-buttons');
 
             if (!isEditing) {
-                // ENTRAR AL MODO EDICIÓN
-                
-                // 1. Cargar los valores actuales en los inputs
                 editableFields.forEach(f => {
                     const currentText = document.getElementById(`view-${f}`).innerText.trim();
                     document.getElementById(`edit-${f}`).value = currentText;
                 });
 
-                // 2. Ocultar textos estáticos y mostrar inputs
                 document.querySelectorAll('.view-mode').forEach(el => el.classList.add('d-none'));
                 document.querySelectorAll('.edit-mode').forEach(el => el.classList.remove('d-none'));
                 
-                // 3. Cambiar botón principal a Guardar
                 btnEdit.innerHTML = '<i class="fa-solid fa-save"></i> Guardar Cambios';
                 btnEdit.className = 'btn-save';
                 
-                // 4. Agregar botón de Cancelar si no existe
                 if (!document.getElementById('btnCancelEdit')) {
                     actionContainer.insertAdjacentHTML('beforeend', `
                         <button id="btnCancelEdit" class="btn btn-outline-secondary" onclick="cancelEditProfile()">
@@ -488,29 +534,17 @@
                         </button>
                     `);
                 }
-                
                 isEditing = true;
-            } else {
-                // GUARDAR LOS CAMBIOS
-                saveProfileChanges();
-            }
+            } else { saveProfileChanges(); }
         }
 
-        function cancelEditProfile() {
-            revertToViewMode();
-        }
+        function cancelEditProfile() { revertToViewMode(); }
 
         async function saveProfileChanges() {
-            // Reemplaza con la URL real de tu script
-            const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
-            
-            // 1. Mostrar estado de carga en el botón
             const btnEdit = document.getElementById('btnEditProfile');
-            const originalText = btnEdit.innerHTML;
             btnEdit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
             btnEdit.disabled = true;
 
-            // 2. Recolectar datos
             const payload = {
                 action: "update_profile",
                 id: document.getElementById('view-id').innerText.trim(),
@@ -526,75 +560,52 @@
             };
 
             try {
-                // 3. Enviar a Google Apps Script
-                const response = await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
-                
+                const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const result = await response.json();
                 
                 if (result.status === "success") {
-                    // Pasar los valores de los inputs a los textos visuales
-                    editableFields.forEach(f => {
-                        document.getElementById(`view-${f}`).innerText = document.getElementById(`edit-${f}`).value;
-                    });
+                    editableFields.forEach(f => { document.getElementById(`view-${f}`).innerText = document.getElementById(`edit-${f}`).value; });
                     alert("¡Perfil actualizado exitosamente en la base de datos!");
-                } else {
-                    alert("Hubo un problema actualizando el perfil.");
-                }
+                } else { alert("Hubo un problema actualizando el perfil."); }
             } catch (error) {
                 alert("Error de conexión al guardar los datos.");
                 console.error(error);
             }
 
-            // 4. Volver al modo visualización
             btnEdit.disabled = false;
             revertToViewMode();
         }
 
         function revertToViewMode() {
-            // Mostrar textos estáticos y ocultar inputs
             document.querySelectorAll('.view-mode').forEach(el => el.classList.remove('d-none'));
             document.querySelectorAll('.edit-mode').forEach(el => el.classList.add('d-none'));
             
-            // Regresar el botón a Editar Perfil
             const btnEdit = document.getElementById('btnEditProfile');
             btnEdit.innerHTML = '<i class="fa-solid fa-pencil"></i> Editar Perfil';
             btnEdit.className = 'btn-edit';
             
-            // Remover botón cancelar
             const btnCancel = document.getElementById('btnCancelEdit');
             if (btnCancel) btnCancel.remove();
-            
             isEditing = false;
         }
 
-        // ----------------------------------------------------
-        // NAVEGACIÓN Y TAMAÑO DE FUENTE
-        // ----------------------------------------------------
+        // NAVEGACIÓN Y TAMAÑO
         const navItems = document.querySelectorAll('.nav-item');
-        navItems.forEach(item => {
-            item.addEventListener('click', (e) => {
-                e.preventDefault();
-                navItems.forEach(i => i.classList.remove('active'));
-                item.classList.add('active');
-            });
-        });
+        navItems.forEach(item => { item.addEventListener('click', (e) => { e.preventDefault(); navItems.forEach(i => i.classList.remove('active')); item.classList.add('active'); }); });
 
         let currentSizeIndex = 1; 
-        const sizes = ["0.85rem", "1rem", "1.2rem"];
+        const sizes =["0.85rem", "1rem", "1.2rem"];
         const labels = ["Pequeño", "Normal", "Grande"];
-
         function changeFontSize(direction) {
             currentSizeIndex += direction;
             if (currentSizeIndex < 0) currentSizeIndex = 0;
             if (currentSizeIndex > 2) currentSizeIndex = 2;
-
             document.getElementById('fontSizeLabel').innerText = labels[currentSizeIndex];
             document.documentElement.style.setProperty('--dynamic-font-size', sizes[currentSizeIndex]);
         }
     </script>
+    
 </body>
 </html>
+
 
