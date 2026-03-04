@@ -120,7 +120,7 @@
             <form id="loginForm">
                 <div class="mb-3">
                     <label class="form-label">Nombre Usuario</label>
-                    <input type="input" class="form-control" id="emailInput" placeholder="usuario" required>
+                    <input type="text" class="form-control" id="emailInput" placeholder="usuario " required>
                 </div>
 
                 <div class="mb-4">
@@ -153,8 +153,8 @@
             if (role === 'docente') {
                 btnDocente.classList.add('active');
                 btnAdmin.classList.remove('active');
-                emailInput.placeholder = '74500027'; // Ejemplo de tu Excel
-                demoText.innerHTML = '<b>Acceso Docente:</b><br>Usa tu DNI y clave';
+                emailInput.placeholder = '74500027'; 
+                demoText.innerHTML = '<b>Acceso Docente:</b><br>Usa tu DNI como usuario y contraseña';
             } else {
                 btnAdmin.classList.add('active');
                 btnDocente.classList.remove('active');
@@ -163,7 +163,6 @@
             }
         }
 
-        // --- CAMBIO CLAVE AQUÍ ---
         document.getElementById('loginForm').onsubmit = function(e) {
             e.preventDefault();
             
@@ -176,28 +175,29 @@
 
             fetch(WEB_APP_URL, {
                 method: 'POST',
-                mode: 'no-cors', // Necesario para Google Script desde otros dominios
-                body: JSON.stringify({
-                    action: "login",
-                    email: email,
-                    password: password
-                })
-            })
-            fetch(WEB_APP_URL, {
-                method: 'POST',
                 body: JSON.stringify({ action: "login", email: email, password: password })
             })
             .then(res => res.json())
             .then(response => {
                 if (response.status === "success") {
+                    
+                    // NORMALIZAMOS EL ROL PARA EVITAR ERRORES DE MAYÚSCULAS
+                    let rolAsignado = response.role;
+                    if (rolAsignado.toUpperCase() === 'DOCENTE') {
+                        rolAsignado = 'Docente';
+                    } else if (rolAsignado.toUpperCase() === 'ADMINISTRADOR') {
+                        rolAsignado = 'Administrador';
+                    }
+
                     // GUARDAMOS LA SESIÓN
                     sessionStorage.setItem('isLoggedIn', 'true');
-                    sessionStorage.setItem('userRole', response.role);
+                    sessionStorage.setItem('userRole', rolAsignado);
+                    // Guardamos el DNI como 'userName' para que docente.html lo lea y lo muestre
                     sessionStorage.setItem('userName', response.user);
 
-                    if (response.role === 'Docente') {
+                    if (rolAsignado === 'Docente') {
                         window.location.href = "docente.html";
-                    } else if (response.role === 'Administrador') {
+                    } else if (rolAsignado === 'Administrador') {
                         alert("Bienvenido Admin. Redirigiendo...");
                         // window.location.href = "admin.html";
                     }
@@ -217,7 +217,4 @@
     </script>
 
 </body>
-
 </html>
-
-
