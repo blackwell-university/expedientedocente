@@ -200,8 +200,8 @@
             <div class="row g-3">
                 <div class="col-md-6"><label>Empresa</label><input type="text" class="form-control exp-empresa" value="${data.empresa || ''}" required></div>
                 <div class="col-md-6"><label>Cargo</label><input type="text" class="form-control exp-cargo" value="${data.cargo || ''}" required></div>
-                <div class="col-md-12"><label>Área de enseñanza</label><input type="text" class="form-control exp-area" value="${data.area_ensenanza || ''}"></div>
-                <div class="col-md-12"><label>Dirección (Calle, Ciudad, Pais, Código postal*Opcional)</label><input type="text" class="form-control exp-direccion" value="${data.direccion || ''}"></div>
+                <div class="col-md-12"><label>Área de enseñanza (*Solo si enseñó)</label><input type="text" class="form-control exp-area" value="${data.area_ensenanza || ''}"></div>
+                <div class="col-md-12"><label>Dirección (Calle, Ciudad, Pais, Código postal*Opcional)</label><input type="text" class="form-control exp-direccion" value="${data.direccion || ''}" required></div>
                 <div class="col-md-6"><label>Inicio</label><input type="month" class="form-control exp-inicio" value="${data.inicio || ''}" required></div>
                 <div class="col-md-6">
                     <div class="d-flex justify-content-between align-items-center mb-1">
@@ -368,5 +368,6 @@
 </script>
 </body>
 </html>
+
 
 
