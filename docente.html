@@ -49,7 +49,7 @@
             gap: 10px;
             background: #f1f5f9;
             padding: 5px 12px;
-            border-radius: 50px; /* Forma de píldora como la imagen */
+            border-radius: 50px;
             font-size: 0.85rem;
             color: var(--text-muted);
             border: 1px solid #e2e8f0;
@@ -171,17 +171,6 @@
         header h2 { font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--text-dark); }
         header p { margin: 0; font-size: 0.75rem; color: var(--text-muted); }
 
-        .font-controls {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            background: #f1f5f9;
-            padding: 5px 15px;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
-
         /* --- CONTENT CARD --- */
         .content-area {
             padding: 40px;
@@ -209,7 +198,23 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            transition: 0.3s;
         }
+        
+        .btn-save {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+        .btn-save:hover { background-color: #059669; color: white; }
 
         .info-card {
             background: white;
@@ -218,7 +223,6 @@
             padding: 35px;
         }
 
-        /* Styling the info fields */
         .info-group {
             margin-bottom: 20px;
         }
@@ -241,6 +245,7 @@
             border-radius: 6px;
             font-size: 0.9rem;
             color: var(--text-dark);
+            min-height: 42px; /* Para que coincida con el tamaño del input form-control */
         }
 
         .section-subtitle {
@@ -320,9 +325,12 @@
                     <h3>Información Personal</h3>
                     <p>Gestiona tu perfil y datos registrados</p>
                 </div>
-                <button class="btn-edit" onclick="testAction('Editar Perfil')">
-                    <i class="fa-solid fa-pencil"></i> Editar Perfil
-                </button>
+                <!-- Contenedor de Botones de Acción -->
+                <div class="d-flex gap-2" id="action-buttons">
+                    <button id="btnEditProfile" class="btn-edit" onclick="toggleEditProfile()">
+                        <i class="fa-solid fa-pencil"></i> Editar Perfil
+                    </button>
+                </div>
             </div>
 
             <div class="info-card">
@@ -332,31 +340,37 @@
                         <h4 class="section-subtitle"><i class="fa-regular fa-address-card me-2"></i>Datos Generales</h4>
                     </div>
 
+                    <!-- El ID no lleva la clase "view-mode" porque NO es editable -->
                     <div class="col-md-6 info-group">
                         <div class="info-label"><i class="fa-solid fa-id-badge"></i> ID / Documento</div>
                         <div class="info-value">74581226</div>
                     </div>
                     <div class="col-md-6 info-group">
                         <div class="info-label"><i class="fa-solid fa-user"></i> Nombres y Apellidos</div>
-                        <div class="info-value">Sharon Bedoya</div>
+                        <div class="info-value view-mode" id="view-nombres">Sharon Bedoya</div>
+                        <div class="edit-mode d-none"><input type="text" class="form-control" id="edit-nombres"></div>
                     </div>
 
                     <div class="col-md-6 info-group">
                         <div class="info-label"><i class="fa-solid fa-envelope"></i> Correo Electrónico</div>
-                        <div class="info-value">sharon.sosa@ejemplo.com</div>
+                        <div class="info-value view-mode" id="view-correo">sharon.sosa@ejemplo.com</div>
+                        <div class="edit-mode d-none"><input type="email" class="form-control" id="edit-correo"></div>
                     </div>
                     <div class="col-md-6 info-group">
                         <div class="info-label"><i class="fa-solid fa-phone"></i> Celular</div>
-                        <div class="info-value">51910852228</div>
+                        <div class="info-value view-mode" id="view-celular">51910852228</div>
+                        <div class="edit-mode d-none"><input type="text" class="form-control" id="edit-celular"></div>
                     </div>
 
                     <div class="col-md-8 info-group">
                         <div class="info-label"><i class="fa-solid fa-location-dot"></i> Dirección</div>
-                        <div class="info-value">av litoral k-10</div>
+                        <div class="info-value view-mode" id="view-direccion">av litoral k-10</div>
+                        <div class="edit-mode d-none"><input type="text" class="form-control" id="edit-direccion"></div>
                     </div>
                     <div class="col-md-4 info-group">
                         <div class="info-label"><i class="fa-solid fa-map-pin"></i> Código Postal (CP)</div>
-                        <div class="info-value">25350</div>
+                        <div class="info-value view-mode" id="view-cp">25350</div>
+                        <div class="edit-mode d-none"><input type="text" class="form-control" id="edit-cp"></div>
                     </div>
 
                     <!-- SECCIÓN 2: INFORMACIÓN BANCARIA -->
@@ -366,11 +380,31 @@
 
                     <div class="col-md-6 info-group">
                         <div class="info-label"><i class="fa-solid fa-piggy-bank"></i> Entidad Bancaria</div>
-                        <div class="info-value text-capitalize">interbank</div>
+                        <div class="info-value view-mode text-capitalize" id="view-banco">Interbank</div>
+                        <div class="edit-mode d-none"><input type="text" class="form-control" id="edit-banco"></div>
                     </div>
+                    
+                    <div class="col-md-6 info-group">
+                        <div class="info-label"><i class="fa-solid fa-credit-card"></i> Tipo de Cuenta</div>
+                        <div class="info-value view-mode" id="view-tipocuenta">Cuenta de Ahorros</div>
+                        <div class="edit-mode d-none">
+                            <select class="form-select" id="edit-tipocuenta">
+                                <option value="Cuenta Simple">Cuenta Simple</option>
+                                <option value="Cuenta de Ahorros">Cuenta de Ahorros</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="col-md-6 info-group">
                         <div class="info-label"><i class="fa-solid fa-hashtag"></i> Número de Cuenta</div>
-                        <div class="info-value">2629893</div>
+                        <div class="info-value view-mode" id="view-cuenta">2629893</div>
+                        <div class="edit-mode d-none"><input type="text" class="form-control" id="edit-cuenta"></div>
+                    </div>
+                    
+                    <div class="col-md-6 info-group">
+                        <div class="info-label"><i class="fa-solid fa-money-bill-transfer"></i> Cuenta Interbancaria (CCI)</div>
+                        <div class="info-value view-mode" id="view-cci">003-262-00000000-93</div>
+                        <div class="edit-mode d-none"><input type="text" class="form-control" id="edit-cci"></div>
                     </div>
 
                     <!-- SECCIÓN 3: ARCHIVOS ADJUNTOS -->
@@ -378,10 +412,11 @@
                         <h4 class="section-subtitle"><i class="fa-solid fa-file-pdf me-2"></i>Documentos Adjuntos</h4>
                     </div>
 
+                    <!-- Estos archivos no tienen modo de edición a propósito, tal y como solicitaste -->
                     <div class="col-md-6 info-group">
                         <div class="info-label"><i class="fa-solid fa-file-lines"></i> Curriculum Vitae (CV)</div>
                         <div class="info-value">
-                            <a href="#" class="text-decoration-none d-flex align-items-center gap-2" onclick="testAction('Abrir URL CV')">
+                            <a href="#" class="text-decoration-none d-flex align-items-center gap-2">
                                 <i class="fa-solid fa-link text-primary"></i> Ver Documento
                             </a>
                         </div>
@@ -389,7 +424,7 @@
                     <div class="col-md-6 info-group">
                         <div class="info-label"><i class="fa-solid fa-book-open"></i> Faculty Handbook</div>
                         <div class="info-value">
-                            <a href="#" class="text-decoration-none d-flex align-items-center gap-2" onclick="testAction('Abrir URL Handbook')">
+                            <a href="#" class="text-decoration-none d-flex align-items-center gap-2">
                                 <i class="fa-solid fa-link text-primary"></i> Ver Documento
                             </a>
                         </div>
@@ -404,7 +439,6 @@
         // Función para cerrar sesión
         function logout() {
             if(confirm("¿Estás seguro que deseas cerrar sesión?")) {
-                // Limpiamos la sesión
                 sessionStorage.clear();
                 window.location.href = "login.html";
             }
@@ -417,12 +451,89 @@
             }
         });
 
-        // Función de prueba para botones
-        function testAction(action) {
-            alert("Acción en modo prueba: " + action);
+        // ----------------------------------------------------
+        // LÓGICA PARA MODO EDICIÓN DE PERFIL
+        // ----------------------------------------------------
+        let isEditing = false;
+        
+        // Lista de los campos que pueden editarse
+        const editableFields =['nombres', 'correo', 'celular', 'direccion', 'cp', 'banco', 'tipocuenta', 'cuenta', 'cci'];
+
+        function toggleEditProfile() {
+            const btnEdit = document.getElementById('btnEditProfile');
+            const actionContainer = document.getElementById('action-buttons');
+
+            if (!isEditing) {
+                // ENTRAR AL MODO EDICIÓN
+                
+                // 1. Cargar los valores actuales en los inputs
+                editableFields.forEach(f => {
+                    const currentText = document.getElementById(`view-${f}`).innerText.trim();
+                    document.getElementById(`edit-${f}`).value = currentText;
+                });
+
+                // 2. Ocultar textos estáticos y mostrar inputs
+                document.querySelectorAll('.view-mode').forEach(el => el.classList.add('d-none'));
+                document.querySelectorAll('.edit-mode').forEach(el => el.classList.remove('d-none'));
+                
+                // 3. Cambiar botón principal a Guardar
+                btnEdit.innerHTML = '<i class="fa-solid fa-save"></i> Guardar Cambios';
+                btnEdit.className = 'btn-save';
+                
+                // 4. Agregar botón de Cancelar si no existe
+                if (!document.getElementById('btnCancelEdit')) {
+                    actionContainer.insertAdjacentHTML('beforeend', `
+                        <button id="btnCancelEdit" class="btn btn-outline-secondary" onclick="cancelEditProfile()">
+                            <i class="fa-solid fa-times"></i> Cancelar
+                        </button>
+                    `);
+                }
+                
+                isEditing = true;
+            } else {
+                // GUARDAR LOS CAMBIOS
+                saveProfileChanges();
+            }
         }
 
-        // Hacer que los items del menú parezcan funcionales
+        function cancelEditProfile() {
+            revertToViewMode();
+        }
+
+        function saveProfileChanges() {
+            // 1. Pasar los valores de los inputs a los textos visuales
+            editableFields.forEach(f => {
+                const newValue = document.getElementById(`edit-${f}`).value;
+                document.getElementById(`view-${f}`).innerText = newValue;
+            });
+
+            // 2. Mostrar alerta de simulación (Aquí iría tu fetch al Google Apps Script)
+            alert("¡Cambios guardados exitosamente!");
+
+            // 3. Volver al modo visualización
+            revertToViewMode();
+        }
+
+        function revertToViewMode() {
+            // Mostrar textos estáticos y ocultar inputs
+            document.querySelectorAll('.view-mode').forEach(el => el.classList.remove('d-none'));
+            document.querySelectorAll('.edit-mode').forEach(el => el.classList.add('d-none'));
+            
+            // Regresar el botón a Editar Perfil
+            const btnEdit = document.getElementById('btnEditProfile');
+            btnEdit.innerHTML = '<i class="fa-solid fa-pencil"></i> Editar Perfil';
+            btnEdit.className = 'btn-edit';
+            
+            // Remover botón cancelar
+            const btnCancel = document.getElementById('btnCancelEdit');
+            if (btnCancel) btnCancel.remove();
+            
+            isEditing = false;
+        }
+
+        // ----------------------------------------------------
+        // NAVEGACIÓN Y TAMAÑO DE FUENTE
+        // ----------------------------------------------------
         const navItems = document.querySelectorAll('.nav-item');
         navItems.forEach(item => {
             item.addEventListener('click', (e) => {
@@ -432,23 +543,16 @@
             });
         });
 
-        // Lógica para el tamaño de letra
-        let currentSizeIndex = 1; // 0: Pequeño, 1: Normal, 2: Grande
-        const sizes =["0.85rem", "1rem", "1.2rem"];
-        const labels =["Pequeño", "Normal", "Grande"];
+        let currentSizeIndex = 1; 
+        const sizes = ["0.85rem", "1rem", "1.2rem"];
+        const labels = ["Pequeño", "Normal", "Grande"];
 
         function changeFontSize(direction) {
-            // Calculamos el nuevo índice (mínimo 0, máximo 2)
             currentSizeIndex += direction;
-            
             if (currentSizeIndex < 0) currentSizeIndex = 0;
             if (currentSizeIndex > 2) currentSizeIndex = 2;
 
-            // 1. Actualizamos el texto en el botón
             document.getElementById('fontSizeLabel').innerText = labels[currentSizeIndex];
-
-            // 2. Aplicamos el nuevo tamaño a la variable CSS
-            // Esto afectará a todo lo que esté dentro de .content-area
             document.documentElement.style.setProperty('--dynamic-font-size', sizes[currentSizeIndex]);
         }
     </script>
