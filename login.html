@@ -187,8 +187,7 @@
                         rolAsignado = 'Docente';
                     } else if (rolAsignado.toUpperCase() === 'ADMINISTRADOR') {
                         rolAsignado = 'Administrador';
-                    }
-                    else if (rolAsignado.toUpperCase() === 'ADMINISTRATIVO') {
+                    } else if (rolAsignado.toUpperCase() === 'ADMINISTRATIVO') {
                         rolAsignado = 'Administrativo';
                     }
 
@@ -201,6 +200,8 @@
                     if (rolAsignado === 'Docente') {
                         window.location.href = "docente.html";
                     } else if (rolAsignado === 'Administrador') {
+                         window.location.href = "administrativo.html";
+                    } else if (rolAsignado === 'Administrativo') {
                          window.location.href = "administrativo.html";
                     }
                 } else {
@@ -220,5 +221,6 @@
 
 </body>
 </html>
+
 
 
