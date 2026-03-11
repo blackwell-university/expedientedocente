@@ -3,11 +3,9 @@
 <head>
     <script>
         // Lógica de protección de ruta adaptada para el rol Administrativo
-        /* 
         if (sessionStorage.getItem('isLoggedIn') !== 'true' || sessionStorage.getItem('userRole') !== 'Administrativo') {
             window.location.href = "login.html";
         }
-        */
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,30 +19,23 @@
 
     <style>
         :root {
-            --sidebar-bg: #1e3a8a;
-            --sidebar-active: #3b82f6;
-            --main-bg: #f8fafc;
-            --text-dark: #1e293b;
-            --text-muted: #64748b;
-            --accent-blue: #223f93;
-            --logout-red: #e11d48;
-
+            --sidebar-bg: #1e3a8a; --sidebar-active: #3b82f6; --main-bg: #f8fafc;
+            --text-dark: #1e293b; --text-muted: #64748b; --accent-blue: #223f93; --logout-red: #e11d48;
             --dynamic-font-size: 1rem;
         }
 
         body { font-family: 'Inter', sans-serif; background-color: var(--main-bg); margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        .content-area { font-size: var(--dynamic-font-size); padding: 30px 40px; max-width: 1400px; margin: 0 auto; width: 100%; }
+        .content-area { font-size: var(--dynamic-font-size); padding: 30px 40px; max-width: 1400px; margin: 0 auto; width: 100%; overflow-y: auto; }
 
-        /* --- HEADER & CONTROLES --- */
+        /* HEADER */
         header { background: white; padding: 15px 40px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
         header h2 { font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--text-dark); }
         header p { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
         .font-controls { display: flex; align-items: center; gap: 10px; background: #f1f5f9; padding: 5px 12px; border-radius: 50px; font-size: 0.85rem; color: var(--text-muted); border: 1px solid #e2e8f0; }
-        .btn-font { background: none; border: none; color: var(--text-dark); font-weight: bold; padding: 0 5px; cursor: pointer; transition: transform 0.1s; }
+        .btn-font { background: none; border: none; color: var(--text-dark); font-weight: bold; padding: 0 5px; cursor: pointer; }
         .btn-font:active { transform: scale(1.3); }
-        #fontSizeLabel { min-width: 60px; text-align: center; font-weight: 500; }
 
-        /* --- SIDEBAR --- */
+        /* SIDEBAR */
         .sidebar { width: 260px; background-color: var(--sidebar-bg); color: white; display: flex; flex-direction: column; flex-shrink: 0; padding: 20px 0; }
         .sidebar-brand { padding: 0 25px 30px; display: flex; align-items: center; gap: 10px; }
         .sidebar-brand i { font-size: 24px; }
@@ -56,13 +47,11 @@
         .nav-item.active { background-color: var(--sidebar-active); color: white; font-weight: 500; }
         .sidebar-footer { padding: 20px; background: rgba(0,0,0,0.2); font-size: 0.75rem; }
         .user-info { margin-bottom: 15px; }
-        .user-info span { opacity: 0.8; }
         .user-info b { display: block; font-size: 0.85rem; margin-top: 2px; }
         .role-text { color: var(--sidebar-active); font-weight: 600; font-size: 0.8rem; margin-top: 2px; display: block; }
         .btn-logout { width: 100%; background-color: var(--logout-red); color: white; border: none; padding: 10px; border-radius: 6px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
-        .btn-logout:hover { background-color: #be123c; }
 
-        /* --- CONTENIDO PRINCIPAL --- */
+        /* MAIN CONTENT */
         .main-wrapper { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; }
         .page-title { font-size: 1.5rem; font-weight: 700; color: var(--text-dark); margin-bottom: 5px; }
         .page-subtitle { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px; }
@@ -70,94 +59,64 @@
         /* Filtros */
         .filter-container { background: white; border-radius: 12px; padding: 15px 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); margin-bottom: 20px; display: flex; gap: 10px; }
         .btn-filter { background-color: #f1f5f9; color: var(--text-muted); border: none; padding: 8px 20px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; transition: 0.3s; }
-        .btn-filter:hover { background-color: #e2e8f0; }
         .btn-filter.active { background-color: var(--accent-blue); color: white; }
 
-        /* Tarjetas de Revisión */
+        /* Tarjetas */
         .review-card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.03); margin-bottom: 20px; }
         .review-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
         .review-header h4 { font-size: 1.15rem; font-weight: 700; color: var(--text-dark); margin: 0 0 5px 0; }
         .review-header p { color: var(--text-muted); font-size: 0.85rem; margin: 0; }
+        
         .status-badge { padding: 5px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
-        .status-pendiente { background-color: #fef9c3; color: #854d0e; }
-        .status-aprobado { background-color: #dcfce7; color: #166534; }
-        .status-rechazado { background-color: #fee2e2; color: #b91c1c; }
+        .status-Pendiente { background-color: #fef9c3; color: #854d0e; }
+        .status-Aprobado { background-color: #dcfce7; color: #166534; }
+        .status-Rechazado { background-color: #fee2e2; color: #b91c1c; }
 
-        /* Documentos */
+        /* Lista Docs */
         .document-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #f1f5f9; }
         .document-item:last-child { border-bottom: none; }
         .doc-info { display: flex; align-items: center; gap: 15px; }
         .doc-icon { color: var(--accent-blue); font-size: 1.2rem; background-color: #eff6ff; padding: 10px; border-radius: 8px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
         .doc-info b { display: block; font-size: 0.9rem; color: var(--text-dark); margin-bottom: 2px; }
         .doc-info span { display: block; font-size: 0.75rem; color: var(--text-muted); }
-        .doc-actions { display: flex; gap: 15px; }
-        .doc-actions a { color: var(--sidebar-active); font-size: 1rem; cursor: pointer; transition: color 0.2s; text-decoration: none; }
-        .doc-actions a:hover { color: var(--accent-blue); }
+        .doc-actions a { color: var(--sidebar-active); font-size: 1.1rem; cursor: pointer; transition: color 0.2s; text-decoration: none; }
 
-        /* Generados */
         .generated-docs-section { background-color: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 20px; margin-top: 20px; }
         .generated-title { font-size: 0.9rem; font-weight: 700; color: var(--text-dark); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
-        .generated-title i { color: #f59e0b; }
 
-        /* Botones de acción final */
+        /* Botones Acción */
         .review-card-actions { display: flex; gap: 12px; margin-top: 25px; }
         .btn-action { border: none; padding: 8px 20px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: 0.3s; color: white; cursor: pointer;}
         .btn-action:disabled { opacity: 0.7; cursor: not-allowed; }
-        .btn-primary-action { background-color: var(--accent-blue); }
-        .btn-primary-action:hover:not(:disabled) { background-color: #1e3a8a; }
-        .btn-success-action { background-color: #10b981; }
-        .btn-success-action:hover:not(:disabled) { background-color: #059669; }
-        .btn-danger-action { background-color: #ef4444; }
-        .btn-danger-action:hover:not(:disabled) { background-color: #dc2626; }
-        .btn-generate { background-color: #f59e0b; color: white; }
-        .btn-generate:hover:not(:disabled) { background-color: #d97706; }
-
-        @media (max-width: 768px) { .sidebar { display: none; } }
+        .btn-success-action { background-color: #10b981; } .btn-success-action:hover:not(:disabled) { background-color: #059669; }
+        .btn-danger-action { background-color: #ef4444; } .btn-danger-action:hover:not(:disabled) { background-color: #dc2626; }
+        .btn-generate { background-color: #f59e0b; color: white; } .btn-generate:hover:not(:disabled) { background-color: #d97706; }
     </style>
 </head>
 <body>
 
-    <!-- Sidebar Lateral -->
     <aside class="sidebar">
         <div class="sidebar-brand">
             <i class="fa-solid fa-graduation-cap"></i>
-            <div>
-                <b>Blackwell</b>
-                <span>Universidad</span>
-            </div>
+            <div><b>Blackwell</b><span>Universidad</span></div>
         </div>
-
         <nav class="nav-menu">
-            <a href="dashboard.html" class="nav-item">
-                <i class="fa-solid fa-border-all"></i> Dashboard
-            </a>
-            <a href="gestion-docentes.html" class="nav-item">
-                <i class="fa-solid fa-users"></i> Gestión de Docentes
-            </a>
-            <a href="revision-docs.html" class="nav-item active">
-                <i class="fa-regular fa-file-lines"></i> Revisión de Documentos
-            </a>
-            <a href="subir-materiales.html" class="nav-item">
-                <i class="fa-solid fa-upload"></i> Subir Materiales
-            </a>
-            <a href="aprobaciones.html" class="nav-item">
-                <i class="fa-regular fa-circle-check"></i> Aprobaciones
-            </a>
+            <a href="dashboard.html" class="nav-item"><i class="fa-solid fa-border-all"></i> Dashboard</a>
+            <a href="gestion-docentes.html" class="nav-item"><i class="fa-solid fa-users"></i> Gestión de Docentes</a>
+            <a href="revision-docs.html" class="nav-item active"><i class="fa-regular fa-file-lines"></i> Revisión de Documentos</a>
+            <a href="subir-materiales.html" class="nav-item"><i class="fa-solid fa-upload"></i> Subir Materiales</a>
+            <a href="aprobaciones.html" class="nav-item"><i class="fa-regular fa-circle-check"></i> Aprobaciones</a>
         </nav>
-
         <div class="sidebar-footer">
             <div class="user-info">
                 <span>Sesión activa:</span>
                 <b id="sidebar-userid">Cargando...</b>
                 <span class="role-text">Administrativo</span>
             </div>
-            <button class="btn-logout" onclick="logout()">
-                <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
-            </button>
+            <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</button>
         </div>
     </aside>
 
-    <!-- Contenido Principal -->
     <main class="main-wrapper">
         <header>
             <div>
@@ -173,7 +132,6 @@
         </header>
 
         <div class="content-area">
-            
             <h1 class="page-title">Revisión de Documentos</h1>
             <p class="page-subtitle">Revisa y aprueba los documentos subidos por los docentes</p>
 
@@ -184,15 +142,13 @@
                 <button class="btn-filter" data-filter="Aprobado">Aprobados</button>
             </div>
 
-            <!-- Contenedor donde se inyectan dinámicamente las tarjetas -->
+            <!-- Contenedor Dinámico -->
             <div id="review-container">
-                <!-- Loader inicial -->
                 <div class="text-center py-5">
                     <i class="fa-solid fa-spinner fa-spin fa-2x" style="color: var(--accent-blue);"></i>
-                    <p class="mt-2 text-muted">Cargando expedientes...</p>
+                    <p class="mt-2 text-muted">Cargando expedientes desde Google Sheets...</p>
                 </div>
             </div>
-
         </div>
     </main>
 
@@ -203,16 +159,15 @@
         document.addEventListener('DOMContentLoaded', () => {
             const userName = sessionStorage.getItem('userName') || "admin@blackwell.edu";
             document.getElementById('sidebar-userid').innerText = userName;
-            
             loadAdminReviews();
         });
 
-        /* --- 1. FUNCIÓN PARA OBTENER DATOS DEL BACKEND --- */
+        // 1. CARGAR DATOS REALES DEL GOOGLE SHEETS
         async function loadAdminReviews() {
             try {
                 const response = await fetch(GAS_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'get_admin_reviews' }) // <-- Asegúrate que GAS soporte esta acción
+                    body: JSON.stringify({ action: 'get_admin_reviews' })
                 });
                 const result = await response.json();
                 
@@ -220,16 +175,15 @@
                     allTeachersData = result.data;
                     renderReviews("Todos");
                 } else {
-                    showError("No se pudieron cargar los expedientes.");
+                    document.getElementById('review-container').innerHTML = `<div class="alert alert-danger">Error: ${result.message}</div>`;
                 }
             } catch (e) {
-                console.error("Error obteniendo documentos:", e);
-                // ESTO ES SOLO PARA QUE VEAS CÓMO FUNCIONA SI EL BACKEND FALLA O AÚN NO LO TIENES:
-                simulateBackendData();
+                console.error("Error:", e);
+                document.getElementById('review-container').innerHTML = `<div class="alert alert-danger">Error de conexión al obtener los expedientes.</div>`;
             }
         }
 
-        /* --- 2. RENDERIZADO DINÁMICO HTML --- */
+        // 2. DIBUJAR LAS TARJETAS HTML
         function renderReviews(filterParam) {
             const container = document.getElementById('review-container');
             container.innerHTML = '';
@@ -244,35 +198,28 @@
             let htmlContent = '';
 
             filteredData.forEach(docente => {
-                // Seleccionar badge visual según estado
-                let badgeClass = '';
-                let badgeIcon = '';
-                if(docente.estado === 'Pendiente') { badgeClass = 'status-pendiente'; badgeIcon = '<i class="fa-regular fa-clock"></i>'; }
-                else if(docente.estado === 'Aprobado') { badgeClass = 'status-aprobado'; badgeIcon = '<i class="fa-solid fa-check-double"></i>'; }
-                else { badgeClass = 'status-rechazado'; badgeIcon = '<i class="fa-solid fa-xmark"></i>'; }
+                let badgeIcon = docente.estado === 'Pendiente' ? '<i class="fa-regular fa-clock"></i>' : (docente.estado === 'Aprobado' ? '<i class="fa-solid fa-check-double"></i>' : '<i class="fa-solid fa-xmark"></i>');
 
-                // Empezamos la tarjeta
                 let card = `
                 <div class="review-card">
                     <div class="review-header">
                         <div>
                             <h4>${docente.nombre}</h4>
-                            <p>${docente.departamento} (ID: ${docente.id})</p>
+                            <p>ID: ${docente.id}</p>
                         </div>
-                        <span class="status-badge ${badgeClass}">${badgeIcon} ${docente.estado}</span>
-                    </div>
-                `;
+                        <span class="status-badge status-${docente.estado}">${badgeIcon} ${docente.estado}</span>
+                    </div>`;
 
-                // Agregamos los documentos subidos por el docente
-                if(docente.cv_url) card += createDocRow("Curriculum Vitae", "CV", '<i class="fa-regular fa-file-pdf"></i>', docente.cv_url);
-                if(docente.handbook_url) card += createDocRow("Faculty Handbook", "Manual", '<i class="fa-solid fa-book-open"></i>', docente.handbook_url);
+                if(docente.cv_url) card += createDocRow("Curriculum Vitae", "Documento Subido", '<i class="fa-regular fa-file-pdf"></i>', docente.cv_url);
+                if(docente.handbook_url) card += createDocRow("Faculty Handbook", "Manual Firmado", '<i class="fa-solid fa-book-open"></i>', docente.handbook_url);
+                
                 if(docente.diplomas && docente.diplomas.length > 0) {
                     docente.diplomas.forEach(dip => {
-                        card += createDocRow(`Título de ${dip.grado}`, "Diploma", '<i class="fa-regular fa-file-lines"></i>', dip.url);
+                        card += createDocRow(`Título: ${dip.grado}`, dip.rama, '<i class="fa-regular fa-file-lines"></i>', dip.url);
                     });
                 }
 
-                // Generamos los botones/secciones dependiendo del ESTADO
+                // CONTROLES DE APROBACIÓN O GENERACIÓN
                 if(docente.estado === 'Pendiente') {
                     card += `
                     <div class="review-card-actions">
@@ -285,10 +232,9 @@
                     </div>`;
                 } 
                 else if(docente.estado === 'Aprobado') {
-                    // Si está aprobado, verificamos si ya se generaron los Docs .docx
                     if(docente.docs_generados && docente.docs_generados.length > 0) {
                         card += `<div class="generated-docs-section">
-                                    <div class="generated-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Documentos Generados del Docente</div>`;
+                                    <div class="generated-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Documentos Generados por el Sistema</div>`;
                         
                         docente.docs_generados.forEach(genDoc => {
                             card += createDocRow(genDoc.nombre, `Generado el ${genDoc.fecha}`, '<i class="fa-solid fa-file-word"></i>', genDoc.url, "#e0e7ff", "#4f46e5");
@@ -297,28 +243,26 @@
                         card += `</div>
                         <div class="review-card-actions">
                             <button class="btn-action btn-generate" onclick="generateDocs('${docente.id}', this)">
-                                <i class="fa-solid fa-gears"></i> Volver a Generar Docs.
+                                <i class="fa-solid fa-gears"></i> Volver a Generar FORM 402
                             </button>
                         </div>`;
                     } else {
-                        // Está aprobado, pero AÚN no hay documentos generados
                         card += `
                         <div class="review-card-actions">
                             <button class="btn-action btn-generate" onclick="generateDocs('${docente.id}', this)">
-                                <i class="fa-solid fa-file-word"></i> Generar Documentos (.docx)
+                                <i class="fa-solid fa-file-word"></i> Generar Documento (FORM 402)
                             </button>
                         </div>`;
                     }
                 }
                 
-                card += `</div>`; // Cerrar review-card
+                card += `</div>`;
                 htmlContent += card;
             });
 
             container.innerHTML = htmlContent;
         }
 
-        // Función auxiliar para crear filas de documentos repetitivas
         function createDocRow(title, subtitle, iconHtml, url, bgIcon = "#eff6ff", colorIcon = "var(--accent-blue)") {
             if (!url) return '';
             return `
@@ -333,9 +277,8 @@
             </div>`;
         }
 
-        /* --- 3. ACCIÓN: APROBAR O RECHAZAR --- */
+        // 3. ACCIÓN: APROBAR / RECHAZAR
         async function updateDocStatus(docenteId, newStatus, btnElement) {
-            const originalHtml = btnElement.innerHTML;
             btnElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...';
             btnElement.disabled = true;
 
@@ -347,104 +290,69 @@
                 const result = await response.json();
                 
                 if (result.status === 'success') {
-                    // Actualizar estado localmente y re-renderizar
                     const docIndex = allTeachersData.findIndex(t => t.id === docenteId);
                     if(docIndex !== -1) allTeachersData[docIndex].estado = newStatus;
                     renderReviews(document.querySelector('.btn-filter.active').dataset.filter);
-                } else { alert("Hubo un error al actualizar el estado."); }
+                } else { alert("Error al actualizar el estado."); }
             } catch(e) {
-                console.error(e);
-                alert("Simulando acción por falta de conexión..."); 
-                // Simulador local:
-                const docIndex = allTeachersData.findIndex(t => t.id === docenteId);
-                if(docIndex !== -1) allTeachersData[docIndex].estado = newStatus;
-                renderReviews(document.querySelector('.btn-filter.active').dataset.filter);
+                alert("Error de conexión al actualizar el estado.");
+                btnElement.disabled = false;
             }
         }
 
-        /* --- 4. ACCIÓN: GENERAR DOCUMENTOS (.DOCX) --- */
+        // 4. ACCIÓN: GENERAR FORM 402
         async function generateDocs(docenteId, btnElement) {
             const originalHtml = btnElement.innerHTML;
-            btnElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando archivos...';
+            btnElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando FORM 402...';
             btnElement.disabled = true;
 
             try {
                 const response = await fetch(GAS_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'generate_docs', id: docenteId })
+                    body: JSON.stringify({ action: 'generate_document', id: docenteId }) // Llama a tu función real
                 });
                 const result = await response.json();
                 
                 if (result.status === 'success') {
-                    // Actualizar info local
                     const docIndex = allTeachersData.findIndex(t => t.id === docenteId);
                     if(docIndex !== -1) {
-                        allTeachersData[docIndex].docs_generados = result.data.docs_generados; // Actualizar array devuelto
+                        const fechaHoy = new Date().toLocaleDateString('es-ES');
+                        if(!allTeachersData[docIndex].docs_generados) allTeachersData[docIndex].docs_generados = [];
+                        
+                        allTeachersData[docIndex].docs_generados.push({ 
+                            nombre: "Documento_FORM_402.docx", 
+                            fecha: fechaHoy, 
+                            url: result.url 
+                        });
                     }
                     renderReviews(document.querySelector('.btn-filter.active').dataset.filter);
-                    alert("¡Documentos generados con éxito!");
-                } else { alert("Error al generar documentos."); }
-            } catch(e) {
-                console.error(e);
-                alert("Simulando creación de Docs por falta de conexión...");
-                // Simulador local:
-                const docIndex = allTeachersData.findIndex(t => t.id === docenteId);
-                if(docIndex !== -1) {
-                    allTeachersData[docIndex].docs_generados =[
-                        { nombre: "Contrato_Docencia.docx", fecha: new Date().toLocaleDateString(), url: "#" },
-                        { nombre: "Ficha_Registro.docx", fecha: new Date().toLocaleDateString(), url: "#" }
-                    ];
+                    alert("¡Documento generado con éxito!");
+                } else { 
+                    alert("Error: " + (result.message || "No se pudo generar el documento.")); 
+                    btnElement.innerHTML = originalHtml;
+                    btnElement.disabled = false;
                 }
-                renderReviews(document.querySelector('.btn-filter.active').dataset.filter);
+            } catch(e) {
+                alert("Error de conexión al intentar generar el documento.");
+                btnElement.innerHTML = originalHtml;
+                btnElement.disabled = false;
             }
         }
 
-        /* --- FILTROS VISUALES (PESTAÑAS) --- */
+        // Filtros Visuales
         const filterBtns = document.querySelectorAll('.btn-filter');
         filterBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', () => {
                 filterBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 renderReviews(btn.dataset.filter);
             });
         });
 
-        /* --- FUNCIONES MISC --- */
-        function showError(msg) {
-            document.getElementById('review-container').innerHTML = `<div class="alert alert-danger">${msg}</div>`;
-        }
+        // Misc
         function logout() { if(confirm("¿Cerrar sesión?")) { sessionStorage.clear(); window.location.href = "login.html"; } }
         let currentSizeIndex = 1; const sizes =["0.85rem", "1rem", "1.2rem"]; const labels =["Pequeño", "Normal", "Grande"];
         function changeFontSize(direction) { currentSizeIndex += direction; if (currentSizeIndex < 0) currentSizeIndex = 0; if (currentSizeIndex > 2) currentSizeIndex = 2; document.getElementById('fontSizeLabel').innerText = labels[currentSizeIndex]; document.documentElement.style.setProperty('--dynamic-font-size', sizes[currentSizeIndex]); }
-
-        /* SIMULADOR DE DATOS MIENTRAS CONFIGURAS TU GOOGLE APPS SCRIPT */
-
-        function simulateBackendData() {
-            allTeachersData =[
-                {
-                    id: "72635111", nombre: "Dra. Ana López García", departamento: "Base de Datos", estado: "Pendiente",
-                    cv_url: "#", handbook_url: "#", diplomas:[ { grado: "Doctorado", url: "#" }, { grado: "Maestría", url: "#" } ],
-                    docs_generados:[]
-                },
-                {
-                    id: "44556677", nombre: "Prof. Roberto Silva", departamento: "Sistemas Operativos", estado: "Aprobado",
-                    cv_url: "#", handbook_url: null, diplomas:[],
-                    docs_generados:[
-                        { nombre: "Contrato_Docencia_2026.docx", fecha: "10/03/2026", url: "#" },
-                        { nombre: "Ficha_Datos_Personales.docx", fecha: "10/03/2026", url: "#" }
-                    ]
-                },
-                {
-                    id: "99887766", nombre: "Dra. Carmen Ruiz", departamento: "Química Orgánica", estado: "Aprobado",
-                    cv_url: "#", handbook_url: null, diplomas:[ { grado: "Licenciatura", url: "#" } ],
-                    docs_generados: []
-                }
-            ];
-            
-            // Renderizamos los datos simulados por primera vez
-            renderReviews("Todos");
-        }
     </script>
-    
 </body>
 </html>
