@@ -3,12 +3,9 @@
 <head>
     <script>
         // Lógica de protección de ruta adaptada para el rol Administrativo
-        /* 
-        Descomentar para usar en producción:
         if (sessionStorage.getItem('isLoggedIn') !== 'true' || sessionStorage.getItem('userRole') !== 'Administrativo') {
             window.location.href = "login.html";
         }
-        */
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -348,7 +345,7 @@
         </div>
 
         <nav class="nav-menu">
-            <a href="dashboard.html" class="nav-item">
+            <a href="administrativo.html" class="nav-item">
                 <i class="fa-solid fa-border-all"></i> Dashboard
             </a>
             <a href="gestion-docentes.html" class="nav-item active">
