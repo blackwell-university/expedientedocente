@@ -4,7 +4,6 @@
     <script>
         // Lógica de protección de ruta adaptada para el rol Administrativo
         /* 
-        Descomentar para usar en producción:
         if (sessionStorage.getItem('isLoggedIn') !== 'true' || sessionStorage.getItem('userRole') !== 'Administrativo') {
             window.location.href = "login.html";
         }
@@ -33,348 +32,87 @@
             --dynamic-font-size: 1rem;
         }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--main-bg);
-            margin: 0;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        .content-area {
-            font-size: var(--dynamic-font-size);
-            padding: 30px 40px;
-            max-width: 1400px;
-            margin: 0 auto;
-            width: 100%;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--main-bg); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        .content-area { font-size: var(--dynamic-font-size); padding: 30px 40px; max-width: 1400px; margin: 0 auto; width: 100%; }
 
         /* --- HEADER & CONTROLES --- */
-        header {
-            background: white;
-            padding: 15px 40px;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
+        header { background: white; padding: 15px 40px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
         header h2 { font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--text-dark); }
         header p { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
-
-        .font-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: #f1f5f9;
-            padding: 5px 12px;
-            border-radius: 50px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            border: 1px solid #e2e8f0;
-        }
-
-        .btn-font {
-            background: none;
-            border: none;
-            color: var(--text-dark);
-            font-weight: bold;
-            padding: 0 5px;
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-
+        .font-controls { display: flex; align-items: center; gap: 10px; background: #f1f5f9; padding: 5px 12px; border-radius: 50px; font-size: 0.85rem; color: var(--text-muted); border: 1px solid #e2e8f0; }
+        .btn-font { background: none; border: none; color: var(--text-dark); font-weight: bold; padding: 0 5px; cursor: pointer; transition: transform 0.1s; }
         .btn-font:active { transform: scale(1.3); }
         #fontSizeLabel { min-width: 60px; text-align: center; font-weight: 500; }
 
         /* --- SIDEBAR --- */
-        .sidebar {
-            width: 260px;
-            background-color: var(--sidebar-bg);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-            padding: 20px 0;
-        }
-
-        .sidebar-brand {
-            padding: 0 25px 30px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
+        .sidebar { width: 260px; background-color: var(--sidebar-bg); color: white; display: flex; flex-direction: column; flex-shrink: 0; padding: 20px 0; }
+        .sidebar-brand { padding: 0 25px 30px; display: flex; align-items: center; gap: 10px; }
         .sidebar-brand i { font-size: 24px; }
         .sidebar-brand div b { display: block; line-height: 1; font-size: 1.1rem; }
         .sidebar-brand div span { font-size: 0.7rem; opacity: 0.7; }
-
-        .nav-menu {
-            flex-grow: 1;
-            padding: 0 15px;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 15px;
-            color: rgba(255,255,255,0.7);
-            text-decoration: none;
-            font-size: 0.85rem;
-            border-radius: 8px;
-            margin-bottom: 5px;
-            transition: all 0.2s;
-        }
-
-        .nav-item:hover {
-            color: white;
-            background: rgba(255,255,255,0.1);
-        }
-
-        .nav-item.active {
-            background-color: var(--sidebar-active);
-            color: white;
-            font-weight: 500;
-        }
-
-        .sidebar-footer {
-            padding: 20px;
-            background: rgba(0,0,0,0.2);
-            font-size: 0.75rem;
-        }
-
+        .nav-menu { flex-grow: 1; padding: 0 15px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85rem; border-radius: 8px; margin-bottom: 5px; transition: all 0.2s; }
+        .nav-item:hover { color: white; background: rgba(255,255,255,0.1); }
+        .nav-item.active { background-color: var(--sidebar-active); color: white; font-weight: 500; }
+        .sidebar-footer { padding: 20px; background: rgba(0,0,0,0.2); font-size: 0.75rem; }
         .user-info { margin-bottom: 15px; }
         .user-info span { opacity: 0.8; }
         .user-info b { display: block; font-size: 0.85rem; margin-top: 2px; }
         .role-text { color: var(--sidebar-active); font-weight: 600; font-size: 0.8rem; margin-top: 2px; display: block; }
-
-        .btn-logout {
-            width: 100%;
-            background-color: var(--logout-red);
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 6px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: 0.3s;
-        }
+        .btn-logout { width: 100%; background-color: var(--logout-red); color: white; border: none; padding: 10px; border-radius: 6px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
         .btn-logout:hover { background-color: #be123c; }
 
-        /* --- CONTENIDO ESPECÍFICO: REVISIÓN DE DOCUMENTOS --- */
-        .main-wrapper {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-        }
+        /* --- CONTENIDO PRINCIPAL --- */
+        .main-wrapper { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        .page-title { font-size: 1.5rem; font-weight: 700; color: var(--text-dark); margin-bottom: 5px; }
+        .page-subtitle { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px; }
 
-        .page-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 5px;
-        }
-        .page-subtitle {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            margin-bottom: 25px;
-        }
+        /* Filtros */
+        .filter-container { background: white; border-radius: 12px; padding: 15px 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); margin-bottom: 20px; display: flex; gap: 10px; }
+        .btn-filter { background-color: #f1f5f9; color: var(--text-muted); border: none; padding: 8px 20px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; transition: 0.3s; }
+        .btn-filter:hover { background-color: #e2e8f0; }
+        .btn-filter.active { background-color: var(--accent-blue); color: white; }
 
-        /* Filtros / Pestañas */
-        .filter-container {
-            background: white;
-            border-radius: 12px;
-            padding: 15px 25px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            margin-bottom: 20px;
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn-filter {
-            background-color: #f1f5f9;
-            color: var(--text-muted);
-            border: none;
-            padding: 8px 20px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            transition: 0.3s;
-        }
-
-        .btn-filter:hover {
-            background-color: #e2e8f0;
-        }
-
-        .btn-filter.active {
-            background-color: var(--accent-blue);
-            color: white;
-        }
-
-        /* Tarjeta de Revisión */
-        .review-card {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
-            margin-bottom: 20px;
-        }
-
-        .review-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 20px;
-        }
-
-        .review-header h4 {
-            font-size: 1.15rem;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin: 0 0 5px 0;
-        }
-
-        .review-header p {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            margin: 0;
-        }
-
-        .status-badge {
-            padding: 5px 14px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
+        /* Tarjetas de Revisión */
+        .review-card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.03); margin-bottom: 20px; }
+        .review-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+        .review-header h4 { font-size: 1.15rem; font-weight: 700; color: var(--text-dark); margin: 0 0 5px 0; }
+        .review-header p { color: var(--text-muted); font-size: 0.85rem; margin: 0; }
+        .status-badge { padding: 5px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
         .status-pendiente { background-color: #fef9c3; color: #854d0e; }
         .status-aprobado { background-color: #dcfce7; color: #166534; }
+        .status-rechazado { background-color: #fee2e2; color: #b91c1c; }
 
-        /* Lista de Documentos */
-        .document-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 0;
-            border-bottom: 1px solid #f1f5f9;
-        }
-        
-        .document-item:last-child {
-            border-bottom: none;
-        }
+        /* Documentos */
+        .document-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #f1f5f9; }
+        .document-item:last-child { border-bottom: none; }
+        .doc-info { display: flex; align-items: center; gap: 15px; }
+        .doc-icon { color: var(--accent-blue); font-size: 1.2rem; background-color: #eff6ff; padding: 10px; border-radius: 8px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
+        .doc-info b { display: block; font-size: 0.9rem; color: var(--text-dark); margin-bottom: 2px; }
+        .doc-info span { display: block; font-size: 0.75rem; color: var(--text-muted); }
+        .doc-actions { display: flex; gap: 15px; }
+        .doc-actions a { color: var(--sidebar-active); font-size: 1rem; cursor: pointer; transition: color 0.2s; text-decoration: none; }
+        .doc-actions a:hover { color: var(--accent-blue); }
 
-        .doc-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .doc-icon {
-            color: var(--accent-blue);
-            font-size: 1.2rem;
-            background-color: #eff6ff;
-            padding: 10px;
-            border-radius: 8px;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .doc-info b {
-            display: block;
-            font-size: 0.9rem;
-            color: var(--text-dark);
-            margin-bottom: 2px;
-        }
-
-        .doc-info span {
-            display: block;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        .doc-actions {
-            display: flex;
-            gap: 15px;
-        }
-
-        .doc-actions button {
-            background: none;
-            border: none;
-            color: var(--sidebar-active);
-            font-size: 1rem;
-            cursor: pointer;
-            transition: color 0.2s;
-            padding: 0;
-        }
-
-        .doc-actions button:hover { color: var(--accent-blue); }
-
-        /* Documentos Generados por el Sistema */
-        .generated-docs-section {
-            background-color: #f8fafc;
-            border: 1px dashed #cbd5e1;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-
-        .generated-title {
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        /* Generados */
+        .generated-docs-section { background-color: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 20px; margin-top: 20px; }
+        .generated-title { font-size: 0.9rem; font-weight: 700; color: var(--text-dark); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
         .generated-title i { color: #f59e0b; }
 
-        /* Acciones Finales (Botones de la tarjeta) */
-        .review-card-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 25px;
-        }
-
-        .btn-action {
-            border: none;
-            padding: 8px 20px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: 0.3s;
-            color: white;
-        }
-
+        /* Botones de acción final */
+        .review-card-actions { display: flex; gap: 12px; margin-top: 25px; }
+        .btn-action { border: none; padding: 8px 20px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: 0.3s; color: white; cursor: pointer;}
+        .btn-action:disabled { opacity: 0.7; cursor: not-allowed; }
         .btn-primary-action { background-color: var(--accent-blue); }
-        .btn-primary-action:hover { background-color: #1e3a8a; }
-
+        .btn-primary-action:hover:not(:disabled) { background-color: #1e3a8a; }
         .btn-success-action { background-color: #10b981; }
-        .btn-success-action:hover { background-color: #059669; }
-
+        .btn-success-action:hover:not(:disabled) { background-color: #059669; }
         .btn-danger-action { background-color: #ef4444; }
-        .btn-danger-action:hover { background-color: #dc2626; }
-
+        .btn-danger-action:hover:not(:disabled) { background-color: #dc2626; }
         .btn-generate { background-color: #f59e0b; color: white; }
-        .btn-generate:hover { background-color: #d97706; }
+        .btn-generate:hover:not(:disabled) { background-color: #d97706; }
 
-        @media (max-width: 768px) {
-            .sidebar { display: none; }
-        }
+        @media (max-width: 768px) { .sidebar { display: none; } }
     </style>
 </head>
 <body>
@@ -410,7 +148,7 @@
         <div class="sidebar-footer">
             <div class="user-info">
                 <span>Sesión activa:</span>
-                <b id="sidebar-userid">admin@blackwell.edu</b>
+                <b id="sidebar-userid">Cargando...</b>
                 <span class="role-text">Administrativo</span>
             </div>
             <button class="btn-logout" onclick="logout()">
@@ -441,178 +179,17 @@
 
             <!-- Filtros -->
             <div class="filter-container">
-                <button class="btn-filter active">Todos</button>
-                <button class="btn-filter">Pendientes</button>
-                <button class="btn-filter">Aprobados</button>
+                <button class="btn-filter active" data-filter="Todos">Todos</button>
+                <button class="btn-filter" data-filter="Pendiente">Pendientes</button>
+                <button class="btn-filter" data-filter="Aprobado">Aprobados</button>
             </div>
 
-            <!-- TARJETA 1: PENDIENTE DE REVISIÓN (Como la imagen) -->
-            <div class="review-card">
-                <div class="review-header">
-                    <div>
-                        <h4>Dra. Ana López García</h4>
-                        <p>Base de Datos</p>
-                    </div>
-                    <span class="status-badge status-pendiente"><i class="fa-regular fa-clock"></i> Pendiente</span>
-                </div>
-
-                <div class="document-item">
-                    <div class="doc-info">
-                        <div class="doc-icon"><i class="fa-regular fa-file-pdf"></i></div>
-                        <div>
-                            <b>Curriculum Vitae</b>
-                            <span>CV</span>
-                        </div>
-                    </div>
-                    <div class="doc-actions">
-                        <button title="Ver"><i class="fa-regular fa-eye"></i></button>
-                        <button title="Descargar"><i class="fa-solid fa-download"></i></button>
-                    </div>
-                </div>
-
-                <div class="document-item">
-                    <div class="doc-info">
-                        <div class="doc-icon"><i class="fa-regular fa-file-lines"></i></div>
-                        <div>
-                            <b>Título de Doctorado</b>
-                            <span>Diploma</span>
-                        </div>
-                    </div>
-                    <div class="doc-actions">
-                        <button title="Ver"><i class="fa-regular fa-eye"></i></button>
-                        <button title="Descargar"><i class="fa-solid fa-download"></i></button>
-                    </div>
-                </div>
-
-                <div class="document-item">
-                    <div class="doc-info">
-                        <div class="doc-icon"><i class="fa-regular fa-file-lines"></i></div>
-                        <div>
-                            <b>Certificados</b>
-                            <span>Certificado</span>
-                        </div>
-                    </div>
-                    <div class="doc-actions">
-                        <button title="Ver"><i class="fa-regular fa-eye"></i></button>
-                        <button title="Descargar"><i class="fa-solid fa-download"></i></button>
-                    </div>
-                </div>
-
-                <!-- Botones de Acción (Pendiente) -->
-                <div class="review-card-actions">
-                    <button class="btn-action btn-primary-action"><i class="fa-regular fa-eye"></i> Revisar Expediente</button>
-                    <button class="btn-action btn-success-action"><i class="fa-regular fa-circle-check"></i> Aprobar</button>
-                    <button class="btn-action btn-danger-action"><i class="fa-regular fa-circle-xmark"></i> Rechazar</button>
-                </div>
-            </div>
-
-            <!-- TARJETA 2: APROBADO CON GENERACIÓN DE DOCUMENTOS -->
-            <div class="review-card">
-                <div class="review-header">
-                    <div>
-                        <h4>Prof. Roberto Silva</h4>
-                        <p>Sistemas Operativos</p>
-                    </div>
-                    <span class="status-badge status-aprobado"><i class="fa-solid fa-check-double"></i> Aprobado</span>
-                </div>
-
-                <!-- Documentos Subidos (Contraídos o normales) -->
-                <div class="document-item">
-                    <div class="doc-info">
-                        <div class="doc-icon" style="background-color: #f1f5f9; color:#94a3b8;"><i class="fa-regular fa-file-pdf"></i></div>
-                        <div>
-                            <b>CV Actualizado</b>
-                            <span>Aprobado por sistema</span>
-                        </div>
-                    </div>
-                    <div class="doc-actions">
-                        <button title="Ver"><i class="fa-regular fa-eye"></i></button>
-                        <button title="Descargar"><i class="fa-solid fa-download"></i></button>
-                    </div>
-                </div>
-
-                <!-- SECCIÓN DE DOCUMENTOS GENERADOS -->
-                <div class="generated-docs-section">
-                    <div class="generated-title">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> Documentos Generados del Docente
-                    </div>
-                    
-                    <div class="document-item" style="border-bottom: 1px solid #e2e8f0; padding: 10px 0;">
-                        <div class="doc-info">
-                            <div class="doc-icon" style="background-color: #e0e7ff; color: #4f46e5;">
-                                <i class="fa-solid fa-file-word"></i>
-                            </div>
-                            <div>
-                                <b>Contrato_Docencia_2026.docx</b>
-                                <span>Generado el 10/03/2026</span>
-                            </div>
-                        </div>
-                        <div class="doc-actions">
-                            <button title="Ver"><i class="fa-regular fa-eye"></i></button>
-                            <button title="Descargar"><i class="fa-solid fa-download"></i></button>
-                        </div>
-                    </div>
-
-                    <div class="document-item" style="padding: 10px 0 0 0;">
-                        <div class="doc-info">
-                            <div class="doc-icon" style="background-color: #e0e7ff; color: #4f46e5;">
-                                <i class="fa-solid fa-file-word"></i>
-                            </div>
-                            <div>
-                                <b>Ficha_Datos_Personales.docx</b>
-                                <span>Generado el 10/03/2026</span>
-                            </div>
-                        </div>
-                        <div class="doc-actions">
-                            <button title="Ver"><i class="fa-regular fa-eye"></i></button>
-                            <button title="Descargar"><i class="fa-solid fa-download"></i></button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Botones de Acción (Aprobado) -->
-                <div class="review-card-actions">
-                    <button class="btn-action btn-primary-action"><i class="fa-regular fa-eye"></i> Ver Expediente</button>
-                    
-                    <!-- BOTÓN PARA GENERAR O REGENERAR DOCUMENTOS -->
-                    <button class="btn-action btn-generate">
-                        <i class="fa-solid fa-gears"></i> Volver a Generar Docs.
-                    </button>
-                </div>
-            </div>
-
-            <!-- TARJETA 3: APROBADO PERO SIN DOCUMENTOS GENERADOS AÚN -->
-            <div class="review-card">
-                <div class="review-header">
-                    <div>
-                        <h4>Dra. Carmen Ruiz</h4>
-                        <p>Química Orgánica</p>
-                    </div>
-                    <span class="status-badge status-aprobado"><i class="fa-solid fa-check-double"></i> Aprobado</span>
-                </div>
-
-                <div class="document-item">
-                    <div class="doc-info">
-                        <div class="doc-icon"><i class="fa-regular fa-file-pdf"></i></div>
-                        <div>
-                            <b>Curriculum Vitae</b>
-                            <span>CV</span>
-                        </div>
-                    </div>
-                    <div class="doc-actions">
-                        <button title="Ver"><i class="fa-regular fa-eye"></i></button>
-                        <button title="Descargar"><i class="fa-solid fa-download"></i></button>
-                    </div>
-                </div>
-
-                <!-- Botones de Acción (Aprobado pero sin procesar docx) -->
-                <div class="review-card-actions">
-                    <button class="btn-action btn-primary-action"><i class="fa-regular fa-eye"></i> Ver Expediente</button>
-                    
-                    <!-- BOTÓN DE GENERAR DOCUMENTOS INICIAL -->
-                    <button class="btn-action btn-generate">
-                        <i class="fa-solid fa-file-word"></i> Generar Documentos (.docx)
-                    </button>
+            <!-- Contenedor donde se inyectan dinámicamente las tarjetas -->
+            <div id="review-container">
+                <!-- Loader inicial -->
+                <div class="text-center py-5">
+                    <i class="fa-solid fa-spinner fa-spin fa-2x" style="color: var(--accent-blue);"></i>
+                    <p class="mt-2 text-muted">Cargando expedientes...</p>
                 </div>
             </div>
 
@@ -620,39 +197,252 @@
     </main>
 
     <script>
-        function logout() {
-            if(confirm("¿Estás seguro que deseas cerrar sesión?")) {
-                sessionStorage.clear();
-                window.location.href = "login.html";
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
+        let allTeachersData =[]; 
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const userName = sessionStorage.getItem('userName') || "admin@blackwell.edu";
+            document.getElementById('sidebar-userid').innerText = userName;
+            
+            loadAdminReviews();
+        });
+
+        /* --- 1. FUNCIÓN PARA OBTENER DATOS DEL BACKEND --- */
+        async function loadAdminReviews() {
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'get_admin_reviews' }) // <-- Asegúrate que GAS soporte esta acción
+                });
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    allTeachersData = result.data;
+                    renderReviews("Todos");
+                } else {
+                    showError("No se pudieron cargar los expedientes.");
+                }
+            } catch (e) {
+                console.error("Error obteniendo documentos:", e);
+                // ESTO ES SOLO PARA QUE VEAS CÓMO FUNCIONA SI EL BACKEND FALLA O AÚN NO LO TIENES:
+                simulateBackendData();
             }
         }
 
-        // Simulación visual de los filtros
+        /* --- 2. RENDERIZADO DINÁMICO HTML --- */
+        function renderReviews(filterParam) {
+            const container = document.getElementById('review-container');
+            container.innerHTML = '';
+
+            const filteredData = allTeachersData.filter(t => filterParam === "Todos" || t.estado === filterParam);
+
+            if (filteredData.length === 0) {
+                container.innerHTML = `<div class="alert alert-secondary text-center">No hay expedientes para mostrar en esta categoría.</div>`;
+                return;
+            }
+
+            let htmlContent = '';
+
+            filteredData.forEach(docente => {
+                // Seleccionar badge visual según estado
+                let badgeClass = '';
+                let badgeIcon = '';
+                if(docente.estado === 'Pendiente') { badgeClass = 'status-pendiente'; badgeIcon = '<i class="fa-regular fa-clock"></i>'; }
+                else if(docente.estado === 'Aprobado') { badgeClass = 'status-aprobado'; badgeIcon = '<i class="fa-solid fa-check-double"></i>'; }
+                else { badgeClass = 'status-rechazado'; badgeIcon = '<i class="fa-solid fa-xmark"></i>'; }
+
+                // Empezamos la tarjeta
+                let card = `
+                <div class="review-card">
+                    <div class="review-header">
+                        <div>
+                            <h4>${docente.nombre}</h4>
+                            <p>${docente.departamento} (ID: ${docente.id})</p>
+                        </div>
+                        <span class="status-badge ${badgeClass}">${badgeIcon} ${docente.estado}</span>
+                    </div>
+                `;
+
+                // Agregamos los documentos subidos por el docente
+                if(docente.cv_url) card += createDocRow("Curriculum Vitae", "CV", '<i class="fa-regular fa-file-pdf"></i>', docente.cv_url);
+                if(docente.handbook_url) card += createDocRow("Faculty Handbook", "Manual", '<i class="fa-solid fa-book-open"></i>', docente.handbook_url);
+                if(docente.diplomas && docente.diplomas.length > 0) {
+                    docente.diplomas.forEach(dip => {
+                        card += createDocRow(`Título de ${dip.grado}`, "Diploma", '<i class="fa-regular fa-file-lines"></i>', dip.url);
+                    });
+                }
+
+                // Generamos los botones/secciones dependiendo del ESTADO
+                if(docente.estado === 'Pendiente') {
+                    card += `
+                    <div class="review-card-actions">
+                        <button class="btn-action btn-success-action" onclick="updateDocStatus('${docente.id}', 'Aprobado', this)">
+                            <i class="fa-regular fa-circle-check"></i> Aprobar
+                        </button>
+                        <button class="btn-action btn-danger-action" onclick="updateDocStatus('${docente.id}', 'Rechazado', this)">
+                            <i class="fa-regular fa-circle-xmark"></i> Rechazar
+                        </button>
+                    </div>`;
+                } 
+                else if(docente.estado === 'Aprobado') {
+                    // Si está aprobado, verificamos si ya se generaron los Docs .docx
+                    if(docente.docs_generados && docente.docs_generados.length > 0) {
+                        card += `<div class="generated-docs-section">
+                                    <div class="generated-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Documentos Generados del Docente</div>`;
+                        
+                        docente.docs_generados.forEach(genDoc => {
+                            card += createDocRow(genDoc.nombre, `Generado el ${genDoc.fecha}`, '<i class="fa-solid fa-file-word"></i>', genDoc.url, "#e0e7ff", "#4f46e5");
+                        });
+                        
+                        card += `</div>
+                        <div class="review-card-actions">
+                            <button class="btn-action btn-generate" onclick="generateDocs('${docente.id}', this)">
+                                <i class="fa-solid fa-gears"></i> Volver a Generar Docs.
+                            </button>
+                        </div>`;
+                    } else {
+                        // Está aprobado, pero AÚN no hay documentos generados
+                        card += `
+                        <div class="review-card-actions">
+                            <button class="btn-action btn-generate" onclick="generateDocs('${docente.id}', this)">
+                                <i class="fa-solid fa-file-word"></i> Generar Documentos (.docx)
+                            </button>
+                        </div>`;
+                    }
+                }
+                
+                card += `</div>`; // Cerrar review-card
+                htmlContent += card;
+            });
+
+            container.innerHTML = htmlContent;
+        }
+
+        // Función auxiliar para crear filas de documentos repetitivas
+        function createDocRow(title, subtitle, iconHtml, url, bgIcon = "#eff6ff", colorIcon = "var(--accent-blue)") {
+            if (!url) return '';
+            return `
+            <div class="document-item">
+                <div class="doc-info">
+                    <div class="doc-icon" style="background-color: ${bgIcon}; color: ${colorIcon};">${iconHtml}</div>
+                    <div><b>${title}</b><span>${subtitle}</span></div>
+                </div>
+                <div class="doc-actions">
+                    <a href="${url}" target="_blank" title="Ver / Descargar"><i class="fa-solid fa-download"></i></a>
+                </div>
+            </div>`;
+        }
+
+        /* --- 3. ACCIÓN: APROBAR O RECHAZAR --- */
+        async function updateDocStatus(docenteId, newStatus, btnElement) {
+            const originalHtml = btnElement.innerHTML;
+            btnElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...';
+            btnElement.disabled = true;
+
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'update_status', id: docenteId, status: newStatus })
+                });
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    // Actualizar estado localmente y re-renderizar
+                    const docIndex = allTeachersData.findIndex(t => t.id === docenteId);
+                    if(docIndex !== -1) allTeachersData[docIndex].estado = newStatus;
+                    renderReviews(document.querySelector('.btn-filter.active').dataset.filter);
+                } else { alert("Hubo un error al actualizar el estado."); }
+            } catch(e) {
+                console.error(e);
+                alert("Simulando acción por falta de conexión..."); 
+                // Simulador local:
+                const docIndex = allTeachersData.findIndex(t => t.id === docenteId);
+                if(docIndex !== -1) allTeachersData[docIndex].estado = newStatus;
+                renderReviews(document.querySelector('.btn-filter.active').dataset.filter);
+            }
+        }
+
+        /* --- 4. ACCIÓN: GENERAR DOCUMENTOS (.DOCX) --- */
+        async function generateDocs(docenteId, btnElement) {
+            const originalHtml = btnElement.innerHTML;
+            btnElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando archivos...';
+            btnElement.disabled = true;
+
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'generate_docs', id: docenteId })
+                });
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    // Actualizar info local
+                    const docIndex = allTeachersData.findIndex(t => t.id === docenteId);
+                    if(docIndex !== -1) {
+                        allTeachersData[docIndex].docs_generados = result.data.docs_generados; // Actualizar array devuelto
+                    }
+                    renderReviews(document.querySelector('.btn-filter.active').dataset.filter);
+                    alert("¡Documentos generados con éxito!");
+                } else { alert("Error al generar documentos."); }
+            } catch(e) {
+                console.error(e);
+                alert("Simulando creación de Docs por falta de conexión...");
+                // Simulador local:
+                const docIndex = allTeachersData.findIndex(t => t.id === docenteId);
+                if(docIndex !== -1) {
+                    allTeachersData[docIndex].docs_generados =[
+                        { nombre: "Contrato_Docencia.docx", fecha: new Date().toLocaleDateString(), url: "#" },
+                        { nombre: "Ficha_Registro.docx", fecha: new Date().toLocaleDateString(), url: "#" }
+                    ];
+                }
+                renderReviews(document.querySelector('.btn-filter.active').dataset.filter);
+            }
+        }
+
+        /* --- FILTROS VISUALES (PESTAÑAS) --- */
         const filterBtns = document.querySelectorAll('.btn-filter');
         filterBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
+            btn.addEventListener('click', (e) => {
                 filterBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
+                renderReviews(btn.dataset.filter);
             });
         });
 
-        // NAVEGACIÓN Y TAMAÑO
-        const navItems = document.querySelectorAll('.nav-item');
-        navItems.forEach(item => { 
-            item.addEventListener('click', (e) => { 
-                if(item.getAttribute('href') === '#') e.preventDefault(); 
-            }); 
-        });
-        
-        let currentSizeIndex = 1; 
-        const sizes =["0.85rem", "1rem", "1.2rem"];
-        const labels =["Pequeño", "Normal", "Grande"];
-        function changeFontSize(direction) {
-            currentSizeIndex += direction;
-            if (currentSizeIndex < 0) currentSizeIndex = 0;
-            if (currentSizeIndex > 2) currentSizeIndex = 2;
-            document.getElementById('fontSizeLabel').innerText = labels[currentSizeIndex];
-            document.documentElement.style.setProperty('--dynamic-font-size', sizes[currentSizeIndex]);
+        /* --- FUNCIONES MISC --- */
+        function showError(msg) {
+            document.getElementById('review-container').innerHTML = `<div class="alert alert-danger">${msg}</div>`;
+        }
+        function logout() { if(confirm("¿Cerrar sesión?")) { sessionStorage.clear(); window.location.href = "login.html"; } }
+        let currentSizeIndex = 1; const sizes =["0.85rem", "1rem", "1.2rem"]; const labels =["Pequeño", "Normal", "Grande"];
+        function changeFontSize(direction) { currentSizeIndex += direction; if (currentSizeIndex < 0) currentSizeIndex = 0; if (currentSizeIndex > 2) currentSizeIndex = 2; document.getElementById('fontSizeLabel').innerText = labels[currentSizeIndex]; document.documentElement.style.setProperty('--dynamic-font-size', sizes[currentSizeIndex]); }
+
+        /* SIMULADOR DE DATOS MIENTRAS CONFIGURAS TU GOOGLE APPS SCRIPT */
+
+        function simulateBackendData() {
+            allTeachersData =[
+                {
+                    id: "72635111", nombre: "Dra. Ana López García", departamento: "Base de Datos", estado: "Pendiente",
+                    cv_url: "#", handbook_url: "#", diplomas:[ { grado: "Doctorado", url: "#" }, { grado: "Maestría", url: "#" } ],
+                    docs_generados:[]
+                },
+                {
+                    id: "44556677", nombre: "Prof. Roberto Silva", departamento: "Sistemas Operativos", estado: "Aprobado",
+                    cv_url: "#", handbook_url: null, diplomas:[],
+                    docs_generados:[
+                        { nombre: "Contrato_Docencia_2026.docx", fecha: "10/03/2026", url: "#" },
+                        { nombre: "Ficha_Datos_Personales.docx", fecha: "10/03/2026", url: "#" }
+                    ]
+                },
+                {
+                    id: "99887766", nombre: "Dra. Carmen Ruiz", departamento: "Química Orgánica", estado: "Aprobado",
+                    cv_url: "#", handbook_url: null, diplomas:[ { grado: "Licenciatura", url: "#" } ],
+                    docs_generados: []
+                }
+            ];
+            
+            // Renderizamos los datos simulados por primera vez
+            renderReviews("Todos");
         }
     </script>
     
