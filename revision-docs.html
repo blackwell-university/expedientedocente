@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script>
+        // Lógica de protección de ruta adaptada para el rol Administrativo
+        /* 
+        Descomentar para usar en producción:
+        if (sessionStorage.getItem('isLoggedIn') !== 'true' || sessionStorage.getItem('userRole') !== 'Administrativo') {
+            window.location.href = "login.html";
+        }
+        */
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revisión de Documentos - Universidad Blackwell</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --sidebar-bg: #1e3a8a;
+            --sidebar-active: #3b82f6;
+            --main-bg: #f8fafc;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --accent-blue: #223f93;
+            --logout-red: #e11d48;
+
+            --dynamic-font-size: 1rem;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--main-bg);
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .content-area {
+            font-size: var(--dynamic-font-size);
+            padding: 30px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* --- HEADER & CONTROLES --- */
+        header {
+            background: white;
+            padding: 15px 40px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h2 { font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--text-dark); }
+        header p { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
+
+        .font-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f1f5f9;
+            padding: 5px 12px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-font {
+            background: none;
+            border: none;
+            color: var(--text-dark);
+            font-weight: bold;
+            padding: 0 5px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .btn-font:active { transform: scale(1.3); }
+        #fontSizeLabel { min-width: 60px; text-align: center; font-weight: 500; }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            padding: 20px 0;
+        }
+
+        .sidebar-brand {
+            padding: 0 25px 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-brand i { font-size: 24px; }
+        .sidebar-brand div b { display: block; line-height: 1; font-size: 1.1rem; }
+        .sidebar-brand div span { font-size: 0.7rem; opacity: 0.7; }
+
+        .nav-menu {
+            flex-grow: 1;
+            padding: 0 15px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 0.85rem;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover {
+            color: white;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .nav-item.active {
+            background-color: var(--sidebar-active);
+            color: white;
+            font-weight: 500;
+        }
+
+        .sidebar-footer {
+            padding: 20px;
+            background: rgba(0,0,0,0.2);
+            font-size: 0.75rem;
+        }
+
+        .user-info { margin-bottom: 15px; }
+        .user-info span { opacity: 0.8; }
+        .user-info b { display: block; font-size: 0.85rem; margin-top: 2px; }
+        .role-text { color: var(--sidebar-active); font-weight: 600; font-size: 0.8rem; margin-top: 2px; display: block; }
+
+        .btn-logout {
+            width: 100%;
+            background-color: var(--logout-red);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+        .btn-logout:hover { background-color: #be123c; }
+
+        /* --- CONTENIDO ESPECÍFICO: REVISIÓN DE DOCUMENTOS --- */
+        .main-wrapper {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 5px;
+        }
+        .page-subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+        }
+
+        /* Filtros / Pestañas */
+        .filter-container {
+            background: white;
+            border-radius: 12px;
+            padding: 15px 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-filter {
+            background-color: #f1f5f9;
+            color: var(--text-muted);
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .btn-filter:hover {
+            background-color: #e2e8f0;
+        }
+
+        .btn-filter.active {
+            background-color: var(--accent-blue);
+            color: white;
+        }
+
+        /* Tarjeta de Revisión */
+        .review-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+            margin-bottom: 20px;
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .review-header h4 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin: 0 0 5px 0;
+        }
+
+        .review-header p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin: 0;
+        }
+
+        .status-badge {
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .status-pendiente { background-color: #fef9c3; color: #854d0e; }
+        .status-aprobado { background-color: #dcfce7; color: #166534; }
+
+        /* Lista de Documentos */
+        .document-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .document-item:last-child {
+            border-bottom: none;
+        }
+
+        .doc-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .doc-icon {
+            color: var(--accent-blue);
+            font-size: 1.2rem;
+            background-color: #eff6ff;
+            padding: 10px;
+            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .doc-info b {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            margin-bottom: 2px;
+        }
+
+        .doc-info span {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .doc-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .doc-actions button {
+            background: none;
+            border: none;
+            color: var(--sidebar-active);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: color 0.2s;
+            padding: 0;
+        }
+
+        .doc-actions button:hover { color: var(--accent-blue); }
+
+        /* Documentos Generados por el Sistema */
+        .generated-docs-section {
+            background-color: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .generated-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .generated-title i { color: #f59e0b; }
+
+        /* Acciones Finales (Botones de la tarjeta) */
+        .review-card-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .btn-action {
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+            color: white;
+        }
+
+        .btn-primary-action { background-color: var(--accent-blue); }
+        .btn-primary-action:hover { background-color: #1e3a8a; }
+
+        .btn-success-action { background-color: #10b981; }
+        .btn-success-action:hover { background-color: #059669; }
+
+        .btn-danger-action { background-color: #ef4444; }
+        .btn-danger-action:hover { background-color: #dc2626; }
+
+        .btn-generate { background-color: #f59e0b; color: white; }
+        .btn-generate:hover { background-color: #d97706; }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Lateral -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <i class="fa-solid fa-graduation-cap"></i>
+            <div>
+                <b>Blackwell</b>
+                <span>Universidad</span>
+            </div>
+        </div>
+
+        <nav class="nav-menu">
+            <a href="dashboard.html" class="nav-item">
+                <i class="fa-solid fa-border-all"></i> Dashboard
+            </a>
+            <a href="gestion-docentes.html" class="nav-item">
+                <i class="fa-solid fa-users"></i> Gestión de Docentes
+            </a>
+            <a href="revision-docs.html" class="nav-item active">
+                <i class="fa-regular fa-file-lines"></i> Revisión de Documentos
+            </a>
+            <a href="subir-materiales.html" class="nav-item">
+                <i class="fa-solid fa-upload"></i> Subir Materiales
+            </a>
+            <a href="aprobaciones.html" class="nav-item">
+                <i class="fa-regular fa-circle-check"></i> Aprobaciones
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <span>Sesión activa:</span>
+                <b id="sidebar-userid">admin@blackwell.edu</b>
+                <span class="role-text">Administrativo</span>
+            </div>
+            <button class="btn-logout" onclick="logout()">
+                <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
+            </button>
+        </div>
+    </aside>
+
+    <!-- Contenido Principal -->
+    <main class="main-wrapper">
+        <header>
+            <div>
+                <h2>Sistema de Gestión de Expedientes</h2>
+                <p>Panel Administrativo</p>
+            </div>
+            <div class="font-controls">
+                <i class="fa-solid fa-text-height"></i>
+                <button onclick="changeFontSize(-1)" class="btn-font">—</button>
+                <span id="fontSizeLabel">Normal</span>
+                <button onclick="changeFontSize(1)" class="btn-font">+</button>
+            </div>
+        </header>
+
+        <div class="content-area">
+            
+            <h1 class="page-title">Revisión de Documentos</h1>
+            <p class="page-subtitle">Revisa y aprueba los documentos subidos por los docentes</p>
+
+            <!-- Filtros -->
+            <div class="filter-container">
+                <button class="btn-filter active">Todos</button>
+                <button class="btn-filter">Pendientes</button>
+                <button class="btn-filter">Aprobados</button>
+            </div>
+
+            <!-- TARJETA 1: PENDIENTE DE REVISIÓN (Como la imagen) -->
+            <div class="review-card">
+                <div class="review-header">
+                    <div>
+                        <h4>Dra. Ana López García</h4>
+                        <p>Base de Datos</p>
+                    </div>
+                    <span class="status-badge status-pendiente"><i class="fa-regular fa-clock"></i> Pendiente</span>
+                </div>
+
+                <div class="document-item">
+                    <div class="doc-info">
+                        <div class="doc-icon"><i class="fa-regular fa-file-pdf"></i></div>
+                        <div>
+                            <b>Curriculum Vitae</b>
+                            <span>CV</span>
+                        </div>
+                    </div>
+                    <div class="doc-actions">
+                        <button title="Ver"><i class="fa-regular fa-eye"></i></button>
+                        <button title="Descargar"><i class="fa-solid fa-download"></i></button>
+                    </div>
+                </div>
+
+                <div class="document-item">
+                    <div class="doc-info">
+                        <div class="doc-icon"><i class="fa-regular fa-file-lines"></i></div>
+                        <div>
+                            <b>Título de Doctorado</b>
+                            <span>Diploma</span>
+                        </div>
+                    </div>
+                    <div class="doc-actions">
+                        <button title="Ver"><i class="fa-regular fa-eye"></i></button>
+                        <button title="Descargar"><i class="fa-solid fa-download"></i></button>
+                    </div>
+                </div>
+
+                <div class="document-item">
+                    <div class="doc-info">
+                        <div class="doc-icon"><i class="fa-regular fa-file-lines"></i></div>
+                        <div>
+                            <b>Certificados</b>
+                            <span>Certificado</span>
+                        </div>
+                    </div>
+                    <div class="doc-actions">
+                        <button title="Ver"><i class="fa-regular fa-eye"></i></button>
+                        <button title="Descargar"><i class="fa-solid fa-download"></i></button>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción (Pendiente) -->
+                <div class="review-card-actions">
+                    <button class="btn-action btn-primary-action"><i class="fa-regular fa-eye"></i> Revisar Expediente</button>
+                    <button class="btn-action btn-success-action"><i class="fa-regular fa-circle-check"></i> Aprobar</button>
+                    <button class="btn-action btn-danger-action"><i class="fa-regular fa-circle-xmark"></i> Rechazar</button>
+                </div>
+            </div>
+
+            <!-- TARJETA 2: APROBADO CON GENERACIÓN DE DOCUMENTOS -->
+            <div class="review-card">
+                <div class="review-header">
+                    <div>
+                        <h4>Prof. Roberto Silva</h4>
+                        <p>Sistemas Operativos</p>
+                    </div>
+                    <span class="status-badge status-aprobado"><i class="fa-solid fa-check-double"></i> Aprobado</span>
+                </div>
+
+                <!-- Documentos Subidos (Contraídos o normales) -->
+                <div class="document-item">
+                    <div class="doc-info">
+                        <div class="doc-icon" style="background-color: #f1f5f9; color:#94a3b8;"><i class="fa-regular fa-file-pdf"></i></div>
+                        <div>
+                            <b>CV Actualizado</b>
+                            <span>Aprobado por sistema</span>
+                        </div>
+                    </div>
+                    <div class="doc-actions">
+                        <button title="Ver"><i class="fa-regular fa-eye"></i></button>
+                        <button title="Descargar"><i class="fa-solid fa-download"></i></button>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN DE DOCUMENTOS GENERADOS -->
+                <div class="generated-docs-section">
+                    <div class="generated-title">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Documentos Generados del Docente
+                    </div>
+                    
+                    <div class="document-item" style="border-bottom: 1px solid #e2e8f0; padding: 10px 0;">
+                        <div class="doc-info">
+                            <div class="doc-icon" style="background-color: #e0e7ff; color: #4f46e5;">
+                                <i class="fa-solid fa-file-word"></i>
+                            </div>
+                            <div>
+                                <b>Contrato_Docencia_2026.docx</b>
+                                <span>Generado el 10/03/2026</span>
+                            </div>
+                        </div>
+                        <div class="doc-actions">
+                            <button title="Ver"><i class="fa-regular fa-eye"></i></button>
+                            <button title="Descargar"><i class="fa-solid fa-download"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="document-item" style="padding: 10px 0 0 0;">
+                        <div class="doc-info">
+                            <div class="doc-icon" style="background-color: #e0e7ff; color: #4f46e5;">
+                                <i class="fa-solid fa-file-word"></i>
+                            </div>
+                            <div>
+                                <b>Ficha_Datos_Personales.docx</b>
+                                <span>Generado el 10/03/2026</span>
+                            </div>
+                        </div>
+                        <div class="doc-actions">
+                            <button title="Ver"><i class="fa-regular fa-eye"></i></button>
+                            <button title="Descargar"><i class="fa-solid fa-download"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción (Aprobado) -->
+                <div class="review-card-actions">
+                    <button class="btn-action btn-primary-action"><i class="fa-regular fa-eye"></i> Ver Expediente</button>
+                    
+                    <!-- BOTÓN PARA GENERAR O REGENERAR DOCUMENTOS -->
+                    <button class="btn-action btn-generate">
+                        <i class="fa-solid fa-gears"></i> Volver a Generar Docs.
+                    </button>
+                </div>
+            </div>
+
+            <!-- TARJETA 3: APROBADO PERO SIN DOCUMENTOS GENERADOS AÚN -->
+            <div class="review-card">
+                <div class="review-header">
+                    <div>
+                        <h4>Dra. Carmen Ruiz</h4>
+                        <p>Química Orgánica</p>
+                    </div>
+                    <span class="status-badge status-aprobado"><i class="fa-solid fa-check-double"></i> Aprobado</span>
+                </div>
+
+                <div class="document-item">
+                    <div class="doc-info">
+                        <div class="doc-icon"><i class="fa-regular fa-file-pdf"></i></div>
+                        <div>
+                            <b>Curriculum Vitae</b>
+                            <span>CV</span>
+                        </div>
+                    </div>
+                    <div class="doc-actions">
+                        <button title="Ver"><i class="fa-regular fa-eye"></i></button>
+                        <button title="Descargar"><i class="fa-solid fa-download"></i></button>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción (Aprobado pero sin procesar docx) -->
+                <div class="review-card-actions">
+                    <button class="btn-action btn-primary-action"><i class="fa-regular fa-eye"></i> Ver Expediente</button>
+                    
+                    <!-- BOTÓN DE GENERAR DOCUMENTOS INICIAL -->
+                    <button class="btn-action btn-generate">
+                        <i class="fa-solid fa-file-word"></i> Generar Documentos (.docx)
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        function logout() {
+            if(confirm("¿Estás seguro que deseas cerrar sesión?")) {
+                sessionStorage.clear();
+                window.location.href = "login.html";
+            }
+        }
+
+        // Simulación visual de los filtros
+        const filterBtns = document.querySelectorAll('.btn-filter');
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+
+        // NAVEGACIÓN Y TAMAÑO
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => { 
+            item.addEventListener('click', (e) => { 
+                if(item.getAttribute('href') === '#') e.preventDefault(); 
+            }); 
+        });
+        
+        let currentSizeIndex = 1; 
+        const sizes =["0.85rem", "1rem", "1.2rem"];
+        const labels =["Pequeño", "Normal", "Grande"];
+        function changeFontSize(direction) {
+            currentSizeIndex += direction;
+            if (currentSizeIndex < 0) currentSizeIndex = 0;
+            if (currentSizeIndex > 2) currentSizeIndex = 2;
+            document.getElementById('fontSizeLabel').innerText = labels[currentSizeIndex];
+            document.documentElement.style.setProperty('--dynamic-font-size', sizes[currentSizeIndex]);
+        }
+    </script>
+    
+</body>
+</html>
