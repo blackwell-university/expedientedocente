@@ -188,6 +188,9 @@
                     } else if (rolAsignado.toUpperCase() === 'ADMINISTRADOR') {
                         rolAsignado = 'Administrador';
                     }
+                    else if (rolAsignado.toUpperCase() === 'ADMINISTRATIVO') {
+                        rolAsignado = 'Administrativo';
+                    }
 
                     // GUARDAMOS LA SESIÓN
                     sessionStorage.setItem('isLoggedIn', 'true');
@@ -217,4 +220,5 @@
 
 </body>
 </html>
+
 
