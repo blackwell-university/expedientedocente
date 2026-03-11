@@ -2,8 +2,11 @@
 <html lang="es">
 <head>
     <script>
-        // Lógica de protección de ruta adaptada para el rol Administrativo
-        if (sessionStorage.getItem('isLoggedIn') !== 'true' || sessionStorage.getItem('userRole') !== 'Administrativo'|| sessionStorage.getItem('userRole') !== 'Administrador') {
+        // Lógica de protección de ruta adaptada para el rol Administrativo/Administrador
+        const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+        const userRole = sessionStorage.getItem('userRole');
+    
+        if (isLoggedIn !== 'true' || (userRole !== 'Administrativo' && userRole !== 'Administrador')) {
             window.location.href = "login.html";
         }
     </script>
