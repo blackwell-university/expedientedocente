@@ -333,19 +333,6 @@
         @media (max-width: 768px) {
             .sidebar { display: none; }
         }
-
-        .table > :not(caption) > * > * {
-            padding: 1.5rem 1.5rem;
-            background-color: transparent;
-            border-bottom-width: 1px;
-        }
-        .table thead th {
-            border-bottom: 2px solid #f8fafc;
-        }
-        .badge {
-            font-size: 0.75rem;
-            padding: 5px 12px;
-        }
     </style>
 </head>
 <body>
@@ -426,26 +413,110 @@
                 </div>
             </div>
 
-            <!-- Tabla de Docentes -->
-            <div class="card border-0 shadow-sm">
-                <div class="table-responsive">
-                    <table class="table align-middle mb-0">
-                        <thead class="bg-light">
-                            <tr style="font-size: 0.8rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">
-                                <th class="p-4">Docente</th>
-                                <th class="p-4">Correo Electrónico</th>
-                                <th class="p-4">Estado</th>
-                                <th class="p-4">Cursos</th>
-                                <th class="p-4">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-docentes-body">
-                            <!-- Aquí se inyectarán los datos -->
-                        </tbody>
-                    </table>
+            <div id="lista-docentes" class="row">
+                <!-- Aquí se inyectarán las tarjetas dinámicamente -->
+            </div>
+
+            <!-- Lista de Docentes -->
+
+            <!-- Tarjeta Docente 1 -->
+            <div class="teacher-card">
+                <div class="teacher-header">
+                    <h4>Dr. Carlos Martínez López</h4>
+                    <span class="status-badge status-aprobado">Aprobado</span>
+                </div>
+                <p class="teacher-dept">Ingeniería de Software</p>
+                
+                <div class="row teacher-info">
+                    <div class="col-md-6 info-item">
+                        <i class="fa-regular fa-envelope"></i> carlos.martinez@blackwell.edu
+                    </div>
+                    <div class="col-md-6 info-item">
+                        <i class="fa-solid fa-phone"></i> +34 611 222 333
+                    </div>
+                    <div class="col-md-6 info-item">
+                        <i class="fa-solid fa-award"></i> Desarrollo Web y Móvil
+                    </div>
+                    <div class="col-md-6 info-item">
+                        <i class="fa-solid fa-briefcase"></i> 12 años de experiencia
+                    </div>
+                </div>
+
+                <div class="teacher-actions">
+                    <button class="btn-details">
+                        <i class="fa-solid fa-eye"></i> Ver Detalles
+                    </button>
+                    <button class="btn-edit">
+                        <i class="fa-regular fa-pen-to-square"></i> Editar
+                    </button>
                 </div>
             </div>
 
+            <!-- Tarjeta Docente 2 -->
+            <div class="teacher-card">
+                <div class="teacher-header">
+                    <h4>Dra. María González Pérez</h4>
+                    <span class="status-badge status-aprobado">Aprobado</span>
+                </div>
+                <p class="teacher-dept">Ciencias de la Salud</p>
+                
+                <div class="row teacher-info">
+                    <div class="col-md-6 info-item">
+                        <i class="fa-regular fa-envelope"></i> maria.gonzalez@blackwell.edu
+                    </div>
+                    <div class="col-md-6 info-item">
+                        <i class="fa-solid fa-phone"></i> +34 611 333 444
+                    </div>
+                    <div class="col-md-6 info-item">
+                        <i class="fa-solid fa-award"></i> Inmunología e Investigación
+                    </div>
+                    <div class="col-md-6 info-item">
+                        <i class="fa-solid fa-briefcase"></i> 8 años de experiencia
+                    </div>
+                </div>
+
+                <div class="teacher-actions">
+                    <button class="btn-details">
+                        <i class="fa-solid fa-eye"></i> Ver Detalles
+                    </button>
+                    <button class="btn-edit">
+                        <i class="fa-regular fa-pen-to-square"></i> Editar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tarjeta Docente 3 (Ejemplo extra con estado diferente) -->
+            <div class="teacher-card">
+                <div class="teacher-header">
+                    <h4>Prof. Miguel Ángel Torres</h4>
+                    <span class="status-badge status-pendiente">Pendiente</span>
+                </div>
+                <p class="teacher-dept">Física Aplicada</p>
+                
+                <div class="row teacher-info">
+                    <div class="col-md-6 info-item">
+                        <i class="fa-regular fa-envelope"></i> miguel.torres@blackwell.edu
+                    </div>
+                    <div class="col-md-6 info-item">
+                        <i class="fa-solid fa-phone"></i> +34 611 555 666
+                    </div>
+                    <div class="col-md-6 info-item">
+                        <i class="fa-solid fa-award"></i> Termodinámica
+                    </div>
+                    <div class="col-md-6 info-item">
+                        <i class="fa-solid fa-briefcase"></i> 5 años de experiencia
+                    </div>
+                </div>
+
+                <div class="teacher-actions">
+                    <button class="btn-details">
+                        <i class="fa-solid fa-eye"></i> Ver Detalles
+                    </button>
+                    <button class="btn-edit">
+                        <i class="fa-regular fa-pen-to-square"></i> Editar
+                    </button>
+                </div>
+            </div>
 
         </div>
     </main>
@@ -480,7 +551,7 @@
     const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec"; // Asegúrate de tener tu URL correcta
 
     async function cargarDocentes() {
-        const tbody = document.getElementById('tabla-docentes-body');
+        const container = document.getElementById('lista-docentes');
         try {
             const response = await fetch(GAS_URL, {
                 method: 'POST',
@@ -489,31 +560,26 @@
             const result = await response.json();
             
             if(result.status === 'success') {
-                tbody.innerHTML = result.data.map(d => {
-                    // Lógica para color de la etiqueta de estado
-                    let estadoStr = d.estado ? d.estado.trim() : "Pendiente";
-                    let badgeClass = estadoStr.toLowerCase() === 'pendiente' 
-                                     ? 'bg-warning text-dark' 
-                                     : 'bg-success text-white';
-
-                    return `
-                    <tr style="border-bottom: 1px solid #f1f5f9;">
-                        <td class="p-4 fw-bold text-dark">${d.nombres} ${d.apellidos}</td>
-                        <td class="p-4 text-muted">${d.correo}</td>
-                        <td class="p-4">
-                            <span class="badge rounded-pill ${badgeClass} border">${estadoStr}</span>
-                        </td>
-                        <td class="p-4 text-muted">0 cursos</td>
-                        <td class="p-4">
-                            <a href="detallesdocente.html?id=${d.id}" class="text-decoration-none" style="color: #1e3a8a; font-size: 0.85rem;">
-                                <i class="fa-regular fa-eye me-1"></i> Ver Detalle
-                            </a>
-                        </td>
-                    </tr>
-                `}).join('');
+                container.innerHTML = result.data.map(d => `
+                    <div class="col-md-6 col-lg-4">
+                        <div class="teacher-card">
+                            <div class="teacher-header">
+                                <h4>${d.nombres} ${d.apellidos}</h4>
+                            </div>
+                            <div class="teacher-info mt-3">
+                                <div class="info-item"><i class="fa-regular fa-envelope"></i> ${d.correo}</div>
+                            </div>
+                            <div class="teacher-actions">
+                                <a href="detallesdocente.html?id=${d.id}" class="btn-details">
+                                    <i class="fa-solid fa-eye"></i> Ver Detalle
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
             }
         } catch (e) {
-            tbody.innerHTML = "<tr><td colspan='5' class='p-4 text-center text-danger'>Error al cargar los docentes.</td></tr>";
+            container.innerHTML = "<p>Error al cargar docentes.</p>";
         }
     }
 

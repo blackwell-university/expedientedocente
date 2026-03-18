@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script>
+        if (sessionStorage.getItem('isLoggedIn') !== 'true' || sessionStorage.getItem('userRole') !== 'Docente') {
+            // Descomenta la siguiente línea en producción
+            // window.location.href = "login.html"; 
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Docente - Universidad Blackwell</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --sidebar-bg: #1e3a8a;
+            --sidebar-active: #3b82f6;
+            --main-bg: #f8fafc;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --accent-blue: #223f93;
+            --logout-red: #e11d48;
+            --dynamic-font-size: 1rem;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif; background-color: var(--main-bg);
+            margin: 0; display: flex; height: 100vh; overflow: hidden;
+        }
+
+        .content-area { font-size: var(--dynamic-font-size); padding: 40px; max-width: 1200px; width: 100%; margin: 0 auto; overflow-y: auto;}
+        
+        /* Font Controls */
+        .font-controls {
+            display: flex; align-items: center; gap: 10px;
+            background: #f1f5f9; padding: 5px 12px;
+            border-radius: 50px; font-size: 0.85rem;
+            color: var(--text-muted); border: 1px solid #e2e8f0;
+        }
+        .btn-font {
+            background: none; border: none; color: var(--text-dark);
+            font-weight: bold; padding: 0 5px; cursor: pointer; transition: transform 0.1s;
+        }
+        .btn-font:active { transform: scale(1.3); }
+        #fontSizeLabel { min-width: 60px; text-align: center; font-weight: 500; }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 260px; background-color: var(--sidebar-bg); color: white;
+            display: flex; flex-direction: column; flex-shrink: 0; padding: 20px 0;
+        }
+        .sidebar-brand { padding: 0 25px 30px; display: flex; align-items: center; gap: 10px; }
+        .sidebar-brand i { font-size: 24px; }
+        .sidebar-brand div b { display: block; line-height: 1; font-size: 1.1rem; }
+        .sidebar-brand div span { font-size: 0.7rem; opacity: 0.7; }
+
+        .nav-menu { flex-grow: 1; padding: 0 15px; }
+        .nav-item {
+            display: flex; align-items: center; gap: 12px; padding: 12px 15px;
+            color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85rem;
+            border-radius: 8px; margin-bottom: 5px; transition: all 0.2s;
+        }
+        .nav-item:hover { color: white; background: rgba(255,255,255,0.1); }
+        .nav-item.active { background-color: var(--sidebar-active); color: white; font-weight: 500; }
+
+        .sidebar-footer { padding: 20px; background: rgba(0,0,0,0.2); font-size: 0.75rem; }
+        .user-info { margin-bottom: 15px; opacity: 0.9; }
+        .user-info b { display: block; font-size: 0.8rem; }
+
+        .btn-logout {
+            width: 100%; background-color: var(--logout-red); color: white;
+            border: none; padding: 8px; border-radius: 6px; font-weight: 600;
+            display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s;
+        }
+        .btn-logout:hover { background-color: #be123c; }
+
+        /* --- MAIN CONTENT --- */
+        .main-wrapper { flex-grow: 1; display: flex; flex-direction: column; overflow-y: hidden; }
+        header {
+            background: white; padding: 15px 40px; border-bottom: 1px solid #e2e8f0;
+            display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+        }
+        header h2 { font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--text-dark); }
+        header p { margin: 0; font-size: 0.75rem; color: var(--text-muted); }
+
+        /* Estilos específicos del formulario (Basados en la foto) */
+        .form-card {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            padding: 25px 30px;
+        }
+        .form-label {
+            font-weight: 600;
+            color: #334155;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+        .form-control {
+            border-radius: 6px;
+            padding: 10px 15px;
+            border: 1px solid #cbd5e1;
+            color: var(--text-dark);
+        }
+        .form-control::placeholder {
+            color: #94a3b8;
+        }
+        .form-control:focus {
+            border-color: var(--sidebar-active);
+            box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+        }
+        .btn-cancel {
+            background-color: #e2e8f0;
+            color: #334155;
+            font-weight: 600;
+            padding: 10px 24px;
+            border-radius: 6px;
+            border: none;
+            transition: 0.2s;
+        }
+        .btn-cancel:hover {
+            background-color: #cbd5e1;
+        }
+        .btn-submit {
+            background-color: #1e3a8a; /* Azul oscuro como en la foto */
+            color: white;
+            font-weight: 600;
+            padding: 10px 24px;
+            border-radius: 6px;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        .btn-submit:hover {
+            background-color: #172a6b;
+            color: white;
+        }
+        .back-link {
+            color: #1e3a8a;
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) { .sidebar { display: none; } }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Lateral -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <i class="fa-solid fa-graduation-cap"></i>
+            <div><b>Blackwell</b><span>Universidad</span></div>
+        </div>
+
+        <nav class="nav-menu">
+            <a href="docente.html" class="nav-item"><i class="fa-solid fa-user"></i> Información Personal</a>
+            <a href="listadocentes.html" class="nav-item active"><i class="fa-solid fa-users"></i> Gestión de Docentes</a>
+            <a href="misdocumentos.html" class="nav-item"><i class="fa-solid fa-file-lines"></i> Mis Documentos</a>
+            <a href="docsfirmados.html" class="nav-item"><i class="fa-solid fa-file-signature"></i> Documentos Firmados</a>
+            <a href="carpetadocente.html" class="nav-item"><i class="fa-solid fa-folder-open"></i> Carpeta Docente</a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <span>Sesión activa:</span>
+                <b id="sidebar-userid">Usuario Administrativo</b>
+                <span class="badge bg-light text-dark mt-1">Admin</span>
+            </div>
+            <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</button>
+        </div>
+    </aside>
+
+    <!-- Contenido Principal -->
+    <main class="main-wrapper">
+        <header>
+            <div>
+                <h2>Sistema de Gestión de Expedientes</h2>
+                <p>Portal Administrativo</p>
+            </div>
+            <div class="font-controls">
+                <i class="fa-solid fa-text-height"></i>
+                <button onclick="changeFontSize(-1)" class="btn-font">—</button>
+                <span id="fontSizeLabel">Normal</span>
+                <button onclick="changeFontSize(1)" class="btn-font">+</button>
+            </div>
+        </header>
+
+        <div class="content-area">
+            
+            <!-- Link Volver -->
+            <a href="gestion-docentes.html" class="back-link">
+                <i class="fa-solid fa-arrow-left"></i> Volver
+            </a>
+
+            <!-- Títulos -->
+            <div style="margin-bottom: 25px;">
+                <h3 style="font-weight: 800; color: #0f172a; margin-bottom: 5px;">Registrar Nuevo Docente</h3>
+                <p style="color: #64748b; font-size: 1rem;">Ingresa los datos básicos del docente</p>
+            </div>
+            
+            <!-- Formulario (Igual a la foto) -->
+            <div class="form-card">
+                <form id="formRegistrarDocente">
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <label class="form-label">Nombres</label>
+                            <input type="text" class="form-control" id="nombresDocente" placeholder="Ej: Juan" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Apellidos</label>
+                            <input type="text" class="form-control" id="apellidosDocente" placeholder="Ej: Pérez García" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Correo Electrónico</label>
+                            <input type="email" class="form-control" id="correoDocente" placeholder="juan.perez@email.com" required>
+                        </div>
+                    </div>
+
+                    <hr style="border-color: #e2e8f0; margin: 30px 0 20px 0;">
+                    
+                    <!-- Botones -->
+                    <div class="d-flex justify-content-end gap-3">
+                        <button type="button" class="btn-cancel" onclick="window.location.href='gestion-docentes.html'">Cancelar</button>
+                        <button type="submit" class="btn-submit">
+                            <i class="fa-solid fa-user-plus"></i> Registrar Docente
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        function logout() {
+            if(confirm("¿Estás seguro que deseas cerrar sesión?")) {
+                sessionStorage.clear();
+                window.location.href = "login.html";
+            }
+        }
+
+        // Tamaño de fuente
+        let currentSizeIndex = 1; 
+        const sizes =["0.85rem", "1rem", "1.2rem"];
+        const labels =["Pequeño", "Normal", "Grande"];
+        function changeFontSize(direction) {
+            currentSizeIndex += direction;
+            if (currentSizeIndex < 0) currentSizeIndex = 0;
+            if (currentSizeIndex > 2) currentSizeIndex = 2;
+            document.getElementById('fontSizeLabel').innerText = labels[currentSizeIndex];
+            document.documentElement.style.setProperty('--dynamic-font-size', sizes[currentSizeIndex]);
+        }
+
+
+
+        document.getElementById('formRegistrarDocente').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const payload = {
+                action: "registrar_basico",
+                nombres: document.getElementById('nombresDocente').value,
+                apellidos: document.getElementById('apellidosDocente').value,
+                correo: document.getElementById('correoDocente').value
+            };
+
+            try {
+                const response = await fetch("https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec", {
+                    method: "POST",
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                
+                if (result.status === "success") {
+                    alert("Docente registrado correctamente. ID: " + result.id);
+                    window.location.href = 'gestion-docentes.html';
+                }
+            } catch (error) {
+                alert("Error al registrar docente");
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalles Docente - Universidad Blackwell</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --sidebar-bg: #1e3a8a; --sidebar-active: #3b82f6; --main-bg: #f8fafc;
+            --text-dark: #1e293b; --text-muted: #64748b; --accent-blue: #223f93; --logout-red: #e11d48;
+            --dynamic-font-size: 1rem;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--main-bg); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        .content-area { font-size: var(--dynamic-font-size); padding: 40px; max-width: 1200px; width: 100%; margin: 0 auto; overflow-y: auto;}
+        
+        .sidebar { width: 260px; background-color: var(--sidebar-bg); color: white; display: flex; flex-direction: column; flex-shrink: 0; padding: 20px 0; }
+        .sidebar-brand { padding: 0 25px 30px; display: flex; align-items: center; gap: 10px; }
+        .sidebar-brand i { font-size: 24px; } .sidebar-brand div b { display: block; line-height: 1; font-size: 1.1rem; } .sidebar-brand div span { font-size: 0.7rem; opacity: 0.7; }
+        .nav-menu { flex-grow: 1; padding: 0 15px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85rem; border-radius: 8px; margin-bottom: 5px; transition: all 0.2s; }
+        .nav-item:hover { color: white; background: rgba(255,255,255,0.1); }
+        .nav-item.active { background-color: var(--sidebar-active); color: white; font-weight: 500; }
+        .sidebar-footer { padding: 20px; background: rgba(0,0,0,0.2); font-size: 0.75rem; }
+        .user-info { margin-bottom: 15px; opacity: 0.9; } .user-info b { display: block; font-size: 0.8rem; }
+        .btn-logout { width: 100%; background-color: var(--logout-red); color: white; border: none; padding: 8px; border-radius: 6px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
+        
+        .main-wrapper { flex-grow: 1; display: flex; flex-direction: column; overflow-y: hidden; }
+        header { background: white; padding: 15px 40px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        header h2 { font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--text-dark); }
+        header p { margin: 0; font-size: 0.75rem; color: var(--text-muted); }
+
+        .back-link { color: #1e3a8a; text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 8px; margin-bottom: 20px; font-size: 0.95rem; }
+        .page-title { font-weight: 800; color: #0f172a; margin-bottom: 5px; font-size: 1.7rem; }
+        .page-subtitle { color: #64748b; font-size: 0.95rem; margin-bottom: 30px; }
+
+        .custom-card { background: white; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.02); height: 100%; }
+        .card-header-title { padding: 18px 25px; border-bottom: 1px solid #e2e8f0; font-weight: 600; color: #1e293b; font-size: 1.05rem; }
+        .card-body-content { padding: 25px; }
+
+        .info-group { margin-bottom: 18px; } .info-label { display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 4px; } .info-value { font-size: 0.95rem; color: #0f172a; font-weight: 500; }
+        
+        .btn-action { width: 100%; background-color: #223f93; color: white; border: none; padding: 16px; border-radius: 6px; display: flex; align-items: center; transition: 0.2s; text-decoration: none; }
+        .btn-action:hover { background-color: #1a3072; color: white; }
+        .btn-action i { font-size: 1.2rem; flex-shrink: 0; width: 30px; }
+        .btn-action span { flex-grow: 1; text-align: center; font-weight: 600; font-size: 0.85rem; padding-right: 30px; }
+
+        .invitation-box { border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 15px;}
+        .invitation-title { font-weight: 700; color: #1e293b; font-size: 1rem; margin: 0; }
+        .status-badge { font-size: 0.7rem; padding: 4px 12px; border-radius: 50px; font-weight: 600; margin-left: 10px; display: inline-block; }
+        .bg-guardado { background-color: #fef3c7; color: #b45309; } .bg-enviado { background-color: #dbeafe; color: #1e40af; }
+        
+        /* DISEÑO DE INPUTS DEL MODAL (Estilo Moderno) */
+        .modal-modern .modal-content { border: none; border-radius: 12px; overflow: hidden; }
+        .modal-modern .modal-header { background: #1e3a8a; color: white; border: none; padding: 20px 25px; }
+        .modal-modern .modal-header .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
+        .input-modern { background-color: #f8fafc; border: 1px solid #f1f5f9; border-radius: 8px; padding: 12px 15px; font-size: 0.95rem; color: #334155; }
+        .input-modern:focus { background-color: #ffffff; border-color: #3b82f6; box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.1); }
+        .label-modern { font-size: 0.8rem; color: #64748b; font-weight: 600; margin-bottom: 6px; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <i class="fa-solid fa-graduation-cap"></i>
+            <div><b>Blackwell</b><span>Universidad</span></div>
+        </div>
+
+        <nav class="nav-menu">
+            <a href="docente.html" class="nav-item"><i class="fa-solid fa-user"></i> Información Personal</a>
+            <a href="listadocentes.html" class="nav-item active"><i class="fa-solid fa-users"></i> Gestión de Docentes</a>
+            <a href="misdocumentos.html" class="nav-item"><i class="fa-solid fa-file-lines"></i> Mis Documentos</a>
+            <a href="docsfirmados.html" class="nav-item"><i class="fa-solid fa-file-signature"></i> Documentos Firmados</a>
+            <a href="carpetadocente.html" class="nav-item"><i class="fa-solid fa-folder-open"></i> Carpeta Docente</a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <span>Sesión activa:</span>
+                <b id="sidebar-userid">Usuario Administrativo</b>
+                <span class="badge bg-light text-dark mt-1">Admin</span>
+            </div>
+            <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</button>
+        </div>
+    </aside>
+
+    <main class="main-wrapper">
+        <header>
+            <div><h2>Sistema de Gestión de Expedientes</h2><p>Portal Administrativo</p></div>
+        </header>
+
+        <div class="content-area">
+            <a href="gestion-docentes.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Volver a la Lista</a>
+            <h1 class="page-title" id="det-nombre">Cargando...</h1>
+            <p class="page-subtitle">Gestión del expediente docente</p>
+
+            <div class="row g-4 mb-4">
+                <div class="col-lg-4">
+                    <div class="custom-card">
+                        <div class="card-header-title">Información Personal</div>
+                        <div class="card-body-content">
+                            <div class="info-group"><span class="info-label">Correo</span><div class="info-value" id="det-correo">Cargando...</div></div>
+                            <div class="info-group"><span class="info-label">Teléfono</span><div class="info-value" id="det-telefono">Cargando...</div></div>
+                            <div class="info-group"><span class="info-label">Dirección</span><div class="info-value" id="det-direccion">Cargando...</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+                    <div class="custom-card">
+                        <div class="card-header-title">Acciones Rápidas</div>
+                        <div class="card-body-content">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <button class="btn-action" data-bs-toggle="modal" data-bs-target="#modalInvitacion">
+                                        <i class="fa-regular fa-paper-plane"></i>
+                                        <span>Enviar Nueva Invitación</span>
+                                    </button>
+                                </div>
+                                <div class="col-md-6">
+                                    <button class="btn-action" data-bs-toggle="modal" data-bs-target="#modalDocumentos">
+                                        <i class="fa-regular fa-file-lines"></i>
+                                        <span>Generar Documentos</span>
+                                    </button>
+                                </div>
+                                <div class="col-md-6">
+                                    <button class="btn-action">
+                                        <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                                        <span>Subir Material Docente</span>
+                                    </button>
+                                </div>
+                                <div class="col-md-6">
+                                    <button class="btn-action">
+                                        <i class="fa-regular fa-folder"></i>
+                                        <span>Crear Carpeta Google</span>
+                                    </button>
+                                </div>
+                            </div>                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aquí se cargarán dinámicamente las invitaciones -->
+            <div class="custom-card">
+                <div class="card-header-title">Invitaciones Enviadas</div>
+                <div class="card-body-content" id="contenedor-invitaciones">
+                    <p class="text-muted">Cargando historial de invitaciones...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL MEJORADO: Configurar Invitación -->
+    <div class="modal fade modal-modern" id="modalInvitacion" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content shadow-lg">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold m-0" style="font-size: 1.15rem;">Configurar y Enviar Invitación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="formInvitacion">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="label-modern">Programa</label>
+                                <select id="selPrograma" class="form-select input-modern" required onchange="filtrarCursos()">
+                                    <option value="">Seleccionar programa</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="label-modern">Curso</label>
+                                <select id="selCurso" class="form-select input-modern" required>
+                                    <option value="">Seleccionar curso</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="label-modern">Fecha Inicio Clases</label>
+                                <input type="date" id="invFechaInicio" class="form-control input-modern" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="label-modern">Fecha Fin Clases</label>
+                                <input type="date" id="invFechaFin" class="form-control input-modern" required>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="label-modern">Franjas Horarias Sugeridas</label>
+                                <input type="text" id="invHorario" class="form-control input-modern" value="de 19:00 a 20:30 y las 20:30 a 22:00">
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="label-modern">Cant. Clases (Texto)</label>
+                                <input type="text" id="invCantClases" class="form-control input-modern" value="cuatro">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="label-modern">Moneda</label>
+                                <select id="invMoneda" class="form-select input-modern">
+                                    <option value="$">Dólares ($)</option>
+                                    <option value="S/.">Soles (S/.)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="label-modern">Pago Total</label>
+                                <input type="number" id="invCosto" class="form-control input-modern" placeholder="Ej: 360">
+                            </div>
+
+                            <!-- SECCIÓN DE DOCUMENTOS SOLICITADOS -->
+                            <div class="col-12 mt-4 pt-3 border-top">
+                                <label class="label-modern" style="font-size: 0.95rem; color:#0f172a;">Documentos a solicitar en el correo:</label>
+                                <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 12px;">Selecciona qué documentos le pediremos subir al docente.</p>
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input doc-checkbox" type="checkbox" value="CV documentado" id="chkCV" checked>
+                                            <label class="form-check-label" for="chkCV">CV documentado</label>
+                                        </div>
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input doc-checkbox" type="checkbox" value="ID (Documento de identidad ambas caras)" id="chkID" checked>
+                                            <label class="form-check-label" for="chkID">ID (ambas caras)</label>
+                                        </div>
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input doc-checkbox" type="checkbox" value="Faculty Handbook Firmado en la última hoja" id="chkHandbook" checked>
+                                            <label class="form-check-label" for="chkHandbook">Faculty Handbook Firmado</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input doc-checkbox" type="checkbox" value="Diplomas de sus posgrados" id="chkDiplomas" checked>
+                                            <label class="form-check-label" for="chkDiplomas">Diplomas de posgrados</label>
+                                        </div>
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input doc-checkbox" type="checkbox" value="Transcript o Registro de notas" id="chkNotas" checked>
+                                            <label class="form-check-label" for="chkNotas">Registro de notas (Transcript)</label>
+                                        </div>
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input doc-checkbox" type="checkbox" value="Fotografía (para la página web)" id="chkFoto" checked>
+                                            <label class="form-check-label" for="chkFoto">Fotografía (Web)</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>                    
+                </div>
+                <div class="modal-footer" style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 15px 25px;">
+                    <button type="button" class="btn btn-light px-4 border text-secondary fw-semibold" onclick="guardarInvitacion()">
+                        Guardar Borrador
+                    </button>
+                    <button type="button" class="btn btn-primary px-4 fw-semibold" id="btnEnviarCorreo" style="background: #1e3a8a; border: none;" disabled onclick="enviarCorreoInvitacion()">
+                        Guardar y Enviar Correo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec"; 
+
+        function logout() {
+            if(confirm("¿Estás seguro?")) { sessionStorage.clear(); window.location.href = "login.html"; }
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const docenteId = urlParams.get('id');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if(docenteId) {
+                cargarPerfilDocente(docenteId);
+                cargarInvitaciones(docenteId);
+            } else {
+                document.getElementById('det-nombre').innerText = "Docente no encontrado";
+            }
+        });
+
+        // 1. CARGAR PERFIL
+        async function cargarPerfilDocente(id) {
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: id }) });
+                const json = await res.json();
+                if(json.status === 'success') {
+                    const d = json.data;
+                    document.getElementById('det-nombre').innerText = d.nombres || "No especificado";
+                    document.getElementById('det-correo').innerText = d.correo || "No especificado";
+                    document.getElementById('det-telefono').innerText = d.celular || "No especificado";
+                    document.getElementById('det-direccion').innerText = d.direccion || "No especificada";
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        // 2. CARGAR INVITACIONES DEL DOCENTE (Dinámico)
+        async function cargarInvitaciones(id) {
+            const container = document.getElementById('contenedor-invitaciones');
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_invitations', docenteId: id }) });
+                const result = await res.json();
+                
+                if (result.status === 'success' && result.data.length > 0) {
+                    container.innerHTML = result.data.map(inv => {
+                        let colorBadge = inv.estado === 'Enviado' ? 'bg-enviado' : 'bg-guardado';
+                        let f = new Date(inv.fecha).toLocaleDateString();
+                        return `
+                        <div class="invitation-box">
+                            <div class="invitation-title-row">
+                                <div class="d-flex align-items-center">
+                                    <h3 class="invitation-title">${inv.curso}</h3>
+                                    <span class="status-badge ${colorBadge}">${inv.estado}</span>
+                                </div>
+                            </div>
+                            <div class="invitation-details mt-2">
+                                <div><b>Programa:</b> ${inv.programa}</div>
+                                <div><b>Días:</b> ${inv.dias} | <b>Horario:</b> ${inv.horario}</div>
+                                <div><b>Pago Ofrecido:</b> ${inv.pago}</div>
+                                <div class="mt-1" style="font-size:0.75rem; color:#94a3b8;">Creado el: ${f}</div>
+                            </div>
+                        </div>`;
+                    }).join('');
+                } else {
+                    container.innerHTML = `<p class="text-muted">Este docente aún no tiene invitaciones registradas.</p>`;
+                }
+            } catch(e) { container.innerHTML = `<p class="text-danger">Error al cargar invitaciones.</p>`; }
+        }
+
+        // 3. LÓGICA DEL MODAL DE INVITACIÓN
+        let catalogoCursos =[];
+        document.getElementById('modalInvitacion').addEventListener('show.bs.modal', async () => {
+            const selP = document.getElementById('selPrograma');
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({action: 'get_catalogs'}) });
+                const data = await res.json();
+                catalogoCursos = data.cursos;
+                selP.innerHTML = '<option value="">Seleccionar programa</option>';
+                data.programas.forEach(p => { selP.innerHTML += `<option value="${p.id}">${p.nombre}</option>`; });
+            } catch(e) {}
+        });
+
+        function filtrarCursos() {
+            const progId = document.getElementById('selPrograma').value;
+            const selC = document.getElementById('selCurso');
+            selC.innerHTML = '<option value="">Seleccionar curso</option>';
+            catalogoCursos.filter(c => c.idPrograma == progId).forEach(c => { selC.innerHTML += `<option value="${c.idCurso}">${c.nombre}</option>`; });
+        }
+
+        function generarTextoFechas(f1, f2) {
+            if(!f1 || !f2) return "";
+            const meses =["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+            const d1 = new Date(f1 + "T00:00:00"); const d2 = new Date(f2 + "T00:00:00");
+            const dia1 = (d1.getDate() < 10 ? '0' : '') + d1.getDate(); const mes1 = meses[d1.getMonth()];
+            const dia2 = (d2.getDate() < 10 ? '0' : '') + d2.getDate(); const mes2 = meses[d2.getMonth()];
+            return (mes1 === mes2) ? `del ${dia1} al ${dia2} de ${mes1}` : `del ${dia1} de ${mes1} al ${dia2} de ${mes2}`;
+        }
+
+        // 4. GUARDAR Y ENVIAR
+        let currentInvitacionId = null;
+
+        function obtenerDocumentosSeleccionados() {
+            const checkboxes = document.querySelectorAll('.doc-checkbox:checked');
+            return Array.from(checkboxes).map(cb => cb.value).join(',');
+        }
+
+        async function guardarInvitacion() {
+            const selP = document.getElementById('selPrograma'); const selC = document.getElementById('selCurso');
+            const fechaIni = document.getElementById('invFechaInicio').value; const fechaFin = document.getElementById('invFechaFin').value;
+            
+            if(!selP.value || !selC.value || !fechaIni || !fechaFin) { alert("Complete Programa, Curso y Fechas."); return; }
+
+            const payload = {
+                action: 'send_invitation_email',
+                idInvitacion: currentInvitacionId,
+                docenteId: docenteId, // <--- AÑADE ESTA LÍNEA EXACTAMENTE AQUÍ
+                docenteNombre: document.getElementById('det-nombre').innerText,
+                docenteCorreo: document.getElementById('det-correo').innerText,
+                programa: selP.options[selP.selectedIndex].text,
+                curso: selC.options[selC.selectedIndex].text,
+                rangoFechas: generarTextoFechas(document.getElementById('invFechaInicio').value, document.getElementById('invFechaFin').value),
+                horario: document.getElementById('invHorario').value,
+                cantidadClases: document.getElementById('invCantClases').value,
+                monedaSimbolo: document.getElementById('invMoneda').value,
+                costo: document.getElementById('invCosto').value,
+                documentos: obtenerDocumentosSeleccionados()
+            };
+
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const result = await res.json();
+                if(result.status === "success") {
+                    currentInvitacionId = result.idInvitacion; 
+                    alert("Borrador guardado. Puede enviar el correo.");
+                    document.getElementById('btnEnviarCorreo').disabled = false;
+                    cargarInvitaciones(docenteId); // Refresca la lista
+                }
+            } catch(e) { alert("Error al guardar."); }
+        }
+
+        async function enviarCorreoInvitacion() {
+            const btnEnviar = document.getElementById('btnEnviarCorreo');
+            btnEnviar.disabled = true; btnEnviar.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Enviando...';
+
+            const selP = document.getElementById('selPrograma'); const selC = document.getElementById('selCurso');
+            
+            const payload = {
+                action: 'send_invitation_email', idInvitacion: currentInvitacionId,
+                docenteNombre: document.getElementById('det-nombre').innerText, docenteCorreo: document.getElementById('det-correo').innerText,
+                programa: selP.options[selP.selectedIndex].text, curso: selC.options[selC.selectedIndex].text,
+                rangoFechas: generarTextoFechas(document.getElementById('invFechaInicio').value, document.getElementById('invFechaFin').value),
+                horario: document.getElementById('invHorario').value, cantidadClases: document.getElementById('invCantClases').value,
+                monedaSimbolo: document.getElementById('invMoneda').value, costo: document.getElementById('invCosto').value,
+                documentos: obtenerDocumentosSeleccionados()
+            };
+
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const result = await res.json();
+                if(result.status === "success") {
+                    alert("¡Correo Institucional enviado!");
+                    bootstrap.Modal.getInstance(document.getElementById('modalInvitacion')).hide();
+                    btnEnviar.innerHTML = 'Guardar y Enviar Correo';
+                    cargarInvitaciones(docenteId); // Refresca la lista para mostrar "Enviado"
+                }
+            } catch(e) { alert("Error al enviar."); btnEnviar.disabled = false; btnEnviar.innerHTML = 'Guardar y Enviar Correo'; }
+        }
+    </script>
+</body>
+</html>

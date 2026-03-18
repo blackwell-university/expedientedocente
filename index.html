@@ -168,6 +168,19 @@
 </div>
 
 <script>
+     document.addEventListener("DOMContentLoaded", () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const idDesdeUrl = urlParams.get('id');
+        
+        if(idDesdeUrl) {
+            const inputId = document.getElementById('id_documento');
+            inputId.value = idDesdeUrl;
+            inputId.readOnly = true; // Lo bloqueamos para que no lo modifique
+            inputId.style.backgroundColor = "#f1f5f9"; // Color gris claro para indicar que está bloqueado
+            inputId.style.fontWeight = "bold";
+        }
+    });
+    
     const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
     const N8N_URL = "https://n8n.balticec.com/webhook/ad08f4fd-2709-460a-9368-238395ad8533";
     let iaListo = false;
