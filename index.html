@@ -179,22 +179,19 @@
     let fileIdsToMove =[];
     let urlCVFinal = "";
     let urlHandbookFinal = "";
+    let docenteIdInterno = ""; 
 
     document.addEventListener("DOMContentLoaded", () => {
         const urlParams = new URLSearchParams(window.location.search);
         const idDesdeUrl = urlParams.get('id');
         
         if(idDesdeUrl) {
-            const inputId = document.getElementById('id_documento');
-            inputId.value = idDesdeUrl;
-            inputId.readOnly = true; 
-            inputId.style.backgroundColor = "#f1f5f9"; 
-            inputId.style.fontWeight = "bold";
+            docenteIdInterno = idDesdeUrl;
 
             // --- LLAMADA A LA BASE DE DATOS PARA AUTOCOMPLETAR NOMBRE Y APELLIDO ---
             fetch(GAS_URL, {
                 method: 'POST',
-                body: JSON.stringify({ action: "get_profile", id: idDesdeUrl })
+                body: JSON.stringify({ action: "get_profile", id: docenteIdInterno })
             })
             .then(res => res.json())
             .then(res => {
@@ -204,12 +201,12 @@
                     
                     if(res.data.nombres) {
                         inputNombres.value = res.data.nombres;
-                        inputNombres.readOnly = true; // Lo bloqueamos opcionalmente para evitar alteraciones
+                        inputNombres.readOnly = true; 
                         inputNombres.style.backgroundColor = "#f1f5f9";
                     }
                     if(res.data.apellidos) {
                         inputApellidos.value = res.data.apellidos;
-                        inputApellidos.readOnly = true; // Lo bloqueamos opcionalmente
+                        inputApellidos.readOnly = true; 
                         inputApellidos.style.backgroundColor = "#f1f5f9";
                     }
                 }
@@ -298,8 +295,8 @@
 
             // 2. n8n para el CV (Usa el ID asignado desde la URL o escrito en el input)
             const teacherId = document.getElementById('id_documento').value;
-            
-            const n8nCv = await fetch(N8N_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ fileUrl: urlCVFinal, id: teacherId, grado: "CV" })}).then(r=>r.json());
+
+            const n8nCv = await fetch(N8N_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ fileUrl: urlCVFinal, id: docenteIdInterno, grado: "CV" })}).then(r=>r.json());
             let cvText = (n8nCv.content && n8nCv.content[0]) ? n8nCv.content[0].text : (Array.isArray(n8nCv) && n8nCv[0]?.content ? n8nCv[0].content[0].text : n8nCv);
             if (typeof cvText !== 'string' && cvText.text) cvText = cvText.text;
             let parsedCv = typeof cvText === 'string' ? JSON.parse(cvText.replace(/```json|```/g, "")) : cvText;
@@ -315,8 +312,8 @@
                 if(transFile) await subirArchivoYRegistrar(transFile);
 
                 const currentGrado = item.querySelector('.grado-select').value;
-                const n8nDip = await fetch(N8N_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ fileUrl: diplomaUrl, id: teacherId, grado: currentGrado })}).then(r=>r.json());
-                
+                const n8nDip = await fetch(N8N_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ fileUrl: diplomaUrl, id: docenteIdInterno, grado: currentGrado })}).then(r=>r.json());
+
                 let dipText = (n8nDip.content && n8nDip.content[0]) ? n8nDip.content[0].text : n8nDip;
                 let data = typeof dipText === 'string' ? JSON.parse(dipText.replace(/```json|```/g, "")) : dipText;
 
@@ -377,7 +374,8 @@
 
         const payload = {
             docente: {
-                id: document.getElementById('id_documento').value,
+                id: docenteIdInterno, // Enviamos el ID interno para buscarlo en la BD
+                dni: document.getElementById('id_documento').value, // El DNI ingresado
                 nombres: document.getElementById('nombres').value,
                 apellidos: document.getElementById('apellidos').value,
                 correo: document.getElementById('correo').value,
