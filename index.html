@@ -128,6 +128,29 @@
                 <div class="col-md-6"><label>Correo Electrónico *</label><input type="email" id="correo" class="form-control"></div>
                 <div class="col-md-6"><label>Teléfono Móvil *</label><input type="tel" id="celular" class="form-control"></div>
 
+                <hr>
+                <h5 class="fw-bold text-primary mb-0 mt-5">Disponibilidad para el Dictado</h5>
+                <div class="col-md-6">
+                    <label>Día de preferencia *</label>
+                    <select id="dia_clase" class="form-select" required>
+                        <option value="">Seleccione...</option>
+                        <option value="Lunes">Lunes</option>
+                        <option value="Martes">Martes</option>
+                        <option value="Miércoles">Miércoles</option>
+                        <option value="Jueves">Jueves</option>
+                        <option value="Viernes">Viernes</option>
+                        <option value="Sábado">Sábado</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label>Franja Horaria (GMT-5) *</label>
+                    <select id="hora_clase" class="form-select" required>
+                        <option value="">Seleccione...</option>
+                        <option value="19:00 a 20:30 Hrs">19:00 a 20:30 Hrs</option>
+                        <option value="20:30 a 22:00 Hrs">20:30 a 22:00 Hrs</option>
+                    </select>
+                </div>
+
                 <h5 class="fw-bold text-primary mb-0 mt-5">Información de Pago</h5>
                 <div class="col-md-4"><label>Código Postal *</label><input type="text" id="codigo_postal" class="form-control" required></div>
                 <div class="col-md-8"><label>Dirección *</label><input type="text" id="direccion" class="form-control" required></div>
@@ -374,8 +397,8 @@
 
         const payload = {
             docente: {
-                id: docenteIdInterno, // Enviamos el ID interno para buscarlo en la BD
-                dni: document.getElementById('id_documento').value, // El DNI ingresado
+                id: docenteIdInterno, 
+                dni: document.getElementById('id_documento').value, 
                 nombres: document.getElementById('nombres').value,
                 apellidos: document.getElementById('apellidos').value,
                 correo: document.getElementById('correo').value,
@@ -386,6 +409,10 @@
                 tipo_cuenta: document.getElementById('tipo_cuenta').value, 
                 cuenta: document.getElementById('cuenta').value,
                 cci: document.getElementById('cci').value,
+                // --- DOS CAMPOS NUEVOS AÑADIDOS AQUI ---
+                dia_clase: document.getElementById('dia_clase').value,
+                hora_clase: document.getElementById('hora_clase').value,
+                // ---------------------------------------
                 url_cv: urlCVFinal,
                 url_handbook: urlHandbookFinal
             },
