@@ -426,7 +426,7 @@
                 btn.disabled = false; btn.innerHTML = 'Guardar Cambios';
             }
         }
-        
+
         // 3. LÓGICA DEL MODAL DE INVITACIÓN
         let catalogoCursos =[];
         document.getElementById('modalInvitacion').addEventListener('show.bs.modal', async () => {
@@ -504,6 +504,14 @@
         }
 
         async function enviarCorreoInvitacion() {
+            
+            // 1. VALIDACIÓN VITAL: Verificamos que haya un correo real
+            const correoDestino = document.getElementById('det-correo').innerText.trim();
+            if(!correoDestino || correoDestino === "Cargando..." || correoDestino === "No especificado") {
+                mostrarToast("Error: El docente no tiene un correo válido registrado.", "danger");
+                return; // Detiene la ejecución aquí mismo para evitar el error del servidor
+            }
+
             const btnEnviar = document.getElementById('btnEnviarCorreo');
             btnEnviar.disabled = true; btnEnviar.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Enviando...';
 
