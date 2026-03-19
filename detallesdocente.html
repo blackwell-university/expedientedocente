@@ -138,6 +138,12 @@
                                     </button>
                                 </div>
                                 <div class="col-md-6">
+                                    <button class="btn-action" onclick="generarForm402(this)">
+                                        <i class="fa-regular fa-file-lines"></i>
+                                        <span>Generar FORM 402</span>
+                                    </button>
+                                </div>
+                                <div class="col-md-6">
                                     <button class="btn-action">
                                         <i class="fa-solid fa-arrow-up-from-bracket"></i>
                                         <span>Subir Material Docente</span>
@@ -546,6 +552,32 @@
                 mostrarToast("Error de conexión al enviar.", "danger"); 
                 btnEnviar.disabled = false; 
                 btnEnviar.innerHTML = 'Guardar y Enviar Correo'; 
+            }
+        }
+
+        async function generarForm402(btn) {
+            const textoOriginal = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i><span>Generando...</span>';
+
+            try {
+                const res = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'generate_document', id: docenteId })
+                });
+                const result = await res.json();
+                
+                if (result.status === 'success') {
+                    mostrarToast("FORM 402 generado con éxito.", "success");
+                    window.open(result.url, '_blank'); // Abre el documento generado
+                } else {
+                    mostrarToast("Error: " + (result.message || "No se pudo generar"), "danger");
+                }
+            } catch (error) {
+                mostrarToast("Error de conexión con el servidor.", "danger");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = textoOriginal;
             }
         }
     </script>
