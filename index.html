@@ -202,11 +202,13 @@
     let fileIdsToMove =[];
     let urlCVFinal = "";
     let urlHandbookFinal = "";
-    let docenteIdInterno = ""; 
+    let docenteIdInterno = "";
+    let invitacionIdInterno = "";
 
     document.addEventListener("DOMContentLoaded", () => {
         const urlParams = new URLSearchParams(window.location.search);
         const idDesdeUrl = urlParams.get('id');
+        invitacionIdInterno = urlParams.get('inv');
         
         if(idDesdeUrl) {
             docenteIdInterno = idDesdeUrl;
@@ -397,7 +399,8 @@
 
         const payload = {
             docente: {
-                id: docenteIdInterno, 
+                id: docenteIdInterno,
+                id_invitacion: invitacionIdInterno,
                 dni: document.getElementById('id_documento').value, 
                 nombres: document.getElementById('nombres').value,
                 apellidos: document.getElementById('apellidos').value,
