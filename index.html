@@ -59,7 +59,6 @@
 </head>
 <body>
 
-
 <div class="utility-box">
     <button class="btn-font-adj" onclick="changeFontSize(-2)">A -</button>
     <button class="btn-font-adj" onclick="changeFontSize(2)">A +</button>
@@ -72,64 +71,94 @@
 </div>
 
 <header class="bgu-header">
-    <img src="https://cdn.bitrix24.es/b15495391/landing/46b/46b5cbaf9e1efd30d1866c50bbf395b6/logo_bgu_1x.png"
-    class="bgu-logo">
+    <img src="https://cdn.bitrix24.es/b15495391/landing/46b/46b5cbaf9e1efd30d1866c50bbf395b6/logo_bgu_1x.png" class="bgu-logo">
 </header>
 
 <div class="container" style="max-width: 1000px;">
+    <!-- Nombres de Pasos actualizados -->
     <div class="stepper-wrapper">
-        <div class="step-item active" id="st-1"><div class="step-counter">1</div><div class="step-label text-white">Identidad</div></div>
-        <div class="step-item" id="st-2"><div class="step-counter">2</div><div class="step-label text-white">Pago</div></div>
+        <div class="step-item active" id="st-1"><div class="step-counter">1</div><div class="step-label text-white">Documentos</div></div>
+        <div class="step-item" id="st-2"><div class="step-counter">2</div><div class="step-label text-white">Datos</div></div>
         <div class="step-item" id="st-3"><div class="step-counter">3</div><div class="step-label text-white">Validación</div></div>
     </div>
 
     <form id="docenteWizard" novalidate>
+        
+        <!-- PASO 1: SOLO DOCUMENTOS Y MENSAJE DE BIENVENIDA -->
         <div class="form-section active" id="step-1">
-            <div class="section-header">
-                <h2>1. Datos de Identidad</h2>
-                <p>Complete su información y adjunte su CV.</p>
+            
+            <!-- Panel de Bienvenida -->
+            <div class="alert mb-4" style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-left: 5px solid var(--bgu-gold); color: var(--bgu-blue); border-radius: 12px; padding: 25px;">
+                <h4 class="fw-bold mb-3">¡Bienvenido(a) a Blackwell Global University!</h4>
+                <p id="welcome-text" class="fs-6 mb-3">Cargando su información...</p>
+                <hr style="border-color: #cbd5e1;">
+                <p class="mb-1" style="color: #475569; font-size: 0.95rem;">En este formulario completará su expediente oficial en 3 pasos:</p>
+                <ul class="mb-0" style="color: #475569; font-size: 0.9rem;">
+                    <li><b>Paso 1:</b> Adjunte sus documentos (CV, Grados Académicos y Faculty Handbook).</li>
+                    <li><b>Paso 2:</b> Rellene sus datos personales y bancarios.</li>
+                    <li><b>Paso 3:</b> Valide la información académica extraída automáticamente.</li>
+                </ul>
             </div>
-            <div class="row g-4">
-                <div class="col-md-6"><label>Nombres *</label><input type="text" id="nombres" class="form-control" required></div>
-                <div class="col-md-6"><label>Apellidos *</label><input type="text" id="apellidos" class="form-control" required></div>
-                <div class="col-md-6"><label>ID Documento *</label><input type="text" id="id_documento" class="form-control" required></div>
-                <div class="col-md-6"><label>Fecha de Nacimiento *</label><input type="date" id="fecha_nacimiento" class="form-control"></div>
-                <div class="col-md-6"><label>Correo Electrónico *</label><input type="email" id="correo" class="form-control"></div>
-                <div class="col-md-6"><label>Teléfono Móvil *</label><input type="tel" id="celular" class="form-control"></div>
 
-                <div class="col-md-6"><label>CV (PDF) *</label><input type="file" id="cv_file" class="form-control" accept=".pdf" required></div>
-                <div class="col-md-6"><label>Faculty Handbook *</label><input type="file" id="handbook_file" class="form-control" accept=".pdf"></div>
+            <div class="section-header">
+                <h2>1. Documentación Requerida</h2>
+                <p>Por favor, adjunte los siguientes archivos en formato PDF.</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-6"><label>Curriculum Vitae (PDF) *</label><input type="file" id="cv_file" class="form-control" accept=".pdf" required></div>
+                <div class="col-md-6"><label>Faculty Handbook Firmado *</label><input type="file" id="handbook_file" class="form-control" accept=".pdf" required></div>
 
                 <div class="col-12 mt-4">
-                    <h5 class="fw-bold text-primary">Grados Académicos</h5>
+                    <h5 class="fw-bold text-primary">Grados Académicos (Diplomas y Transcripts)</h5>
                     <div id="edu-container">
                         <div class="edu-card bg-light border-primary border-opacity-25 edu-item">
                             <div class="row g-3">
-                                <div class="col-md-12"><label>Grado *</label><select class="form-select grado-select" required><option value="">Seleccione...</option><option>Bachelor</option><option>Master</option><option>Doctorado</option></select></div>
+                                <div class="col-md-12"><label>Grado *</label>
+                                    <select class="form-select grado-select" required>
+                                        <option value="">Seleccione...</option><option>Bachelor</option><option>Master</option><option>Doctorado</option>
+                                    </select>
+                                </div>
                                 <div class="col-md-6"><label>Diploma *</label><input type="file" class="form-control diploma-file" required></div>
                                 <div class="col-md-6"><label>Transcript</label><input type="file" class="form-control transcript-file"></div>
                             </div>
                         </div>
                     </div>
-                    <button type="button" class="btn btn-add-edu" onclick="addEduField()">+ AGREGAR OTRO GRADO</button>
+                    <button type="button" class="btn btn-add-edu" onclick="addEduField()">+ AGREGAR OTRO GRADO ACADÉMICO</button>
                 </div>
             </div>
+            
             <div class="text-end mt-5">
-                <button type="button" class="btn btn-luxury" onclick="procesarIA()">Siguiente Paso <i class="bi bi-arrow-right-short"></i></button>
+                <button type="button" class="btn btn-luxury" onclick="procesarIA()">Procesar Documentos <i class="bi bi-arrow-right-short"></i></button>
             </div>
         </div>
         
-        <!-- PASO 2: INFORMACIÓN DE PAGO -->
+        <!-- PASO 2: DATOS PERSONALES Y BANCARIOS (Rellenados mientras corre n8n) -->
         <div class="form-section" id="step-2">
             <div class="section-header">
-                <h2>2. Información de Pago</h2>
-                <p>Complete sus datos bancarios mientras procesamos sus documentos.</p>
+                <h2>2. Datos Generales y de Pago</h2>
+                <p>Complete su información mientras procesamos sus documentos en segundo plano.</p>
             </div>
+
+            <h5 class="fw-bold text-primary mb-3">Datos Personales</h5>
+            <div class="row g-4 mb-4">
+                <input type="hidden" id="id_interno_docente">
+                <div class="col-md-6"><label>Nombres *</label><input type="text" id="nombres" class="form-control" required></div>
+                <div class="col-md-6"><label>Apellidos *</label><input type="text" id="apellidos" class="form-control" required></div>
+                <div class="col-md-6"><label>ID Documento Identidad *</label><input type="text" id="dni_docente" class="form-control" required placeholder="Ingrese su Identificación"></div>
+                <div class="col-md-6"><label>Fecha de Nacimiento *</label><input type="date" id="fecha_nacimiento" class="form-control" required></div>
+                <div class="col-md-6"><label>Correo Electrónico *</label><input type="email" id="correo" class="form-control" required></div>
+                <div class="col-md-6"><label>Teléfono Móvil *</label><input type="tel" id="celular" class="form-control" required></div>
+            </div>
+
+            <hr class="my-4" style="border-color: #cbd5e1;">
+
+            <h5 class="fw-bold text-primary mb-3">Información de Pago (Bancaria)</h5>
             <div class="row g-4">
                 <div class="col-md-4"><label>Código Postal *</label><input type="text" id="codigo_postal" class="form-control" required></div>
-                <div class="col-md-8"><label>Dirección *</label><input type="text" id="direccion" class="form-control" required></div>
+                <div class="col-md-8"><label>Dirección de Residencia *</label><input type="text" id="direccion" class="form-control" required></div>
 
-                <div class="col-md-6"><label>Banco *</label><input type="text" id="banco" class="form-control" required></div>
+                <div class="col-md-6"><label>Nombre del Banco *</label><input type="text" id="banco" class="form-control" required></div>
                 <div class="col-md-6"><label>Tipo de Cuenta *</label>
                     <select id="tipo_cuenta" class="form-select" required>
                         <option value="">Seleccione...</option>
@@ -140,18 +169,20 @@
                 <div class="col-md-6"><label>Cuenta Interbancaria (CCI) *</label><input type="text" id="cci" class="form-control" required></div>
                 <div class="col-md-6"><label>Número de Cuenta *</label><input type="text" id="cuenta" class="form-control" required></div>
             </div>
+            
             <div class="text-end mt-5">
-                <button type="button" class="btn btn-outline-secondary rounded-pill px-4 me-2" onclick="goBack(1)">Atrás</button>
+                <!-- Se oculta el botón Atrás para que no interrumpa el flujo del n8n que ya empezó -->
                 <button type="button" class="btn btn-luxury" onclick="verificarIAParaPaso3()">Siguiente Paso <i class="bi bi-arrow-right-short"></i></button>
             </div>
         </div>
 
-        <!-- PASO 3: VALIDACIÓN DE INFORMACIÓN -->
+        <!-- PASO 3: VALIDACIÓN DE INFORMACIÓN (Igual al anterior) -->
         <div class="form-section" id="step-3">
             <div class="section-header">
                 <h2>3. Validación de Información</h2>
-                <p>Revise y complete todos los campos marcados antes de finalizar.</p>
+                <p>Nuestra Inteligencia Artificial ha extraído estos datos de sus documentos. Revíselos y complételos antes de finalizar.</p>
             </div>
+            
             <h5 class="fw-bold text-primary mb-3">Formación Académica</h5>
             <div id="ai-results-container"></div>
             <hr class="my-5">
@@ -161,34 +192,47 @@
 
             <div class="text-end mt-5">
                 <button type="button" class="btn btn-outline-secondary rounded-pill px-4 me-2" onclick="goBack(2)">Atrás</button>
-                <button type="submit" class="btn btn-luxury">Finalizar Registro</button>
+                <button type="submit" class="btn btn-luxury">Finalizar Registro y Enviar</button>
             </div>
         </div>
     </form>
 </div>
 
 <script>
-     document.addEventListener("DOMContentLoaded", () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const idDesdeUrl = urlParams.get('id');
-        
-        if(idDesdeUrl) {
-            const inputId = document.getElementById('id_documento');
-            inputId.value = idDesdeUrl;
-            inputId.readOnly = true; // Lo bloqueamos para que no lo modifique
-            inputId.style.backgroundColor = "#f1f5f9"; // Color gris claro para indicar que está bloqueado
-            inputId.style.fontWeight = "bold";
-        }
-    });
-    
     const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
     const N8N_URL = "https://n8n.balticec.com/webhook/ad08f4fd-2709-460a-9368-238395ad8533";
     let iaListo = false;
-    let fileIdsToMove = [];
-
-    // VARIABLES NUEVAS PARA GUARDAR LAS URLS
+    let fileIdsToMove =[];
     let urlCVFinal = "";
     let urlHandbookFinal = "";
+
+    // LÓGICA DE CARGA INICIAL (ID y Saludo)
+    document.addEventListener("DOMContentLoaded", async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const idDesdeUrl = urlParams.get('id');
+        const inputInterno = document.getElementById('id_interno_docente'); // El oculto
+        const welcomeText = document.getElementById('welcome-text');
+        
+        if(idDesdeUrl) {
+            inputInterno.value = idDesdeUrl; // Guardamos el DOC-XXXXXX aquí
+
+            try {
+                const res = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'get_profile', id: idDesdeUrl })
+                });
+                const json = await res.json();
+                
+                if(json.status === 'success' && json.data) {
+                    const nombreDocente = json.data.nombres || "Docente";
+                    welcomeText.innerHTML = `Hola <b>Prof. ${nombreDocente}</b>, gracias por querer unirse a nuestra familia.`;
+                    
+                    if(json.data.correo) document.getElementById('correo').value = json.data.correo;
+                    if(json.data.celular) document.getElementById('celular').value = json.data.celular;
+                }
+            } catch(e) { console.error(e); }
+        }
+    });
 
     function changeFontSize(n) {
         const root = document.documentElement;
@@ -202,8 +246,8 @@
         div.className = 'edu-card edu-item bg-light border-primary border-opacity-25';
         div.innerHTML = `
             <button type="button" class="btn-remove-edu" onclick="this.parentElement.remove()">Eliminar</button>
-            <div class="row g-3"><div class="col-md-12"><label>Grado *</label><select class="form-select grado-select" required><option>Bachelor</option><option>Master</option><option>Doctorado</option></select></div>
-            <div class="col-md-6"><label>Diploma *</label><input type="file" class="form-control diploma-file"></div>
+            <div class="row g-3"><div class="col-md-12"><label>Grado *</label><select class="form-select grado-select" required><option value="">Seleccione...</option><option>Bachelor</option><option>Master</option><option>Doctorado</option></select></div>
+            <div class="col-md-6"><label>Diploma *</label><input type="file" class="form-control diploma-file" required></div>
             <div class="col-md-6"><label>Transcript</label><input type="file" class="form-control transcript-file"></div></div>`;
         container.appendChild(div);
     }
@@ -243,15 +287,12 @@
         r.onload = () => res({ base64: r.result.split(',')[1], name: f.name, type: f.type });
     });
 
-    // Función auxiliar para subir y capturar ID
-
     async function subirArchivoYRegistrar(file) {
         if (!file) return null;
         const b64 = await toB64(file);
         const resp = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "get_url", file: b64.base64, name: b64.name, type: b64.type }) }).then(r => r.json());
         fileIdsToMove.push(resp.fileId);
         return resp.url;
-
     }
 
     async function procesarIA() {
@@ -261,21 +302,24 @@
         requiredFields.forEach(f => { if(!f.checkValidity()){ f.reportValidity(); valid = false; }});
         if (!valid) return;
     
+        // Avanza al paso 2 mientras la IA corre en el fondo
         goNext(2);
         iaListo = false;
-        fileIdsToMove = [];
+        fileIdsToMove =[];
 
         try {
             // 1. Subir CV y Handbook
             urlCVFinal = await subirArchivoYRegistrar(document.getElementById('cv_file').files[0]);
             urlHandbookFinal = await subirArchivoYRegistrar(document.getElementById('handbook_file').files[0]);
 
-            // 2. n8n para el CV
-            const n8nCv = await fetch(N8N_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ fileUrl: urlCVFinal, id: document.getElementById('id_documento').value, grado: "CV" })}).then(r=>r.json());
+            // 2. n8n para el CV (Usa el ID asignado desde la URL o escrito en el input)
+            const teacherId = document.getElementById('id_documento').value;
+            
+            const n8nCv = await fetch(N8N_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ fileUrl: urlCVFinal, id: teacherId, grado: "CV" })}).then(r=>r.json());
             let cvText = (n8nCv.content && n8nCv.content[0]) ? n8nCv.content[0].text : (Array.isArray(n8nCv) && n8nCv[0]?.content ? n8nCv[0].content[0].text : n8nCv);
             if (typeof cvText !== 'string' && cvText.text) cvText = cvText.text;
             let parsedCv = typeof cvText === 'string' ? JSON.parse(cvText.replace(/```json|```/g, "")) : cvText;
-            (parsedCv.experiencias || []).forEach(e => addExpField(e));
+            (parsedCv.experiencias ||[]).forEach(e => addExpField(e));
 
             // 3. Subir Diplomas y Transcripts
             const diplomaItems = document.querySelectorAll('.edu-item');
@@ -284,10 +328,10 @@
                 const transFile = item.querySelector('.transcript-file').files[0];
                 
                 const diplomaUrl = await subirArchivoYRegistrar(dipFile);
-                await subirArchivoYRegistrar(transFile); // Subir transcript (solo para archivar)
+                if(transFile) await subirArchivoYRegistrar(transFile);
 
                 const currentGrado = item.querySelector('.grado-select').value;
-                const n8nDip = await fetch(N8N_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ fileUrl: diplomaUrl, id: document.getElementById('id_documento').value, grado: currentGrado })}).then(r=>r.json());
+                const n8nDip = await fetch(N8N_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ fileUrl: diplomaUrl, id: teacherId, grado: currentGrado })}).then(r=>r.json());
                 
                 let dipText = (n8nDip.content && n8nDip.content[0]) ? n8nDip.content[0].text : n8nDip;
                 let data = typeof dipText === 'string' ? JSON.parse(dipText.replace(/```json|```/g, "")) : dipText;
@@ -314,6 +358,7 @@
         let valid = true;
         requiredFields.forEach(f => { if(!f.checkValidity()){ f.reportValidity(); valid = false; }});
         if (!valid) return;
+        
         if (!iaListo) {
             document.getElementById('loading-overlay').style.display = 'flex';
             const check = setInterval(() => { if(iaListo){ clearInterval(check); document.getElementById('loading-overlay').style.display = 'none'; goNext(3); }}, 1000);
@@ -391,7 +436,3 @@
 </script>
 </body>
 </html>
-
-
-
-
