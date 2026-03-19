@@ -78,87 +78,61 @@
     <!-- Nombres de Pasos actualizados -->
     <div class="stepper-wrapper">
         <div class="step-item active" id="st-1"><div class="step-counter">1</div><div class="step-label text-white">Documentos</div></div>
-        <div class="step-item" id="st-2"><div class="step-counter">2</div><div class="step-label text-white">Datos</div></div>
+        <div class="step-item" id="st-2"><div class="step-counter">2</div><div class="step-label text-white">Datos y Pago</div></div>
         <div class="step-item" id="st-3"><div class="step-counter">3</div><div class="step-label text-white">Validación</div></div>
     </div>
 
     <form id="docenteWizard" novalidate>
-        
-        <!-- PASO 1: SOLO DOCUMENTOS Y MENSAJE DE BIENVENIDA -->
+        <!-- PASO 1: DOCUMENTOS (Bienvenida y Subida) -->
         <div class="form-section active" id="step-1">
-            
-            <!-- Panel de Bienvenida -->
-            <div class="alert mb-4" style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-left: 5px solid var(--bgu-gold); color: var(--bgu-blue); border-radius: 12px; padding: 25px;">
-                <h4 class="fw-bold mb-3">¡Bienvenido(a) a Blackwell Global University!</h4>
-                <p id="welcome-text" class="fs-6 mb-3">Cargando su información...</p>
-                <hr style="border-color: #cbd5e1;">
-                <p class="mb-1" style="color: #475569; font-size: 0.95rem;">En este formulario completará su expediente oficial en 3 pasos:</p>
-                <ul class="mb-0" style="color: #475569; font-size: 0.9rem;">
-                    <li><b>Paso 1:</b> Adjunte sus documentos (CV, Grados Académicos y Faculty Handbook).</li>
-                    <li><b>Paso 2:</b> Rellene sus datos personales y bancarios.</li>
-                    <li><b>Paso 3:</b> Valide la información académica extraída automáticamente.</li>
-                </ul>
-            </div>
-
             <div class="section-header">
-                <h2>1. Documentación Requerida</h2>
-                <p>Por favor, adjunte los siguientes archivos en formato PDF.</p>
+                <h2>1. Bienvenida y Documentos</h2>
+                <p>Bienvenido. Por favor, adjunte su CV, Faculty Handbook y los documentos de sus grados académicos.</p>
             </div>
-            
             <div class="row g-4">
-                <div class="col-md-6"><label>Curriculum Vitae (PDF) *</label><input type="file" id="cv_file" class="form-control" accept=".pdf" required></div>
-                <div class="col-md-6"><label>Faculty Handbook Firmado *</label><input type="file" id="handbook_file" class="form-control" accept=".pdf" required></div>
+                <div class="col-md-6"><label>CV (PDF) *</label><input type="file" id="cv_file" class="form-control" accept=".pdf" required></div>
+                <div class="col-md-6"><label>Faculty Handbook *</label><input type="file" id="handbook_file" class="form-control" accept=".pdf"></div>
 
                 <div class="col-12 mt-4">
-                    <h5 class="fw-bold text-primary">Grados Académicos (Diplomas y Transcripts)</h5>
+                    <h5 class="fw-bold text-primary">Grados Académicos</h5>
                     <div id="edu-container">
                         <div class="edu-card bg-light border-primary border-opacity-25 edu-item">
                             <div class="row g-3">
-                                <div class="col-md-12"><label>Grado *</label>
-                                    <select class="form-select grado-select" required>
-                                        <option value="">Seleccione...</option><option>Bachelor</option><option>Master</option><option>Doctorado</option>
-                                    </select>
-                                </div>
+                                <div class="col-md-12"><label>Grado *</label><select class="form-select grado-select" required><option value="">Seleccione...</option><option>Bachelor</option><option>Master</option><option>Doctorado</option></select></div>
                                 <div class="col-md-6"><label>Diploma *</label><input type="file" class="form-control diploma-file" required></div>
                                 <div class="col-md-6"><label>Transcript</label><input type="file" class="form-control transcript-file"></div>
                             </div>
                         </div>
                     </div>
-                    <button type="button" class="btn btn-add-edu" onclick="addEduField()">+ AGREGAR OTRO GRADO ACADÉMICO</button>
+                    <button type="button" class="btn btn-add-edu" onclick="addEduField()">+ AGREGAR OTRO GRADO</button>
                 </div>
             </div>
-            
             <div class="text-end mt-5">
-                <button type="button" class="btn btn-luxury" onclick="procesarIA()">Procesar Documentos <i class="bi bi-arrow-right-short"></i></button>
+                <!-- Al dar clic aquí iniciará procesarIA() ocultamente mientras se pasa al step 2 -->
+                <button type="button" class="btn btn-luxury" onclick="procesarIA()">Siguiente Paso <i class="bi bi-arrow-right-short"></i></button>
             </div>
         </div>
         
-        <!-- PASO 2: DATOS PERSONALES Y BANCARIOS (Rellenados mientras corre n8n) -->
+        <!-- PASO 2: DATOS PERSONALES E INFORMACIÓN DE PAGO -->
         <div class="form-section" id="step-2">
             <div class="section-header">
-                <h2>2. Datos Generales y de Pago</h2>
-                <p>Complete su información mientras procesamos sus documentos en segundo plano.</p>
+                <h2>2. Datos Personales y Bancarios</h2>
+                <p>Complete su información mientras la IA procesa sus documentos en segundo plano.</p>
             </div>
-
-            <h5 class="fw-bold text-primary mb-3">Datos Personales</h5>
-            <div class="row g-4 mb-4">
-                <input type="hidden" id="id_interno_docente">
+            <div class="row g-4">
+                <h5 class="fw-bold text-primary mb-0 mt-4">Información Personal</h5>
                 <div class="col-md-6"><label>Nombres *</label><input type="text" id="nombres" class="form-control" required></div>
                 <div class="col-md-6"><label>Apellidos *</label><input type="text" id="apellidos" class="form-control" required></div>
-                <div class="col-md-6"><label>ID Documento Identidad *</label><input type="text" id="dni_docente" class="form-control" required placeholder="Ingrese su Identificación"></div>
-                <div class="col-md-6"><label>Fecha de Nacimiento *</label><input type="date" id="fecha_nacimiento" class="form-control" required></div>
-                <div class="col-md-6"><label>Correo Electrónico *</label><input type="email" id="correo" class="form-control" required></div>
-                <div class="col-md-6"><label>Teléfono Móvil *</label><input type="tel" id="celular" class="form-control" required></div>
-            </div>
+                <div class="col-md-6"><label>ID Documento *</label><input type="text" id="id_documento" class="form-control" required></div>
+                <div class="col-md-6"><label>Fecha de Nacimiento *</label><input type="date" id="fecha_nacimiento" class="form-control"></div>
+                <div class="col-md-6"><label>Correo Electrónico *</label><input type="email" id="correo" class="form-control"></div>
+                <div class="col-md-6"><label>Teléfono Móvil *</label><input type="tel" id="celular" class="form-control"></div>
 
-            <hr class="my-4" style="border-color: #cbd5e1;">
-
-            <h5 class="fw-bold text-primary mb-3">Información de Pago (Bancaria)</h5>
-            <div class="row g-4">
+                <h5 class="fw-bold text-primary mb-0 mt-5">Información de Pago</h5>
                 <div class="col-md-4"><label>Código Postal *</label><input type="text" id="codigo_postal" class="form-control" required></div>
-                <div class="col-md-8"><label>Dirección de Residencia *</label><input type="text" id="direccion" class="form-control" required></div>
+                <div class="col-md-8"><label>Dirección *</label><input type="text" id="direccion" class="form-control" required></div>
 
-                <div class="col-md-6"><label>Nombre del Banco *</label><input type="text" id="banco" class="form-control" required></div>
+                <div class="col-md-6"><label>Banco *</label><input type="text" id="banco" class="form-control" required></div>
                 <div class="col-md-6"><label>Tipo de Cuenta *</label>
                     <select id="tipo_cuenta" class="form-select" required>
                         <option value="">Seleccione...</option>
@@ -169,9 +143,9 @@
                 <div class="col-md-6"><label>Cuenta Interbancaria (CCI) *</label><input type="text" id="cci" class="form-control" required></div>
                 <div class="col-md-6"><label>Número de Cuenta *</label><input type="text" id="cuenta" class="form-control" required></div>
             </div>
-            
             <div class="text-end mt-5">
-                <!-- Se oculta el botón Atrás para que no interrumpa el flujo del n8n que ya empezó -->
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4 me-2" onclick="goBack(1)">Atrás</button>
+                <!-- Al dar clic aquí validará y chequeará si la IA ya terminó -->
                 <button type="button" class="btn btn-luxury" onclick="verificarIAParaPaso3()">Siguiente Paso <i class="bi bi-arrow-right-short"></i></button>
             </div>
         </div>
@@ -206,31 +180,41 @@
     let urlCVFinal = "";
     let urlHandbookFinal = "";
 
-    // LÓGICA DE CARGA INICIAL (ID y Saludo)
-    document.addEventListener("DOMContentLoaded", async () => {
+    document.addEventListener("DOMContentLoaded", () => {
         const urlParams = new URLSearchParams(window.location.search);
         const idDesdeUrl = urlParams.get('id');
-        const inputInterno = document.getElementById('id_interno_docente'); // El oculto
-        const welcomeText = document.getElementById('welcome-text');
         
         if(idDesdeUrl) {
-            inputInterno.value = idDesdeUrl; // Guardamos el DOC-XXXXXX aquí
+            const inputId = document.getElementById('id_documento');
+            inputId.value = idDesdeUrl;
+            inputId.readOnly = true; 
+            inputId.style.backgroundColor = "#f1f5f9"; 
+            inputId.style.fontWeight = "bold";
 
-            try {
-                const res = await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'get_profile', id: idDesdeUrl })
-                });
-                const json = await res.json();
-                
-                if(json.status === 'success' && json.data) {
-                    const nombreDocente = json.data.nombres || "Docente";
-                    welcomeText.innerHTML = `Hola <b>Prof. ${nombreDocente}</b>, gracias por querer unirse a nuestra familia.`;
+            // --- LLAMADA A LA BASE DE DATOS PARA AUTOCOMPLETAR NOMBRE Y APELLIDO ---
+            fetch(GAS_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "get_profile", id: idDesdeUrl })
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.status === "success") {
+                    const inputNombres = document.getElementById('nombres');
+                    const inputApellidos = document.getElementById('apellidos');
                     
-                    if(json.data.correo) document.getElementById('correo').value = json.data.correo;
-                    if(json.data.celular) document.getElementById('celular').value = json.data.celular;
+                    if(res.data.nombres) {
+                        inputNombres.value = res.data.nombres;
+                        inputNombres.readOnly = true; // Lo bloqueamos opcionalmente para evitar alteraciones
+                        inputNombres.style.backgroundColor = "#f1f5f9";
+                    }
+                    if(res.data.apellidos) {
+                        inputApellidos.value = res.data.apellidos;
+                        inputApellidos.readOnly = true; // Lo bloqueamos opcionalmente
+                        inputApellidos.style.backgroundColor = "#f1f5f9";
+                    }
                 }
-            } catch(e) { console.error(e); }
+            })
+            .catch(err => console.error("Error obteniendo los nombres del docente: ", err));
         }
     });
 
