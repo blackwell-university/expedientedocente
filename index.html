@@ -380,7 +380,7 @@
         document.getElementById('step-' + n).classList.add('active');
         document.querySelectorAll('.step-item').forEach((s, i) => { s.classList.toggle('active', i+1===n); s.classList.toggle('completed', i+1<n); } );
         window.scrollTo(0,0);
-    }
+    } 
 
     function goBack(n) { goNext(n); }
 
