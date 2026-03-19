@@ -15,8 +15,19 @@
             --dynamic-font-size: 1rem;
         }
         body { font-family: 'Inter', sans-serif; background-color: var(--main-bg); margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        .content-area { font-size: var(--dynamic-font-size); padding: 40px; max-width: 1200px; width: 100%; margin: 0 auto; overflow-y: auto;}
-        
+
+        .content-area { font-size: var(--dynamic-font-size); padding: 40px; max-width: 1200px; width: 100%; margin: 0 auto; }
+        .main-wrapper { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; }
+
+        /* NUEVO: Controlar que las invitaciones no desborden la tarjeta blanca */
+        #contenedor-invitaciones {
+            max-height: 340px; 
+            overflow-y: auto; 
+            padding-right: 10px;
+        }
+        #contenedor-invitaciones::-webkit-scrollbar { width: 6px; }
+        #contenedor-invitaciones::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+
         .sidebar { width: 260px; background-color: var(--sidebar-bg); color: white; display: flex; flex-direction: column; flex-shrink: 0; padding: 20px 0; }
         .sidebar-brand { padding: 0 25px 30px; display: flex; align-items: center; gap: 10px; }
         .sidebar-brand i { font-size: 24px; } .sidebar-brand div b { display: block; line-height: 1; font-size: 1.1rem; } .sidebar-brand div span { font-size: 0.7rem; opacity: 0.7; }
@@ -28,7 +39,6 @@
         .user-info { margin-bottom: 15px; opacity: 0.9; } .user-info b { display: block; font-size: 0.8rem; }
         .btn-logout { width: 100%; background-color: var(--logout-red); color: white; border: none; padding: 8px; border-radius: 6px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
         
-        .main-wrapper { flex-grow: 1; display: flex; flex-direction: column; overflow-y: hidden; }
         header { background: white; padding: 15px 40px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
         header h2 { font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--text-dark); }
         header p { margin: 0; font-size: 0.75rem; color: var(--text-muted); }
@@ -259,6 +269,41 @@
         </div>
     </div>
 
+    <!-- MODAL: Actualizar Estado de Invitación -->
+    <div class="modal fade modal-modern" id="modalActualizarEstado" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content shadow-lg">
+                <div class="modal-header py-3">
+                    <h5 class="modal-title fw-bold m-0" style="font-size: 1rem;">Actualizar Estado</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <input type="hidden" id="updateInvId">
+                    <label class="label-modern">Nuevo Estado</label>
+                    <select id="selNuevoEstado" class="form-select input-modern mb-4">
+                        <option value="Guardado">Guardado</option>
+                        <option value="Enviado">Enviado</option>
+                        <option value="Aceptado">Aceptado</option>
+                        <option value="Declinado">Declinado</option>
+                    </select>
+                    <button class="btn btn-primary w-100 fw-semibold" style="background: #1e3a8a; border: none;" onclick="guardarNuevoEstado()">Guardar Cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR DE TOASTS (NOTIFICACIONES) -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-4" style="z-index: 1055;">
+        <div id="liveToast" class="toast align-items-center text-white border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body fw-medium" id="toastMessage" style="font-size: 0.95rem;">
+                    Mensaje de notificación.
+                </div>
+                <button type="button" class="btn-close btn-close-white me-3 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec"; 
@@ -269,6 +314,18 @@
 
         const urlParams = new URLSearchParams(window.location.search);
         const docenteId = urlParams.get('id');
+
+        function mostrarToast(mensaje, tipo = 'success') {
+            const toastEl = document.getElementById('liveToast');
+            document.getElementById('toastMessage').innerText = mensaje;
+            
+            // Cambia el color del toast (success = verde, danger = rojo, warning = amarillo oscuro)
+            toastEl.className = `toast align-items-center text-white border-0 shadow-lg bg-${tipo}`;
+            if(tipo === 'warning') toastEl.classList.replace('text-white', 'text-dark'); // Mejor contraste para amarillo
+            
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             if(docenteId) {
@@ -294,7 +351,7 @@
             } catch(e) { console.error(e); }
         }
 
-        // 2. CARGAR INVITACIONES DEL DOCENTE (Dinámico)
+        // 2. CARGAR INVITACIONES DEL DOCENTE (Dinámico y con Botón)
         async function cargarInvitaciones(id) {
             const container = document.getElementById('contenedor-invitaciones');
             try {
@@ -303,21 +360,30 @@
                 
                 if (result.status === 'success' && result.data.length > 0) {
                     container.innerHTML = result.data.map(inv => {
-                        let colorBadge = inv.estado === 'Enviado' ? 'bg-enviado' : 'bg-guardado';
+                        let colorBadge = 'bg-guardado';
+                        if (inv.estado === 'Enviado') colorBadge = 'bg-enviado';
+                        if (inv.estado === 'Aceptado') colorBadge = 'bg-success text-white';
+                        if (inv.estado === 'Declinado') colorBadge = 'bg-danger text-white';
+
                         let f = new Date(inv.fecha).toLocaleDateString();
                         return `
-                        <div class="invitation-box">
-                            <div class="invitation-title-row">
-                                <div class="d-flex align-items-center">
-                                    <h3 class="invitation-title">${inv.curso}</h3>
+                        <div class="invitation-box d-flex justify-content-between align-items-center gap-3">
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center mb-1">
+                                    <h3 class="invitation-title m-0">${inv.curso}</h3>
                                     <span class="status-badge ${colorBadge}">${inv.estado}</span>
                                 </div>
+                                <div class="invitation-details mt-1" style="font-size: 0.85rem; color: #475569;">
+                                    <div><b>Programa:</b> ${inv.programa}</div>
+                                    <div><b>Días:</b> ${inv.dias} | <b>Horario:</b> ${inv.horario}</div>
+                                    <div><b>Pago Ofrecido:</b> ${inv.pago}</div>
+                                    <div class="mt-1" style="font-size:0.75rem; color:#94a3b8;">Creado el: ${f}</div>
+                                </div>
                             </div>
-                            <div class="invitation-details mt-2">
-                                <div><b>Programa:</b> ${inv.programa}</div>
-                                <div><b>Días:</b> ${inv.dias} | <b>Horario:</b> ${inv.horario}</div>
-                                <div><b>Pago Ofrecido:</b> ${inv.pago}</div>
-                                <div class="mt-1" style="font-size:0.75rem; color:#94a3b8;">Creado el: ${f}</div>
+                            <div class="flex-shrink-0">
+                                <button class="btn btn-sm btn-outline-secondary fw-semibold" onclick="abrirModalEstado('${inv.id}', '${inv.estado}')">
+                                    <i class="fa-solid fa-pen"></i> Editar
+                                </button>
                             </div>
                         </div>`;
                     }).join('');
@@ -327,6 +393,40 @@
             } catch(e) { container.innerHTML = `<p class="text-danger">Error al cargar invitaciones.</p>`; }
         }
 
+        // --- NUEVAS FUNCIONES PARA ACTUALIZAR ESTADO DE LA INVITACION ---
+        function abrirModalEstado(id, estadoActual) {
+            document.getElementById('updateInvId').value = id;
+            document.getElementById('selNuevoEstado').value = estadoActual;
+            new bootstrap.Modal(document.getElementById('modalActualizarEstado')).show();
+        }
+
+        async function guardarNuevoEstado() {
+            const invId = document.getElementById('updateInvId').value;
+            const nuevoEstado = document.getElementById('selNuevoEstado').value;
+            const btn = document.querySelector('#modalActualizarEstado .btn-primary');
+            
+            btn.disabled = true; btn.innerHTML = 'Actualizando...';
+
+            try {
+                const res = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'update_invitation_status', id: invId, estado: nuevoEstado })
+                });
+                const result = await res.json();
+                if(result.status === 'success') {
+                    mostrarToast("Estado actualizado correctamente", "success");
+                    bootstrap.Modal.getInstance(document.getElementById('modalActualizarEstado')).hide();
+                    cargarInvitaciones(docenteId); // Recargamos para ver el cambio
+                } else {
+                    mostrarToast("Error al actualizar estado", "danger");
+                }
+            } catch(e) {
+                mostrarToast("Error de conexión al actualizar", "danger");
+            } finally {
+                btn.disabled = false; btn.innerHTML = 'Guardar Cambios';
+            }
+        }
+        
         // 3. LÓGICA DEL MODAL DE INVITACIÓN
         let catalogoCursos =[];
         document.getElementById('modalInvitacion').addEventListener('show.bs.modal', async () => {
@@ -368,12 +468,15 @@
             const selP = document.getElementById('selPrograma'); const selC = document.getElementById('selCurso');
             const fechaIni = document.getElementById('invFechaInicio').value; const fechaFin = document.getElementById('invFechaFin').value;
             
-            if(!selP.value || !selC.value || !fechaIni || !fechaFin) { alert("Complete Programa, Curso y Fechas."); return; }
+            if(!selP.value || !selC.value || !fechaIni || !fechaFin) { 
+                mostrarToast("Complete Programa, Curso y Fechas.", "warning"); 
+                return; 
+            }
 
             const payload = {
-                action: 'send_invitation_email',
+                action: 'save_invitation', // <--- CORREGIDO: Antes decía 'send_invitation_email'
                 idInvitacion: currentInvitacionId,
-                docenteId: docenteId, // <--- AÑADE ESTA LÍNEA EXACTAMENTE AQUÍ
+                docenteId: docenteId, 
                 docenteNombre: document.getElementById('det-nombre').innerText,
                 docenteCorreo: document.getElementById('det-correo').innerText,
                 programa: selP.options[selP.selectedIndex].text,
@@ -391,11 +494,13 @@
                 const result = await res.json();
                 if(result.status === "success") {
                     currentInvitacionId = result.idInvitacion; 
-                    alert("Borrador guardado. Puede enviar el correo.");
+                    mostrarToast("Borrador guardado. Puede enviar el correo.", "success");
                     document.getElementById('btnEnviarCorreo').disabled = false;
                     cargarInvitaciones(docenteId); // Refresca la lista
                 }
-            } catch(e) { alert("Error al guardar."); }
+            } catch(e) { 
+                mostrarToast("Error al guardar el borrador.", "danger"); 
+            }
         }
 
         async function enviarCorreoInvitacion() {
@@ -405,12 +510,18 @@
             const selP = document.getElementById('selPrograma'); const selC = document.getElementById('selCurso');
             
             const payload = {
-                action: 'send_invitation_email', idInvitacion: currentInvitacionId,
-                docenteNombre: document.getElementById('det-nombre').innerText, docenteCorreo: document.getElementById('det-correo').innerText,
-                programa: selP.options[selP.selectedIndex].text, curso: selC.options[selC.selectedIndex].text,
+                action: 'send_invitation_email', 
+                idInvitacion: currentInvitacionId,
+                docenteId: docenteId, // <--- AÑADIDO: Vital para que el enlace del correo tenga el ID correcto
+                docenteNombre: document.getElementById('det-nombre').innerText, 
+                docenteCorreo: document.getElementById('det-correo').innerText,
+                programa: selP.options[selP.selectedIndex].text, 
+                curso: selC.options[selC.selectedIndex].text,
                 rangoFechas: generarTextoFechas(document.getElementById('invFechaInicio').value, document.getElementById('invFechaFin').value),
-                horario: document.getElementById('invHorario').value, cantidadClases: document.getElementById('invCantClases').value,
-                monedaSimbolo: document.getElementById('invMoneda').value, costo: document.getElementById('invCosto').value,
+                horario: document.getElementById('invHorario').value, 
+                cantidadClases: document.getElementById('invCantClases').value,
+                monedaSimbolo: document.getElementById('invMoneda').value, 
+                costo: document.getElementById('invCosto').value,
                 documentos: obtenerDocumentosSeleccionados()
             };
 
@@ -418,12 +529,16 @@
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const result = await res.json();
                 if(result.status === "success") {
-                    alert("¡Correo Institucional enviado!");
+                    mostrarToast("¡Correo Institucional enviado con éxito!", "success");
                     bootstrap.Modal.getInstance(document.getElementById('modalInvitacion')).hide();
                     btnEnviar.innerHTML = 'Guardar y Enviar Correo';
                     cargarInvitaciones(docenteId); // Refresca la lista para mostrar "Enviado"
                 }
-            } catch(e) { alert("Error al enviar."); btnEnviar.disabled = false; btnEnviar.innerHTML = 'Guardar y Enviar Correo'; }
+            } catch(e) { 
+                mostrarToast("Error de conexión al enviar.", "danger"); 
+                btnEnviar.disabled = false; 
+                btnEnviar.innerHTML = 'Guardar y Enviar Correo'; 
+            }
         }
     </script>
 </body>
