@@ -2,10 +2,8 @@
 <html lang="es">
 <head>
     <script>
-        // Lógica de protección de ruta adaptada para el rol Administrativo/Administrador
         const isLoggedIn = sessionStorage.getItem('isLoggedIn');
         const userRole = sessionStorage.getItem('userRole');
-    
         if (isLoggedIn !== 'true' || (userRole !== 'Administrativo' && userRole !== 'Administrador')) {
             window.location.href = "login.html";
         }
@@ -13,11 +11,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Docentes - Universidad Blackwell</title>
-    <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -29,7 +24,6 @@
             --text-muted: #64748b;
             --accent-blue: #223f93;
             --logout-red: #e11d48;
-
             --dynamic-font-size: 1rem;
         }
 
@@ -50,7 +44,6 @@
             width: 100%;
         }
 
-        /* --- HEADER & CONTROLES --- */
         header {
             background: white;
             padding: 15px 40px;
@@ -75,20 +68,9 @@
             border: 1px solid #e2e8f0;
         }
 
-        .btn-font {
-            background: none;
-            border: none;
-            color: var(--text-dark);
-            font-weight: bold;
-            padding: 0 5px;
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-
-        .btn-font:active { transform: scale(1.3); }
+        .btn-font { background: none; border: none; color: var(--text-dark); font-weight: bold; cursor: pointer; }
         #fontSizeLabel { min-width: 60px; text-align: center; font-weight: 500; }
 
-        /* --- SIDEBAR --- */
         .sidebar {
             width: 260px;
             background-color: var(--sidebar-bg);
@@ -99,22 +81,12 @@
             padding: 20px 0;
         }
 
-        .sidebar-brand {
-            padding: 0 25px 30px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
+        .sidebar-brand { padding: 0 25px 30px; display: flex; align-items: center; gap: 10px; }
         .sidebar-brand i { font-size: 24px; }
         .sidebar-brand div b { display: block; line-height: 1; font-size: 1.1rem; }
         .sidebar-brand div span { font-size: 0.7rem; opacity: 0.7; }
 
-        .nav-menu {
-            flex-grow: 1;
-            padding: 0 15px;
-        }
-
+        .nav-menu { flex-grow: 1; padding: 0 15px; }
         .nav-item {
             display: flex;
             align-items: center;
@@ -127,24 +99,14 @@
             margin-bottom: 5px;
             transition: all 0.2s;
         }
+        .nav-item:hover { color: white; background: rgba(255,255,255,0.1); }
+        .nav-item.active { background-color: var(--sidebar-active); color: white; font-weight: 500; }
 
-        .nav-item:hover {
-            color: white;
-            background: rgba(255,255,255,0.1);
-        }
-
-        .nav-item.active {
-            background-color: var(--sidebar-active);
-            color: white;
-            font-weight: 500;
-        }
-
-        .sidebar-footer {
-            padding: 20px;
-            background: rgba(0,0,0,0.2);
+        .sidebar-footer { 
+            padding: 20px; 
+            background: rgba(0,0,0,0.2); 
             font-size: 0.75rem;
         }
-
         .user-info { margin-bottom: 15px; }
         .user-info span { opacity: 0.8; }
         .user-info b { display: block; font-size: 0.85rem; margin-top: 2px; }
@@ -164,220 +126,147 @@
             gap: 8px;
             transition: 0.3s;
         }
-        .btn-logout:hover { background-color: #be123c; }
 
-        /* --- CONTENIDO ESPECÍFICO: GESTIÓN DOCENTES --- */
-        .main-wrapper {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-        }
+        .main-wrapper { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; }
 
-        .page-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 5px;
-        }
-        .page-subtitle {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            margin-bottom: 25px;
-        }
-
-        /* Buscador */
-        .search-card {
+        /* --- UI MEJORADA --- */
+        .page-title { font-size: 1.75rem; font-weight: 800; color: #0f172a; }
+        
+        .filter-section {
             background: white;
             border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             margin-bottom: 25px;
+            border: 1px solid #e2e8f0;
         }
 
-        .search-wrapper {
+        .search-input-group {
             position: relative;
+            flex-grow: 1;
         }
 
-        .search-wrapper i {
+        .search-input-group i {
             position: absolute;
             left: 15px;
             top: 50%;
             transform: translateY(-50%);
             color: #94a3b8;
-            font-size: 1rem;
         }
 
-        .search-wrapper input {
-            width: 100%;
-            padding: 12px 15px 12px 45px;
-            border: 1.5px solid var(--accent-blue);
+        .form-control-custom {
+            padding: 10px 15px 10px 45px;
+            border: 1px solid #e2e8f0;
             border-radius: 8px;
             font-size: 0.9rem;
-            color: var(--text-dark);
+            width: 100%;
+        }
+
+        .form-control-custom:focus {
             outline: none;
-            transition: 0.3s;
+            border-color: var(--sidebar-active);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
-        .search-wrapper input::placeholder {
-            color: #94a3b8;
-        }
-
-        .search-wrapper input:focus {
-            box-shadow: 0 0 0 4px rgba(34, 63, 147, 0.1);
-        }
-
-        /* Tarjeta de Docente */
-        .teacher-card {
+        /* Tabla */
+        .table-card {
             background: white;
             border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
-            margin-bottom: 20px;
-            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
         }
 
-        .teacher-card:hover {
-            box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+        .table thead th {
+            background-color: #f8fafc;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.025em;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e2e8f0;
         }
 
-        .teacher-header {
+        .table tbody td {
+            padding: 16px 24px;
+            color: var(--text-dark);
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .table tbody tr:hover { background-color: #fcfdfe; }
+
+        /* Estados */
+        .badge-status {
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+        .status-pendiente { background: #fffbeb; color: #92400e; border: 1px solid #fef3c7; }
+        .status-respondido { background: #eff6ff; color: #1e40af; border: 1px solid #dbeafe; }
+        .status-aprobado { background: #f0fdf4; color: #166534; border: 1px solid #dcfce7; }
+
+        /* Paginación */
+        .pagination-container {
+            padding: 20px 24px;
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 2px;
-        }
-
-        .teacher-header h4 {
-            font-size: 1.15rem;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin: 0;
-        }
-
-        .status-badge {
-            padding: 4px 14px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .status-aprobado { background-color: #dcfce7; color: #166534; }
-        .status-pendiente { background-color: #fef9c3; color: #854d0e; }
-
-        .teacher-dept {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            margin-bottom: 18px;
-        }
-
-        .teacher-info {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px 0;
-            margin-bottom: 20px;
-        }
-
-        .info-item {
-            color: var(--text-dark);
-            font-size: 0.85rem;
-            display: flex;
             align-items: center;
-            gap: 10px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
         }
 
-        .info-item i {
-            color: #64748b;
-            font-size: 0.95rem;
-            width: 16px;
-            text-align: center;
-        }
-
-        .teacher-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn-details {
-            background-color: var(--accent-blue);
-            color: white;
-            border: none;
-            padding: 8px 18px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: 0.3s;
-        }
-
-        .btn-details:hover { background-color: #1e3a8a; }
-
-        .btn-edit {
-            background-color: #f1f5f9;
-            color: var(--text-dark);
+        .btn-page {
+            padding: 6px 12px;
             border: 1px solid #e2e8f0;
-            padding: 8px 18px;
+            background: white;
             border-radius: 6px;
             font-size: 0.85rem;
-            font-weight: 600;
+            color: var(--text-dark);
+            transition: 0.2s;
+        }
+
+        .btn-page:hover:not(:disabled) {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .btn-page:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .page-numbers { display: flex; gap: 5px; }
+        .page-num {
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            transition: 0.3s;
+            justify-content: center;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .page-num.active {
+            background: var(--sidebar-bg);
+            color: white;
+            font-weight: 600;
         }
 
-        .btn-edit:hover { background-color: #e2e8f0; }
-
-        @media (max-width: 768px) {
-            .sidebar { display: none; }
-        }
-
-        .table > :not(caption) > * > * {
-            padding: 1.5rem 1.5rem;
-            background-color: transparent;
-            border-bottom-width: 1px;
-        }
-        .table thead th {
-            border-bottom: 2px solid #f8fafc;
-        }
-        .badge {
-            font-size: 0.75rem;
-            padding: 5px 12px;
-        }
+        @media (max-width: 768px) { .sidebar { display: none; } }
     </style>
 </head>
 <body>
 
-    <!-- Sidebar Lateral -->
     <aside class="sidebar">
         <div class="sidebar-brand">
             <i class="fa-solid fa-graduation-cap"></i>
-            <div>
-                <b>Blackwell</b>
-                <span>Universidad</span>
-            </div>
+            <div><b>Blackwell</b><span>Universidad</span></div>
         </div>
-
         <nav class="nav-menu">
-            <a href="administrativo.html" class="nav-item">
-                <i class="fa-solid fa-border-all"></i> Dashboard
-            </a>
-            <a href="gestion-docentes.html" class="nav-item active">
-                <i class="fa-solid fa-users"></i> Gestión de Docentes
-            </a>
-            <a href="revision-docs.html" class="nav-item">
-                <i class="fa-regular fa-file-lines"></i> Revisión de Documentos
-            </a>
-            <a href="subir-materiales.html" class="nav-item">
-                <i class="fa-solid fa-upload"></i> Subir Materiales
-            </a>
-            <a href="aprobaciones.html" class="nav-item">
-                <i class="fa-regular fa-circle-check"></i> Aprobaciones
-            </a>
+            <a href="administrativo.html" class="nav-item"><i class="fa-solid fa-border-all"></i> Dashboard</a>
+            <a href="gestion-docentes.html" class="nav-item active"><i class="fa-solid fa-users"></i> Gestión de Docentes</a>
+            <a href="revision-docs.html" class="nav-item"><i class="fa-regular fa-file-lines"></i> Revisión de Documentos</a>
+            <a href="subir-materiales.html" class="nav-item"><i class="fa-solid fa-upload"></i> Subir Materiales</a>
+            <a href="aprobaciones.html" class="nav-item"><i class="fa-regular fa-circle-check"></i> Aprobaciones</a>
         </nav>
-
         <div class="sidebar-footer">
             <div class="user-info">
                 <span>Sesión activa:</span>
@@ -390,15 +279,10 @@
         </div>
     </aside>
 
-    <!-- Contenido Principal -->
     <main class="main-wrapper">
         <header>
-            <div>
-                <h2>Sistema de Gestión de Expedientes</h2>
-                <p>Panel Administrativo</p>
-            </div>
+            <div><h2>Sistema de Gestión de Expedientes</h2><p>Panel Administrativo</p></div>
             <div class="font-controls">
-                <i class="fa-solid fa-text-height"></i>
                 <button onclick="changeFontSize(-1)" class="btn-font">—</button>
                 <span id="fontSizeLabel">Normal</span>
                 <button onclick="changeFontSize(1)" class="btn-font">+</button>
@@ -406,51 +290,77 @@
         </header>
 
         <div class="content-area">
-
-
-            <div class="page-title-section d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h1 class="page-title">Gestión de Docentes</h1> 
-                    <p class="page-subtitle mb-0">Gestión de expedientes de la plana docente</p>
+                    <p class="page-subtitle">Visualiza y gestiona el estado de la plana docente.</p>
                 </div>
-
-                <a href="registrodocente.html" class="btn btn-primary" style="background-color: var(--sidebar-bg); border: none; padding: 10px 20px; font-weight: 600; border-radius: 8px;">
+                <a href="registrodocente.html" class="btn btn-primary shadow-sm" style="background: var(--sidebar-bg); border: none; padding: 12px 24px; border-radius: 10px; font-weight: 600;">
                     <i class="fa-solid fa-plus me-2"></i> Nuevo Docente
                 </a>
             </div>
-            <!-- Buscador -->
-            <div class="search-card">
-                <div class="search-wrapper">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" placeholder="Buscar docente por nombre, email o departamento...">
+
+            <!-- Filtros Inteligentes -->
+            <div class="filter-section">
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <div class="search-input-group">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="searchInput" class="form-control-custom" placeholder="Buscar por nombre o correo electrónico...">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <select id="statusFilter" class="form-select border-0 bg-light" style="padding: 10px 15px; border-radius: 8px; font-size: 0.9rem;">
+                            <option value="all">Todos los estados</option>
+                            <option value="Pendiente">Pendiente</option>
+                            <option value="Respondido">Respondido</option>
+                            <option value="Aprobado">Aprobado</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
-            <!-- Tabla de Docentes -->
-            <div class="card border-0 shadow-sm">
+            <!-- Tabla con Paginación -->
+            <div class="table-card shadow-sm">
                 <div class="table-responsive">
                     <table class="table align-middle mb-0">
-                        <thead class="bg-light">
-                            <tr style="font-size: 0.8rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">
-                                <th class="p-4">Docente</th>
-                                <th class="p-4">Correo Electrónico</th>
-                                <th class="p-4">Estado</th>
-                                <th class="p-4">Cursos</th>
-                                <th class="p-4">Acciones</th>
+                        <thead>
+                            <tr>
+                                <th>Docente</th>
+                                <th>Información de Contacto</th>
+                                <th>Estado de Expediente</th>
+                                <th class="text-center">Cursos</th>
+                                <th class="text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="tabla-docentes-body">
-                            <!-- Aquí se inyectarán los datos -->
+                            <!-- JS inyectará datos aquí -->
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Footer de Paginación -->
+                <div class="pagination-container">
+                    <div class="text-muted small" id="tableInfo">Mostrando 0 de 0 docentes</div>
+                    <div class="d-flex align-items-center gap-3">
+                        <button class="btn-page" id="prevPage" disabled><i class="fa-solid fa-chevron-left me-1"></i> Anterior</button>
+                        <div class="page-numbers" id="pageNumbers"></div>
+                        <button class="btn-page" id="nextPage" disabled>Siguiente <i class="fa-solid fa-chevron-right ms-1"></i></button>
+                    </div>
+                </div>
             </div>
-
-
         </div>
     </main>
 
     <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
+        
+        // Estado de la aplicación
+        let allTeachers = [];
+        let filteredTeachers = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
         function logout() {
             if(confirm("¿Estás seguro que deseas cerrar sesión?")) {
                 sessionStorage.clear();
@@ -458,14 +368,118 @@
             }
         }
 
-        // NAVEGACIÓN Y TAMAÑO
-        const navItems = document.querySelectorAll('.nav-item');
-        navItems.forEach(item => { 
-            item.addEventListener('click', (e) => { 
-                if(item.getAttribute('href') === '#') e.preventDefault(); 
-            }); 
-        });
-        
+        async function cargarDocentes() {
+            const tbody = document.getElementById('tabla-docentes-body');
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center py-5"><div class="spinner-border text-primary" role="status"></div></td></tr>`;
+            
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'get_all_teachers' })
+                });
+                const result = await response.json();
+                
+                if(result.status === 'success') {
+                    allTeachers = result.data;
+                    aplicarFiltros();
+                }
+            } catch (e) {
+                tbody.innerHTML = "<tr><td colspan='4' class='p-4 text-center text-danger'>Error al conectar con el servidor.</td></tr>";
+            }
+        }
+
+        function aplicarFiltros() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            filteredTeachers = allTeachers.filter(t => {
+                const matchesSearch = (t.nombres + " " + t.apellidos).toLowerCase().includes(searchTerm) || 
+                                     t.correo.toLowerCase().includes(searchTerm);
+                const matchesStatus = statusFilter === 'all' || t.estado === statusFilter;
+                return matchesSearch && matchesStatus;
+            });
+
+            currentPage = 1;
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tabla-docentes-body');
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const paginatedItems = filteredTeachers.slice(start, end);
+
+            if (paginatedItems.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-5 text-muted">No se encontraron docentes con los criterios de búsqueda.</td></tr>`;
+                actualizarControlesPaginacion(0);
+                return;
+            }
+
+            tbody.innerHTML = paginatedItems.map(d => {
+                const estado = (d.estado || "Pendiente").trim();
+                const statusClass = `status-${estado.toLowerCase()}`;
+
+                return `
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; color: var(--sidebar-bg)">
+                                <i class="fa-solid fa-user-tie"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold">${d.nombres} ${d.apellidos}</div>
+                                <div class="text-muted small">ID: ${d.id}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="small"><i class="fa-regular fa-envelope me-2"></i>${d.correo}</div>
+                    </td>
+                    <td>
+                        <span class="badge-status ${statusClass}">${estado}</span>
+                    </td>
+                    <td class="text-center">
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 5px; display: inline-block; min-width: 45px;">
+                            <span class="fw-bold" style="color: var(--sidebar-bg); font-size: 1rem;">${d.cursosCount}</span>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <a href="detallesdocente.html?id=${d.id}" class="btn btn-sm btn-light border" style="font-weight: 600; color: var(--sidebar-bg)">
+                            <i class="fa-regular fa-eye me-1"></i> Expediente
+                        </a>
+                    </td>
+                </tr>
+            `}).join('');
+
+            actualizarControlesPaginacion(filteredTeachers.length);
+        }
+
+        function actualizarControlesPaginacion(totalItems) {
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            document.getElementById('tableInfo').innerText = `Mostrando ${Math.min(totalItems, (currentPage - 1) * itemsPerPage + 1)} - ${Math.min(totalItems, currentPage * itemsPerPage)} de ${totalItems} docentes`;
+            
+            document.getElementById('prevPage').disabled = currentPage === 1;
+            document.getElementById('nextPage').disabled = currentPage === totalPages || totalPages === 0;
+
+            const pageNumbers = document.getElementById('pageNumbers');
+            pageNumbers.innerHTML = '';
+            
+            for (let i = 1; i <= totalPages; i++) {
+                const span = document.createElement('div');
+                span.className = `page-num ${i === currentPage ? 'active' : ''}`;
+                span.innerText = i;
+                span.onclick = () => { currentPage = i; renderTable(); };
+                pageNumbers.appendChild(span);
+            }
+        }
+
+        // Listeners para filtros
+        document.getElementById('searchInput').addEventListener('input', aplicarFiltros);
+        document.getElementById('statusFilter').addEventListener('change', aplicarFiltros);
+        document.getElementById('prevPage').onclick = () => { if(currentPage > 1) { currentPage--; renderTable(); } };
+        document.getElementById('nextPage').onclick = () => { if(currentPage < Math.ceil(filteredTeachers.length / itemsPerPage)) { currentPage++; renderTable(); } };
+
+        // Tamaño de fuente
         let currentSizeIndex = 1; 
         const sizes =["0.85rem", "1rem", "1.2rem"];
         const labels =["Pequeño", "Normal", "Grande"];
@@ -477,49 +491,7 @@
             document.documentElement.style.setProperty('--dynamic-font-size', sizes[currentSizeIndex]);
         }
 
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec"; // Asegúrate de tener tu URL correcta
-
-    async function cargarDocentes() {
-        const tbody = document.getElementById('tabla-docentes-body');
-        try {
-            const response = await fetch(GAS_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: 'get_all_teachers' })
-            });
-            const result = await response.json();
-            
-            if(result.status === 'success') {
-                tbody.innerHTML = result.data.map(d => {
-                    // Lógica para color de la etiqueta de estado
-                    let estadoStr = d.estado ? d.estado.trim() : "Pendiente";
-                    let badgeClass = estadoStr.toLowerCase() === 'pendiente' 
-                                     ? 'bg-warning text-dark' 
-                                     : 'bg-success text-white';
-
-                    return `
-                    <tr style="border-bottom: 1px solid #f1f5f9;">
-                        <td class="p-4 fw-bold text-dark">${d.nombres} ${d.apellidos}</td>
-                        <td class="p-4 text-muted">${d.correo}</td>
-                        <td class="p-4">
-                            <span class="badge rounded-pill ${badgeClass} border">${estadoStr}</span>
-                        </td>
-                        <td class="p-4 text-muted">0 cursos</td>
-                        <td class="p-4">
-                            <a href="detallesdocente.html?id=${d.id}" class="text-decoration-none" style="color: #1e3a8a; font-size: 0.85rem;">
-                                <i class="fa-regular fa-eye me-1"></i> Ver Detalle
-                            </a>
-                        </td>
-                    </tr>
-                `}).join('');
-            }
-        } catch (e) {
-            tbody.innerHTML = "<tr><td colspan='5' class='p-4 text-center text-danger'>Error al cargar los docentes.</td></tr>";
-        }
-    }
-
-    // Ejecutar al cargar la página
-    document.addEventListener('DOMContentLoaded', cargarDocentes);
-</script>
-    
+        document.addEventListener('DOMContentLoaded', cargarDocentes);
+    </script>
 </body>
 </html>
