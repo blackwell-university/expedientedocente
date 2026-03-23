@@ -186,18 +186,27 @@
                 <h2>3. Validación de Información</h2>
                 <p>Hemos extraído estos datos de sus documentos. <strong>Revíselos y complete con los datos faltantes</strong> para finalizar con el registro</p>
             </div>
-            
-            <h5 class="fw-bold text-primary mb-3">Formación Académica</h5>
-            <div id="ai-results-container"></div>
-            <hr class="my-5">
-            <h5 class="fw-bold text-primary mb-3">Experiencia Profesional</h5>
-            <div id="experience-results-container"></div>
-            <button type="button" class="btn btn-add-edu" onclick="addExpField()">+ AGREGAR EXPERIENCIA MANUALMENTE</button>
 
-            <div class="text-end mt-5">
-                <button type="button" class="btn btn-outline-secondary rounded-pill px-4 me-2" onclick="goBack(2)">Atrás</button>
-                <button type="submit" class="btn btn-luxury">Finalizar Registro y Enviar</button>
+            <!-- NUEVO: SPINNER INTERNO MIENTRAS PROCESA N8N -->
+            <div id="step3-processing" class="text-center py-5" style="display: none;">
+                <div class="spinner-border mb-3" style="width: 4rem; height: 4rem; color: var(--bgu-gold);" role="status"></div>
+                <h4 class="fw-bold" style="color: var(--bgu-blue);">Procesando sus datos con Inteligencia Artificial...</h4>
+                <p class="text-muted fs-5">Esto puede tomar unos segundos. Estamos extrayendo la información de su CV y Diplomas.</p>
             </div>
+            <div id="step3-content">
+                <h5 class="fw-bold text-primary mb-3">Formación Académica</h5>
+                <div id="ai-results-container"></div>
+                <hr class="my-5">
+                <h5 class="fw-bold text-primary mb-3">Experiencia Profesional</h5>
+                <div id="experience-results-container"></div>
+                <button type="button" class="btn btn-add-edu" onclick="addExpField()">+ AGREGAR EXPERIENCIA MANUALMENTE</button>
+
+                <div class="text-end mt-5">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4 me-2" onclick="goBack(2)">Atrás</button>
+                    <button type="submit" class="btn btn-luxury">Finalizar Registro y Enviar</button>
+                </div>
+            </div>
+            
         </div>
     </form>
 </div>
@@ -252,6 +261,15 @@
     let docenteIdInterno = "";
     let invitacionIdInterno = "";
 
+    // --- ALERTA DE SEGURIDAD SI INTENTA CERRAR LA PESTAÑA ---
+    let procesandoIA = false; 
+    window.addEventListener('beforeunload', function (e) {
+        if (procesandoIA && !iaListo) {
+            e.preventDefault();
+            e.returnValue = 'Sus documentos aún se están analizando con IA. Si cierra la pestaña ahora, perderá su progreso.';
+        }
+    });
+
     // Función auxiliar para forzar la fecha a YYYY-MM para los inputs
     function formatToMonth(val) {
         if (!val || val === "Actualidad") return val;
@@ -291,6 +309,10 @@
                     
                     if(res.data.nombres) { inputNombres.value = res.data.nombres; inputNombres.readOnly = true; inputNombres.style.backgroundColor = "#f1f5f9"; }
                     if(res.data.apellidos) { inputApellidos.value = res.data.apellidos; inputApellidos.readOnly = true; inputApellidos.style.backgroundColor = "#f1f5f9"; }
+
+                    // RECUPERAR URLS PARA NO SOBREESCRIBIRLAS CON VACÍO AL ENVIAR EL FORMULARIO FINAL
+                    if(res.data.url_cv) urlCVFinal = res.data.url_cv;
+                    if(res.data.url_handbook) urlHandbookFinal = res.data.url_handbook;
 
                     // Si entró con un enlace viejo sin nombre, se lo mostramos ahora que cargó
                     if (!nombreUrl && res.data.nombres) {
@@ -397,6 +419,7 @@
         // Avanza al paso 2 mientras la IA corre en el fondo
         goNext(2);
         iaListo = false;
+        procesandoIA = true; 
         fileIdsToMove =[];
 
         try {
@@ -441,6 +464,15 @@
                 </div>`);
             }
 
+            // -----------------------------------------------------
+
+            iaListo = true;
+            
+            // UX: Si el profesor ya había llegado al Paso 3 rápido, 
+            // apagamos el spinner y revelamos los datos como por arte de magia
+            document.getElementById('step3-processing').style.display = 'none';
+            document.getElementById('step3-content').style.display = 'block';
+
             // --- AUTO-GUARDAR BORRADOR EN SEGUNDO PLANO ---
             const draftPayload = {
                 action: "save_draft_step1",
@@ -458,20 +490,32 @@
             fetch(GAS_URL, { method: 'POST', body: JSON.stringify(draftPayload) });
             // -----------------------------------------------------
 
-            iaListo = true;
-        } catch (e) { console.error(e); iaListo = true; }
+        } catch (e) { 
+            console.error(e); 
+            iaListo = true; 
+            // Si la IA falla, le mostramos el paso 3 vacío para que lo llene manual
+            document.getElementById('step3-processing').style.display = 'none';
+            document.getElementById('step3-content').style.display = 'block';
+        }
     }
 
-     function verificarIAParaPaso3() {
+    function verificarIAParaPaso3() {
         const requiredFields = document.getElementById('step-2').querySelectorAll('[required]');
         let valid = true;
         requiredFields.forEach(f => { if(!f.checkValidity()){ f.reportValidity(); valid = false; }});
         if (!valid) return;
         
+        goNext(3); // Pasa al paso 3 de inmediato para que el profesor fluya rápido
+        
+        // UX: Si la IA de n8n aún no termina, mostramos el spinner interno
         if (!iaListo) {
-            document.getElementById('loading-overlay').style.display = 'flex';
-            const check = setInterval(() => { if(iaListo){ clearInterval(check); document.getElementById('loading-overlay').style.display = 'none'; goNext(3); }}, 1000);
-        } else { goNext(3); }
+            document.getElementById('step3-processing').style.display = 'block';
+            document.getElementById('step3-content').style.display = 'none';
+        } else {
+            // Si ya terminó, mostramos los datos normales
+            document.getElementById('step3-processing').style.display = 'none';
+            document.getElementById('step3-content').style.display = 'block';
+        }
     }
 
     function toggleFin(checkbox) {
