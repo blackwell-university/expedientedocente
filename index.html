@@ -214,13 +214,29 @@
             <div class="modal-header text-center" style="background: var(--bgu-blue); border-bottom: 5px solid var(--bgu-gold); padding: 25px;">
                 <h4 class="modal-title fw-bold text-white w-100"><i class="bi bi-stars text-warning me-2"></i>¡Bienvenido a Blackwell!</h4>
             </div>
+            
             <div class="modal-body text-center p-5">
-                <h2 class="fw-bold text-primary mb-3" id="welcomeName" style="color: var(--bgu-blue) !important;">Estimado(a) Docente</h2>
-                <p class="text-muted fs-5 mb-4" style="line-height: 1.6;">Queremos expresarle nuestro más sincero agradecimiento por aceptar nuestra invitación. Es un verdadero honor para nosotros que forme parte de la familia de <strong>Blackwell Global University</strong>.</p>
-                <p class="text-secondary" style="font-size: 0.95rem;">A continuación, lo guiaremos paso a paso para completar su expediente docente de forma segura.</p>
+                
+                <!-- 1. SPINNER DE CARGA (Visible inicialmente) -->
+                <div id="welcomeLoading" class="mb-3">
+                    <div class="spinner-border" role="status" style="width: 3.5rem; height: 3.5rem; color: var(--bgu-blue);">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <h5 class="fw-bold mt-4" style="color: var(--bgu-blue);">Identificando su expediente...</h5>
+                    <p class="text-muted">Un momento, por favor.</p>
+                </div>
+
+                <!-- 2. CONTENIDO DEL MENSAJE (Oculto inicialmente) -->
+                <div id="welcomeContent" style="display: none;">
+                    <h2 class="fw-bold text-primary mb-3" id="welcomeName" style="color: var(--bgu-blue) !important;">Estimado(a) Docente</h2>
+                    <p class="text-muted fs-5 mb-4" style="line-height: 1.6;">Queremos expresarle nuestro más sincero agradecimiento por aceptar nuestra invitación. Es un verdadero honor para nosotros que forme parte de la familia de <strong>Blackwell Global University</strong>.</p>
+                    <p class="text-secondary" style="font-size: 0.95rem;">A continuación, lo guiaremos paso a paso para completar su expediente docente de forma segura.</p>
+                </div>
             </div>
+
             <div class="modal-footer justify-content-center border-0 pb-5 pt-0">
-                <button type="button" class="btn btn-luxury w-75" data-bs-dismiss="modal" style="font-size: 1.1rem; padding: 15px;">Comenzar mi registro <i class="bi bi-arrow-right-circle ms-2"></i></button>
+                <!-- Botón inicia desactivado hasta que cargue el nombre -->
+                <button type="button" id="btnComenzar" class="btn btn-luxury w-75 disabled" data-bs-dismiss="modal" style="font-size: 1.1rem; padding: 15px; opacity: 0.5;">Comenzar mi registro <i class="bi bi-arrow-right-circle ms-2"></i></button>
             </div>
         </div>
     </div>
@@ -244,7 +260,11 @@
         if(idDesdeUrl) {
             docenteIdInterno = idDesdeUrl;
 
-            // --- LLAMADA A LA BASE DE DATOS PARA AUTOCOMPLETAR NOMBRE Y APELLIDO ---
+            // UX: 1. Abrir el modal DE INMEDIATO (mostrará el spinner por defecto)
+            const welcomeModal = new bootstrap.Modal(document.getElementById('welcomeModal'));
+            welcomeModal.show();
+
+            // 2. Recién ahora, consultar a la base de datos en segundo plano
             fetch(GAS_URL, {
                 method: 'POST',
                 body: JSON.stringify({ action: "get_profile", id: docenteIdInterno })
@@ -260,21 +280,30 @@
                         inputNombres.readOnly = true; 
                         inputNombres.style.backgroundColor = "#f1f5f9";
                         
+                        // Personalizar el Popup
                         const primerNombre = res.data.nombres.split(" ")[0];
                         document.getElementById('welcomeName').innerText = "¡Hola, " + primerNombre + "!";
                     }
-                    
                     if(res.data.apellidos) {
                         inputApellidos.value = res.data.apellidos;
                         inputApellidos.readOnly = true; 
                         inputApellidos.style.backgroundColor = "#f1f5f9";
                     }
-
-                    const welcomeModal = new bootstrap.Modal(document.getElementById('welcomeModal'));
-                    welcomeModal.show();
                 }
             })
-            .catch(err => console.error("Error obteniendo los nombres del docente: ", err));
+            .catch(err => {
+                console.error("Error obteniendo los nombres del docente: ", err);
+                // Si falla el internet, se queda el "Estimado Docente" genérico, pero lo dejamos avanzar.
+            })
+            .finally(() => {
+                // UX: 3. Ocultar Spinner, Mostrar el texto y Habilitar botón, TODO AL MISMO TIEMPO
+                document.getElementById('welcomeLoading').style.display = 'none';
+                document.getElementById('welcomeContent').style.display = 'block';
+                
+                const btn = document.getElementById('btnComenzar');
+                btn.classList.remove('disabled');
+                btn.style.opacity = '1'; // Le devuelve el brillo al botón
+            });
         }
     });
 
