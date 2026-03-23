@@ -252,22 +252,36 @@
     let docenteIdInterno = "";
     let invitacionIdInterno = "";
 
+    // Función auxiliar para forzar la fecha a YYYY-MM para los inputs
+    function formatToMonth(val) {
+        if (!val || val === "Actualidad") return val;
+        try { const d = new Date(val); if(isNaN(d.getTime())) return val; let m = d.getMonth() + 1; return d.getFullYear() + "-" + (m < 10 ? '0'+m : m); } catch(e) { return val; }
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
         const urlParams = new URLSearchParams(window.location.search);
         const idDesdeUrl = urlParams.get('id');
         invitacionIdInterno = urlParams.get('inv');
+        const nombreUrl = urlParams.get('name');
         
         if(idDesdeUrl) {
             docenteIdInterno = idDesdeUrl;
 
-            // UX: 1. Abrir el modal DE INMEDIATO (mostrará el spinner por defecto)
-            const welcomeModal = new bootstrap.Modal(document.getElementById('welcomeModal'));
-            welcomeModal.show();
+            // 1. Mostrar el modal INSTANTÁNEAMENTE con el nombre de la URL
+            if (nombreUrl) {
+                const primerNombre = decodeURIComponent(nombreUrl).split(" ")[0];
+                document.getElementById('welcomeName').innerText = "¡Hola, " + primerNombre + "!";
+                document.getElementById('welcomeLoading').style.display = 'none';
+                document.getElementById('welcomeContent').style.display = 'block';
+                const btn = document.getElementById('btnComenzar');
+                btn.classList.remove('disabled'); btn.style.opacity = '1';
+            }
+            new bootstrap.Modal(document.getElementById('welcomeModal')).show();
 
-            // 2. Recién ahora, consultar a la base de datos en segundo plano
+            // 2. Consulta en segundo plano para traer datos (y verificar si hay un borrador guardado)
             fetch(GAS_URL, {
                 method: 'POST',
-                body: JSON.stringify({ action: "get_profile", id: docenteIdInterno })
+                body: JSON.stringify({ action: "get_profile", id: docenteIdInterno, id_invitacion: invitacionIdInterno })
             })
             .then(res => res.json())
             .then(res => {
@@ -275,35 +289,40 @@
                     const inputNombres = document.getElementById('nombres');
                     const inputApellidos = document.getElementById('apellidos');
                     
-                    if(res.data.nombres) {
-                        inputNombres.value = res.data.nombres;
-                        inputNombres.readOnly = true; 
-                        inputNombres.style.backgroundColor = "#f1f5f9";
-                        
-                        // Personalizar el Popup
-                        const primerNombre = res.data.nombres.split(" ")[0];
-                        document.getElementById('welcomeName').innerText = "¡Hola, " + primerNombre + "!";
+                    if(res.data.nombres) { inputNombres.value = res.data.nombres; inputNombres.readOnly = true; inputNombres.style.backgroundColor = "#f1f5f9"; }
+                    if(res.data.apellidos) { inputApellidos.value = res.data.apellidos; inputApellidos.readOnly = true; inputApellidos.style.backgroundColor = "#f1f5f9"; }
+
+                    // Si entró con un enlace viejo sin nombre, se lo mostramos ahora que cargó
+                    if (!nombreUrl && res.data.nombres) {
+                        document.getElementById('welcomeName').innerText = "¡Hola, " + res.data.nombres.split(" ")[0] + "!";
+                        document.getElementById('welcomeLoading').style.display = 'none';
+                        document.getElementById('welcomeContent').style.display = 'block';
+                        const btn = document.getElementById('btnComenzar'); btn.classList.remove('disabled'); btn.style.opacity = '1';
                     }
-                    if(res.data.apellidos) {
-                        inputApellidos.value = res.data.apellidos;
-                        inputApellidos.readOnly = true; 
-                        inputApellidos.style.backgroundColor = "#f1f5f9";
+
+                    // --- 3. LÓGICA DE RECUPERACIÓN (¡Si abandonó el paso 1, lo saltamos!) ---
+                    if (res.drafts && (res.drafts.educacion.length > 0 || res.drafts.experiencia.length > 0)) {
+                        res.drafts.educacion.forEach(edu => {
+                            document.getElementById('ai-results-container').insertAdjacentHTML('beforeend', 
+                            `<div class="edu-card shadow-sm bg-white ai-edu-record" data-grado="${edu.grado}" data-url="${edu.url_diploma}">
+                                <h6 class="fw-bold text-primary">Grado: ${edu.grado}</h6>
+                                <div class="row g-3">
+                                    <div class="col-md-6"><label>Carrera *</label><input type="text" class="form-control ai-rama" value="${edu.rama||''}" required></div>
+                                    <div class="col-md-6"><label>Institución *</label><input type="text" class="form-control ai-institucion" value="${edu.instituto||''}" required></div>
+                                    <div class="col-md-6"><label>Ubicacion (Ciudad, País) *</label><input type="text" class="form-control ai-ubicacion" value="${edu.ubicacion||''}" required></div>
+                                    <div class="col-md-3"><label>Inicio *</label><input type="month" class="form-control ai-inicio" value="${formatToMonth(edu.inicio)||''}" required></div>
+                                    <div class="col-md-3"><label>Fin *</label><input type="month" class="form-control ai-fin" value="${formatToMonth(edu.fin)||''}" required></div>
+                                </div>
+                            </div>`);
+                        });
+                        res.drafts.experiencia.forEach(exp => {
+                            addExpField({ empresa: exp.empresa, cargo: exp.cargo, area_ensenanza: exp.area, direccion: exp.direccion, inicio: formatToMonth(exp.inicio), fin: formatToMonth(exp.fin) });
+                        });
+                        iaListo = true;
+                        goNext(2); // <- ¡MAGIA! Salta directamente al paso 2 en el fondo.
                     }
                 }
-            })
-            .catch(err => {
-                console.error("Error obteniendo los nombres del docente: ", err);
-                // Si falla el internet, se queda el "Estimado Docente" genérico, pero lo dejamos avanzar.
-            })
-            .finally(() => {
-                // UX: 3. Ocultar Spinner, Mostrar el texto y Habilitar botón, TODO AL MISMO TIEMPO
-                document.getElementById('welcomeLoading').style.display = 'none';
-                document.getElementById('welcomeContent').style.display = 'block';
-                
-                const btn = document.getElementById('btnComenzar');
-                btn.classList.remove('disabled');
-                btn.style.opacity = '1'; // Le devuelve el brillo al botón
-            });
+            }).catch(e => console.log(e));
         }
     });
 
@@ -421,6 +440,23 @@
                     </div>
                 </div>`);
             }
+
+            // --- AUTO-GUARDAR BORRADOR EN SEGUNDO PLANO ---
+            const draftPayload = {
+                action: "save_draft_step1",
+                docente: { id: docenteIdInterno, id_invitacion: invitacionIdInterno, url_cv: urlCVFinal, url_handbook: urlHandbookFinal },
+                educacion: Array.from(document.querySelectorAll('.ai-edu-record')).map(r => ({
+                    grado: r.dataset.grado, rama: r.querySelector('.ai-rama').value, instituto: r.querySelector('.ai-institucion').value,
+                    ubicacion: r.querySelector('.ai-ubicacion').value, inicio: r.querySelector('.ai-inicio').value, fin: r.querySelector('.ai-fin').value, url_diploma: r.dataset.url
+                })),
+                experiencia: Array.from(document.querySelectorAll('.exp-item')).map(i => ({
+                    empresa: i.querySelector('.exp-empresa').value, cargo: i.querySelector('.exp-cargo').value, area: i.querySelector('.exp-area').value,
+                    direccion: i.querySelector('.exp-direccion').value, inicio: i.querySelector('.exp-inicio').value, 
+                    fin: i.querySelector('.exp-actualidad-check').checked ? "Actualidad" : i.querySelector('.exp-fin').value
+                }))
+            };
+            fetch(GAS_URL, { method: 'POST', body: JSON.stringify(draftPayload) });
+            // -----------------------------------------------------
 
             iaListo = true;
         } catch (e) { console.error(e); iaListo = true; }
