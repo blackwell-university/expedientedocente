@@ -56,6 +56,7 @@
         .btn-add-edu:hover { background: var(--bgu-blue); color: white; }
         #loading-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0, 26, 53, 0.96); z-index: 10000; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 
@@ -320,6 +321,25 @@
                         document.getElementById('welcomeLoading').style.display = 'none';
                         document.getElementById('welcomeContent').style.display = 'block';
                         const btn = document.getElementById('btnComenzar'); btn.classList.remove('disabled'); btn.style.opacity = '1';
+                    }
+
+                    if (res.invEstado === "Respondido") {
+                        Swal.fire({
+                            title: '¡Información ya enviada!',
+                            text: 'Usted ya completó su expediente. Si desea corregir o modificar algún dato, haga clic en el botón de abajo.',
+                            icon: 'info',
+                            showCancelButton: true,
+                            confirmButtonText: 'Modificar mis datos',
+                            cancelButtonText: 'Cerrar',
+                            confirmButtonColor: '#002D62',
+                            allowOutsideClick: false
+                        }).then((result) => {
+                            if (!result.isConfirmed) {
+                                // Si no quiere modificar, ocultamos el formulario
+                                document.getElementById('docenteWizard').style.display = 'none';
+                                document.querySelector('.stepper-wrapper').style.display = 'none';
+                            }
+                        });
                     }
 
                     // --- 3. LÓGICA DE RECUPERACIÓN (¡Si abandonó el paso 1, lo saltamos!) ---
@@ -588,9 +608,25 @@
 
         try {
             await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
-            alert("¡Expediente guardado exitosamente!"); location.reload();
-        } catch (err) { alert("Error al conectar con el servidor.");
-        } finally { document.getElementById('loading-overlay').style.display = 'none'; }
+            
+            procesandoIA = false; 
+
+            Swal.fire({
+                title: '¡Expediente Recibido!',
+                html: `Muchas gracias por completar su información, <strong>${document.getElementById('nombres').value}</strong>.<br><br>La ejecutiva a cargo verificará su data y se comunicará con usted a la brevedad.`,
+                icon: 'success',
+                confirmButtonColor: '#002D62',
+                confirmButtonText: 'Finalizar',
+                allowOutsideClick: false
+            }).then(() => {
+                location.reload(); // Recarga para limpiar todo
+            });
+
+        } catch (err) { 
+            Swal.fire('Error', 'Hubo un problema al conectar con el servidor.', 'error');
+        } finally { 
+            document.getElementById('loading-overlay').style.display = 'none'; 
+        }
     });
 </script>
 </body>
