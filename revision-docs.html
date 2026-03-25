@@ -2,7 +2,6 @@
 <html lang="es">
 <head>
     <script>
-        // Lógica de protección de ruta adaptada para el rol Administrativo/Administrador
         const isLoggedIn = sessionStorage.getItem('isLoggedIn');
         const userRole = sessionStorage.getItem('userRole');
     
@@ -12,12 +11,9 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Revisión de Documentos - Universidad Blackwell</title>
-    <!-- Bootstrap 5 -->
+    <title>Revisión de Expedientes - Universidad Blackwell</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -28,72 +24,37 @@
         }
 
         body { font-family: 'Inter', sans-serif; background-color: var(--main-bg); margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        .content-area { font-size: var(--dynamic-font-size); padding: 30px 40px; max-width: 1400px; margin: 0 auto; width: 100%; overflow-y: auto; }
-
-        /* HEADER */
-        header { background: white; padding: 15px 40px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
-        header h2 { font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--text-dark); }
-        header p { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
-        .font-controls { display: flex; align-items: center; gap: 10px; background: #f1f5f9; padding: 5px 12px; border-radius: 50px; font-size: 0.85rem; color: var(--text-muted); border: 1px solid #e2e8f0; }
-        .btn-font { background: none; border: none; color: var(--text-dark); font-weight: bold; padding: 0 5px; cursor: pointer; }
-        .btn-font:active { transform: scale(1.3); }
-
-        /* SIDEBAR */
-        .sidebar { width: 260px; background-color: var(--sidebar-bg); color: white; display: flex; flex-direction: column; flex-shrink: 0; padding: 20px 0; }
-        .sidebar-brand { padding: 0 25px 30px; display: flex; align-items: center; gap: 10px; }
-        .sidebar-brand i { font-size: 24px; }
-        .sidebar-brand div b { display: block; line-height: 1; font-size: 1.1rem; }
-        .sidebar-brand div span { font-size: 0.7rem; opacity: 0.7; }
-        .nav-menu { flex-grow: 1; padding: 0 15px; }
-        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85rem; border-radius: 8px; margin-bottom: 5px; transition: all 0.2s; }
-        .nav-item:hover { color: white; background: rgba(255,255,255,0.1); }
-        .nav-item.active { background-color: var(--sidebar-active); color: white; font-weight: 500; }
-        .sidebar-footer { padding: 20px; background: rgba(0,0,0,0.2); font-size: 0.75rem; }
-        .user-info { margin-bottom: 15px; }
-        .user-info b { display: block; font-size: 0.85rem; margin-top: 2px; }
-        .role-text { color: var(--sidebar-active); font-weight: 600; font-size: 0.8rem; margin-top: 2px; display: block; }
-        .btn-logout { width: 100%; background-color: var(--logout-red); color: white; border: none; padding: 10px; border-radius: 6px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
-
-        /* MAIN CONTENT */
         .main-wrapper { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; }
-        .page-title { font-size: 1.5rem; font-weight: 700; color: var(--text-dark); margin-bottom: 5px; }
-        .page-subtitle { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px; }
+        .content-area { font-size: var(--dynamic-font-size); padding: 30px 40px; max-width: 1400px; margin: 0 auto; width: 100%; }
 
-        /* Filtros */
-        .filter-container { background: white; border-radius: 12px; padding: 15px 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); margin-bottom: 20px; display: flex; gap: 10px; }
-        .btn-filter { background-color: #f1f5f9; color: var(--text-muted); border: none; padding: 8px 20px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; transition: 0.3s; }
-        .btn-filter.active { background-color: var(--accent-blue); color: white; }
+        /* HEADER & SIDEBAR IGUAL AL SISTEMA */
+        header { background: white; padding: 15px 40px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+        .sidebar { width: 260px; background-color: var(--sidebar-bg); color: white; display: flex; flex-direction: column; flex-shrink: 0; padding: 20px 0; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85rem; border-radius: 8px; margin-bottom: 5px; transition: 0.2s; }
+        .nav-item.active { background-color: var(--sidebar-active); color: white; font-weight: 500; }
 
-        /* Tarjetas */
-        .review-card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.03); margin-bottom: 20px; }
-        .review-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-        .review-header h4 { font-size: 1.15rem; font-weight: 700; color: var(--text-dark); margin: 0 0 5px 0; }
-        .review-header p { color: var(--text-muted); font-size: 0.85rem; margin: 0; }
-        
-        .status-badge { padding: 5px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
-        .status-Pendiente { background-color: #fef9c3; color: #854d0e; }
-        .status-Aprobado { background-color: #dcfce7; color: #166534; }
-        .status-Rechazado { background-color: #fee2e2; color: #b91c1c; }
+        /* FILTROS INTELIGENTES */
+        .filter-card { background: white; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.02); margin-bottom: 25px; }
+        .form-label-sm { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 8px; display: block; }
+        .input-filter { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; font-size: 0.85rem; color: var(--text-dark); }
 
-        /* Lista Docs */
-        .document-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #f1f5f9; }
-        .document-item:last-child { border-bottom: none; }
-        .doc-info { display: flex; align-items: center; gap: 15px; }
-        .doc-icon { color: var(--accent-blue); font-size: 1.2rem; background-color: #eff6ff; padding: 10px; border-radius: 8px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
-        .doc-info b { display: block; font-size: 0.9rem; color: var(--text-dark); margin-bottom: 2px; }
-        .doc-info span { display: block; font-size: 0.75rem; color: var(--text-muted); }
-        .doc-actions a { color: var(--sidebar-active); font-size: 1.1rem; cursor: pointer; transition: color 0.2s; text-decoration: none; }
+        /* TABLA DE INVITACIONES */
+        .table-container { background: white; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; }
+        .table thead th { background: #f8fafc; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; }
+        .table tbody td { padding: 15px 20px; font-size: 0.85rem; vertical-align: middle; border-bottom: 1px solid #f1f5f9; }
 
-        .generated-docs-section { background-color: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 20px; margin-top: 20px; }
-        .generated-title { font-size: 0.9rem; font-weight: 700; color: var(--text-dark); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        /* ESTADOS */
+        .badge-status { padding: 5px 12px; border-radius: 50px; font-weight: 600; font-size: 0.7rem; }
+        .status-Enviado { background: #eff6ff; color: #1e40af; }
+        .status-Respondido { background: #fef3c7; color: #92400e; }
+        .status-Aprobado { background: #f0fdf4; color: #166534; }
+        .status-Rechazado { background: #fef2f2; color: #b91c1c; }
 
-        /* Botones Acción */
-        .review-card-actions { display: flex; gap: 12px; margin-top: 25px; }
-        .btn-action { border: none; padding: 8px 20px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: 0.3s; color: white; cursor: pointer;}
-        .btn-action:disabled { opacity: 0.7; cursor: not-allowed; }
-        .btn-success-action { background-color: #10b981; } .btn-success-action:hover:not(:disabled) { background-color: #059669; }
-        .btn-danger-action { background-color: #ef4444; } .btn-danger-action:hover:not(:disabled) { background-color: #dc2626; }
-        .btn-generate { background-color: #f59e0b; color: white; } .btn-generate:hover:not(:disabled) { background-color: #d97706; }
+        /* MODAL REVISIÓN (Estilos del expediente) */
+        .section-review { background: #f8fafc; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
+        .review-label { font-size: 0.7rem; color: #64748b; text-transform: uppercase; font-weight: 700; margin-bottom: 2px; }
+        .review-value { font-size: 0.9rem; color: #1e293b; font-weight: 500; margin-bottom: 12px; }
+        .file-item { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 15px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -104,16 +65,15 @@
             <div><b>Blackwell</b><span>Universidad</span></div>
         </div>
         <nav class="nav-menu">
-            <a href="dashboard.html" class="nav-item"><i class="fa-solid fa-border-all"></i> Dashboard</a>
-            <a href="gestion-docentes.html" class="nav-item"><i class="fa-solid fa-users"></i> Gestión de Docentes</a>
-            <a href="revision-docs.html" class="nav-item active"><i class="fa-regular fa-file-lines"></i> Revisión de Documentos</a>
-            <a href="subir-materiales.html" class="nav-item"><i class="fa-solid fa-upload"></i> Subir Materiales</a>
-            <a href="aprobaciones.html" class="nav-item"><i class="fa-regular fa-circle-check"></i> Aprobaciones</a>
+            <a href="administrativo.html" class="nav-item"><i class="fa-solid fa-border-all"></i> Dashboard</a>
+            <a href="gestion-docentes.html" class="nav-item active"><i class="fa-solid fa-users"></i> Gestión de Docentes</a>
+            <a href="revision-docs.html" class="nav-item"><i class="fa-regular fa-file-lines"></i> Revisión de Expedientes</a>
+            <a href="gestion-cursos.html" class="nav-item"><i class="fa-solid fa-upload"></i> Gestión de Cursos</a>
+            <!--<a href="aprobaciones.html" class="nav-item"><i class="fa-regular fa-circle-check"></i> Aprobaciones</a>-->
         </nav>
         <div class="sidebar-footer">
             <div class="user-info">
-                <span>Sesión activa:</span>
-                <b id="sidebar-userid">Cargando...</b>
+                <b id="sidebar-userid">admin@blackwell.edu</b>
                 <span class="role-text">Administrativo</span>
             </div>
             <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</button>
@@ -122,240 +82,254 @@
 
     <main class="main-wrapper">
         <header>
-            <div>
-                <h2>Sistema de Gestión de Expedientes</h2>
-                <p>Panel Administrativo</p>
-            </div>
-            <div class="font-controls">
-                <i class="fa-solid fa-text-height"></i>
-                <button onclick="changeFontSize(-1)" class="btn-font">—</button>
-                <span id="fontSizeLabel">Normal</span>
-                <button onclick="changeFontSize(1)" class="btn-font">+</button>
-            </div>
+            <div><h2>Gestión de Expedientes</h2><p>Revisión global de invitaciones</p></div>
         </header>
 
         <div class="content-area">
-            <h1 class="page-title">Revisión de Documentos</h1>
-            <p class="page-subtitle">Revisa y aprueba los documentos subidos por los docentes</p>
+            <h1 class="page-title">Invitaciones y Expedientes</h1>
+            <p class="page-subtitle">Filtra y revisa las respuestas de los docentes a sus invitaciones de curso.</p>
 
-            <!-- Filtros -->
-            <div class="filter-container">
-                <button class="btn-filter active" data-filter="Todos">Todos</button>
-                <button class="btn-filter" data-filter="Pendiente">Pendientes</button>
-                <button class="btn-filter" data-filter="Aprobado">Aprobados</button>
+            <!-- FILTROS AVANZADOS -->
+            <div class="filter-card">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label-sm">Buscar Docente o Curso</label>
+                        <input type="text" id="filterText" class="form-control input-filter" placeholder="Ej: Juan Pérez o Programación...">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label-sm">Estado de Invitación</label>
+                        <select id="filterStatus" class="form-select input-filter">
+                            <option value="Todos">Todos los estados</option>
+                            <option value="Enviado">Enviado</option>
+                            <option value="Respondido">Respondido (Pendiente de revisión)</option>
+                            <option value="Aprobado">Aprobado</option>
+                            <option value="Rechazado">Rechazado</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label-sm">Fecha de Invitación</label>
+                        <input type="date" id="filterDate" class="form-control input-filter">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button class="btn btn-outline-secondary w-100" style="height: 38px; border-radius: 8px; font-size: 0.8rem;" onclick="resetFilters()">
+                            Limpiar
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <!-- Contenedor Dinámico -->
-            <div id="review-container">
-                <div class="text-center py-5">
-                    <i class="fa-solid fa-spinner fa-spin fa-2x" style="color: var(--accent-blue);"></i>
-                    <p class="mt-2 text-muted">Cargando expedientes desde Google Sheets...</p>
+            <!-- TABLA DE RESULTADOS -->
+            <div class="table-container shadow-sm">
+                <table class="table mb-0 align-middle">
+                    <thead>
+                        <tr>
+                            <th>Docente</th>
+                            <th>Curso / Programa</th>
+                            <th>Fecha Invitación</th>
+                            <th>Estado</th>
+                            <th class="text-end">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-invitaciones">
+                        <!-- JS cargarán aquí -->
+                    </tbody>
+                </table>
+                <div id="loading-spinner" class="text-center py-5">
+                    <i class="fa-solid fa-circle-notch fa-spin fa-2x text-primary"></i>
+                    <p class="mt-2 text-muted small">Obteniendo datos...</p>
                 </div>
             </div>
         </div>
     </main>
 
+    <!-- MODAL REVISIÓN (Mismo que detallesdocente.html) -->
+    <div class="modal fade modal-modern" id="modalRevision" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content shadow-lg border-0" style="border-radius: 15px;">
+                <div class="modal-header pt-4 px-4 border-0">
+                    <h4 class="modal-title fw-bold">Revisar y Aprobar Expediente</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="section-review">
+                        <h6 class="fw-bold mb-3 text-primary">Información de la Invitación</h6>
+                        <div class="row">
+                            <div class="col-md-3"><div class="review-label">Estado</div><div id="rev-estado" class="review-value">-</div></div>
+                            <div class="col-md-3"><div class="review-label">Curso</div><div id="rev-curso" class="review-value">-</div></div>
+                            <div class="col-md-3"><div class="review-label">Día / Horario</div><div id="rev-horario" class="review-value">-</div></div>
+                            <div class="col-md-3"><div class="review-label">Pago</div><div id="rev-pago" class="review-value">-</div></div>
+                        </div>
+                    </div>
+                    <div class="section-review">
+                        <h6 class="fw-bold mb-3 text-primary">Datos del Docente</h6>
+                        <div class="row">
+                            <div class="col-md-4"><div class="review-label">Docente</div><div id="rev-nombre" class="review-value">-</div></div>
+                            <div class="col-md-4"><div class="review-label">Correo</div><div id="rev-correo" class="review-value">-</div></div>
+                            <div class="col-md-4"><div class="review-label">Cuentas Bancarias</div><div id="rev-cuentas" class="review-value">-</div></div>
+                        </div>
+                    </div>
+                    <div class="section-review">
+                        <h6 class="fw-bold mb-3 text-primary">Documentos Adjuntos</h6>
+                        <div id="contenedor-adjuntos-revision" class="row"></div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0 p-4 d-flex justify-content-between">
+                    <button class="btn btn-outline-danger px-4 fw-bold" onclick="cambiarEstadoExpediente('Rechazado')">Rechazar</button>
+                    <button class="btn btn-success px-5 fw-bold" onclick="cambiarEstadoExpediente('Aprobado')">Aprobar Expediente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
-        let allTeachersData =[]; 
+        let todasInvitaciones = [];
+        let currentInvId = null;
+        let currentDocenteId = null;
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const userName = sessionStorage.getItem('userName') || "admin@blackwell.edu";
-            document.getElementById('sidebar-userid').innerText = userName;
-            loadAdminReviews();
+        document.addEventListener('DOMContentLoaded', async () => {
+            await cargarTodasInvitaciones();
+            
+            // Listeners para filtros
+            document.getElementById('filterText').addEventListener('input', filtrar);
+            document.getElementById('filterStatus').addEventListener('change', filtrar);
+            document.getElementById('filterDate').addEventListener('change', filtrar);
         });
 
-        // 1. CARGAR DATOS REALES DEL GOOGLE SHEETS
-        async function loadAdminReviews() {
+        async function cargarTodasInvitaciones() {
             try {
-                const response = await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'get_admin_reviews' })
-                });
-                const result = await response.json();
+                // Obtenemos todos los docentes y luego sus invitaciones de forma global
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_all_teachers' }) });
+                const teachers = await res.json();
                 
-                if (result.status === 'success') {
-                    allTeachersData = result.data;
-                    renderReviews("Todos");
-                } else {
-                    document.getElementById('review-container').innerHTML = `<div class="alert alert-danger">Error: ${result.message}</div>`;
+                // Nota: Para eficiencia, asumimos que el GS nos devuelve una acción que liste todas las invitaciones.
+                // Si no existe, mapeamos las invitaciones de todos los docentes
+                const responseInv = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_all_invitations_global' }) });
+                const result = await responseInv.json();
+                
+                if(result.status === 'success') {
+                    todasInvitaciones = result.data;
+                    filtrar();
                 }
-            } catch (e) {
-                console.error("Error:", e);
-                document.getElementById('review-container').innerHTML = `<div class="alert alert-danger">Error de conexión al obtener los expedientes.</div>`;
-            }
+            } catch(e) { console.error(e); }
+            document.getElementById('loading-spinner').style.display = 'none';
         }
 
-        // 2. DIBUJAR LAS TARJETAS HTML
-        function renderReviews(filterParam) {
-            const container = document.getElementById('review-container');
-            container.innerHTML = '';
+        function filtrar() {
+            const text = document.getElementById('filterText').value.toLowerCase();
+            const status = document.getElementById('filterStatus').value;
+            const date = document.getElementById('filterDate').value;
 
-            const filteredData = allTeachersData.filter(t => filterParam === "Todos" || t.estado === filterParam);
+            const filtradas = todasInvitaciones.filter(inv => {
+                const matchText = inv.nombreDocente.toLowerCase().includes(text) || inv.curso.toLowerCase().includes(text);
+                const matchStatus = status === "Todos" || inv.estado === status;
+                const matchDate = !date || inv.fecha.split('T')[0] === date;
+                return matchText && matchStatus && matchDate;
+            });
 
-            if (filteredData.length === 0) {
-                container.innerHTML = `<div class="alert alert-secondary text-center">No hay expedientes para mostrar en esta categoría.</div>`;
+            renderTabla(filtradas);
+        }
+
+        function renderTabla(datos) {
+            const tbody = document.getElementById('lista-invitaciones');
+            if(datos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">No se encontraron invitaciones.</td></tr>';
                 return;
             }
 
-            let htmlContent = '';
-
-            filteredData.forEach(docente => {
-                let badgeIcon = docente.estado === 'Pendiente' ? '<i class="fa-regular fa-clock"></i>' : (docente.estado === 'Aprobado' ? '<i class="fa-solid fa-check-double"></i>' : '<i class="fa-solid fa-xmark"></i>');
-
-                let card = `
-                <div class="review-card">
-                    <div class="review-header">
-                        <div>
-                            <h4>${docente.nombre}</h4>
-                            <p>ID: ${docente.id}</p>
-                        </div>
-                        <span class="status-badge status-${docente.estado}">${badgeIcon} ${docente.estado}</span>
-                    </div>`;
-
-                if(docente.cv_url) card += createDocRow("Curriculum Vitae", "Documento Subido", '<i class="fa-regular fa-file-pdf"></i>', docente.cv_url);
-                if(docente.handbook_url) card += createDocRow("Faculty Handbook", "Manual Firmado", '<i class="fa-solid fa-book-open"></i>', docente.handbook_url);
-                
-                if(docente.diplomas && docente.diplomas.length > 0) {
-                    docente.diplomas.forEach(dip => {
-                        card += createDocRow(`Título: ${dip.grado}`, dip.rama, '<i class="fa-regular fa-file-lines"></i>', dip.url);
-                    });
-                }
-
-                // CONTROLES DE APROBACIÓN O GENERACIÓN
-                if(docente.estado === 'Pendiente') {
-                    card += `
-                    <div class="review-card-actions">
-                        <button class="btn-action btn-success-action" onclick="updateDocStatus('${docente.id}', 'Aprobado', this)">
-                            <i class="fa-regular fa-circle-check"></i> Aprobar
+            tbody.innerHTML = datos.map(inv => {
+                const fecha = new Date(inv.fecha).toLocaleDateString();
+                return `
+                <tr>
+                    <td>
+                        <div class="fw-bold text-dark">${inv.nombreDocente}</div>
+                        <div class="text-muted" style="font-size: 0.7rem;">ID: ${inv.docenteId}</div>
+                    </td>
+                    <td>
+                        <div class="fw-medium">${inv.curso}</div>
+                        <div class="text-muted" style="font-size: 0.7rem;">${inv.programa}</div>
+                    </td>
+                    <td>${fecha}</td>
+                    <td><span class="badge-status status-${inv.estado}">${inv.estado}</span></td>
+                    <td class="text-end">
+                        <button class="btn btn-sm btn-light border fw-bold" onclick="abrirRevision('${inv.id}', '${inv.docenteId}')">
+                            <i class="fa-regular fa-eye me-1"></i> Revisar
                         </button>
-                        <button class="btn-action btn-danger-action" onclick="updateDocStatus('${docente.id}', 'Rechazado', this)">
-                            <i class="fa-regular fa-circle-xmark"></i> Rechazar
-                        </button>
-                    </div>`;
-                } 
-                else if(docente.estado === 'Aprobado') {
-                    if(docente.docs_generados && docente.docs_generados.length > 0) {
-                        card += `<div class="generated-docs-section">
-                                    <div class="generated-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Documentos Generados por el Sistema</div>`;
-                        
-                        docente.docs_generados.forEach(genDoc => {
-                            card += createDocRow(genDoc.nombre, `Generado el ${genDoc.fecha}`, '<i class="fa-solid fa-file-word"></i>', genDoc.url, "#e0e7ff", "#4f46e5");
-                        });
-                        
-                        card += `</div>
-                        <div class="review-card-actions">
-                            <button class="btn-action btn-generate" onclick="generateDocs('${docente.id}', this)">
-                                <i class="fa-solid fa-gears"></i> Volver a Generar FORM 402
-                            </button>
-                        </div>`;
-                    } else {
-                        card += `
-                        <div class="review-card-actions">
-                            <button class="btn-action btn-generate" onclick="generateDocs('${docente.id}', this)">
-                                <i class="fa-solid fa-file-word"></i> Generar Documento (FORM 402)
-                            </button>
-                        </div>`;
-                    }
-                }
-                
-                card += `</div>`;
-                htmlContent += card;
-            });
-
-            container.innerHTML = htmlContent;
+                    </td>
+                </tr>`;
+            }).join('');
         }
 
-        function createDocRow(title, subtitle, iconHtml, url, bgIcon = "#eff6ff", colorIcon = "var(--accent-blue)") {
-            if (!url) return '';
+        async function abrirRevision(invId, docId) {
+            currentInvId = invId;
+            currentDocenteId = docId;
+            const myModal = new bootstrap.Modal(document.getElementById('modalRevision'));
+            myModal.show();
+
+            document.getElementById('contenedor-adjuntos-revision').innerHTML = 'Cargando...';
+
+            try {
+                // Traer perfil y datos de esa invitación específica
+                const resProfile = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: docId }) });
+                const profile = await resProfile.json();
+                
+                const inv = todasInvitaciones.find(i => i.id === invId);
+
+                if (profile.status === 'success' && inv) {
+                    const d = profile.data;
+                    document.getElementById('rev-estado').innerText = inv.estado;
+                    document.getElementById('rev-curso').innerText = inv.curso;
+                    document.getElementById('rev-horario').innerText = `${inv.dias || '-'} / ${inv.horario || '-'}`;
+                    document.getElementById('rev-pago').innerText = inv.pago;
+                    
+                    document.getElementById('rev-nombre').innerText = `${d.nombres} ${d.apellidos}`;
+                    document.getElementById('rev-correo').innerText = d.correo;
+                    document.getElementById('rev-cuentas').innerText = `CTA: ${d.cuenta || '-'} | CCI: ${d.cci || '-'}`;
+
+                    let htmlDocs = "";
+                    if(d.url_cv) htmlDocs += crearItemArchivo("Currículum Vitae", d.url_cv);
+                    if(d.url_handbook) htmlDocs += crearItemArchivo("Handbook Firmado", d.url_handbook);
+                    
+                    const resDocs = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_documents', id: docId }) });
+                    const docs = await resDocs.json();
+                    if(docs.status === 'success') {
+                        docs.diplomas.forEach(dip => htmlDocs += crearItemArchivo(`Diploma: ${dip.grado}`, dip.url));
+                    }
+                    document.getElementById('contenedor-adjuntos-revision').innerHTML = htmlDocs || 'No hay documentos.';
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function crearItemArchivo(nombre, url) {
             return `
-            <div class="document-item">
-                <div class="doc-info">
-                    <div class="doc-icon" style="background-color: ${bgIcon}; color: ${colorIcon};">${iconHtml}</div>
-                    <div><b>${title}</b><span>${subtitle}</span></div>
-                </div>
-                <div class="doc-actions">
-                    <a href="${url}" target="_blank" title="Ver / Descargar"><i class="fa-solid fa-download"></i></a>
+            <div class="col-md-6">
+                <div class="file-item">
+                    <span class="small fw-bold text-truncate me-2">${nombre}</span>
+                    <a href="${url}" target="_blank" class="btn btn-xs btn-link p-0 text-primary small">Ver <i class="fa-solid fa-external-link ms-1" style="font-size:0.7rem"></i></a>
                 </div>
             </div>`;
         }
 
-        // 3. ACCIÓN: APROBAR / RECHAZAR
-        async function updateDocStatus(docenteId, newStatus, btnElement) {
-            btnElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...';
-            btnElement.disabled = true;
-
+        async function cambiarEstadoExpediente(nuevoEstado) {
+            if(!confirm(`¿Marcar como ${nuevoEstado}?`)) return;
             try {
-                const response = await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'update_status', id: docenteId, status: newStatus })
-                });
-                const result = await response.json();
-                
-                if (result.status === 'success') {
-                    const docIndex = allTeachersData.findIndex(t => t.id === docenteId);
-                    if(docIndex !== -1) allTeachersData[docIndex].estado = newStatus;
-                    renderReviews(document.querySelector('.btn-filter.active').dataset.filter);
-                } else { alert("Error al actualizar el estado."); }
-            } catch(e) {
-                alert("Error de conexión al actualizar el estado.");
-                btnElement.disabled = false;
-            }
-        }
-
-        // 4. ACCIÓN: GENERAR FORM 402
-        async function generateDocs(docenteId, btnElement) {
-            const originalHtml = btnElement.innerHTML;
-            btnElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando FORM 402...';
-            btnElement.disabled = true;
-
-            try {
-                const response = await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'generate_document', id: docenteId }) // Llama a tu función real
-                });
-                const result = await response.json();
-                
-                if (result.status === 'success') {
-                    const docIndex = allTeachersData.findIndex(t => t.id === docenteId);
-                    if(docIndex !== -1) {
-                        const fechaHoy = new Date().toLocaleDateString('es-ES');
-                        if(!allTeachersData[docIndex].docs_generados) allTeachersData[docIndex].docs_generados = [];
-                        
-                        allTeachersData[docIndex].docs_generados.push({ 
-                            nombre: "Documento_FORM_402.docx", 
-                            fecha: fechaHoy, 
-                            url: result.url 
-                        });
-                    }
-                    renderReviews(document.querySelector('.btn-filter.active').dataset.filter);
-                    alert("¡Documento generado con éxito!");
-                } else { 
-                    alert("Error: " + (result.message || "No se pudo generar el documento.")); 
-                    btnElement.innerHTML = originalHtml;
-                    btnElement.disabled = false;
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'update_invitation_status', id: currentInvId, estado: nuevoEstado }) });
+                if((await res.json()).status === 'success') {
+                    bootstrap.Modal.getInstance(document.getElementById('modalRevision')).hide();
+                    location.reload();
                 }
-            } catch(e) {
-                alert("Error de conexión al intentar generar el documento.");
-                btnElement.innerHTML = originalHtml;
-                btnElement.disabled = false;
-            }
+            } catch(e) { alert("Error"); }
         }
 
-        // Filtros Visuales
-        const filterBtns = document.querySelectorAll('.btn-filter');
-        filterBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                filterBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                renderReviews(btn.dataset.filter);
-            });
-        });
+        function resetFilters() {
+            document.getElementById('filterText').value = '';
+            document.getElementById('filterStatus').value = 'Todos';
+            document.getElementById('filterDate').value = '';
+            filtrar();
+        }
 
-        // Misc
-        function logout() { if(confirm("¿Cerrar sesión?")) { sessionStorage.clear(); window.location.href = "login.html"; } }
-        let currentSizeIndex = 1; const sizes =["0.85rem", "1rem", "1.2rem"]; const labels =["Pequeño", "Normal", "Grande"];
-        function changeFontSize(direction) { currentSizeIndex += direction; if (currentSizeIndex < 0) currentSizeIndex = 0; if (currentSizeIndex > 2) currentSizeIndex = 2; document.getElementById('fontSizeLabel').innerText = labels[currentSizeIndex]; document.documentElement.style.setProperty('--dynamic-font-size', sizes[currentSizeIndex]); }
+        function logout() { sessionStorage.clear(); window.location.href = "login.html"; }
     </script>
 </body>
 </html>
