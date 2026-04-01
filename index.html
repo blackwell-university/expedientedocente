@@ -347,18 +347,11 @@
         if(idDesdeUrl) {
             docenteIdInterno = idDesdeUrl;
 
-            // 1. Mostrar el modal INSTANTÁNEAMENTE con el nombre de la URL
-            if (nombreUrl) {
-                const primerNombre = decodeURIComponent(nombreUrl).split(" ")[0];
-                document.getElementById('welcomeName').innerText = "¡Hola, " + primerNombre + "!";
-                document.getElementById('welcomeLoading').style.display = 'none';
-                document.getElementById('welcomeContent').style.display = 'block';
-                const btn = document.getElementById('btnComenzar');
-                btn.classList.remove('disabled'); btn.style.opacity = '1';
-            }
-            new bootstrap.Modal(document.getElementById('welcomeModal')).show();
+            // 1. Mostrar el modal SIEMPRE en estado de "Cargando" al inicio
+            const myModal = new bootstrap.Modal(document.getElementById('welcomeModal'));
+            myModal.show();
 
-            // 2. Consulta en segundo plano para traer datos (y verificar si hay un borrador guardado)
+            // 2. Consulta en segundo plano para traer datos
             fetch(GAS_URL, {
                 method: 'POST',
                 body: JSON.stringify({ action: "get_profile", id: docenteIdInterno, id_invitacion: invitacionIdInterno })
@@ -371,59 +364,74 @@
                     
                     if(res.data.nombres) { inputNombres.value = res.data.nombres; inputNombres.readOnly = true; inputNombres.style.backgroundColor = "#f1f5f9"; }
                     if(res.data.apellidos) { inputApellidos.value = res.data.apellidos; inputApellidos.readOnly = true; inputApellidos.style.backgroundColor = "#f1f5f9"; }
-                    if(res.data.celular) iti.setNumber(res.data.celular.toString());
+                    if(res.data.celular && typeof iti !== 'undefined') iti.setNumber(res.data.celular.toString());
 
                     // RECUPERAR URLS PARA NO SOBREESCRIBIRLAS CON VACÍO AL ENVIAR EL FORMULARIO FINAL
                     if(res.data.url_cv) urlCVFinal = res.data.url_cv;
                     if(res.data.url_handbook) urlHandbookFinal = res.data.url_handbook;
 
-                    // Si entró con un enlace viejo sin nombre, se lo mostramos ahora que cargó
-                    if (!nombreUrl && res.data.nombres) {
-                        document.getElementById('welcomeName').innerText = "¡Hola, " + res.data.nombres.split(" ")[0] + "!";
+                    // --- AQUÍ VALIDAMOS QUÉ PANTALLA MOSTRAR ---
+                    if (res.invEstado === "Respondido") {
+                        
+                        // Ocultamos el modal de bienvenida
+                        myModal.hide(); 
+                        
+                        // Esperamos medio segundo a que termine la animación de cierre y lanzamos la alerta
+                        setTimeout(() => {
+                            Swal.fire({
+                                title: '¡Información ya enviada!',
+                                text: 'Usted ya completó su expediente. Si desea corregir o modificar algún dato, haga clic en el botón de abajo.',
+                                icon: 'info',
+                                showCancelButton: true,
+                                confirmButtonText: 'Modificar mis datos',
+                                cancelButtonText: 'Cerrar',
+                                confirmButtonColor: '#002D62',
+                                allowOutsideClick: false
+                            }).then((result) => {
+                                if (!result.isConfirmed) {
+                                    document.getElementById('docenteWizard').style.display = 'none';
+                                    document.querySelector('.stepper-wrapper').style.display = 'none';
+                                }
+                            });
+                        }, 400);
+
+                    } else {
+                        
+                        // SI NO HA ENVIADO, MOSTRAR BIENVENIDA Y HABILITAR BOTÓN
+                        let nombreAMostrar = "";
+                        if (nombreUrl) nombreAMostrar = decodeURIComponent(nombreUrl).split(" ")[0];
+                        else if (res.data.nombres) nombreAMostrar = res.data.nombres.split(" ")[0];
+
+                        if (nombreAMostrar) document.getElementById('welcomeName').innerText = "¡Hola, " + nombreAMostrar + "!";
+                        
+                        // Apagamos el spinner y mostramos el texto
                         document.getElementById('welcomeLoading').style.display = 'none';
                         document.getElementById('welcomeContent').style.display = 'block';
-                        const btn = document.getElementById('btnComenzar'); btn.classList.remove('disabled'); btn.style.opacity = '1';
-                    }
+                        const btn = document.getElementById('btnComenzar'); 
+                        btn.classList.remove('disabled'); 
+                        btn.style.opacity = '1';
 
-                    if (res.invEstado === "Respondido") {
-                        Swal.fire({
-                            title: '¡Información ya enviada!',
-                            text: 'Usted ya completó su expediente. Si desea corregir o modificar algún dato, haga clic en el botón de abajo.',
-                            icon: 'info',
-                            showCancelButton: true,
-                            confirmButtonText: 'Modificar mis datos',
-                            cancelButtonText: 'Cerrar',
-                            confirmButtonColor: '#002D62',
-                            allowOutsideClick: false
-                        }).then((result) => {
-                            if (!result.isConfirmed) {
-                                // Si no quiere modificar, ocultamos el formulario
-                                document.getElementById('docenteWizard').style.display = 'none';
-                                document.querySelector('.stepper-wrapper').style.display = 'none';
-                            }
-                        });
-                    }
-
-                    // --- 3. LÓGICA DE RECUPERACIÓN (¡Si abandonó el paso 1, lo saltamos!) ---
-                    if (res.drafts && (res.drafts.educacion.length > 0 || res.drafts.experiencia.length > 0)) {
-                        res.drafts.educacion.forEach(edu => {
-                            document.getElementById('ai-results-container').insertAdjacentHTML('beforeend', 
-                            `<div class="edu-card shadow-sm bg-white ai-edu-record" data-grado="${edu.grado}" data-url="${edu.url_diploma}">
-                                <h6 class="fw-bold text-primary">Grado: ${edu.grado}</h6>
-                                <div class="row g-3">
-                                    <div class="col-md-6"><label>Carrera *</label><input type="text" class="form-control ai-rama" value="${edu.rama||''}" required></div>
-                                    <div class="col-md-6"><label>Institución *</label><input type="text" class="form-control ai-institucion" value="${edu.instituto||''}" required></div>
-                                    <div class="col-md-6"><label>Ubicacion (Ciudad, País) *</label><input type="text" class="form-control ai-ubicacion" value="${edu.ubicacion||''}" required></div>
-                                    <div class="col-md-3"><label>Inicio *</label><input type="month" class="form-control ai-inicio" value="${formatToMonth(edu.inicio)||''}" required></div>
-                                    <div class="col-md-3"><label>Fin *</label><input type="month" class="form-control ai-fin" value="${formatToMonth(edu.fin)||''}" required></div>
-                                </div>
-                            </div>`);
-                        });
-                        res.drafts.experiencia.forEach(exp => {
-                            addExpField({ empresa: exp.empresa, cargo: exp.cargo, area_ensenanza: exp.area, direccion: exp.direccion, inicio: formatToMonth(exp.inicio), fin: formatToMonth(exp.fin) });
-                        });
-                        iaListo = true;
-                        goNext(2); // <- ¡MAGIA! Salta directamente al paso 2 en el fondo.
+                        // --- 3. LÓGICA DE RECUPERACIÓN DE BORRADOR ---
+                        if (res.drafts && (res.drafts.educacion.length > 0 || res.drafts.experiencia.length > 0)) {
+                            res.drafts.educacion.forEach(edu => {
+                                document.getElementById('ai-results-container').insertAdjacentHTML('beforeend', 
+                                `<div class="edu-card shadow-sm bg-white ai-edu-record" data-grado="${edu.grado}" data-url="${edu.url_diploma}">
+                                    <h6 class="fw-bold text-primary">Grado: ${edu.grado}</h6>
+                                    <div class="row g-3">
+                                        <div class="col-md-6"><label>Carrera *</label><input type="text" class="form-control ai-rama" value="${edu.rama||''}" required></div>
+                                        <div class="col-md-6"><label>Institución *</label><input type="text" class="form-control ai-institucion" value="${edu.instituto||''}" required></div>
+                                        <div class="col-md-6"><label>Ubicacion (Ciudad, País) *</label><input type="text" class="form-control ai-ubicacion" value="${edu.ubicacion||''}" required></div>
+                                        <div class="col-md-3"><label>Inicio *</label><input type="month" class="form-control ai-inicio" value="${formatToMonth(edu.inicio)||''}" required></div>
+                                        <div class="col-md-3"><label>Fin *</label><input type="month" class="form-control ai-fin" value="${formatToMonth(edu.fin)||''}" required></div>
+                                    </div>
+                                </div>`);
+                            });
+                            res.drafts.experiencia.forEach(exp => {
+                                addExpField({ empresa: exp.empresa, cargo: exp.cargo, area_ensenanza: exp.area, direccion: exp.direccion, inicio: formatToMonth(exp.inicio), fin: formatToMonth(exp.fin) });
+                            });
+                            iaListo = true;
+                            goNext(2); // Salta directamente al paso 2
+                        }
                     }
                 }
             }).catch(e => console.log(e));
