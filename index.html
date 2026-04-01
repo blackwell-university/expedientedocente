@@ -102,7 +102,10 @@
                 <p>Bienvenido. Por favor, adjunte su CV, Faculty Handbook y los documentos de sus grados académicos.</p>
             </div>
             <div class="row g-4">
-                <div class="col-md-6"><label>CV (PDF) *</label><input type="file" id="cv_file" class="form-control" accept=".pdf" required></div>
+                <div class="col-md-6">
+                    <label>CV (PDF) * <span id="cv-status" class="text-success fw-bold ms-2" style="display:none; font-size: 0.8rem;"><i class="bi bi-check-circle-fill"></i> Documento guardado (Sube otro solo para reemplazar)</span></label>
+                    <input type="file" id="cv_file" class="form-control" accept=".pdf" required>
+                </div>
                 <div class="col-md-6"><label>Faculty Handbook *</label><input type="file" id="handbook_file" class="form-control" accept=".pdf"></div>
 
                 <div class="col-12 mt-4">
@@ -366,21 +369,52 @@
                     if(res.data.apellidos) { inputApellidos.value = res.data.apellidos; inputApellidos.readOnly = true; inputApellidos.style.backgroundColor = "#f1f5f9"; }
                     if(res.data.celular && typeof iti !== 'undefined') iti.setNumber(res.data.celular.toString());
 
-                    // RECUPERAR URLS PARA NO SOBREESCRIBIRLAS CON VACÍO AL ENVIAR EL FORMULARIO FINAL
-                    if(res.data.url_cv) urlCVFinal = res.data.url_cv;
+                    // RECUPERAR URLS Y QUITAR OBLIGATORIEDAD DE SUBIR PDF DE NUEVO
+                    if(res.data.url_cv) {
+                        urlCVFinal = res.data.url_cv;
+                        document.getElementById('cv_file').removeAttribute('required'); 
+                        document.getElementById('cv-status').style.display = 'inline'; // Muestra el mensaje verde
+                    }
                     if(res.data.url_handbook) urlHandbookFinal = res.data.url_handbook;
+
+                    // Si ya hay educación guardada, quitamos la obligatoriedad del cuadro de diploma vacío del Paso 1
+                    if (res.drafts && res.drafts.educacion.length > 0) {
+                        const primerDiploma = document.querySelector('.diploma-file');
+                        const primerGrado = document.querySelector('.grado-select');
+                        if(primerDiploma) primerDiploma.removeAttribute('required');
+                        if(primerGrado) primerGrado.removeAttribute('required');
+                    }
+
+                    // --- CARGAR DATOS EN EL PASO 3 (Para borradores o para modificar datos ya enviados) ---
+                    if (res.drafts && (res.drafts.educacion.length > 0 || res.drafts.experiencia.length > 0)) {
+                        res.drafts.educacion.forEach(edu => {
+                            document.getElementById('ai-results-container').insertAdjacentHTML('beforeend', 
+                            `<div class="edu-card shadow-sm bg-white ai-edu-record" data-grado="${edu.grado}" data-url="${edu.url_diploma}">
+                                <h6 class="fw-bold text-primary">Grado: ${edu.grado}</h6>
+                                <div class="row g-3">
+                                    <div class="col-md-6"><label>Carrera *</label><input type="text" class="form-control ai-rama" value="${edu.rama||''}" required></div>
+                                    <div class="col-md-6"><label>Institución *</label><input type="text" class="form-control ai-institucion" value="${edu.instituto||''}" required></div>
+                                    <div class="col-md-6"><label>Ubicacion (Ciudad, País) *</label><input type="text" class="form-control ai-ubicacion" value="${edu.ubicacion||''}" required></div>
+                                    <div class="col-md-3"><label>Inicio *</label><input type="month" class="form-control ai-inicio" value="${formatToMonth(edu.inicio)||''}" required></div>
+                                    <div class="col-md-3"><label>Fin *</label><input type="month" class="form-control ai-fin" value="${formatToMonth(edu.fin)||''}" required></div>
+                                </div>
+                            </div>`);
+                        });
+                        res.drafts.experiencia.forEach(exp => {
+                            addExpField({ empresa: exp.empresa, cargo: exp.cargo, area_ensenanza: exp.area, direccion: exp.direccion, inicio: formatToMonth(exp.inicio), fin: formatToMonth(exp.fin) });
+                        });
+                        iaListo = true;
+                    }
 
                     // --- AQUÍ VALIDAMOS QUÉ PANTALLA MOSTRAR ---
                     if (res.invEstado === "Respondido") {
                         
-                        // Ocultamos el modal de bienvenida
                         myModal.hide(); 
                         
-                        // Esperamos medio segundo a que termine la animación de cierre y lanzamos la alerta
                         setTimeout(() => {
                             Swal.fire({
                                 title: '¡Información ya enviada!',
-                                text: 'Usted ya completó su expediente. Si desea corregir o modificar algún dato, haga clic en el botón de abajo.',
+                                text: 'Usted ya completó su expediente. Si desea corregir algún dato, haga clic en "Modificar mis datos".',
                                 icon: 'info',
                                 showCancelButton: true,
                                 confirmButtonText: 'Modificar mis datos',
@@ -388,7 +422,10 @@
                                 confirmButtonColor: '#002D62',
                                 allowOutsideClick: false
                             }).then((result) => {
-                                if (!result.isConfirmed) {
+                                if (result.isConfirmed) {
+                                    // LO LLEVAMOS DIRECTO AL PASO 2 (Y ya no se le exige PDF)
+                                    goNext(2);
+                                } else {
                                     document.getElementById('docenteWizard').style.display = 'none';
                                     document.querySelector('.stepper-wrapper').style.display = 'none';
                                 }
@@ -397,41 +434,21 @@
 
                     } else {
                         
-                        // SI NO HA ENVIADO, MOSTRAR BIENVENIDA Y HABILITAR BOTÓN
+                        // SI NO HA ENVIADO:
                         let nombreAMostrar = "";
                         if (nombreUrl) nombreAMostrar = decodeURIComponent(nombreUrl).split(" ")[0];
                         else if (res.data.nombres) nombreAMostrar = res.data.nombres.split(" ")[0];
 
                         if (nombreAMostrar) document.getElementById('welcomeName').innerText = "¡Hola, " + nombreAMostrar + "!";
                         
-                        // Apagamos el spinner y mostramos el texto
                         document.getElementById('welcomeLoading').style.display = 'none';
                         document.getElementById('welcomeContent').style.display = 'block';
                         const btn = document.getElementById('btnComenzar'); 
                         btn.classList.remove('disabled'); 
                         btn.style.opacity = '1';
 
-                        // --- 3. LÓGICA DE RECUPERACIÓN DE BORRADOR ---
-                        if (res.drafts && (res.drafts.educacion.length > 0 || res.drafts.experiencia.length > 0)) {
-                            res.drafts.educacion.forEach(edu => {
-                                document.getElementById('ai-results-container').insertAdjacentHTML('beforeend', 
-                                `<div class="edu-card shadow-sm bg-white ai-edu-record" data-grado="${edu.grado}" data-url="${edu.url_diploma}">
-                                    <h6 class="fw-bold text-primary">Grado: ${edu.grado}</h6>
-                                    <div class="row g-3">
-                                        <div class="col-md-6"><label>Carrera *</label><input type="text" class="form-control ai-rama" value="${edu.rama||''}" required></div>
-                                        <div class="col-md-6"><label>Institución *</label><input type="text" class="form-control ai-institucion" value="${edu.instituto||''}" required></div>
-                                        <div class="col-md-6"><label>Ubicacion (Ciudad, País) *</label><input type="text" class="form-control ai-ubicacion" value="${edu.ubicacion||''}" required></div>
-                                        <div class="col-md-3"><label>Inicio *</label><input type="month" class="form-control ai-inicio" value="${formatToMonth(edu.inicio)||''}" required></div>
-                                        <div class="col-md-3"><label>Fin *</label><input type="month" class="form-control ai-fin" value="${formatToMonth(edu.fin)||''}" required></div>
-                                    </div>
-                                </div>`);
-                            });
-                            res.drafts.experiencia.forEach(exp => {
-                                addExpField({ empresa: exp.empresa, cargo: exp.cargo, area_ensenanza: exp.area, direccion: exp.direccion, inicio: formatToMonth(exp.inicio), fin: formatToMonth(exp.fin) });
-                            });
-                            iaListo = true;
-                            goNext(2); // Salta directamente al paso 2
-                        }
+                        // Si tiene borrador pendiente, lo mandamos al paso 2
+                        if (iaListo) goNext(2);
                     }
                 }
             }).catch(e => console.log(e));
@@ -470,7 +487,7 @@
                 <div class="col-md-6"><label>Empresa</label><input type="text" class="form-control exp-empresa" value="${data.empresa || ''}" required></div>
                 <div class="col-md-6"><label>Cargo</label><input type="text" class="form-control exp-cargo" value="${data.cargo || ''}" required></div>
                 <div class="col-md-12"><label>Área de enseñanza (*Solo si enseñó)</label><input type="text" class="form-control exp-area" value="${data.area_ensenanza || ''}"></div>
-                <div class="col-md-12"><label>Dirección (Calle, Ciudad, Pais, Código postal*Opcional)</label><input type="text" class="form-control exp-direccion" value="${data.direccion || ''}" required></div>
+                <div class="col-md-12"><label>Dirección (Calle, Ciudad/Pais, Opcional: Código postal)</label><input type="text" class="form-control exp-direccion" value="${data.direccion || ''}" required></div>
                 <div class="col-md-6"><label>Inicio</label><input type="month" class="form-control exp-inicio" value="${data.inicio || ''}" required></div>
                 <div class="col-md-6">
                     <div class="d-flex justify-content-between align-items-center mb-1">
@@ -513,25 +530,32 @@
         fileIdsToMove =[];
 
         try {
-            // 1. Subir CV y Handbook
-            urlCVFinal = await subirArchivoYRegistrar(document.getElementById('cv_file').files[0]);
-            urlHandbookFinal = await subirArchivoYRegistrar(document.getElementById('handbook_file').files[0]);
+            // 1. Subir CV y Handbook SOLO SI SON NUEVOS
+            const nuevoCvFile = document.getElementById('cv_file').files[0];
+            if (nuevoCvFile) {
+                urlCVFinal = await subirArchivoYRegistrar(nuevoCvFile);
+                
+                // Si subió un nuevo CV, la IA vuelve a extraer la experiencia
+                const teacherId = document.getElementById('id_documento').value;
+                const n8nCv = await fetch(N8N_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ fileUrl: urlCVFinal, id: docenteIdInterno, grado: "CV" })}).then(r=>r.json());
+                let cvText = (n8nCv.content && n8nCv.content[0]) ? n8nCv.content[0].text : (Array.isArray(n8nCv) && n8nCv[0]?.content ? n8nCv[0].content[0].text : n8nCv);
+                if (typeof cvText !== 'string' && cvText.text) cvText = cvText.text;
+                let parsedCv = typeof cvText === 'string' ? JSON.parse(cvText.replace(/```json|```/g, "")) : cvText;
+                (parsedCv.experiencias ||[]).forEach(e => addExpField(e));
+            }
 
-            // 2. n8n para el CV (Usa el ID asignado desde la URL o escrito en el input)
-            const teacherId = document.getElementById('id_documento').value;
+            const nuevoHandbookFile = document.getElementById('handbook_file').files[0];
+            if (nuevoHandbookFile) {
+                urlHandbookFinal = await subirArchivoYRegistrar(nuevoHandbookFile);
+            }
 
-            const n8nCv = await fetch(N8N_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ fileUrl: urlCVFinal, id: docenteIdInterno, grado: "CV" })}).then(r=>r.json());
-            let cvText = (n8nCv.content && n8nCv.content[0]) ? n8nCv.content[0].text : (Array.isArray(n8nCv) && n8nCv[0]?.content ? n8nCv[0].content[0].text : n8nCv);
-            if (typeof cvText !== 'string' && cvText.text) cvText = cvText.text;
-            let parsedCv = typeof cvText === 'string' ? JSON.parse(cvText.replace(/```json|```/g, "")) : cvText;
-            (parsedCv.experiencias ||[]).forEach(e => addExpField(e));
-
-            // 3. Subir Diplomas y Transcripts
+            // 2. Subir Diplomas SOLO SI HAY ARCHIVOS SELECCIONADOS
             const diplomaItems = document.querySelectorAll('.edu-item');
             for (let item of diplomaItems) {
                 const dipFile = item.querySelector('.diploma-file').files[0];
-                const transFile = item.querySelector('.transcript-file').files[0];
+                if (!dipFile) continue; // ¡AQUÍ ESTÁ LA MAGIA! Si el campo está vacío, lo salta sin causar error.
                 
+                const transFile = item.querySelector('.transcript-file').files[0];
                 const diplomaUrl = await subirArchivoYRegistrar(dipFile);
                 if(transFile) await subirArchivoYRegistrar(transFile);
 
