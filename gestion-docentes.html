@@ -2,362 +2,360 @@
 <html lang="es">
 <head>
     <script>
+        // Protección de ruta
         const isLoggedIn = sessionStorage.getItem('isLoggedIn');
         const userRole = sessionStorage.getItem('userRole');
         if (isLoggedIn !== 'true' || (userRole !== 'Administrativo' && userRole !== 'Administrador')) {
-            window.location.href = "login.html";
+            window.location.href = "login.html"; 
         }
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Docentes - Universidad Blackwell</title>
+    <title>Gestión de Docentes | Blackwell University</title>
+    
+    <!-- Frameworks & Fonts -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         :root {
-            --sidebar-bg: #1e3a8a;
-            --sidebar-active: #3b82f6;
-            --main-bg: #f8fafc;
-            --text-dark: #1e293b;
+            --primary: #2563eb; 
+            --primary-dark: #1e3a8a; 
+            --bg-body: #f8fafc;
+            --sidebar-bg: #ffffff;
+            --text-main: #1e293b;
             --text-muted: #64748b;
-            --accent-blue: #223f93;
-            --logout-red: #e11d48;
+            --card-radius: 20px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --sidebar-width: 260px;
+            --sidebar-collapsed-width: 88px;
             --dynamic-font-size: 1rem;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--main-bg);
+            background-color: var(--bg-body);
+            color: var(--text-main);
             margin: 0;
             display: flex;
             height: 100vh;
             overflow: hidden;
+            letter-spacing: -0.01em;
         }
 
-        .content-area {
-            font-size: var(--dynamic-font-size);
-            padding: 30px 40px;
-            max-width: 1400px;
-            margin: 0 auto;
-            width: 100%;
+        /* --- SIDEBAR MODERNA --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            border-right: 1px solid rgba(0,0,0,0.05);
+            display: flex; flex-direction: column;
+            transition: var(--transition); position: relative;
+            padding: 24px 16px; flex-shrink: 0;
         }
+
+        .sidebar.collapsed { width: var(--sidebar-collapsed-width); }
+
+        .brand-section {
+            display: flex; align-items: center; gap: 12px;
+            padding: 0 12px 32px; text-decoration: none; overflow: hidden;
+        }
+
+        .logo-box {
+            min-width: 42px; height: 42px; background: var(--primary-dark);
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 20px;
+        }
+
+        .brand-text { font-weight: 800; font-size: 1.2rem; color: var(--primary-dark); }
+        .sidebar.collapsed .brand-text { opacity: 0; pointer-events: none; }
+
+        .user-preview {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px; background: #f1f5f9; border-radius: 16px; 
+            margin-bottom: 24px; overflow: hidden;
+        }
+
+        .avatar {
+            min-width: 36px; height: 36px; background: var(--primary); 
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            font-weight: 700; color: white; font-size: 13px;
+        }
+
+        .user-meta { display: flex; flex-direction: column; line-height: 1.2; }
+        .user-meta b { font-size: 13px; white-space: nowrap; }
+        .user-meta span { font-size: 11px; color: var(--text-muted); }
+        .sidebar.collapsed .user-meta { display: none; }
+
+        .nav-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+        .nav-link {
+            display: flex; align-items: center; gap: 16px; padding: 12px 14px; 
+            color: var(--text-muted); text-decoration: none; border-radius: 12px;
+            margin-bottom: 6px; transition: var(--transition); white-space: nowrap;
+        }
+
+        .nav-link i { font-size: 18px; width: 24px; text-align: center; }
+        .nav-link:hover, .nav-link.active { background: #eff6ff; color: var(--primary); }
+        .nav-link.active { font-weight: 600; }
+        .sidebar.collapsed .link-text { display: none; }
+
+        .collapse-btn {
+            position: absolute; right: -12px; top: 48px; width: 24px; height: 24px; 
+            background: white; border: 1px solid #e2e8f0; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; z-index: 10; font-size: 10px; color: var(--text-muted);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* --- MAIN WRAPPER & CENTERING --- */
+        .main-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; }
 
         header {
-            background: white;
-            padding: 15px 40px;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 20px 48px; display: flex; justify-content: space-between;
+            align-items: center; background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 5;
         }
 
-        header h2 { font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--text-dark); }
-        header p { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
-
-        .font-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: #f1f5f9;
-            padding: 5px 12px;
-            border-radius: 50px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            border: 1px solid #e2e8f0;
+        .content-area { 
+            padding: 40px; display: flex; flex-direction: column;
+            align-items: center; width: 100%;
+            font-size: var(--dynamic-font-size);
         }
 
-        .btn-font { background: none; border: none; color: var(--text-dark); font-weight: bold; cursor: pointer; }
-        #fontSizeLabel { min-width: 60px; text-align: center; font-weight: 500; }
-
-        .sidebar {
-            width: 260px;
-            background-color: var(--sidebar-bg);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-            padding: 20px 0;
+        .centered-container {
+            width: 100%; max-width: 1150px; text-align: left;
         }
 
-        .sidebar-brand { padding: 0 25px 30px; display: flex; align-items: center; gap: 10px; }
-        .sidebar-brand i { font-size: 24px; }
-        .sidebar-brand div b { display: block; line-height: 1; font-size: 1.1rem; }
-        .sidebar-brand div span { font-size: 0.7rem; opacity: 0.7; }
-
-        .nav-menu { flex-grow: 1; padding: 0 15px; }
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 15px;
-            color: rgba(255,255,255,0.7);
-            text-decoration: none;
-            font-size: 0.85rem;
-            border-radius: 8px;
-            margin-bottom: 5px;
-            transition: all 0.2s;
-        }
-        .nav-item:hover { color: white; background: rgba(255,255,255,0.1); }
-        .nav-item.active { background-color: var(--sidebar-active); color: white; font-weight: 500; }
-
-        .sidebar-footer { 
-            padding: 20px; 
-            background: rgba(0,0,0,0.2); 
-            font-size: 0.75rem;
-        }
-        .user-info { margin-bottom: 15px; }
-        .user-info span { opacity: 0.8; }
-        .user-info b { display: block; font-size: 0.85rem; margin-top: 2px; }
-        .role-text { color: var(--sidebar-active); font-weight: 600; font-size: 0.8rem; margin-top: 2px; display: block; }
-
-        .btn-logout {
-            width: 100%;
-            background-color: var(--logout-red);
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 6px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: 0.3s;
+        .page-header {
+            display: flex; justify-content: space-between; align-items: flex-end;
+            margin-bottom: 32px;
         }
 
-        .main-wrapper { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        .page-header h1 { 
+            font-weight: 800; font-size: 2.2rem; margin-bottom: 8px; 
+            letter-spacing: -0.03em; color: var(--primary-dark);
+        }
+        .page-header p { color: var(--text-muted); font-size: 1.1rem; margin: 0; }
 
-        /* --- UI MEJORADA --- */
-        .page-title { font-size: 1.75rem; font-weight: 800; color: #0f172a; }
-        
+        .btn-primary {
+            background: var(--primary); border: none; border-radius: 12px; 
+            padding: 12px 24px; font-weight: 700; font-size: 14px; 
+            transition: var(--transition); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            color: white; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px); background: var(--primary-dark);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35); color: white;
+        }
+
+        /* --- FILTROS INTELIGENTES --- */
         .filter-section {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            margin-bottom: 25px;
-            border: 1px solid #e2e8f0;
+            background: white; border-radius: 16px; padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02); margin-bottom: 24px;
+            border: 1px solid rgba(0,0,0,0.04);
         }
 
-        .search-input-group {
-            position: relative;
-            flex-grow: 1;
-        }
-
+        .search-input-group { position: relative; flex-grow: 1; }
         .search-input-group i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #94a3b8;
+            position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #94a3b8;
         }
 
         .form-control-custom {
-            padding: 10px 15px 10px 45px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            width: 100%;
+            padding: 12px 18px 12px 45px; border: 1px solid #e2e8f0;
+            border-radius: 12px; font-size: 0.95rem; width: 100%; background: #f8fafc;
+            transition: var(--transition); color: var(--text-main);
         }
 
         .form-control-custom:focus {
-            outline: none;
-            border-color: var(--sidebar-active);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none; background: white; border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
         }
 
-        /* Tabla */
+        /* --- TABLA MODERNA --- */
         .table-card {
-            background: white;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-            overflow: hidden;
+            background: white; border-radius: var(--card-radius);
+            border: 1px solid rgba(0,0,0,0.04); overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.02);
         }
 
         .table thead th {
-            background-color: #f8fafc;
-            color: #64748b;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.025em;
-            padding: 16px 24px;
-            border-bottom: 1px solid #e2e8f0;
+            background-color: #f8fafc; color: #64748b; font-weight: 600;
+            text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em;
+            padding: 18px 24px; border-bottom: 1px solid #e2e8f0; border-top: none;
         }
 
         .table tbody td {
-            padding: 16px 24px;
-            color: var(--text-dark);
-            border-bottom: 1px solid #f1f5f9;
+            padding: 16px 24px; color: var(--text-main); border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
         }
 
         .table tbody tr:hover { background-color: #fcfdfe; }
 
         /* Estados */
         .badge-status {
-            padding: 6px 12px;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 0.75rem;
+            padding: 6px 14px; border-radius: 50px; font-weight: 700; font-size: 0.75rem;
+            text-transform: uppercase; letter-spacing: 0.5px;
         }
-        .status-pendiente { background: #fffbeb; color: #92400e; border: 1px solid #fef3c7; }
-        .status-respondido { background: #eff6ff; color: #1e40af; border: 1px solid #dbeafe; }
-        .status-aprobado { background: #f0fdf4; color: #166534; border: 1px solid #dcfce7; }
+        .status-pendiente { background: #fffbeb; color: #b45309; }
+        .status-respondido { background: #eff6ff; color: #1d4ed8; }
+        .status-aprobado { background: #f0fdf4; color: #15803d; }
 
         /* Paginación */
         .pagination-container {
-            padding: 20px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: white;
-            border-top: 1px solid #e2e8f0;
+            padding: 20px 24px; display: flex; justify-content: space-between;
+            align-items: center; background: white; border-top: 1px solid #e2e8f0;
         }
 
         .btn-page {
-            padding: 6px 12px;
-            border: 1px solid #e2e8f0;
-            background: white;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            color: var(--text-dark);
-            transition: 0.2s;
+            padding: 8px 16px; border: 1px solid #e2e8f0; background: white;
+            border-radius: 10px; font-size: 0.85rem; color: var(--text-main); 
+            transition: 0.2s; font-weight: 600;
         }
+        .btn-page:hover:not(:disabled) { background: #f8fafc; border-color: #cbd5e1; }
+        .btn-page:disabled { opacity: 0.4; cursor: not-allowed; }
 
-        .btn-page:hover:not(:disabled) {
-            background: #f8fafc;
-            border-color: #cbd5e1;
-        }
-
-        .btn-page:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        .page-numbers { display: flex; gap: 5px; }
+        .page-numbers { display: flex; gap: 6px; }
         .page-num {
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.85rem;
+            width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+            border-radius: 10px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: 0.2s;
         }
-        .page-num.active {
-            background: var(--sidebar-bg);
-            color: white;
-            font-weight: 600;
-        }
+        .page-num:hover:not(.active) { background: #f1f5f9; }
+        .page-num.active { background: var(--primary); color: white; }
 
-        @media (max-width: 768px) { .sidebar { display: none; } }
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            header, .content-area { padding: 20px; }
+            .page-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+        }
     </style>
 </head>
 <body>
 
-    <aside class="sidebar">
-        <div class="sidebar-brand">
-            <i class="fa-solid fa-graduation-cap"></i>
-            <div><b>Blackwell</b><span>Universidad</span></div>
+    <!-- Sidebar Blackwell -->
+    <aside class="sidebar" id="sidebar">
+        <div class="collapse-btn" onclick="toggleSidebar()">
+            <i class="fa-solid fa-chevron-left" id="toggleIcon"></i>
         </div>
-        <nav class="nav-menu">
-            <a href="administrativo.html" class="nav-item"><i class="fa-solid fa-border-all"></i> Dashboard</a>
-            <a href="gestion-docentes.html" class="nav-item active"><i class="fa-solid fa-users"></i> Gestión de Docentes</a>
-            <a href="revision-docs.html" class="nav-item"><i class="fa-regular fa-file-lines"></i> Revisión de Expedientes</a>
-            <a href="gestion-cursos.html" class="nav-item"><i class="fa-solid fa-upload"></i> Gestión de Cursos</a>
-            <!--<a href="aprobaciones.html" class="nav-item"><i class="fa-regular fa-circle-check"></i> Aprobaciones</a>-->
-        </nav>
-        <div class="sidebar-footer">
-            <div class="user-info">
-                <span>Sesión activa:</span>
-                <b id="sidebar-userid">admin@blackwell.edu</b>
-                <span class="role-text">Administrativo</span>
+
+        <a href="#" class="brand-section">
+            <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div>
+            <span class="brand-text">Blackwell</span>
+        </a>
+
+        <div class="user-preview">
+            <div class="avatar" id="userInitial">AD</div>
+            <div class="user-meta">
+                <b id="userName">Admin User</b>
+                <span>Administrador</span>
             </div>
-            <button class="btn-logout" onclick="logout()">
-                <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
-            </button>
         </div>
+
+        <ul class="nav-list">
+            <li><a href="administrativo.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
+            <li><a href="registrodocente.html" class="nav-link "><i class="fa-solid fa-user-plus"></i> <span class="link-text">Registrar</span></a></li>
+            <li><a href="gestion-docentes.html" class="nav-link active"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
+            <li><a href="revision-docs.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
+            <li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-upload"></i> <span class="link-text">Gestión de Cursos</span></a></li>
+            <li><a href="#" class="nav-link"><i class="fa-solid fa-chart-pie"></i> <span class="link-text">Reportes</span></a></li>
+        </ul>
+
+        <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;">
+            <i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span>
+        </a>
     </aside>
 
-    <main class="main-wrapper">
+    <div class="main-wrapper">
         <header>
-            <div><h2>Sistema de Gestión de Expedientes</h2><p>Panel Administrativo</p></div>
-            <div class="font-controls">
-                <button onclick="changeFontSize(-1)" class="btn-font">—</button>
-                <span id="fontSizeLabel">Normal</span>
-                <button onclick="changeFontSize(1)" class="btn-font">+</button>
+            <div>
+                <h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Gestión de Personal</h5>
+                <p class="text-muted small m-0">Portal Administrativo</p>
+            </div>
+            
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-white px-3 py-2 rounded-pill shadow-sm d-flex gap-2 align-items-center">
+                    <button onclick="changeFontSize(-1)" class="btn btn-sm btn-link p-0 text-dark text-decoration-none fw-bold">A-</button>
+                    <span id="fontSizeLabel" class="small fw-bold px-1" style="min-width: 50px; text-align: center;">Normal</span>
+                    <button onclick="changeFontSize(1)" class="btn btn-sm btn-link p-0 text-dark text-decoration-none fw-bold">A+</button>
+                </div>
             </div>
         </header>
 
         <div class="content-area">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h1 class="page-title">Gestión de Docentes</h1> 
-                    <p class="page-subtitle">Visualiza y gestiona el estado de la plana docente.</p>
+            <div class="centered-container">
+                
+                <div class="page-header">
+                    <div>
+                        <h1>Plana Docente</h1> 
+                        <p>Visualiza y gestiona los expedientes y estados de la plana docente.</p>
+                    </div>
+                    <a href="registrodocente.html" class="btn-primary">
+                        <i class="fa-solid fa-plus"></i> Nuevo Docente
+                    </a>
                 </div>
-                <a href="registrodocente.html" class="btn btn-primary shadow-sm" style="background: var(--sidebar-bg); border: none; padding: 12px 24px; border-radius: 10px; font-weight: 600;">
-                    <i class="fa-solid fa-plus me-2"></i> Nuevo Docente
-                </a>
-            </div>
 
-            <!-- Filtros Inteligentes -->
-            <div class="filter-section">
-                <div class="row g-3">
-                    <div class="col-md-8">
-                        <div class="search-input-group">
-                            <i class="fa-solid fa-magnifying-glass"></i>
-                            <input type="text" id="searchInput" class="form-control-custom" placeholder="Buscar por nombre o correo electrónico...">
+                <!-- Filtros Inteligentes -->
+                <div class="filter-section">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <div class="search-input-group">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="searchInput" class="form-control-custom" placeholder="Buscar por nombre, correo electrónico o ID...">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <select id="statusFilter" class="form-select form-control-custom" style="padding-left: 18px; cursor: pointer;">
+                                <option value="all">Todos los estados</option>
+                                <option value="Pendiente">Pendiente</option>
+                                <option value="Respondido">Respondido</option>
+                                <option value="Aprobado">Aprobado</option>
+                            </select>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <select id="statusFilter" class="form-select border-0 bg-light" style="padding: 10px 15px; border-radius: 8px; font-size: 0.9rem;">
-                            <option value="all">Todos los estados</option>
-                            <option value="Pendiente">Pendiente</option>
-                            <option value="Respondido">Respondido</option>
-                            <option value="Aprobado">Aprobado</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tabla con Paginación -->
-            <div class="table-card shadow-sm">
-                <div class="table-responsive">
-                    <table class="table align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th>Docente</th>
-                                <th>Información de Contacto</th>
-                                <th>Estado de Expediente</th>
-                                <th class="text-center">Cursos</th>
-                                <th class="text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-docentes-body">
-                            <!-- JS inyectará datos aquí -->
-                        </tbody>
-                    </table>
                 </div>
 
-                <!-- Footer de Paginación -->
-                <div class="pagination-container">
-                    <div class="text-muted small" id="tableInfo">Mostrando 0 de 0 docentes</div>
-                    <div class="d-flex align-items-center gap-3">
-                        <button class="btn-page" id="prevPage" disabled><i class="fa-solid fa-chevron-left me-1"></i> Anterior</button>
-                        <div class="page-numbers" id="pageNumbers"></div>
-                        <button class="btn-page" id="nextPage" disabled>Siguiente <i class="fa-solid fa-chevron-right ms-1"></i></button>
+                <!-- Tabla con Paginación -->
+                <div class="table-card">
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Docente</th>
+                                    <th>Información de Contacto</th>
+                                    <th>Estado Aprobación</th>
+                                    <th class="text-center">Cursos</th>
+                                    <th class="text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-docentes-body">
+                                <!-- JS inyectará datos aquí -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Footer de Paginación -->
+                    <div class="pagination-container">
+                        <div class="text-muted small" id="tableInfo">Mostrando 0 de 0 docentes</div>
+                        <div class="d-flex align-items-center gap-3">
+                            <button class="btn-page" id="prevPage" disabled><i class="fa-solid fa-chevron-left me-1"></i> Anterior</button>
+                            <div class="page-numbers" id="pageNumbers"></div>
+                            <button class="btn-page" id="nextPage" disabled>Siguiente <i class="fa-solid fa-chevron-right ms-1"></i></button>
+                        </div>
                     </div>
                 </div>
+
             </div>
         </div>
-    </main>
+    </div>
+
+    <!-- Contenedor para notificaciones flotantes -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-4" style="z-index: 1055;" id="toastContainer"></div>
 
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
         
-        // Estado de la aplicación
         let allTeachers = [];
-        let filteredTeachers = [];
+        let filteredTeachers =[];
         let currentPage = 1;
         const itemsPerPage = 10;
 
@@ -368,9 +366,17 @@
             }
         }
 
+        function toggleSidebar() {
+            const sb = document.getElementById('sidebar');
+            const icon = document.getElementById('toggleIcon');
+            sb.classList.toggle('collapsed');
+            icon.classList.toggle('fa-chevron-left');
+            icon.classList.toggle('fa-chevron-right');
+        }
+
         async function cargarDocentes() {
             const tbody = document.getElementById('tabla-docentes-body');
-            tbody.innerHTML = `<tr><td colspan="4" class="text-center py-5"><div class="spinner-border text-primary" role="status"></div></td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><div class="mt-2 text-muted small">Cargando plana docente...</div></td></tr>`;
             
             try {
                 const response = await fetch(GAS_URL, {
@@ -384,7 +390,7 @@
                     aplicarFiltros();
                 }
             } catch (e) {
-                tbody.innerHTML = "<tr><td colspan='4' class='p-4 text-center text-danger'>Error al conectar con el servidor.</td></tr>";
+                tbody.innerHTML = "<tr><td colspan='5' class='p-4 text-center text-danger'>Error al conectar con el servidor. Inténtalo más tarde.</td></tr>";
             }
         }
 
@@ -394,7 +400,8 @@
 
             filteredTeachers = allTeachers.filter(t => {
                 const matchesSearch = (t.nombres + " " + t.apellidos).toLowerCase().includes(searchTerm) || 
-                                     t.correo.toLowerCase().includes(searchTerm);
+                                     t.correo.toLowerCase().includes(searchTerm) ||
+                                     t.id.toLowerCase().includes(searchTerm);
                 const matchesStatus = statusFilter === 'all' || t.estado === statusFilter;
                 return matchesSearch && matchesStatus;
             });
@@ -410,7 +417,7 @@
             const paginatedItems = filteredTeachers.slice(start, end);
 
             if (paginatedItems.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-5 text-muted">No se encontraron docentes con los criterios de búsqueda.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-muted"><i class="fa-solid fa-folder-open mb-3 fs-2 opacity-50"></i><br>No se encontraron docentes con los criterios de búsqueda.</td></tr>`;
                 actualizarControlesPaginacion(0);
                 return;
             }
@@ -423,29 +430,29 @@
                 <tr>
                     <td>
                         <div class="d-flex align-items-center">
-                            <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; color: var(--sidebar-bg)">
-                                <i class="fa-solid fa-user-tie"></i>
+                            <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 44px; height: 44px; color: var(--primary)">
+                                <i class="fa-solid fa-user-tie" style="font-size: 1.1rem;"></i>
                             </div>
                             <div>
-                                <div class="fw-bold">${d.nombres} ${d.apellidos}</div>
-                                <div class="text-muted small">ID: ${d.id}</div>
+                                <div class="fw-bold" style="color: var(--primary-dark)">${d.nombres} ${d.apellidos}</div>
+                                <div class="text-muted" style="font-size: 0.8rem;">ID: <span class="fw-medium">${d.id}</span></div>
                             </div>
                         </div>
                     </td>
                     <td>
-                        <div class="small"><i class="fa-regular fa-envelope me-2"></i>${d.correo}</div>
+                        <div style="font-size: 0.85rem;"><i class="fa-regular fa-envelope me-2 text-muted"></i>${d.correo}</div>
                     </td>
                     <td>
                         <span class="badge-status ${statusClass}">${estado}</span>
                     </td>
                     <td class="text-center">
-                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 5px; display: inline-block; min-width: 45px;">
-                            <span class="fw-bold" style="color: var(--sidebar-bg); font-size: 1rem;">${d.cursosCount}</span>
+                        <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 4px 10px; display: inline-block; min-width: 45px;">
+                            <span class="fw-bold" style="color: var(--primary); font-size: 0.9rem;">${d.cursosCount}</span>
                         </div>
                     </td>
                     <td class="text-center">
-                        <a href="detallesdocente.html?id=${d.id}" class="btn btn-sm btn-light border" style="font-weight: 600; color: var(--sidebar-bg)">
-                            <i class="fa-regular fa-eye me-1"></i> Expediente
+                        <a href="detallesdocente.html?id=${d.id}" class="btn btn-sm btn-light border" style="font-weight: 600; color: var(--text-main); border-radius: 8px; padding: 6px 12px;">
+                            <i class="fa-regular fa-folder-open me-1" style="color: var(--primary)"></i> Expediente
                         </a>
                     </td>
                 </tr>
@@ -456,7 +463,7 @@
 
         function actualizarControlesPaginacion(totalItems) {
             const totalPages = Math.ceil(totalItems / itemsPerPage);
-            document.getElementById('tableInfo').innerText = `Mostrando ${Math.min(totalItems, (currentPage - 1) * itemsPerPage + 1)} - ${Math.min(totalItems, currentPage * itemsPerPage)} de ${totalItems} docentes`;
+            document.getElementById('tableInfo').innerText = `Mostrando ${Math.min(totalItems, (currentPage - 1) * itemsPerPage + 1)} - ${Math.min(totalItems, currentPage * itemsPerPage)} de ${totalItems} registros`;
             
             document.getElementById('prevPage').disabled = currentPage === 1;
             document.getElementById('nextPage').disabled = currentPage === totalPages || totalPages === 0;
@@ -473,6 +480,22 @@
             }
         }
 
+        // Mostrar Toast Notification
+        function showToast(message) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast align-items-center text-bg-success border-0 show shadow-lg rounded-4 mb-3';
+            toast.setAttribute('role', 'alert');
+            toast.innerHTML = `
+                <div class="d-flex p-1">
+                    <div class="toast-body fw-medium" style="font-size: 0.95rem;"><i class="fa-solid fa-circle-check me-2 fs-5 align-middle"></i> ${message}</div>
+                    <button type="button" class="btn-close btn-close-white me-3 m-auto" data-bs-dismiss="toast" onclick="this.parentElement.parentElement.remove()"></button>
+                </div>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
         // Listeners para filtros
         document.getElementById('searchInput').addEventListener('input', aplicarFiltros);
         document.getElementById('statusFilter').addEventListener('change', aplicarFiltros);
@@ -480,18 +503,32 @@
         document.getElementById('nextPage').onclick = () => { if(currentPage < Math.ceil(filteredTeachers.length / itemsPerPage)) { currentPage++; renderTable(); } };
 
         // Tamaño de fuente
-        let currentSizeIndex = 1; 
-        const sizes =["0.85rem", "1rem", "1.2rem"];
+        let currentSize = 1; 
+        const sizes =["0.9rem", "1rem", "1.1rem"];
         const labels =["Pequeño", "Normal", "Grande"];
-        function changeFontSize(direction) {
-            currentSizeIndex += direction;
-            if (currentSizeIndex < 0) currentSizeIndex = 0;
-            if (currentSizeIndex > 2) currentSizeIndex = 2;
-            document.getElementById('fontSizeLabel').innerText = labels[currentSizeIndex];
-            document.documentElement.style.setProperty('--dynamic-font-size', sizes[currentSizeIndex]);
+        function changeFontSize(dir) {
+            currentSize += dir;
+            if (currentSize < 0) currentSize = 0;
+            if (currentSize > 2) currentSize = 2;
+            document.getElementById('fontSizeLabel').innerText = labels[currentSize];
+            document.documentElement.style.setProperty('--dynamic-font-size', sizes[currentSize]);
         }
 
-        document.addEventListener('DOMContentLoaded', cargarDocentes);
+        document.addEventListener('DOMContentLoaded', () => {
+            // Datos del usuario en Sidebar
+            const name = sessionStorage.getItem('userName') || "Administrador";
+            document.getElementById('userName').innerText = name;
+            document.getElementById('userInitial').innerText = name.substring(0,2).toUpperCase();
+
+            // Verificar si hay mensaje de éxito pendiente desde registrodocente.html
+            const toastMsg = sessionStorage.getItem('toastMessage');
+            if (toastMsg) {
+                showToast(toastMsg);
+                sessionStorage.removeItem('toastMessage');
+            }
+
+            cargarDocentes();
+        });
     </script>
 </body>
 </html>

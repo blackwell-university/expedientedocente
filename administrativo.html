@@ -12,544 +12,366 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Administrativo - Universidad Blackwell</title>
-    <!-- Bootstrap -->
+    <title>Panel Administrativo | Blackwell University</title>
+    
+    <!-- Frameworks & Fonts -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         :root {
-            --sidebar-bg: #1e3a8a;
-            --sidebar-active: #3b82f6;
-            --main-bg: #f8fafc;
-            --text-dark: #1e293b;
+            --primary: #2563eb; 
+            --primary-dark: #1e3a8a; 
+            --bg-body: #f8fafc;
+            --sidebar-bg: #ffffff;
+            --text-main: #1e293b;
             --text-muted: #64748b;
-            --accent-blue: #223f93;
-            --logout-red: #e11d48;
-
+            --card-radius: 20px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --sidebar-width: 260px;
+            --sidebar-collapsed-width: 88px;
             --dynamic-font-size: 1rem;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--main-bg);
+            background-color: var(--bg-body);
+            color: var(--text-main);
             margin: 0;
             display: flex;
             height: 100vh;
             overflow: hidden;
+            letter-spacing: -0.01em;
         }
 
-        .content-area {
-            font-size: var(--dynamic-font-size);
-            padding: 30px 40px;
-            max-width: 1400px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        /* --- HEADER & CONTROLES --- */
-        header {
-            background: white;
-            padding: 15px 40px;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        header h2 { font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--text-dark); }
-        header p { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
-
-        .font-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: #f1f5f9;
-            padding: 5px 12px;
-            border-radius: 50px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            border: 1px solid #e2e8f0;
-        }
-
-        .btn-font {
-            background: none;
-            border: none;
-            color: var(--text-dark);
-            font-weight: bold;
-            padding: 0 5px;
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-
-        .btn-font:active { transform: scale(1.3); }
-        #fontSizeLabel { min-width: 60px; text-align: center; font-weight: 500; }
-
-        /* --- SIDEBAR --- */
+        /* --- SIDEBAR MODERNA (BLANCA/AZUL) --- */
         .sidebar {
-            width: 260px;
-            background-color: var(--sidebar-bg);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-            padding: 20px 0;
+            width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid rgba(0,0,0,0.05);
+            display: flex; flex-direction: column; transition: var(--transition); position: relative; padding: 24px 16px; flex-shrink: 0;
         }
+        .sidebar.collapsed { width: var(--sidebar-collapsed-width); }
 
-        .sidebar-brand {
-            padding: 0 25px 30px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        .brand-section { display: flex; align-items: center; gap: 12px; padding: 0 12px 32px; text-decoration: none; overflow: hidden; }
+        .logo-box { min-width: 42px; height: 42px; background: var(--primary-dark); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
+        .brand-text { font-weight: 800; font-size: 1.2rem; color: var(--primary-dark); }
+        .sidebar.collapsed .brand-text { opacity: 0; pointer-events: none; }
 
-        .sidebar-brand i { font-size: 24px; }
-        .sidebar-brand div b { display: block; line-height: 1; font-size: 1.1rem; }
-        .sidebar-brand div span { font-size: 0.7rem; opacity: 0.7; }
+        .user-preview { display: flex; align-items: center; gap: 12px; padding: 12px; background: #f1f5f9; border-radius: 16px; margin-bottom: 24px; overflow: hidden; }
+        .avatar { min-width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 13px; }
+        .user-meta { display: flex; flex-direction: column; line-height: 1.2; }
+        .user-meta b { font-size: 13px; white-space: nowrap; color: var(--text-main); }
+        .user-meta span { font-size: 11px; color: var(--text-muted); }
+        .sidebar.collapsed .user-meta { display: none; }
 
-        .nav-menu {
-            flex-grow: 1;
-            padding: 0 15px;
-        }
+        .nav-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+        .nav-link { display: flex; align-items: center; gap: 16px; padding: 12px 14px; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 6px; transition: var(--transition); white-space: nowrap; }
+        .nav-link i { font-size: 18px; width: 24px; text-align: center; }
+        .nav-link:hover, .nav-link.active { background: #eff6ff; color: var(--primary); }
+        .nav-link.active { font-weight: 600; }
+        .sidebar.collapsed .link-text { display: none; }
 
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 15px;
-            color: rgba(255,255,255,0.7);
-            text-decoration: none;
-            font-size: 0.85rem;
-            border-radius: 8px;
-            margin-bottom: 5px;
-            transition: all 0.2s;
-        }
+        .collapse-btn { position: absolute; right: -12px; top: 48px; width: 24px; height: 24px; background: white; border: 1px solid #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; font-size: 10px; color: var(--text-muted); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
-        .nav-item:hover {
-            color: white;
-            background: rgba(255,255,255,0.1);
-        }
+        /* --- MAIN WRAPPER & HEADER --- */
+        .main-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; }
 
-        .nav-item.active {
-            background-color: var(--sidebar-active);
-            color: white;
-            font-weight: 500;
-        }
+        header { padding: 20px 48px; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 5; }
 
-        .sidebar-footer {
-            padding: 20px;
-            background: rgba(0,0,0,0.2);
-            font-size: 0.75rem;
-        }
+        .content-area { padding: 40px; display: flex; flex-direction: column; align-items: center; width: 100%; font-size: var(--dynamic-font-size); }
+        
+        .centered-container { width: 100%; max-width: 1200px; text-align: left; }
 
-        .user-info { margin-bottom: 15px; }
-        .user-info span { opacity: 0.8; }
-        .user-info b { display: block; font-size: 0.85rem; margin-top: 2px; }
-        .role-text { color: var(--sidebar-active); font-weight: 600; font-size: 0.8rem; margin-top: 2px; display: block; }
+        .page-header { margin-bottom: 32px; }
+        .page-header h1 { font-weight: 800; font-size: 2.2rem; margin-bottom: 8px; letter-spacing: -0.03em; color: var(--primary-dark); }
+        .page-header p { color: var(--text-muted); font-size: 1.1rem; margin: 0; }
 
-        .btn-logout {
-            width: 100%;
-            background-color: var(--logout-red);
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 6px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: 0.3s;
-        }
-        .btn-logout:hover { background-color: #be123c; }
-
-        /* --- MAIN CONTENT & DASHBOARD --- */
-        .main-wrapper {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-        }
-
-        .page-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 5px;
-        }
-        .page-subtitle {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            margin-bottom: 25px;
-        }
-
-        /* Tarjetas de Estadísticas */
+        /* --- TARJETAS DE DASHBOARD (Stats & Panels) --- */
         .stat-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03), 0 2px 4px -1px rgba(0,0,0,0.03);
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+            background: white; border-radius: var(--card-radius); padding: 24px; border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.02); height: 100%; display: flex; flex-direction: column; justify-content: space-between;
+            transition: var(--transition);
         }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(0,0,0,0.04); }
 
-        .stat-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 15px;
-        }
+        .stat-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
 
-        .stat-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-        }
-        .icon-blue { background-color: #eff6ff; color: #3b82f6; }
+        .stat-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
+        .icon-blue { background-color: #eff6ff; color: var(--primary); }
         .icon-green { background-color: #f0fdf4; color: #10b981; }
         .icon-yellow { background-color: #fefce8; color: #eab308; }
         .icon-purple { background-color: #faf5ff; color: #a855f7; }
 
-        .stat-trend {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #10b981; /* Verde general para tendencias */
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
+        .stat-trend { font-size: 0.85rem; font-weight: 700; color: #10b981; display: flex; align-items: center; gap: 4px; padding: 4px 10px; background: #f0fdf4; border-radius: 50px; }
 
-        .stat-title {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
+        .stat-title { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 5px; font-weight: 600; }
+        .stat-value { font-size: 2rem; font-weight: 800; color: var(--text-main); line-height: 1; letter-spacing: -0.03em; }
 
-        .stat-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--text-dark);
-            line-height: 1;
-        }
-
-        /* Paneles Principales */
+        /* Paneles Detallados */
         .panel-card {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);
-            height: 100%;
+            background: white; border-radius: var(--card-radius); padding: 32px; border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.02); height: 100%;
         }
 
-        .panel-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .panel-title i { color: #f97316; }
+        .panel-title { font-size: 1.15rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 24px; display: flex; align-items: center; gap: 10px; }
 
-        /* Lista de Expedientes Pendientes */
+        /* Listas Modernas */
         .list-block {
-            background-color: #f8fafc;
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background-color: #f8fafc; border-radius: 14px; padding: 18px; margin-bottom: 12px;
+            display: flex; justify-content: space-between; align-items: center; border: 1px solid transparent; transition: var(--transition);
         }
+        .list-block:hover { border-color: #e2e8f0; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
         .list-block:last-child { margin-bottom: 0; }
 
-        .list-info b { display: block; color: var(--text-dark); font-size: 0.95rem; font-weight: 600;}
-        .list-info span { color: var(--text-muted); font-size: 0.85rem; }
+        .list-info b { display: block; color: var(--text-main); font-size: 0.95rem; font-weight: 700;}
+        .list-info span { color: var(--text-muted); font-size: 0.85rem; margin-top: 2px; display: block;}
         
-        .time-badge {
-            background-color: #ffedd5;
-            color: #ea580c;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
+        .time-badge { background-color: #ffedd5; color: #ea580c; padding: 6px 14px; border-radius: 50px; font-size: 0.75rem; font-weight: 700; }
 
-        .view-all-link {
-            display: block;
-            text-align: center;
-            color: var(--sidebar-active);
-            font-weight: 600;
-            font-size: 0.9rem;
-            text-decoration: none;
-            margin-top: 20px;
-        }
-        .view-all-link:hover { text-decoration: underline; }
+        .view-all-link { display: inline-block; width: 100%; text-align: center; color: var(--primary); font-weight: 600; font-size: 0.9rem; text-decoration: none; margin-top: 20px; padding: 12px; background: #eff6ff; border-radius: 12px; transition: var(--transition); }
+        .view-all-link:hover { background: var(--primary); color: white; }
 
-        /* Lista de Actividad Reciente */
-        .activity-item {
-            display: flex;
-            gap: 15px;
-            padding: 14px 16px;
-            background-color: #f8fafc;
-            border-radius: 8px;
-            margin-bottom: 12px;
-        }
-        .activity-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: var(--sidebar-active);
-            margin-top: 6px;
-            flex-shrink: 0;
-        }
-        .activity-details b { display: block; color: var(--text-dark); font-size: 0.9rem; font-weight: 600;}
+        /* Actividad Reciente */
+        .activity-item { display: flex; gap: 16px; padding: 16px; background-color: #f8fafc; border-radius: 14px; margin-bottom: 12px; border: 1px solid transparent; transition: var(--transition); }
+        .activity-item:hover { background: white; border-color: #e2e8f0; }
+        .activity-dot { width: 10px; height: 10px; border-radius: 50%; background-color: var(--primary); margin-top: 5px; flex-shrink: 0; box-shadow: 0 0 0 3px #eff6ff; }
+        .activity-details b { display: block; color: var(--text-main); font-size: 0.95rem; font-weight: 700;}
         .activity-details span { display: block; color: var(--text-muted); font-size: 0.85rem; margin-top: 2px;}
-        .activity-details small { display: block; color: #94a3b8; font-size: 0.75rem; margin-top: 4px; }
+        .activity-details small { display: block; color: #94a3b8; font-size: 0.75rem; font-weight: 600; margin-top: 6px; }
 
         @media (max-width: 768px) {
             .sidebar { display: none; }
+            header, .content-area { padding: 20px; }
+            .stat-card { margin-bottom: 10px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Sidebar Lateral -->
-    <aside class="sidebar">
-        <div class="sidebar-brand">
-            <i class="fa-solid fa-graduation-cap"></i>
-            <div>
-                <b>Blackwell</b>
-                <span>Universidad</span>
+    <!-- Sidebar Blackwell Azul -->
+    <aside class="sidebar" id="sidebar">
+        <div class="collapse-btn" onclick="toggleSidebar()">
+            <i class="fa-solid fa-chevron-left" id="toggleIcon"></i>
+        </div>
+
+        <a href="#" class="brand-section">
+            <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div>
+            <span class="brand-text">Blackwell</span>
+        </a>
+
+        <div class="user-preview">
+            <div class="avatar" id="userInitial">AD</div>
+            <div class="user-meta">
+                <b id="userName">Admin User</b>
+                <span>Administrador</span>
             </div>
         </div>
 
-        <nav class="nav-menu">
-            <a href="administrativo.html" class="nav-item"><i class="fa-solid fa-border-all"></i> Dashboard</a>
-            <a href="gestion-docentes.html" class="nav-item active"><i class="fa-solid fa-users"></i> Gestión de Docentes</a>
-            <a href="revision-docs.html" class="nav-item"><i class="fa-regular fa-file-lines"></i> Revisión de Expedientes</a>
-            <a href="gestion-cursos.html" class="nav-item"><i class="fa-solid fa-upload"></i> Gestión de Cursos</a>
-            <!--<a href="aprobaciones.html" class="nav-item"><i class="fa-regular fa-circle-check"></i> Aprobaciones</a>-->
-        </nav>
+        <ul class="nav-list">
+            <li><a href="administrativo.html" class="nav-link active"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
+            <li><a href="registrodocente.html" class="nav-link "><i class="fa-solid fa-user-plus"></i> <span class="link-text">Registrar</span></a></li>
+            <li><a href="gestion-docentes.html" class="nav-link"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
+            <li><a href="revision-docs.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
+            <li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-upload"></i> <span class="link-text">Gestión de Cursos</span></a></li>
+            <li><a href="#" class="nav-link"><i class="fa-solid fa-chart-pie"></i> <span class="link-text">Reportes</span></a></li>
+        </ul>
 
-        <div class="sidebar-footer">
-            <div class="user-info">
-                <span>Sesión activa:</span>
-                <b id="sidebar-userid">admin@blackwell.edu</b>
-                <span class="role-text">Administrativo</span>
-            </div>
-            <button class="btn-logout" onclick="logout()">
-                <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
-            </button>
-        </div>
+        <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;">
+            <i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span>
+        </a>
     </aside>
 
-    <!-- Contenido Principal -->
-    <main class="main-wrapper">
+    <div class="main-wrapper">
         <header>
             <div>
-                <h2>Sistema de Gestión de Expedientes</h2>
-                <p>Panel Administrativo</p>
+                <h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Gestión de Personal</h5>
+                <p class="text-muted small m-0">Portal Administrativo</p>
             </div>
-            <div class="font-controls">
-                <i class="fa-solid fa-text-height"></i>
-                <button onclick="changeFontSize(-1)" class="btn-font">—</button>
-                <span id="fontSizeLabel">Normal</span>
-                <button onclick="changeFontSize(1)" class="btn-font">+</button>
+            
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-white px-3 py-2 rounded-pill shadow-sm d-flex gap-2 align-items-center">
+                    <button onclick="changeFontSize(-1)" class="btn btn-sm btn-link p-0 text-dark text-decoration-none fw-bold">A-</button>
+                    <span id="fontSizeLabel" class="small fw-bold px-1" style="min-width: 50px; text-align: center;">Normal</span>
+                    <button onclick="changeFontSize(1)" class="btn btn-sm btn-link p-0 text-dark text-decoration-none fw-bold">A+</button>
+                </div>
             </div>
         </header>
 
         <div class="content-area">
-            
-            <h1 class="page-title">Dashboard</h1>
-            <p class="page-subtitle">Resumen general del sistema de gestión</p>
+            <div class="centered-container">
+                
+                <div class="page-header">
+                    <h1>Dashboard</h1>
+                    <p>Resumen general del sistema de gestión académica y administrativa.</p>
+                </div>
 
-            <!-- Fila de Estadísticas -->
-            <div class="row g-4 mb-4">
-                <!-- Stat 1 -->
-                <div class="col-md-6 col-xl-3">
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-icon icon-blue">
-                                <i class="fa-solid fa-user-group"></i>
+                <!-- Fila de Estadísticas -->
+                <div class="row g-4 mb-4">
+                    <!-- Stat 1 -->
+                    <div class="col-md-6 col-xl-3">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon icon-blue">
+                                    <i class="fa-solid fa-user-group"></i>
+                                </div>
+                                <div class="stat-trend">
+                                    <i class="fa-solid fa-arrow-trend-up"></i> +12
+                                </div>
                             </div>
-                            <div class="stat-trend">
-                                <i class="fa-solid fa-arrow-trend-up"></i> +12
+                            <div>
+                                <div class="stat-title">Total Docentes</div>
+                                <div class="stat-value">156</div>
                             </div>
                         </div>
-                        <div>
-                            <div class="stat-title">Total Docentes</div>
-                            <div class="stat-value">156</div>
+                    </div>
+                    <!-- Stat 2 -->
+                    <div class="col-md-6 col-xl-3">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon icon-green">
+                                    <i class="fa-regular fa-circle-check"></i>
+                                </div>
+                                <div class="stat-trend">
+                                    <i class="fa-solid fa-arrow-trend-up"></i> +8
+                                </div>
+                            </div>
+                            <div>
+                                <div class="stat-title">Expedientes Aprobados</div>
+                                <div class="stat-value">142</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Stat 3 -->
+                    <div class="col-md-6 col-xl-3">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon icon-yellow">
+                                    <i class="fa-regular fa-clock"></i>
+                                </div>
+                                <div class="stat-trend" style="background:#fef2f2; color:#ef4444;">
+                                    <i class="fa-solid fa-arrow-trend-down"></i> -3
+                                </div>
+                            </div>
+                            <div>
+                                <div class="stat-title">Pendientes de Revisión</div>
+                                <div class="stat-value">14</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Stat 4 -->
+                    <div class="col-md-6 col-xl-3">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon icon-purple">
+                                    <i class="fa-regular fa-file-lines"></i>
+                                </div>
+                                <div class="stat-trend">
+                                    <i class="fa-solid fa-arrow-trend-up"></i> +156
+                                </div>
+                            </div>
+                            <div>
+                                <div class="stat-title">Documentos Procesados</div>
+                                <div class="stat-value">1,247</div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <!-- Stat 2 -->
-                <div class="col-md-6 col-xl-3">
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-icon icon-green">
-                                <i class="fa-regular fa-circle-check"></i>
+
+                <!-- Fila de Paneles Detallados -->
+                <div class="row g-4">
+                    <!-- Panel: Expedientes Pendientes -->
+                    <div class="col-lg-6">
+                        <div class="panel-card">
+                            <h3 class="panel-title">
+                                <i class="fa-solid fa-circle-exclamation text-warning"></i> Expedientes Pendientes
+                            </h3>
+
+                            <div class="list-block">
+                                <div class="list-info">
+                                    <b>Dra. Laura Fernández</b>
+                                    <span>Matemáticas</span>
+                                </div>
+                                <div class="time-badge">2 días</div>
                             </div>
-                            <div class="stat-trend">
-                                <i class="fa-solid fa-arrow-trend-up"></i> +8
+
+                            <div class="list-block">
+                                <div class="list-info">
+                                    <b>Prof. Miguel Ángel Torres</b>
+                                    <span>Física</span>
+                                </div>
+                                <div class="time-badge">3 días</div>
                             </div>
+
+                            <div class="list-block">
+                                <div class="list-info">
+                                    <b>Dra. Carmen Ruiz</b>
+                                    <span>Química</span>
+                                </div>
+                                <div class="time-badge" style="background: #fef2f2; color: #ef4444;">1 día</div>
+                            </div>
+
+                            <div class="list-block">
+                                <div class="list-info">
+                                    <b>Prof. José Antonio García</b>
+                                    <span>Biología</span>
+                                </div>
+                                <div class="time-badge">5 días</div>
+                            </div>
+
+                            <a href="revision-docs.html" class="view-all-link">Revisar todos los expedientes</a>
                         </div>
-                        <div>
-                            <div class="stat-title">Expedientes Aprobados</div>
-                            <div class="stat-value">142</div>
+                    </div>
+
+                    <!-- Panel: Actividad Reciente -->
+                    <div class="col-lg-6">
+                        <div class="panel-card">
+                            <h3 class="panel-title">
+                                <i class="fa-solid fa-bolt" style="color: var(--primary);"></i> Actividad Reciente
+                            </h3>
+
+                            <div class="activity-item">
+                                <div class="activity-dot"></div>
+                                <div class="activity-details">
+                                    <b>Expediente aprobado</b>
+                                    <span>Dr. Carlos Martínez ha sido habilitado en el sistema.</span>
+                                    <small><i class="fa-regular fa-clock me-1"></i> Hace 15 minutos</small>
+                                </div>
+                            </div>
+
+                            <div class="activity-item">
+                                <div class="activity-dot" style="background: #10b981; box-shadow: 0 0 0 3px #f0fdf4;"></div>
+                                <div class="activity-details">
+                                    <b>Nuevo docente registrado</b>
+                                    <span>Dra. Ana López completó su formulario de registro.</span>
+                                    <small><i class="fa-regular fa-clock me-1"></i> Hace 1 hora</small>
+                                </div>
+                            </div>
+
+                            <div class="activity-item">
+                                <div class="activity-dot" style="background: #eab308; box-shadow: 0 0 0 3px #fefce8;"></div>
+                                <div class="activity-details">
+                                    <b>Documentos en revisión</b>
+                                    <span>Prof. Juan Pérez actualizó sus diplomas y CV.</span>
+                                    <small><i class="fa-regular fa-clock me-1"></i> Hace 2 horas</small>
+                                </div>
+                            </div>
+
+                            <div class="activity-item">
+                                <div class="activity-dot" style="background: #a855f7; box-shadow: 0 0 0 3px #faf5ff;"></div>
+                                <div class="activity-details">
+                                    <b>Contrato enviado (FORM 402)</b>
+                                    <span>Se envió la propuesta al Dr. Roberto Silva.</span>
+                                    <small><i class="fa-regular fa-clock me-1"></i> Hace 4 horas</small>
+                                </div>
+                            </div>
+                            
                         </div>
                     </div>
                 </div>
-                <!-- Stat 3 -->
-                <div class="col-md-6 col-xl-3">
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-icon icon-yellow">
-                                <i class="fa-regular fa-clock"></i>
-                            </div>
-                            <div class="stat-trend">
-                                <i class="fa-solid fa-arrow-trend-up"></i> -3
-                            </div>
-                        </div>
-                        <div>
-                            <div class="stat-title">Pendientes de Revisión</div>
-                            <div class="stat-value">14</div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Stat 4 -->
-                <div class="col-md-6 col-xl-3">
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-icon icon-purple">
-                                <i class="fa-regular fa-file-lines"></i>
-                            </div>
-                            <div class="stat-trend">
-                                <i class="fa-solid fa-arrow-trend-up"></i> +156
-                            </div>
-                        </div>
-                        <div>
-                            <div class="stat-title">Documentos Procesados</div>
-                            <div class="stat-value">1,247</div>
-                        </div>
-                    </div>
-                </div>
+
             </div>
-
-            <!-- Fila de Paneles Detallados -->
-            <div class="row g-4">
-                <!-- Panel: Expedientes Pendientes -->
-                <div class="col-lg-6">
-                    <div class="panel-card">
-                        <h3 class="panel-title">
-                            <i class="fa-solid fa-circle-exclamation"></i> Expedientes Pendientes
-                        </h3>
-
-                        <div class="list-block">
-                            <div class="list-info">
-                                <b>Dra. Laura Fernández</b>
-                                <span>Matemáticas</span>
-                            </div>
-                            <div class="time-badge">2 días</div>
-                        </div>
-
-                        <div class="list-block">
-                            <div class="list-info">
-                                <b>Prof. Miguel Ángel Torres</b>
-                                <span>Física</span>
-                            </div>
-                            <div class="time-badge">3 días</div>
-                        </div>
-
-                        <div class="list-block">
-                            <div class="list-info">
-                                <b>Dra. Carmen Ruiz</b>
-                                <span>Química</span>
-                            </div>
-                            <div class="time-badge">1 días</div>
-                        </div>
-
-                        <div class="list-block">
-                            <div class="list-info">
-                                <b>Prof. José Antonio García</b>
-                                <span>Biología</span>
-                            </div>
-                            <div class="time-badge">5 días</div>
-                        </div>
-
-                        <a href="#" class="view-all-link">Ver todos los pendientes</a>
-                    </div>
-                </div>
-
-                <!-- Panel: Actividad Reciente -->
-                <div class="col-lg-6">
-                    <div class="panel-card">
-                        <h3 class="panel-title" style="color: var(--text-dark);">
-                            Actividad Reciente
-                        </h3>
-
-                        <div class="activity-item">
-                            <div class="activity-dot"></div>
-                            <div class="activity-details">
-                                <b>Expediente aprobado</b>
-                                <span>Dr. Carlos Martínez</span>
-                                <small>Hace 15 minutos</small>
-                            </div>
-                        </div>
-
-                        <div class="activity-item">
-                            <div class="activity-dot"></div>
-                            <div class="activity-details">
-                                <b>Nuevo docente registrado</b>
-                                <span>Dra. Ana López</span>
-                                <small>Hace 1 hora</small>
-                            </div>
-                        </div>
-
-                        <div class="activity-item">
-                            <div class="activity-dot"></div>
-                            <div class="activity-details">
-                                <b>Documentos revisados</b>
-                                <span>Prof. Juan Pérez</span>
-                                <small>Hace 2 horas</small>
-                            </div>
-                        </div>
-
-                        <div class="activity-item">
-                            <div class="activity-dot"></div>
-                            <div class="activity-details">
-                                <b>Materiales subidos</b>
-                                <span>Dra. María González</span>
-                                <small>Hace 3 horas</small>
-                            </div>
-                        </div>
-
-                        <div class="activity-item">
-                            <div class="activity-dot"></div>
-                            <div class="activity-details">
-                                <b>Contrato enviado</b>
-                                <span>Dr. Roberto Silva</span>
-                                <small>Hace 4 horas</small>
-                            </div>
-                        </div>
-                        
-                    </div>
-                </div>
-            </div>
-
         </div>
-    </main>
+    </div>
 
     <script>
         function logout() {
@@ -559,25 +381,31 @@
             }
         }
 
-        // NAVEGACIÓN Y TAMAÑO
-        const navItems = document.querySelectorAll('.nav-item');
-        navItems.forEach(item => { 
-            item.addEventListener('click', (e) => { 
-                if(item.getAttribute('href') === '#') e.preventDefault(); 
-            }); 
+        // Carga de datos de sesión en el UI
+        document.addEventListener('DOMContentLoaded', () => {
+            const name = sessionStorage.getItem('userName') || "Administrador";
+            document.getElementById('userName').innerText = name;
+            document.getElementById('userInitial').innerText = name.substring(0,2).toUpperCase();
         });
-        
-        let currentSizeIndex = 1; 
-        const sizes =["0.85rem", "1rem", "1.2rem"];
-        const labels = ["Pequeño", "Normal", "Grande"];
-        function changeFontSize(direction) {
-            currentSizeIndex += direction;
-            if (currentSizeIndex < 0) currentSizeIndex = 0;
-            if (currentSizeIndex > 2) currentSizeIndex = 2;
-            document.getElementById('fontSizeLabel').innerText = labels[currentSizeIndex];
-            document.documentElement.style.setProperty('--dynamic-font-size', sizes[currentSizeIndex]);
+
+        function toggleSidebar() {
+            const sb = document.getElementById('sidebar');
+            const icon = document.getElementById('toggleIcon');
+            sb.classList.toggle('collapsed');
+            icon.classList.toggle('fa-chevron-left');
+            icon.classList.toggle('fa-chevron-right');
+        }
+
+        let currentSize = 1; 
+        const sizes =["0.9rem", "1rem", "1.15rem"];
+        const labels =["Pequeño", "Normal", "Grande"];
+        function changeFontSize(dir) {
+            currentSize += dir;
+            if (currentSize < 0) currentSize = 0;
+            if (currentSize > 2) currentSize = 2;
+            document.getElementById('fontSizeLabel').innerText = labels[currentSize];
+            document.documentElement.style.setProperty('--dynamic-font-size', sizes[currentSize]);
         }
     </script>
-    
 </body>
 </html>

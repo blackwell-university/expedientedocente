@@ -7,17 +7,18 @@
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         :root {
-            --bg-color: #1a3da2;   
+            --bg-color: #f4f7fa;   
             --card-header-bg: #1e3a8a;
-            --primary-blue: #223f93; 
-            --text-gray: #6c757d;
-            --border-color: #dee2e6;
+            --primary-blue: #3b82f6; 
+            --primary-dark: #1e3a8a;
+            --text-gray: #64748b;
+            --border-color: #e2e8f0;
         }
 
         body {
@@ -28,76 +29,84 @@
             justify-content: center;
             min-height: 100vh;
             margin: 0;
+            padding: 20px;
         }
 
         .login-card {
             width: 100%;
-            max-width: 420px;
+            max-width: 400px;
             background-color: white;
-            border-radius: 15px;
+            border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
         }
 
         .card-header-custom {
             background-color: var(--card-header-bg);
-            padding: 40px 20px;
+            padding: 40px 20px 30px;
             text-align: center;
             color: white;
+            position: relative;
         }
 
         .icon-circle {
-            background-color: white;
-            width: 60px; height: 60px;
+            background-color: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(5px);
+            width: 70px; height: 70px;
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             margin: 0 auto 15px;
+            border: 2px solid rgba(255,255,255,0.3);
         }
 
-        .icon-circle i { color: var(--card-header-bg); font-size: 30px; }
+        .icon-circle i { color: white; font-size: 32px; }
 
-        .card-header-custom h1 { font-size: 1.5rem; font-weight: 700; margin: 0; }
-        .card-header-custom p { font-size: 0.85rem; opacity: 0.8; margin-top: 5px; }
+        .card-header-custom h1 { font-size: 1.4rem; font-weight: 700; margin: 0; letter-spacing: -0.5px;}
+        .card-header-custom p { font-size: 0.85rem; opacity: 0.85; margin-top: 5px; font-weight: 300; }
 
-        .card-body { padding: 30px 35px; }
+        .card-body { padding: 35px 30px; }
 
-        .form-label { font-size: 0.8rem; font-weight: 600; color: #333; }
-
-        .user-type-container { display: flex; gap: 10px; margin-bottom: 20px; }
-
-        .btn-toggle {
-            flex: 1;
-            border: 1px solid var(--border-color);
-            background: white;
-            padding: 10px;
-            font-size: 0.85rem;
-            border-radius: 6px;
-            color: var(--text-gray);
-            cursor: pointer;
-            transition: all 0.3s ease;
+        /* FLOATING LABELS - Estilo App Móvil */
+        .form-floating-custom {
+            position: relative; margin-bottom: 20px;
         }
 
-        .btn-toggle.active {
+        .form-floating-custom input {
+            width: 100%; padding: 16px 15px; border: 1.5px solid var(--border-color);
+            border-radius: 12px; outline: none; font-size: 0.95rem; color: #1e293b;
+            background-color: transparent; transition: all 0.2s ease;
+        }
+
+        .form-floating-custom label {
+            position: absolute; top: 50%; left: 15px; transform: translateY(-50%);
+            color: var(--text-gray); font-size: 0.95rem; pointer-events: none;
+            transition: all 0.2s ease; background-color: white; padding: 0 5px;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        /* Activación del floating effect al hacer click/escribir */
+        .form-floating-custom input:focus,
+        .form-floating-custom input:not(:placeholder-shown) {
             border-color: var(--primary-blue);
-            background-color: #f0f4ff;
-            color: var(--primary-blue);
-            font-weight: 600;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
         }
 
-        .form-control { border-radius: 6px; font-size: 0.9rem; padding: 10px; }
-        .form-control:focus { border-color: var(--primary-blue); box-shadow: none; }
+        .form-floating-custom input:focus ~ label,
+        .form-floating-custom input:not(:placeholder-shown) ~ label {
+            top: 0; font-size: 0.75rem; color: var(--primary-blue); font-weight: 600;
+        }
 
         .btn-login {
-            background-color: var(--primary-blue);
-            color: white; width: 100%; padding: 12px;
-            border-radius: 6px; font-weight: 600; border: none;
+            background-color: var(--primary-dark); color: white; width: 100%; padding: 14px;
+            border-radius: 12px; font-weight: 600; border: none; font-size: 1rem;
             display: flex; align-items: center; justify-content: center; gap: 10px;
-            transition: 0.3s;
+            transition: all 0.3s; margin-top: 10px; box-shadow: 0 4px 15px rgba(30, 58, 138, 0.2);
         }
-        .btn-login:hover { background-color: #162d6b; transform: translateY(-1px); }
+        .btn-login:hover { background-color: #152963; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(30, 58, 138, 0.3); }
 
         .demo-accounts {
-            margin-top: 25px; text-align: center; font-size: 0.75rem; color: var(--text-gray);
+            margin-top: 25px; text-align: center; font-size: 0.75rem; color: #94a3b8;
+            background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px dashed #cbd5e1;
         }
     </style>
 </head>
@@ -111,63 +120,40 @@
         </div>
 
         <div class="card-body">
-            <label class="form-label">Tipo de Usuario</label>
-            <div class="user-type-container">
-                <button type="button" id="btnDocente" class="btn-toggle active" onclick="setRole('docente')">Docente</button>
-                <button type="button" id="btnAdmin" class="btn-toggle" onclick="setRole('administrativo')">Administrativo</button>
-            </div>
-
+            
             <form id="loginForm">
-                <div class="mb-3">
-                    <label class="form-label">Nombre Usuario</label>
-                    <input type="text" class="form-control" id="emailInput" placeholder="usuario " required>
+                <!-- Floating Input: Usuario -->
+                <div class="form-floating-custom">
+                    <!-- placeholder=" " en blanco es obligatorio para la animación CSS -->
+                    <input type="text" id="emailInput" placeholder=" " required autocomplete="off">
+                    <label for="emailInput"><i class="fa-solid fa-user"></i> Usuario</label>
                 </div>
 
-                <div class="mb-4">
-                    <label class="form-label">Contraseña</label>
-                    <input type="password" class="form-control" id="passwordInput" placeholder="********" required>
+                <!-- Floating Input: Contraseña -->
+                <div class="form-floating-custom">
+                    <input type="password" id="passwordInput" placeholder=" " required>
+                    <label for="passwordInput"><i class="fa-solid fa-lock"></i> Contraseña</label>
                 </div>
 
                 <button type="submit" class="btn-login">
-                    <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
+                    Iniciar Sesión <i class="fa-solid fa-arrow-right"></i>
                 </button>
             </form>
 
             <div class="demo-accounts">
-                <span id="demoText"><b>Cuentas de prueba (Docente):</b><br>profesor@blackwell.edu</span>
+                <span>Ingresa con tus credenciales asignadas por la administración.</span>
             </div>
         </div>
     </div>
 
     <script>
-        let currentRole = 'docente';
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
-        
-        function setRole(role) {
-            currentRole = role;
-            const btnDocente = document.getElementById('btnDocente');
-            const btnAdmin = document.getElementById('btnAdmin');
-            const emailInput = document.getElementById('emailInput');
-            const demoText = document.getElementById('demoText');
-
-            if (role === 'docente') {
-                btnDocente.classList.add('active');
-                btnAdmin.classList.remove('active');
-                emailInput.placeholder = '74500027'; 
-                demoText.innerHTML = '<b>Acceso Docente:</b><br>Usa tu DNI como usuario y contraseña';
-            } else {
-                btnAdmin.classList.add('active');
-                btnDocente.classList.remove('active');
-                emailInput.placeholder = 'adminsoporte';
-                demoText.innerHTML = '<b>Acceso Administrativo:</b><br>Usa tu usuario admin';
-            }
-        }
 
         document.getElementById('loginForm').onsubmit = function(e) {
             e.preventDefault();
             
-            const email = document.getElementById('emailInput').value;
-            const password = document.getElementById('passwordInput').value;
+            const email = document.getElementById('emailInput').value.trim();
+            const password = document.getElementById('passwordInput').value.trim();
             const btn = e.target.querySelector('button');
             
             btn.disabled = true;
@@ -181,47 +167,46 @@
             .then(response => {
                 if (response.status === "success") {
                     
-                    // NORMALIZAMOS EL ROL PARA EVITAR ERRORES DE MAYÚSCULAS
-                    let rolAsignado = response.role;
-                    if (rolAsignado.toUpperCase() === 'DOCENTE') {
-                        rolAsignado = 'Docente';
-                    } else if (rolAsignado.toUpperCase() === 'ADMINISTRADOR') {
-                        rolAsignado = 'Administrador';
-                    } else if (rolAsignado.toUpperCase() === 'ADMINISTRATIVO') {
-                        rolAsignado = 'Administrativo';
-                    }
+                    // Normalizar el rol a mayúsculas
+                    let rolAsignado = response.role ? response.role.toUpperCase() : "";
 
-                    // GUARDAMOS LA SESIÓN
+                    // Guardamos la sesión general
                     sessionStorage.setItem('isLoggedIn', 'true');
-                    sessionStorage.setItem('userRole', rolAsignado);
-                    // Guardamos el DNI como 'userName' para que docente.html lo lea y lo muestre
                     sessionStorage.setItem('userName', response.user);
 
-                    if (rolAsignado === 'Docente') {
+                    // Redirección Inteligente
+                    if (rolAsignado === 'DOCENTE') {
+                        sessionStorage.setItem('userRole', 'Docente');
                         window.location.href = "docente.html";
-                    } else if (rolAsignado === 'Administrador') {
-                         window.location.href = "administrativo.html";
-                    } else if (rolAsignado === 'Administrativo') {
-                         window.location.href = "administrativo.html";
+                    } else if (rolAsignado === 'ADMINISTRATIVO' || rolAsignado === 'ADMINISTRADOR') {
+                        sessionStorage.setItem('userRole', 'Administrativo');
+                        window.location.href = "administrativo.html";
+                    } else {
+                        alert("Error: Tu usuario no tiene un rol válido asignado en el sistema.");
+                        btn.disabled = false;
+                        btn.innerHTML = 'Iniciar Sesión <i class="fa-solid fa-arrow-right"></i>';
                     }
+
+                } else if (response.status === "inactive") {
+                    // AQUÍ ESTÁ EL MENSAJE PARA USUARIOS INACTIVOS
+                    alert(response.message); // Muestra: "Este usuario no tiene acceso al sistema."
+                    btn.disabled = false;
+                    btn.innerHTML = 'Iniciar Sesión <i class="fa-solid fa-arrow-right"></i>';
+
                 } else {
+                    // Si el status es "error" (usuario o clave mal)
                     alert("Usuario o contraseña incorrectos.");
                     btn.disabled = false;
-                    btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión';
+                    btn.innerHTML = 'Iniciar Sesión <i class="fa-solid fa-arrow-right"></i>';
                 }
             })
             .catch(err => {
                 console.error(err);
-                alert("Error de conexión con el servidor.");
+                alert("Error de conexión con el servidor. Por favor intenta de nuevo.");
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión';
+                btn.innerHTML = 'Iniciar Sesión <i class="fa-solid fa-arrow-right"></i>';
             });
         };
     </script>
-
 </body>
 </html>
-
-
-
-

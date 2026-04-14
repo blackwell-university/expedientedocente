@@ -4,329 +4,281 @@
     <script>
         const isLoggedIn = sessionStorage.getItem('isLoggedIn');
         const userRole = sessionStorage.getItem('userRole');
-    
         if (isLoggedIn !== 'true' || (userRole !== 'Administrativo' && userRole !== 'Administrador')) {
             window.location.href = "login.html";
         }
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Revisión de Expedientes - Universidad Blackwell</title>
+    <title>Revisión de Expedientes | Blackwell University</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         :root {
-            --sidebar-bg: #1e3a8a; --sidebar-active: #3b82f6; --main-bg: #f8fafc;
-            --text-dark: #1e293b; --text-muted: #64748b; --accent-blue: #223f93; --logout-red: #e11d48;
+            --primary: #2563eb; 
+            --primary-dark: #1e3a8a; 
+            --bg-body: #f8fafc;
+            --sidebar-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --card-radius: 20px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --sidebar-width: 260px;
+            --sidebar-collapsed-width: 88px;
             --dynamic-font-size: 1rem;
         }
 
-        body { font-family: 'Inter', sans-serif; background-color: var(--main-bg); margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        .main-wrapper { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; }
-        .content-area {
-            font-size: var(--dynamic-font-size);
-            padding: 30px 40px;
-            max-width: 1400px;
-            margin: 0 auto;
-            width: 100%;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; letter-spacing: -0.01em; }
 
-        header {
-            background: white;
-            padding: 15px 40px;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        /* --- SIDEBAR MODERNA --- */
+        .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid rgba(0,0,0,0.05); display: flex; flex-direction: column; transition: var(--transition); position: relative; padding: 24px 16px; flex-shrink: 0; }
+        .sidebar.collapsed { width: var(--sidebar-collapsed-width); }
+        .brand-section { display: flex; align-items: center; gap: 12px; padding: 0 12px 32px; text-decoration: none; overflow: hidden; }
+        .logo-box { min-width: 42px; height: 42px; background: var(--primary-dark); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
+        .brand-text { font-weight: 800; font-size: 1.2rem; color: var(--primary-dark); }
+        .sidebar.collapsed .brand-text { opacity: 0; pointer-events: none; }
+        .user-preview { display: flex; align-items: center; gap: 12px; padding: 12px; background: #f1f5f9; border-radius: 16px; margin-bottom: 24px; overflow: hidden; }
+        .avatar { min-width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 13px; }
+        .user-meta { display: flex; flex-direction: column; line-height: 1.2; }
+        .user-meta b { font-size: 13px; white-space: nowrap; } .user-meta span { font-size: 11px; color: var(--text-muted); }
+        .sidebar.collapsed .user-meta { display: none; }
+        .nav-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+        .nav-link { display: flex; align-items: center; gap: 16px; padding: 12px 14px; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 6px; transition: var(--transition); white-space: nowrap; }
+        .nav-link i { font-size: 18px; width: 24px; text-align: center; }
+        .nav-link:hover, .nav-link.active { background: #eff6ff; color: var(--primary); } .nav-link.active { font-weight: 600; }
+        .sidebar.collapsed .link-text { display: none; }
+        .collapse-btn { position: absolute; right: -12px; top: 48px; width: 24px; height: 24px; background: white; border: 1px solid #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; font-size: 10px; color: var(--text-muted); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
-        header h2 { font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--text-dark); }
-        header p { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
-
-        .font-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: #f1f5f9;
-            padding: 5px 12px;
-            border-radius: 50px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            border: 1px solid #e2e8f0;
-        }
-
-        .btn-font { background: none; border: none; color: var(--text-dark); font-weight: bold; cursor: pointer; }
-        #fontSizeLabel { min-width: 60px; text-align: center; font-weight: 500; }
-
-        .sidebar {
-            width: 260px;
-            background-color: var(--sidebar-bg);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-            padding: 20px 0;
-        }
-
-        .sidebar-brand { padding: 0 25px 30px; display: flex; align-items: center; gap: 10px; }
-        .sidebar-brand i { font-size: 24px; }
-        .sidebar-brand div b { display: block; line-height: 1; font-size: 1.1rem; }
-        .sidebar-brand div span { font-size: 0.7rem; opacity: 0.7; }
-
-        .nav-menu { flex-grow: 1; padding: 0 15px; }
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 15px;
-            color: rgba(255,255,255,0.7);
-            text-decoration: none;
-            font-size: 0.85rem;
-            border-radius: 8px;
-            margin-bottom: 5px;
-            transition: all 0.2s;
-        }
-        .nav-item:hover { color: white; background: rgba(255,255,255,0.1); }
-        .nav-item.active { background-color: var(--sidebar-active); color: white; font-weight: 500; }
-
-        .sidebar-footer { 
-            padding: 20px; 
-            background: rgba(0,0,0,0.2); 
-            font-size: 0.75rem;
-        }
-        .user-info { margin-bottom: 15px; }
-        .user-info span { opacity: 0.8; }
-        .user-info b { display: block; font-size: 0.85rem; margin-top: 2px; }
-        .role-text { color: var(--sidebar-active); font-weight: 600; font-size: 0.8rem; margin-top: 2px; display: block; }
-
-        .btn-logout {
-            width: 100%;
-            background-color: var(--logout-red);
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 6px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: 0.3s;
-        }
-
-        .main-wrapper { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; }
-
-        /* --- UI MEJORADA --- */
-        .page-title { font-size: 1.75rem; font-weight: 800; color: #0f172a; }
+        /* --- MAIN WRAPPER & HEADER --- */
+        .main-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        header { padding: 20px 48px; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 5; }
         
-        .filter-section {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            margin-bottom: 25px;
-            border: 1px solid #e2e8f0;
-        }
+        .content-area { padding: 40px; display: flex; flex-direction: column; align-items: center; width: 100%; font-size: var(--dynamic-font-size); }
+        .centered-container { width: 100%; max-width: 1200px; text-align: left; }
 
-        .search-input-group {
-            position: relative;
-            flex-grow: 1;
-        }
+        .page-header h1 { font-weight: 800; font-size: 2.2rem; margin-bottom: 8px; letter-spacing: -0.03em; color: var(--primary-dark); }
+        .page-header p { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 30px;}
 
-        .search-input-group i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #94a3b8;
-        }
+        /* --- FILTROS INTELIGENTES --- */
+        .filter-section { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); margin-bottom: 24px; border: 1px solid rgba(0,0,0,0.04); }
+        .form-label-sm { font-size: 0.8rem; font-weight: 600; color: #64748b; margin-bottom: 8px; display: block; }
+        .input-filter { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 16px; font-size: 0.95rem; color: var(--text-main); transition: var(--transition); }
+        .input-filter:focus { background-color: white; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); outline: none; }
+        
+        /* --- TABLA MODERNA --- */
+        .table-card { background: white; border-radius: var(--card-radius); border: 1px solid rgba(0,0,0,0.04); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.02); }
+        .table thead th { background-color: #f8fafc; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; padding: 18px 24px; border-bottom: 1px solid #e2e8f0; border-top: none; }
+        .table tbody td { padding: 16px 24px; color: var(--text-main); border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+        .table tbody tr:hover { background-color: #fcfdfe; }
 
-        .form-control-custom {
-            padding: 10px 15px 10px 45px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            width: 100%;
-        }
-
-        .form-control-custom:focus {
-            outline: none;
-            border-color: var(--sidebar-active);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-        /* FILTROS INTELIGENTES */
-        .filter-card { background: white; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.02); margin-bottom: 25px; }
-        .form-label-sm { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 8px; display: block; }
-        .input-filter { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; font-size: 0.85rem; color: var(--text-dark); }
-
-        /* TABLA DE INVITACIONES */
-        .table-container { background: white; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; }
-        .table thead th { background: #f8fafc; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; }
-        .table tbody td { padding: 15px 20px; font-size: 0.85rem; vertical-align: middle; border-bottom: 1px solid #f1f5f9; }
-
-        /* ESTADOS */
-        .badge-status { padding: 5px 12px; border-radius: 50px; font-weight: 600; font-size: 0.7rem; }
-        .status-Enviado { background: #eff6ff; color: #1e40af; }
-        .status-Respondido { background: #fef3c7; color: #92400e; }
-        .status-Aprobado { background: #f0fdf4; color: #166534; }
+        /* Estados */
+        .badge-status { padding: 6px 14px; border-radius: 50px; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 6px;}
+        .status-Enviado { background: #eff6ff; color: #1d4ed8; }
+        .status-Respondido { background: #fffbeb; color: #b45309; }
+        .status-Aprobado { background: #f0fdf4; color: #15803d; }
         .status-Rechazado { background: #fef2f2; color: #b91c1c; }
 
-        /* MODAL REVISIÓN (Estilos del expediente) */
-        .section-review { background: #f8fafc; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
-        .review-label { font-size: 0.7rem; color: #64748b; text-transform: uppercase; font-weight: 700; margin-bottom: 2px; }
-        .review-value { font-size: 0.9rem; color: #1e293b; font-weight: 500; margin-bottom: 12px; }
-        .file-item { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 15px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+        /* --- MODAL REVISIÓN --- */
+        .modal-modern .modal-content { border: none; border-radius: 24px; overflow: hidden; }
+        .modal-modern .modal-header { background: #f8fafc; color: var(--primary-dark); border-bottom: 1px solid #e2e8f0; padding: 24px 30px; }
+        .section-review { background: #f8fafc; border-radius: 16px; padding: 24px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
+        .info-label { font-size: 0.8rem; color: #64748b; font-weight: 600; margin-bottom: 4px; display: block;}
+        .info-value { font-size: 0.95rem; color: #0f172a; font-weight: 500; margin-bottom: 15px;}
+        
+        .file-item { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; transition: 0.2s; }
+        .file-item:hover { border-color: var(--primary); background: #eff6ff; }
+        .file-info { display: flex; align-items: center; gap: 12px; overflow: hidden;}
+        .file-info i { font-size: 1.4rem; color: var(--primary); }
+        .file-name { font-size: 0.9rem; font-weight: 600; color: #334155; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;}
+        .btn-ver-file { font-size: 0.8rem; font-weight: 700; color: var(--primary); text-decoration: none; background: #e0e7ff; padding: 6px 12px; border-radius: 8px; flex-shrink: 0;}
+
+        @media (max-width: 768px) { .sidebar { display: none; } header, .content-area { padding: 20px; } }
     </style>
 </head>
 <body>
 
-    <aside class="sidebar">
-        <div class="sidebar-brand">
-            <i class="fa-solid fa-graduation-cap"></i>
-            <div><b>Blackwell</b><span>Universidad</span></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="collapse-btn" onclick="toggleSidebar()"><i class="fa-solid fa-chevron-left" id="toggleIcon"></i></div>
+        <a href="#" class="brand-section">
+            <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div>
+            <span class="brand-text">Blackwell</span>
+        </a>
+        <div class="user-preview">
+            <div class="avatar" id="userInitial">AD</div>
+            <div class="user-meta"><b id="userName">Admin User</b><span>Administrador</span></div>
         </div>
-        <nav class="nav-menu">
-            <a href="administrativo.html" class="nav-item"><i class="fa-solid fa-border-all"></i> Dashboard</a>
-            <a href="gestion-docentes.html" class="nav-item active"><i class="fa-solid fa-users"></i> Gestión de Docentes</a>
-            <a href="revision-docs.html" class="nav-item"><i class="fa-regular fa-file-lines"></i> Revisión de Expedientes</a>
-            <a href="gestion-cursos.html" class="nav-item"><i class="fa-solid fa-upload"></i> Gestión de Cursos</a>
-            <!--<a href="aprobaciones.html" class="nav-item"><i class="fa-regular fa-circle-check"></i> Aprobaciones</a>-->
-        </nav>
-        <div class="sidebar-footer">
-            <div class="user-info">
-                <span>Sesión activa:</span>
-                <b id="sidebar-userid">admin@blackwell.edu</b>
-                <span class="role-text">Administrativo</span>
-            </div>
-            <button class="btn-logout" onclick="logout()">
-                <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
-            </button>
-        </div>
+        <ul class="nav-list">
+            <li><a href="administrativo.html" class="nav-link "><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
+            <li><a href="registrodocente.html" class="nav-link "><i class="fa-solid fa-user-plus"></i> <span class="link-text">Registrar</span></a></li>
+            <li><a href="gestion-docentes.html" class="nav-link"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
+            <li><a href="revision-docs.html" class="nav-link active"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
+            <li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-upload"></i> <span class="link-text">Gestión de Cursos</span></a></li>
+            <li><a href="#" class="nav-link"><i class="fa-solid fa-chart-pie"></i> <span class="link-text">Reportes</span></a></li>
+        </ul>
+        <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;">
+            <i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span>
+        </a>
     </aside>
 
     <main class="main-wrapper">
          <header>
-            <div><h2>Sistema de Gestión de Expedientes</h2><p>Panel Administrativo</p></div>
-            <div class="font-controls">
-                <button onclick="changeFontSize(-1)" class="btn-font">—</button>
-                <span id="fontSizeLabel">Normal</span>
-                <button onclick="changeFontSize(1)" class="btn-font">+</button>
+            <div>
+                <h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Gestión de Personal</h5>
+                <p class="text-muted small m-0">Portal Administrativo</p>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-white px-3 py-2 rounded-pill shadow-sm d-flex gap-2 align-items-center">
+                    <button onclick="changeFontSize(-1)" class="btn btn-sm btn-link p-0 text-dark text-decoration-none fw-bold">A-</button>
+                    <span id="fontSizeLabel" class="small fw-bold px-1" style="min-width: 50px; text-align: center;">Normal</span>
+                    <button onclick="changeFontSize(1)" class="btn btn-sm btn-link p-0 text-dark text-decoration-none fw-bold">A+</button>
+                </div>
             </div>
         </header>
 
         <div class="content-area">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h1 class="page-title">Invitaciones y Expedientes</h1> 
-                    <p class="page-subtitle">Visualiza y gestiona el estado de la plana docente.</p>
-                </div>
+            <div class="centered-container">
                 
-            </div>
-            <!-- FILTROS AVANZADOS -->
-            <div class="filter-card">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label-sm">Buscar Docente o Curso</label>
-                        <input type="text" id="filterText" class="form-control input-filter" placeholder="Ej: Juan Pérez o Programación...">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label-sm">Estado de Invitación</label>
-                        <select id="filterStatus" class="form-select input-filter">
-                            <option value="Todos">Todos los estados</option>
-                            <option value="Enviado">Enviado</option>
-                            <option value="Respondido">Respondido (Pendiente de revisión)</option>
-                            <option value="Aprobado">Aprobado</option>
-                            <option value="Rechazado">Rechazado</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label-sm">Fecha de Invitación</label>
-                        <input type="date" id="filterDate" class="form-control input-filter">
-                    </div>
-                    <div class="col-md-2 d-flex align-items-end">
-                        <button class="btn btn-outline-secondary w-100" style="height: 38px; border-radius: 8px; font-size: 0.8rem;" onclick="resetFilters()">
-                            Limpiar
-                        </button>
-                    </div>
+                <div class="page-header">
+                    <h1>Revisión de Expedientes</h1> 
+                    <p>Filtra, revisa y aprueba las invitaciones y documentos de la plana docente.</p>
                 </div>
-            </div>
 
-            <!-- TABLA DE RESULTADOS -->
-            <div class="table-container shadow-sm">
-                <table class="table mb-0 align-middle">
-                    <thead>
-                        <tr>
-                            <th>Docente</th>
-                            <th>Curso / Programa</th>
-                            <th>Fecha Invitación</th>
-                            <th>Estado</th>
-                            <th class="text-end">Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody id="lista-invitaciones">
-                        <!-- JS cargarán aquí -->
-                    </tbody>
-                </table>
-                <div id="loading-spinner" class="text-center py-5">
-                    <i class="fa-solid fa-circle-notch fa-spin fa-2x text-primary"></i>
-                    <p class="mt-2 text-muted small">Obteniendo datos...</p>
+                <!-- FILTROS AVANZADOS -->
+                <div class="filter-section">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-4">
+                            <label class="form-label-sm">Buscar Docente o Curso</label>
+                            <input type="text" id="filterText" class="form-control input-filter" placeholder="Ej: Juan Pérez o Programación...">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label-sm">Estado de Expediente</label>
+                            <select id="filterStatus" class="form-select input-filter" style="cursor: pointer;">
+                                <option value="Todos">Todos los estados</option>
+                                <option value="Enviado">Enviado</option>
+                                <option value="Respondido">Respondido (Para revisar)</option>
+                                <option value="Aprobado">Aprobado</option>
+                                <option value="Rechazado">Rechazado</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label-sm">Fecha de Invitación</label>
+                            <input type="date" id="filterDate" class="form-control input-filter" style="cursor: pointer;">
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn w-100" style="height: 48px; background: #f1f5f9; border-radius: 12px; font-weight: 600; color: #475569;" onclick="resetFilters()">
+                                Limpiar Filtros
+                            </button>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- TABLA DE RESULTADOS -->
+                <div class="table-card">
+                    <div class="table-responsive">
+                        <table class="table mb-0 align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Docente</th>
+                                    <th>Curso / Programa</th>
+                                    <th>Fecha</th>
+                                    <th>Estado</th>
+                                    <th class="text-center">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lista-invitaciones">
+                                <!-- JS cargarán aquí -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="loading-spinner" class="text-center py-5">
+                        <i class="fa-solid fa-circle-notch fa-spin fs-2" style="color: var(--primary);"></i>
+                        <p class="mt-3 text-muted fw-medium">Obteniendo expedientes del sistema...</p>
+                    </div>
+                </div>
+
             </div>
         </div>
     </main>
 
-    <!-- MODAL REVISIÓN (Mismo que detallesdocente.html) -->
+    <!-- MODAL REVISIÓN (Idéntico a detallesdocente) -->
     <div class="modal fade modal-modern" id="modalRevision" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content shadow-lg border-0" style="border-radius: 15px;">
-                <div class="modal-header pt-4 px-4 border-0">
-                    <h4 class="modal-title fw-bold">Revisar y Aprobar Expediente</h4>
+            <div class="modal-content shadow-lg border-0">
+                <div class="modal-header">
+                    <h4 class="modal-title fw-bold"><i class="fa-solid fa-folder-open me-2 text-primary"></i>Revisión de Expediente</h4>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
+                    
                     <div class="section-review">
-                        <h6 class="fw-bold mb-3 text-primary">Información de la Invitación</h6>
-                        <div class="row">
-                            <div class="col-md-3"><div class="review-label">Estado</div><div id="rev-estado" class="review-value">-</div></div>
-                            <div class="col-md-3"><div class="review-label">Curso</div><div id="rev-curso" class="review-value">-</div></div>
-                            <div class="col-md-3"><div class="review-label">Día / Horario</div><div id="rev-horario" class="review-value">-</div></div>
-                            <div class="col-md-3"><div class="review-label">Pago</div><div id="rev-pago" class="review-value">-</div></div>
+                        <h6 class="fw-bold mb-3"><i class="fa-solid fa-circle-info me-2 text-primary"></i>Información de la Invitación</h6>
+                        <div class="row g-3">
+                            <div class="col-md-3"><span class="info-label">Estado</span><div id="rev-estado" class="info-value fw-bold text-primary">-</div></div>
+                            <div class="col-md-3"><span class="info-label">Curso Propuesto</span><div id="rev-curso" class="info-value">-</div></div>
+                            <div class="col-md-3"><span class="info-label">Día / Horario Elegido</span><div id="rev-horario" class="info-value">-</div></div>
+                            <div class="col-md-3"><span class="info-label">Pago Acordado</span><div id="rev-pago" class="info-value text-success fw-bold">-</div></div>
                         </div>
                     </div>
+
                     <div class="section-review">
-                        <h6 class="fw-bold mb-3 text-primary">Datos del Docente</h6>
-                        <div class="row">
-                            <div class="col-md-4"><div class="review-label">Docente</div><div id="rev-nombre" class="review-value">-</div></div>
-                            <div class="col-md-4"><div class="review-label">Correo</div><div id="rev-correo" class="review-value">-</div></div>
-                            <div class="col-md-4"><div class="review-label">Cuentas Bancarias</div><div id="rev-cuentas" class="review-value">-</div></div>
+                        <h6 class="fw-bold mb-3"><i class="fa-solid fa-user me-2 text-primary"></i>Datos del Docente (Financieros)</h6>
+                        <div class="row g-3">
+                            <div class="col-md-4"><span class="info-label">Docente</span><div id="rev-nombre" class="info-value">-</div></div>
+                            <div class="col-md-4"><span class="info-label">Correo</span><div id="rev-correo" class="info-value">-</div></div>
+                            <div class="col-md-4"><span class="info-label">Banco y Cuentas</span><div id="rev-cuentas" class="info-value">-</div></div>
                         </div>
                     </div>
-                    <div class="section-review">
-                        <h6 class="fw-bold mb-3 text-primary">Documentos Adjuntos</h6>
-                        <div id="contenedor-adjuntos-revision" class="row"></div>
+
+                    <div class="section-review border-0 bg-white p-0 mt-4">
+                        <h6 class="fw-bold mb-3"><i class="fa-solid fa-file-pdf me-2 text-primary"></i>Documentos Subidos</h6>
+                        <div id="contenedor-adjuntos-revision" class="row g-3"></div>
                     </div>
+
                 </div>
-                <div class="modal-footer bg-light border-0 p-4 d-flex justify-content-between">
-                    <button class="btn btn-outline-danger px-4 fw-bold" onclick="cambiarEstadoExpediente('Rechazado')">Rechazar</button>
-                    <button class="btn btn-success px-5 fw-bold" onclick="cambiarEstadoExpediente('Aprobado')">Aprobar Expediente</button>
+                <div class="modal-footer bg-light p-4 d-flex justify-content-between">
+                    <button type="button" class="btn btn-light text-danger border-danger px-4 fw-bold" onclick="cambiarEstadoExpediente('Rechazado')"><i class="fa-solid fa-xmark me-2"></i>Rechazar</button>
+                    <button type="button" class="btn btn-success px-5 fw-bold" onclick="cambiarEstadoExpediente('Aprobado')" style="background: #16a34a; border: none; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);"><i class="fa-solid fa-check-double me-2"></i>Aprobar Expediente</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- TOAST NOTIFICATION -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-4" style="z-index: 1055;" id="toastContainer"></div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
-        let todasInvitaciones = [];
+        let todasInvitaciones =[];
         let currentInvId = null;
         let currentDocenteId = null;
 
+        // UI Helpers
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); document.getElementById('toggleIcon').classList.toggle('fa-chevron-right'); document.getElementById('toggleIcon').classList.toggle('fa-chevron-left');}
+        function logout() { if(confirm("¿Cerrar sesión?")) { sessionStorage.clear(); window.location.href = "login.html"; } }
+        let currentSize = 1; const sizes =["0.9rem", "1rem", "1.1rem"]; const labels =["Pequeño", "Normal", "Grande"];
+        function changeFontSize(dir) { currentSize += dir; if(currentSize < 0) currentSize=0; if(currentSize > 2) currentSize=2; document.getElementById('fontSizeLabel').innerText = labels[currentSize]; document.documentElement.style.setProperty('--dynamic-font-size', sizes[currentSize]); }
+
+        function showToast(mensaje, tipo = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const bgClass = tipo === 'success' ? 'text-bg-success' : 'text-bg-danger';
+            const icon = tipo === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
+            toast.className = `toast align-items-center ${bgClass} border-0 show shadow-lg rounded-4 mb-3`;
+            toast.innerHTML = `<div class="d-flex p-1"><div class="toast-body fw-medium" style="font-size: 0.95rem;"><i class="fa-solid ${icon} me-2 fs-5 align-middle"></i> ${mensaje}</div><button type="button" class="btn-close btn-close-white me-3 m-auto" data-bs-dismiss="toast" onclick="this.parentElement.parentElement.remove()"></button></div>`;
+            container.appendChild(toast); setTimeout(() => toast.remove(), 4000);
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
+            const name = sessionStorage.getItem('userName') || "Administrador";
+            document.getElementById('userName').innerText = name;
+            document.getElementById('userInitial').innerText = name.substring(0,2).toUpperCase();
+
             await cargarTodasInvitaciones();
             
-            // Listeners para filtros
             document.getElementById('filterText').addEventListener('input', filtrar);
             document.getElementById('filterStatus').addEventListener('change', filtrar);
             document.getElementById('filterDate').addEventListener('change', filtrar);
@@ -334,12 +286,6 @@
 
         async function cargarTodasInvitaciones() {
             try {
-                // Obtenemos todos los docentes y luego sus invitaciones de forma global
-                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_all_teachers' }) });
-                const teachers = await res.json();
-                
-                // Nota: Para eficiencia, asumimos que el GS nos devuelve una acción que liste todas las invitaciones.
-                // Si no existe, mapeamos las invitaciones de todos los docentes
                 const responseInv = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_all_invitations_global' }) });
                 const result = await responseInv.json();
                 
@@ -347,7 +293,7 @@
                     todasInvitaciones = result.data;
                     filtrar();
                 }
-            } catch(e) { console.error(e); }
+            } catch(e) { showToast("Error al cargar datos", "danger"); }
             document.getElementById('loading-spinner').style.display = 'none';
         }
 
@@ -362,34 +308,41 @@
                 const matchDate = !date || inv.fecha.split('T')[0] === date;
                 return matchText && matchStatus && matchDate;
             });
-
             renderTabla(filtradas);
+        }
+
+        function getIconForStatus(status) {
+            if(status === 'Enviado') return '<i class="fa-solid fa-paper-plane"></i>';
+            if(status === 'Respondido') return '<i class="fa-solid fa-clock"></i>';
+            if(status === 'Aprobado') return '<i class="fa-solid fa-check"></i>';
+            if(status === 'Rechazado') return '<i class="fa-solid fa-xmark"></i>';
+            return '';
         }
 
         function renderTabla(datos) {
             const tbody = document.getElementById('lista-invitaciones');
             if(datos.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">No se encontraron invitaciones.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted"><i class="fa-regular fa-folder-open fs-2 mb-2 opacity-50"></i><br>No se encontraron expedientes.</td></tr>';
                 return;
             }
 
             tbody.innerHTML = datos.map(inv => {
-                const fecha = new Date(inv.fecha).toLocaleDateString();
+                const fecha = new Date(inv.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
                 return `
                 <tr>
                     <td>
-                        <div class="fw-bold text-dark">${inv.nombreDocente}</div>
-                        <div class="text-muted" style="font-size: 0.7rem;">ID: ${inv.docenteId}</div>
+                        <div class="fw-bold" style="color: var(--primary-dark)">${inv.nombreDocente}</div>
+                        <div class="text-muted" style="font-size: 0.75rem;">ID: ${inv.docenteId}</div>
                     </td>
                     <td>
-                        <div class="fw-medium">${inv.curso}</div>
-                        <div class="text-muted" style="font-size: 0.7rem;">${inv.programa}</div>
+                        <div class="fw-medium text-dark">${inv.curso}</div>
+                        <div class="text-primary fw-medium" style="font-size: 0.75rem;">${inv.programa}</div>
                     </td>
-                    <td>${fecha}</td>
-                    <td><span class="badge-status status-${inv.estado}">${inv.estado}</span></td>
-                    <td class="text-end">
-                        <button class="btn btn-sm btn-light border fw-bold" onclick="abrirRevision('${inv.id}', '${inv.docenteId}')">
-                            <i class="fa-regular fa-eye me-1"></i> Revisar
+                    <td><div class="text-muted"><i class="fa-regular fa-calendar me-2"></i>${fecha}</div></td>
+                    <td><span class="badge-status status-${inv.estado}">${getIconForStatus(inv.estado)} ${inv.estado}</span></td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-light border fw-bold text-secondary" style="border-radius: 8px; padding: 6px 12px;" onclick="abrirRevision('${inv.id}', '${inv.docenteId}')">
+                            <i class="fa-regular fa-folder-open me-1" style="color: var(--primary)"></i> Revisar
                         </button>
                     </td>
                 </tr>`;
@@ -399,13 +352,12 @@
         async function abrirRevision(invId, docId) {
             currentInvId = invId;
             currentDocenteId = docId;
-            const myModal = new bootstrap.Modal(document.getElementById('modalRevision'));
-            myModal.show();
+            new bootstrap.Modal(document.getElementById('modalRevision')).show();
 
-            document.getElementById('contenedor-adjuntos-revision').innerHTML = 'Cargando...';
+            document.getElementById('contenedor-adjuntos-revision').innerHTML = '<div class="col-12 text-center p-4 text-muted"><i class="fa-solid fa-spinner fa-spin fs-4 mb-2"></i><br>Extrayendo documentos...</div>';
 
             try {
-                // Traer perfil y datos de esa invitación específica
+                // Se reutiliza la funcion de perfil de backend para traer los datos del docente
                 const resProfile = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: docId }) });
                 const profile = await resProfile.json();
                 
@@ -420,7 +372,7 @@
                     
                     document.getElementById('rev-nombre').innerText = `${d.nombres} ${d.apellidos}`;
                     document.getElementById('rev-correo').innerText = d.correo;
-                    document.getElementById('rev-cuentas').innerText = `CTA: ${d.cuenta || '-'} | CCI: ${d.cci || '-'}`;
+                    document.getElementById('rev-cuentas').innerText = `${d.banco || '-'} | C: ${d.cuenta || '-'} | CCI: ${d.cci || '-'}`;
 
                     let htmlDocs = "";
                     if(d.url_cv) htmlDocs += crearItemArchivo("Currículum Vitae", d.url_cv);
@@ -431,30 +383,40 @@
                     if(docs.status === 'success') {
                         docs.diplomas.forEach(dip => htmlDocs += crearItemArchivo(`Diploma: ${dip.grado}`, dip.url));
                     }
-                    document.getElementById('contenedor-adjuntos-revision').innerHTML = htmlDocs || 'No hay documentos.';
+                    document.getElementById('contenedor-adjuntos-revision').innerHTML = htmlDocs || '<p class="text-muted m-0">No se encontraron documentos.</p>';
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) { showToast("Error al abrir expediente", "danger"); }
         }
 
         function crearItemArchivo(nombre, url) {
             return `
             <div class="col-md-6">
                 <div class="file-item">
-                    <span class="small fw-bold text-truncate me-2">${nombre}</span>
-                    <a href="${url}" target="_blank" class="btn btn-xs btn-link p-0 text-primary small">Ver <i class="fa-solid fa-external-link ms-1" style="font-size:0.7rem"></i></a>
+                    <div class="file-info">
+                        <i class="fa-regular fa-file-pdf"></i>
+                        <span class="file-name">${nombre}</span>
+                    </div>
+                    <a href="${url}" target="_blank" class="btn-ver-file">Abrir</a>
                 </div>
             </div>`;
         }
 
         async function cambiarEstadoExpediente(nuevoEstado) {
-            if(!confirm(`¿Marcar como ${nuevoEstado}?`)) return;
+            if(!confirm(`¿Desea marcar este expediente como ${nuevoEstado}?`)) return;
             try {
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'update_invitation_status', id: currentInvId, estado: nuevoEstado }) });
                 if((await res.json()).status === 'success') {
+                    showToast(`Expediente marcado como ${nuevoEstado}`, "success");
                     bootstrap.Modal.getInstance(document.getElementById('modalRevision')).hide();
-                    location.reload();
+                    
+                    // Recargar tabla disimuladamente en lugar de recargar toda la pagina
+                    document.getElementById('loading-spinner').style.display = 'block';
+                    document.getElementById('lista-invitaciones').innerHTML = '';
+                    await cargarTodasInvitaciones();
+                } else {
+                    showToast("No se pudo actualizar el estado", "danger");
                 }
-            } catch(e) { alert("Error"); }
+            } catch(e) { showToast("Error de conexión", "danger"); }
         }
 
         function resetFilters() {
@@ -463,8 +425,6 @@
             document.getElementById('filterDate').value = '';
             filtrar();
         }
-
-        function logout() { sessionStorage.clear(); window.location.href = "login.html"; }
     </script>
 </body>
 </html>
