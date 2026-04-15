@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script>
+        // Protección de ruta: Solo para docentes
+        if (sessionStorage.getItem('isLoggedIn') !== 'true' || sessionStorage.getItem('userRole') !== 'Docente') {
+            window.location.href = "login.html";
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Cursos | Blackwell University</title>
+    
+    <!-- Frameworks & Fonts -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #2563eb; 
+            --primary-dark: #1e3a8a; 
+            --bg-body: #f8fafc;
+            --sidebar-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --card-radius: 24px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --sidebar-width: 260px;
+            --sidebar-collapsed-width: 88px;
+            --dynamic-font-size: 1rem;
+        }
+
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; letter-spacing: -0.01em; }
+
+        /* --- SIDEBAR MODERNA --- */
+        .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid rgba(0,0,0,0.05); display: flex; flex-direction: column; transition: var(--transition); position: relative; padding: 24px 16px; flex-shrink: 0; }
+        .sidebar.collapsed { width: var(--sidebar-collapsed-width); }
+        .brand-section { display: flex; align-items: center; gap: 12px; padding: 0 12px 32px; text-decoration: none; overflow: hidden; }
+        .logo-box { min-width: 42px; height: 42px; background: var(--primary-dark); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
+        .brand-text { font-weight: 800; font-size: 1.2rem; color: var(--primary-dark); margin-left: 12px; }
+        .sidebar.collapsed .brand-text { opacity: 0; display: none; }
+        .user-preview { display: flex; align-items: center; gap: 12px; padding: 12px; background: #f1f5f9; border-radius: 16px; margin-bottom: 24px; overflow: hidden; }
+        .avatar { min-width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 13px; }
+        .user-meta { display: flex; flex-direction: column; line-height: 1.2; }
+        .user-meta b { font-size: 13px; white-space: nowrap; color: var(--text-main); } .user-meta span { font-size: 11px; color: var(--text-muted); }
+        .sidebar.collapsed .user-meta { display: none; }
+        .nav-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+        .nav-link { display: flex; align-items: center; gap: 16px; padding: 12px 14px; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 6px; transition: var(--transition); white-space: nowrap; }
+        .nav-link i { font-size: 18px; width: 24px; text-align: center; }
+        .nav-link:hover, .nav-link.active { background: #eff6ff; color: var(--primary); font-weight: 600;}
+        .sidebar.collapsed .link-text { display: none; }
+        .collapse-btn { position: absolute; right: -12px; top: 48px; width: 24px; height: 24px; background: white; border: 1px solid #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; font-size: 10px; color: var(--text-muted); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+        /* --- MAIN WRAPPER & HEADER --- */
+        .main-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        header { padding: 20px 48px; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 5; border-bottom: 1px solid rgba(0,0,0,0.03);}
+        
+        .content-area { padding: 40px; display: flex; flex-direction: column; align-items: center; width: 100%; font-size: var(--dynamic-font-size); }
+        .centered-container { width: 100%; max-width: 1200px; text-align: left; }
+
+        .page-header { margin-bottom: 32px; }
+        .page-header h1 { font-weight: 800; font-size: 2.2rem; margin-bottom: 8px; letter-spacing: -0.03em; color: var(--primary-dark); }
+        .page-header p { color: var(--text-muted); font-size: 1.1rem; margin: 0; }
+
+        /* --- APP-LIKE FILTERS --- */
+        .filter-pills { display: flex; gap: 10px; margin-bottom: 30px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none;}
+        .filter-pills::-webkit-scrollbar { display: none; }
+        .filter-pill { background: white; border: 1px solid #cbd5e1; color: var(--text-muted); padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: var(--transition); white-space: nowrap; }
+        .filter-pill:hover { border-color: var(--primary); color: var(--primary); }
+        .filter-pill.active { background: var(--primary-dark); border-color: var(--primary-dark); color: white; box-shadow: 0 4px 10px rgba(30, 58, 138, 0.2);}
+
+        /* --- COURSE CARDS (MOBILE OPTIMIZED) --- */
+        .course-card { 
+            background: white; border-radius: var(--card-radius); 
+            border: 1px solid rgba(0,0,0,0.04); box-shadow: 0 10px 30px rgba(0,0,0,0.02); 
+            transition: var(--transition); display: flex; flex-direction: column; height: 100%;
+            position: relative; overflow: hidden;
+        }
+        .course-card:hover { transform: translateY(-4px); box-shadow: 0 15px 40px rgba(0,0,0,0.05); border-color: #cbd5e1; }
+        
+        .card-header-banner {
+            background: #eff6ff; padding: 20px 24px;
+            display: flex; justify-content: space-between; align-items: flex-start;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .program-badge {
+            background: rgba(37, 99, 235, 0.1); color: var(--primary);
+            padding: 6px 12px; border-radius: 8px; font-weight: 800;
+            font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        .badge-status { padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; display: inline-flex; align-items: center; gap: 5px;}
+        .status-respondido { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0;}
+        .status-enviado { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa;}
+        .status-pendiente { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;}
+
+        .card-body-custom { padding: 24px; flex-grow: 1; display: flex; flex-direction: column; }
+        
+        .course-title { font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin-bottom: 15px; line-height: 1.3; letter-spacing: -0.5px;}
+        
+        .course-detail { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; font-size: 0.9rem; color: #475569; }
+        .course-detail i { color: var(--primary); font-size: 1.1rem; width: 20px; text-align: center; margin-top: 2px;}
+        .course-detail b { color: var(--text-main); display: block;}
+
+        .course-actions { margin-top: auto; padding-top: 20px; border-top: 1px dashed #e2e8f0;}
+        .btn-card-action { width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; font-weight: 700; padding: 12px; border-radius: 12px; transition: 0.2s; text-decoration: none; font-size: 0.95rem; border: none;}
+        .btn-action-primary { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2); }
+        .btn-action-primary:hover { background: var(--primary-dark); color: white; transform: translateY(-1px);}
+        .btn-action-success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; cursor: default;}
+
+        /* Empty State */
+        .empty-state { text-align: center; padding: 60px 20px; background: white; border-radius: var(--card-radius); border: 1px dashed #cbd5e1; }
+        .empty-state i { font-size: 4rem; color: #cbd5e1; margin-bottom: 20px; }
+        .empty-state h3 { font-weight: 800; color: var(--text-main); margin-bottom: 10px; }
+
+        .loader-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 0; color: var(--primary); }
+
+        @media (max-width: 768px) { 
+            .sidebar { display: none; } 
+            header { padding: 15px 20px; }
+            .content-area { padding: 20px; } 
+            .page-header h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Lateral -->
+    <aside class="sidebar" id="sidebar">
+        <div class="collapse-btn" onclick="toggleSidebar()"><i class="fa-solid fa-chevron-left" id="toggleIcon"></i></div>
+        <a href="#" class="brand-section">
+            <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div>
+            <span class="brand-text">Blackwell</span>
+        </a>
+        <div class="user-preview">
+            <div class="avatar" id="userInitial">DO</div>
+            <div class="user-meta"><b id="userNameSidebar">Cargando...</b><span>Docente</span></div>
+        </div>
+
+        <nav class="nav-menu">
+            <a href="dashboard-docente.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a>
+            <a href="docente.html" class="nav-link"><i class="fa-solid fa-user"></i> <span class="link-text">Información Personal</span></a>
+            <a href="gestionexpedientes.html" class="nav-link"><i class="fa-solid fa-file-lines"></i> <span class="link-text">Mis Expedientes</span></a>
+            <a href="carpetadocente.html" class="nav-link"><i class="fa-solid fa-folder-open"></i> <span class="link-text">Carpeta Docente</span></a>
+            <a href="gestioncursos.html" class="nav-link active"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Mis Clases</span></a>
+        </nav>
+
+        <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;">
+            <i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span>
+        </a>
+    </aside>
+
+    <!-- Contenido Principal -->
+    <main class="main-wrapper">
+        <header>
+            <div>
+                <h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Portal del Docente</h5>
+                <p class="text-muted small m-0">Consulta de Cursos y Asignaciones</p>
+            </div>
+            <div class="bg-white px-3 py-2 rounded-pill shadow-sm d-flex gap-2 align-items-center">
+                <button onclick="changeFontSize(-1)" class="btn btn-sm btn-link p-0 text-dark text-decoration-none fw-bold">A-</button>
+                <span id="fontSizeLabel" class="small fw-bold px-1" style="min-width: 50px; text-align: center;">Normal</span>
+                <button onclick="changeFontSize(1)" class="btn btn-sm btn-link p-0 text-dark text-decoration-none fw-bold">A+</button>
+            </div>
+        </header>
+
+        <div class="content-area">
+            <div class="centered-container">
+                
+                <div class="page-header">
+                    <h1>Mis Clases Asignadas</h1>
+                    <p>Visualiza los cursos a los que has sido invitado y confirma tu horario de dictado.</p>
+                </div>
+
+                <!-- Filtros Táctiles -->
+                <div class="filter-pills" id="filterContainer">
+                    <div class="filter-pill active" onclick="filtrarCursos('todos', this)">Todas las Clases</div>
+                    <div class="filter-pill" onclick="filtrarCursos('enviado', this)">Por Confirmar</div>
+                    <div class="filter-pill" onclick="filtrarCursos('respondido', this)">Confirmadas</div>
+                </div>
+
+                <!-- Contenedor de Tarjetas de Curso -->
+                <div class="row g-4" id="cards-container">
+                    <!-- JS Inyectará las Cards Aquí -->
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
+
+        // Lógica de UI Config
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); document.getElementById('toggleIcon').classList.toggle('fa-chevron-right'); document.getElementById('toggleIcon').classList.toggle('fa-chevron-left');}
+        function logout() { if(confirm("¿Seguro que deseas salir?")) { sessionStorage.clear(); window.location.href = "login.html"; } }
+        
+        let currentSize = 1; const sizes =["0.9rem", "1rem", "1.1rem"]; const labels =["Pequeño", "Normal", "Grande"];
+        function changeFontSize(dir) { currentSize += dir; if(currentSize < 0) currentSize=0; if(currentSize > 2) currentSize=2; document.getElementById('fontSizeLabel').innerText = labels[currentSize]; document.documentElement.style.setProperty('--dynamic-font-size', sizes[currentSize]); }
+
+        // Datos en memoria
+        let cursosGlobales = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const userId = sessionStorage.getItem('userName'); 
+            if(userId) {
+                const nombreCorto = userId.split("@")[0].split(" ")[0];
+                document.getElementById('userNameSidebar').innerText = nombreCorto;
+                document.getElementById('userInitial').innerText = nombreCorto.substring(0,2).toUpperCase();
+                cargarCursos(userId);
+            }
+        });
+
+        // 1. CARGAR CURSOS DEL BACKEND
+        async function cargarCursos(idDocente) {
+            const container = document.getElementById('cards-container');
+            container.innerHTML = `<div class="col-12 loader-container"><i class="fa-solid fa-circle-notch fa-spin fs-1 mb-3"></i><h5 class="fw-bold text-dark">Cargando tus clases...</h5></div>`;
+
+            try {
+                const response = await fetch(GAS_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ action: 'get_mis_cursos', docenteId: idDocente }) 
+                });
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    cursosGlobales = result.data;
+                    renderizarCards(cursosGlobales);
+                } else {
+                    mostrarEmptyState();
+                }
+            } catch (e) {
+                container.innerHTML = `<div class="col-12 text-center text-danger py-5"><i class="fa-solid fa-triangle-exclamation fs-1 mb-3"></i><h5>Error al conectar con el servidor</h5></div>`;
+            }
+        }
+
+        function formatDate(dateString) {
+            if(!dateString) return "-";
+            const date = new Date(dateString);
+            if(isNaN(date)) return dateString;
+            return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+
+        // 2. RENDERIZAR HTML DE LAS TARJETAS
+        function renderizarCards(cursosArray) {
+            const container = document.getElementById('cards-container');
+            container.innerHTML = "";
+
+            if(cursosArray.length === 0) {
+                mostrarEmptyState();
+                return;
+            }
+
+            let html = "";
+            cursosArray.forEach(curso => {
+                
+                let statusBadge = "status-pendiente";
+                let statusIcon = "fa-clock";
+                let btnHtml = "";
+                let horarioDisplay = `<div class="course-detail"><i class="fa-regular fa-clock"></i><div><b>Franjas sugeridas:</b> ${curso.franjas}</div></div>`;
+
+                // Lógica de Estados y Botones (UX)
+                if (curso.estado.toLowerCase() === 'respondido') { 
+                    statusBadge = 'status-respondido'; 
+                    statusIcon = 'fa-check-double'; 
+                    horarioDisplay = `<div class="course-detail"><i class="fa-solid fa-calendar-check text-success"></i><div><b class="text-success">Horario Confirmado:</b> ${curso.diaElegido} - ${curso.horaElegida}</div></div>`;
+                    btnHtml = `<button class="btn-card-action btn-action-success"><i class="fa-solid fa-check"></i> Asignación Completa</button>`;
+                } 
+                else if (curso.estado.toLowerCase() === 'enviado') { 
+                    statusBadge = 'status-enviado'; 
+                    statusIcon = 'fa-exclamation-circle'; 
+                    // Si el admin se lo envió, el docente debe confirmarlo usando el formulario de expediente
+                    const nameCodificado = encodeURIComponent(document.getElementById('userNameSidebar').innerText);
+                    const linkConfirmar = `registroexpediente.html`; 
+                    btnHtml = `<a href="${linkConfirmar}" class="btn-card-action btn-action-primary"><i class="fa-solid fa-calendar-plus"></i> Confirmar Horario</a>`;
+                }
+
+                html += `
+                    <div class="col-md-6 col-xl-4">
+                        <div class="course-card">
+                            
+                            <div class="card-header-banner">
+                                <span class="program-badge">${curso.programa || 'Programa BGU'}</span>
+                                <span class="badge-status ${statusBadge}"><i class="fa-solid ${statusIcon}"></i> ${curso.estado}</span>
+                            </div>
+
+                            <div class="card-body-custom">
+                                <h3 class="course-title">${curso.curso}</h3>
+                                
+                                <div class="course-detail">
+                                    <i class="fa-regular fa-calendar"></i>
+                                    <div><b>Periodo:</b> ${formatDate(curso.fechaInicio)} - ${formatDate(curso.fechaFin)}</div>
+                                </div>
+                                
+                                ${horarioDisplay}
+
+                                <div class="course-detail">
+                                    <i class="fa-solid fa-chalkboard-user"></i>
+                                    <div><b>Estructura:</b> ${curso.clases} Clases Magistrales</div>
+                                </div>
+
+                                <div class="course-detail">
+                                    <i class="fa-solid fa-sack-dollar"></i>
+                                    <div><b>Remuneración:</b> ${curso.pago}</div>
+                                </div>
+
+                                <div class="course-actions">
+                                    ${btnHtml}
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // 3. LÓGICA DE LOS FILTROS
+        function filtrarCursos(estado, elemento) {
+            document.querySelectorAll('.filter-pill').forEach(el => el.classList.remove('active'));
+            elemento.classList.add('active');
+
+            if(estado === 'todos') {
+                renderizarCards(cursosGlobales);
+            } else {
+                const filtrados = cursosGlobales.filter(d => d.estado.toLowerCase() === estado);
+                renderizarCards(filtrados);
+            }
+        }
+
+        // 4. MOSTRAR ESTADO VACÍO
+        function mostrarEmptyState() {
+            document.getElementById('cards-container').innerHTML = `
+                <div class="col-12">
+                    <div class="empty-state">
+                        <i class="fa-solid fa-chalkboard-user"></i>
+                        <h3>Aún no tienes clases asignadas</h3>
+                        <p class="text-muted m-0">Cuando la administración te invite a dictar un curso, aparecerá aquí para que confirmes tu horario.</p>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script>
+        if (sessionStorage.getItem('isLoggedIn') !== 'true' || sessionStorage.getItem('userRole') !== 'Docente') { window.location.href = "login.html"; }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Completar Expediente | Blackwell University</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- SWEETALERT AÑADIDO -->
+
+    <style>
+        :root { --primary: #2563eb; --primary-dark: #1e3a8a; --success: #10b981; --bg-body: #f8fafc; --sidebar-bg: #ffffff; --text-main: #1e293b; --text-muted: #64748b; --card-radius: 20px; --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); --sidebar-width: 260px; --sidebar-collapsed-width: 88px; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; letter-spacing: -0.01em; }
+
+        /* Sidebar & Layout (Se mantiene tu diseño exacto) */
+        .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid rgba(0,0,0,0.05); display: flex; flex-direction: column; transition: var(--transition); position: relative; padding: 24px 16px; flex-shrink: 0; }
+        .sidebar.collapsed { width: var(--sidebar-collapsed-width); }
+        .logo-box { min-width: 42px; height: 42px; background: var(--primary-dark); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
+        .brand-text { font-weight: 800; font-size: 1.2rem; color: var(--primary-dark); margin-left: 12px; }
+        .sidebar.collapsed .brand-text, .sidebar.collapsed .link-text, .sidebar.collapsed .user-meta { display: none; }
+        .user-preview { display: flex; align-items: center; gap: 12px; padding: 12px; background: #f1f5f9; border-radius: 16px; margin-bottom: 24px; }
+        .avatar { min-width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 13px; }
+        .user-meta { display: flex; flex-direction: column; line-height: 1.2; } .user-meta b { font-size: 13px; color: var(--text-main); }
+        .nav-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+        .nav-link { display: flex; align-items: center; gap: 16px; padding: 12px 14px; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 6px; transition: var(--transition); white-space: nowrap; }
+        .nav-link i { font-size: 18px; width: 24px; text-align: center; }
+        .nav-link:hover, .nav-link.active { background: #eff6ff; color: var(--primary); font-weight: 600; }
+        .collapse-btn { position: absolute; right: -12px; top: 48px; width: 24px; height: 24px; background: white; border: 1px solid #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; font-size: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+        .main-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        header { padding: 20px 48px; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 5; border-bottom: 1px solid #f1f5f9; }
+        .content-area { padding: 40px; display: flex; flex-direction: column; align-items: center; width: 100%; }
+        .centered-container { width: 100%; max-width: 950px; text-align: left; }
+
+        /* Wizard & UI */
+        .wizard-card { background: white; border-radius: var(--card-radius); padding: 40px; border: 1px solid rgba(0,0,0,0.04); box-shadow: 0 10px 30px rgba(0,0,0,0.02); margin-top: 10px; }
+        .stepper-container { display: flex; gap: 5px; border-bottom: 2px solid #f1f5f9; margin-bottom: 35px; overflow-x: auto; scrollbar-width: none; }
+        .stepper-container::-webkit-scrollbar { display: none; }
+        .step-tab { color: #94a3b8; font-weight: 700; font-size: 0.8rem; padding: 12px 18px; cursor: default; white-space: nowrap; border-bottom: 3px solid transparent; transition: 0.3s; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .step-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .step-tab.completed { color: var(--success); }
+
+        .step-content { display: none; } .step-content.active { display: block; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .form-label { font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 8px; }
+        .form-control, .form-select { border-radius: 12px; padding: 12px 16px; border: 1px solid #cbd5e1; background-color: #fcfcfd; transition: 0.2s; }
+        .form-control:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); outline: none; background-color: white; }
+
+        /* UPLOAD BOX Y TARJETAS DINÁMICAS */
+        .file-upload-box { border: 2px dashed #cbd5e1; border-radius: 16px; padding: 30px; text-align: center; background: #f8fafc; cursor: pointer; transition: 0.2s; }
+        .file-upload-box:hover { border-color: var(--primary); background: #eff6ff; }
+        .file-upload-box i { font-size: 2.5rem; color: var(--primary); opacity: 0.5; margin-bottom: 10px; }
+        
+        .dynamic-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; position: relative; margin-bottom: 15px;}
+        .btn-remove { position: absolute; top: 15px; right: 15px; background: #fee2e2; color: #ef4444; border: none; border-radius: 8px; padding: 5px 10px; font-size: 0.8rem; font-weight: 600;}
+        .btn-add-dynamic { background: transparent; border: 2px dashed var(--primary); color: var(--primary); font-weight: 700; border-radius: 12px; padding: 12px; width: 100%; transition: 0.3s;}
+        .btn-add-dynamic:hover { background: #eff6ff; }
+
+        .btn-continue { background: var(--primary); color: white; border: none; font-weight: 700; padding: 14px 30px; border-radius: 12px; transition: 0.3s; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); display: flex; align-items: center; gap: 8px;}
+        .btn-continue:hover:not(:disabled) { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3); }
+        .btn-continue:disabled { opacity: 0.7; cursor: not-allowed; }
+        .btn-cancel { background: #f1f5f9; color: #475569; border: none; font-weight: 600; padding: 14px 30px; border-radius: 12px; }
+
+        .course-radio-card { border: 2px solid #e2e8f0; border-radius: 16px; padding: 20px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 15px; }
+        .course-radio-card:hover { border-color: #bfdbfe; background: #f8fafc; }
+        .course-radio-card input[type="radio"] { width: 20px; height: 20px; accent-color: var(--primary); }
+        .course-radio-card.selected { border-color: var(--primary); background: #eff6ff; }
+
+        /* Loader Overlay para IA */
+        #ia-loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; text-align: center;}
+        
+        @media (max-width: 768px) { .sidebar { display: none; } header, .content-area { padding: 20px; } }
+    </style>
+</head>
+<body>
+
+    <div id="ia-loader">
+        <div class="spinner-border text-primary mb-3" style="width: 4rem; height: 4rem; border-width: 5px;"></div>
+        <h2 class="fw-bold" style="color: var(--primary-dark);">Analizando Documentos...</h2>
+        <p class="text-muted fs-5">La Inteligencia Artificial está extrayendo tus datos para llenar el formulario.</p>
+    </div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="collapse-btn" onclick="toggleSidebar()"><i class="fa-solid fa-chevron-left" id="toggleIcon"></i></div>
+        <div class="brand-section">
+            <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div>
+            <span class="brand-text">Blackwell</span>
+        </div>
+        <div class="user-preview">
+            <div class="avatar">DO</div>
+            <div class="user-meta"><b id="userNameSidebar">Cargando...</b><span>Docente</span></div>
+        </div>
+        <nav class="nav-list">
+            <li><a href="dashboard-docente.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
+            <li><a href="gestionexpedientes.html" class="nav-link active"><i class="fa-solid fa-folder-open"></i> <span class="link-text">Mis Expedientes</span></a></li>
+            <li><a href="gestioncursos.html" class="nav-link"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Mis Clases</span></a></li>
+        </nav>
+        <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;"><i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span></a>
+    </aside>
+
+    <main class="main-wrapper">
+        <header>
+            <div><h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Completar Expediente</h5><p class="text-muted small m-0" id="exp-id-display">Cargando...</p></div>
+        </header>
+
+        <div class="content-area">
+            <div class="centered-container">
+                
+                <div class="page-header">
+                    <h1>Completar Expediente</h1>
+                    <p class="text-muted">Sigue los pasos para formalizar tu registro en la universidad.</p>
+                </div>
+
+                <div class="wizard-card">
+                    <div class="stepper-container" id="stepper">
+                        <div class="step-tab active" id="tab-1"><i class="fa-regular fa-circle-dot"></i> 1. Docs</div>
+                        <div class="step-tab" id="tab-2"><i class="fa-regular fa-circle"></i> 2. Grados</div>
+                        <div class="step-tab" id="tab-3"><i class="fa-regular fa-circle"></i> 3. Perfil</div>
+                        <div class="step-tab" id="tab-4"><i class="fa-regular fa-circle"></i> 4. Curso</div>
+                        <div class="step-tab" id="tab-5"><i class="fa-regular fa-circle"></i> 5. Banco</div>
+                        <div class="step-tab" id="tab-6"><i class="fa-regular fa-circle"></i> 6. Revisión IA</div>
+                    </div>
+
+                    <form id="wizardForm">
+                        
+                        <!-- PASO 1: SUBIR CV Y HANDBOOK -->
+                        <div class="step-content active" id="step-1">
+                            <h4 class="fw-800 mb-2">Documentación Base</h4>
+                            <p class="text-muted mb-4">Sube tu CV actualizado y el Faculty Handbook firmado.</p>
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <label class="form-label text-primary">Curriculum Vitae (PDF) *</label>
+                                    <div class="file-upload-box" onclick="document.getElementById('cvFile').click()">
+                                        <i class="fa-solid fa-file-pdf"></i>
+                                        <h6 class="fw-bold text-dark">Subir CV</h6>
+                                        <input type="file" id="cvFile" class="d-none" accept=".pdf" onchange="mostrarNombre(this, 'cvName')">
+                                    </div>
+                                    <div id="cvName" class="mt-2 fw-bold text-success text-center small"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-primary">Faculty Handbook (PDF) *</label>
+                                    <div class="file-upload-box" onclick="document.getElementById('hbFile').click()">
+                                        <i class="fa-solid fa-book-open"></i>
+                                        <h6 class="fw-bold text-dark">Subir Handbook</h6>
+                                        <input type="file" id="hbFile" class="d-none" accept=".pdf" onchange="mostrarNombre(this, 'hbName')">
+                                    </div>
+                                    <div id="hbName" class="mt-2 fw-bold text-success text-center small"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PASO 2: GRADOS DINÁMICOS -->
+                        <div class="step-content" id="step-2">
+                            <h4 class="fw-800 mb-2">Grados Académicos</h4>
+                            <p class="text-muted mb-4">Añade los diplomas de tus grados más altos.</p>
+                            
+                            <div id="diplomas-container">
+                                <div class="dynamic-card diploma-item">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Nivel de Grado *</label>
+                                            <select class="form-select dip-grado">
+                                                <option value="">Seleccionar...</option><option value="Bachelor">Bachelor</option><option value="Master">Master</option><option value="Doctorado">Doctorado</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Diploma (PDF) *</label>
+                                            <input type="file" class="form-control dip-file" accept=".pdf">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-add-dynamic mt-2" onclick="addDiplomaField()"><i class="fa-solid fa-plus me-1"></i> Agregar otro Grado</button>
+                        </div>
+
+                        <!-- PASO 3: DATOS PERSONALES -->
+                        <div class="step-content" id="step-3">
+                            <h4 class="fw-800 mb-4">Datos Personales</h4>
+                            <div class="row g-3">
+                                <div class="col-md-6"><label class="form-label">Nombres Completos</label><input type="text" class="form-control" id="reg-nombres"></div>
+                                <div class="col-md-6"><label class="form-label">Apellidos Completos</label><input type="text" class="form-control" id="reg-apellidos"></div>
+                                <div class="col-md-6"><label class="form-label">DNI / Pasaporte</label><input type="text" class="form-control" id="reg-dni"></div>
+                                <div class="col-md-6"><label class="form-label">Celular</label><input type="text" class="form-control" id="reg-celular"></div>
+                                <div class="col-md-4"><label class="form-label">País</label><input type="text" class="form-control" id="reg-pais"></div>
+                                <div class="col-8"><label class="form-label">Dirección Completa</label><input type="text" class="form-control" id="reg-direccion"></div>
+                            </div>
+                        </div>
+
+                        <!-- PASO 4: CURSOS PENDIENTES -->
+                        <div class="step-content" id="step-4">
+                            <h4 class="fw-800 mb-2">Confirmación de Curso</h4>
+                            <p class="text-muted mb-4">Selecciona el curso al que fuiste invitado para confirmar tu horario.</p>
+                            <div id="lista-invitaciones" class="mb-4"></div>
+                            <div class="row g-3" id="horario-container" style="display: none;">
+                                <div class="col-md-6"><label class="form-label text-primary">Día Preferido</label><select class="form-select border-primary" id="reg-dia"><option value="Lunes">Lunes</option><option value="Martes">Martes</option><option value="Miércoles">Miércoles</option><option value="Jueves">Jueves</option><option value="Viernes">Viernes</option></select></div>
+                                <div class="col-md-6"><label class="form-label text-primary">Franja Horaria (GMT-5)</label><select class="form-select border-primary" id="reg-hora"><option value="19:00 a 20:30">19:00 a 20:30</option><option value="20:30 a 22:00">20:30 a 22:00</option></select></div>
+                            </div>
+                        </div>
+
+                        <!-- PASO 5: BANCO -->
+                        <div class="step-content" id="step-5">
+                            <h4 class="fw-800 mb-4">Información Bancaria</h4>
+                            <div class="row g-3">
+                                <div class="col-md-8"><label class="form-label">Banco</label><input type="text" class="form-control" id="reg-banco"></div>
+                                <div class="col-md-4"><label class="form-label">Moneda</label><select class="form-select" id="reg-moneda"><option value="Dólares">Dólares</option><option value="Soles">Soles</option></select></div>
+                                <div class="col-md-12"><label class="form-label">Nro. Cuenta Local / Internacional</label><input type="text" class="form-control" id="reg-cuenta"></div>
+                            </div>
+                        </div>
+
+                        <!-- PASO 6: REVISIÓN IA (Experiencia y Grados extraídos) -->
+                        <div class="step-content" id="step-6">
+                            <h4 class="fw-800 mb-2">Revisión de Datos (Extraídos por IA)</h4>
+                            <p class="text-muted mb-4">Verifica que la información extraída de tus documentos sea correcta.</p>
+                            
+                            <h5 class="fw-bold text-primary mt-4 mb-3">Formación Académica</h5>
+                            <div id="ai-education-container"></div>
+
+                            <h5 class="fw-bold text-primary mt-5 mb-3">Experiencia Profesional</h5>
+                            <div id="ai-experience-container"></div>
+                            <button type="button" class="btn-add-dynamic mt-2" onclick="addExpField()"><i class="fa-solid fa-plus me-1"></i> Agregar Experiencia Manual</button>
+                        </div>
+
+                        <!-- NAVEGACIÓN -->
+                        <div class="d-flex justify-content-between align-items-center mt-5 pt-4 border-top">
+                            <span class="text-muted small fw-bold" id="step-counter">PASO 1 DE 6</span>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn-cancel" id="btnPrev" onclick="cambiarUI(-1)" style="display: none;">Anterior</button>
+                                <button type="button" class="btn-continue" id="btnNext" onclick="guardarYAvanzar()">Guardar y Continuar <i class="fa-solid fa-arrow-right ms-2"></i></button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
+        const N8N_URL = "https://n8n.balticec.com/webhook/ad08f4fd-2709-460a-9368-238395ad8533";
+        
+        let pasoActual = 1; const totalPasos = 6;
+        let idExpedienteUrl = new URLSearchParams(window.location.search).get('exp');
+        let userId = sessionStorage.getItem('userName'); 
+        let selectedInvitationId = null;
+        let urlCVGlobal = ""; 
+        let urlHbGlobal = "";
+        let iaEjecutada = false; // Bandera para saber si ya extrajimos info
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('userNameSidebar').innerText = userId;
+            if(idExpedienteUrl) document.getElementById('exp-id-display').innerText = `Expediente: ${idExpedienteUrl}`;
+            cargarDatosPrevios();
+            cargarCursosPendientes();
+        });
+
+        // 1. CARGAR DATOS SI EL USUARIO YA HABÍA ENTRADO ANTES
+        async function cargarDatosPrevios() {
+            try {
+                // Buscamos la invitación de la URL para ver si hay borradores asociados a ella
+                const urlParams = new URLSearchParams(window.location.search);
+                const invIdFromUrl = urlParams.get('inv'); // Si vienes desde un correo, puedes tener el inv en la URL
+
+                const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: userId, id_invitacion: invIdFromUrl }) });
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    const d = result.data;
+                    if(d.nombres) document.getElementById('reg-nombres').value = d.nombres;
+                    if(d.apellidos) document.getElementById('reg-apellidos').value = d.apellidos;
+                    if(d.dni) document.getElementById('reg-dni').value = d.dni;
+                    
+                    // Si ya tenía CV, no lo obligamos a subir
+                    if(d.url_cv) {
+                        urlCVGlobal = d.url_cv;
+                        document.getElementById('cvName').innerText = "✅ Documento previo cargado (Sube uno nuevo solo para reemplazar)";
+                    }
+
+                    // Si ya tiene borradores de IA (Paso 6)
+                    if(result.drafts && (result.drafts.educacion.length > 0 || result.drafts.experiencia.length > 0)) {
+                        iaEjecutada = true; // Ya tiene datos, no procesaremos IA de nuevo a menos que suba un nuevo PDF
+                        result.drafts.educacion.forEach(edu => addEduReviewField(edu));
+                        result.drafts.experiencia.forEach(exp => addExpField(exp));
+                    }
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        // UTILIDADES UI
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+        function logout() { sessionStorage.clear(); window.location.href = "login.html"; }
+        function changeFontSize(dir) { /* ... lógica font ...*/ }
+        function mostrarNombre(input, id) { if(input.files.length > 0) document.getElementById(id).innerText = "✅ " + input.files[0].name; }
+        function mostrarNombresMultiples(input, id) { if(input.files.length > 0) document.getElementById(id).innerText = "✅ " + input.files.length + " archivos"; }
+        
+        const getBase64 = (file) => new Promise((resolve) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result.split(',')[1]); });
+
+        // DINAMISMO PASO 2 (DIPLOMAS)
+        function addDiplomaField() {
+            const container = document.getElementById('diplomas-container');
+            const div = document.createElement('div');
+            div.className = 'dynamic-card diploma-item';
+            div.innerHTML = `<button type="button" class="btn-remove" onclick="this.parentElement.remove()"><i class="fa-solid fa-trash"></i></button>
+                <div class="row g-3">
+                    <div class="col-md-6"><label class="form-label">Nivel de Grado *</label><select class="form-select dip-grado"><option value="">Seleccionar...</option><option value="Bachelor">Bachelor</option><option value="Master">Master</option><option value="Doctorado">Doctorado</option></select></div>
+                    <div class="col-md-6"><label class="form-label">Diploma (PDF) *</label><input type="file" class="form-control dip-file" accept=".pdf"></div>
+                </div>`;
+            container.appendChild(div);
+        }
+
+        // DINAMISMO PASO 6 (REVISIÓN IA)
+        function addEduReviewField(data = {}) {
+            const container = document.getElementById('ai-education-container');
+            const div = document.createElement('div');
+            div.className = 'dynamic-card ai-edu-record';
+            div.dataset.url = data.url_diploma || "";
+            div.dataset.grado = data.grado || "";
+            div.innerHTML = `<button type="button" class="btn-remove" onclick="this.parentElement.remove()"><i class="fa-solid fa-trash"></i></button>
+                <h6 class="fw-bold mb-3 text-dark">Grado: ${data.grado || 'Detectado'}</h6>
+                <div class="row g-2">
+                    <div class="col-md-6"><label class="form-label small">Carrera / Especialidad</label><input type="text" class="form-control ai-rama" value="${data.carrera || data.rama || ''}"></div>
+                    <div class="col-md-6"><label class="form-label small">Institución</label><input type="text" class="form-control ai-institucion" value="${data.instituto || ''}"></div>
+                    <div class="col-md-4"><label class="form-label small">Ciudad / País</label><input type="text" class="form-control ai-ubicacion" value="${data.ubicacion || ''}"></div>
+                    <div class="col-md-4"><label class="form-label small">Inicio (MM/YYYY)</label><input type="text" class="form-control ai-inicio" value="${data.fecha_inicio || data.inicio || ''}"></div>
+                    <div class="col-md-4"><label class="form-label small">Fin</label><input type="text" class="form-control ai-fin" value="${data.fecha_fin || data.fin || ''}"></div>
+                </div>`;
+            container.appendChild(div);
+        }
+
+        function addExpField(data = {}) {
+            const container = document.getElementById('ai-experience-container');
+            const div = document.createElement('div');
+            div.className = 'dynamic-card exp-item';
+            div.innerHTML = `<button type="button" class="btn-remove" onclick="this.parentElement.remove()"><i class="fa-solid fa-trash"></i></button>
+                <div class="row g-2">
+                    <div class="col-md-6"><label class="form-label small">Empresa / Institución</label><input type="text" class="form-control exp-empresa" value="${data.empresa || ''}"></div>
+                    <div class="col-md-6"><label class="form-label small">Cargo</label><input type="text" class="form-control exp-cargo" value="${data.cargo || ''}"></div>
+                    <div class="col-md-6"><label class="form-label small">Área de Enseñanza (si aplica)</label><input type="text" class="form-control exp-area" value="${data.area || ''}"></div>
+                    <div class="col-md-6"><label class="form-label small">Ubicación</label><input type="text" class="form-control exp-direccion" value="${data.direccion || ''}"></div>
+                    <div class="col-md-6"><label class="form-label small">Inicio</label><input type="text" class="form-control exp-inicio" value="${data.inicio || ''}"></div>
+                    <div class="col-md-6"><label class="form-label small">Fin</label><input type="text" class="form-control exp-fin" value="${data.fin || ''}"></div>
+                </div>`;
+            container.appendChild(div);
+        }
+
+        // CARGAR INVITACIONES (PASO 4)
+        async function cargarCursosPendientes() {
+            const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_invitations', docenteId: userId }) });
+            const result = await response.json();
+            const lista = document.getElementById('lista-invitaciones');
+            if (result.status === 'success' && result.data.length > 0) {
+                const pendientes = result.data.filter(i => i.estado.toLowerCase() === 'enviado');
+                if(pendientes.length === 0) { lista.innerHTML = `<div class="p-3 bg-light border rounded text-center text-muted">No tienes cursos por confirmar.</div>`; return; }
+                let html = "";
+                pendientes.forEach(inv => {
+                    html += `<label class="course-radio-card w-100 mb-2" onclick="seleccionarCurso('${inv.id}', this)"><input type="radio" name="cursoSelect" value="${inv.id}"><div><h6 class="fw-bold m-0 text-dark">${inv.curso}</h6><span class="small text-muted">${inv.programa}</span></div></label>`;
+                });
+                lista.innerHTML = html;
+            }
+        }
+        function seleccionarCurso(invId, el) { selectedInvitationId = invId; document.querySelectorAll('.course-radio-card').forEach(e => e.classList.remove('selected')); el.classList.add('selected'); el.querySelector('input').checked = true; document.getElementById('horario-container').style.display = 'flex'; }
+
+        // --- LÓGICA DE AUTOGUARDADO Y PROCESAMIENTO IA ---
+        async function guardarYAvanzar() {
+            // SI ESTÁ EN EL PASO 5 y va al 6, disparamos la IA
+            if (pasoActual === 5 && !iaEjecutada) {
+                await procesarConIA();
+                return; // procesarConIA se encarga de avanzar al paso 6
+            }
+
+            // Flujo Normal de autoguardado (Pasos 1 al 4, y Guardado Final del 6)
+            const btnNext = document.getElementById('btnNext');
+            const originalHTML = btnNext.innerHTML;
+            btnNext.disabled = true; btnNext.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin me-2"></i> Guardando...';
+
+            let payload = { action: "save_expediente_step", step: pasoActual, idDocente: userId, idExpediente: idExpedienteUrl };
+
+            try {
+                if (pasoActual === 1) {
+                    const cvFile = document.getElementById('cvFile').files[0];
+                    const hbFile = document.getElementById('hbFile').files[0];
+                    if (cvFile) { const b64 = await getBase64(cvFile); urlCVGlobal = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64, name: cvFile.name, type: cvFile.type }) }).then(r=>r.json()).then(r=>r.url); payload.url_cv = urlCVGlobal; }
+                    if (hbFile) { const b64 = await getBase64(hbFile); urlHbGlobal = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64, name: hbFile.name, type: hbFile.type }) }).then(r=>r.json()).then(r=>r.url); payload.url_handbook = urlHbGlobal; }
+                } 
+                else if (pasoActual === 3) {
+                    payload.nombres = document.getElementById('reg-nombres').value; payload.apellidos = document.getElementById('reg-apellidos').value;
+                    payload.dni = document.getElementById('reg-dni').value; payload.celular = document.getElementById('reg-celular').value;
+                    payload.pais = document.getElementById('reg-pais').value; payload.direccion = document.getElementById('reg-direccion').value;
+                }
+                else if (pasoActual === 4) { if(selectedInvitationId) { payload.idInvitacion = selectedInvitationId; payload.dia = document.getElementById('reg-dia').value; payload.hora = document.getElementById('reg-hora').value; } }
+                else if (pasoActual === 5) { payload.banco = document.getElementById('reg-banco').value; payload.moneda = document.getElementById('reg-moneda').value; payload.cuenta = document.getElementById('reg-cuenta').value; }
+                else if (pasoActual === 6) {
+                    // Recopilar lo editado en el paso 6 para guardar definitivo
+                    payload.idInvitacion = selectedInvitationId;
+                    payload.educacion = Array.from(document.querySelectorAll('.ai-edu-record')).map(r => ({ grado: r.dataset.grado, rama: r.querySelector('.ai-rama').value, instituto: r.querySelector('.ai-institucion').value, ubicacion: r.querySelector('.ai-ubicacion').value, inicio: r.querySelector('.ai-inicio').value, fin: r.querySelector('.ai-fin').value, url_diploma: r.dataset.url }));
+                    payload.experiencia = Array.from(document.querySelectorAll('.exp-item')).map(i => ({ empresa: i.querySelector('.exp-empresa').value, cargo: i.querySelector('.exp-cargo').value, area: i.querySelector('.exp-area').value, direccion: i.querySelector('.exp-direccion').value, inicio: i.querySelector('.exp-inicio').value, fin: i.querySelector('.exp-fin').value }));
+                }
+
+                // Guardar en GAS
+                if(pasoActual !== 2) { // Paso 2 se procesa junto con la IA
+                    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+                }
+
+                if (pasoActual === totalPasos) {
+                    Swal.fire({ title: '¡Expediente Completado!', text: 'La información ha sido enviada a administración.', icon: 'success' }).then(()=>window.location.href = "gestionexpedientes.html");
+                } else {
+                    cambiarUI(1);
+                }
+            } catch (error) { console.error(error); alert("Error guardando progreso."); } finally { btnNext.disabled = false; btnNext.innerHTML = originalHTML; }
+        }
+
+        // --- LA MAGIA: PROCESAMIENTO N8N ---
+        async function procesarConIA() {
+            document.getElementById('ia-loader').style.display = 'flex';
+            
+            try {
+                // 1. Mandar CV a N8N
+                if (urlCVGlobal) {
+                    const n8nCv = await fetch(N8N_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ fileUrl: urlCVGlobal, id: userId, grado: "CV" })}).then(r=>r.json());
+                    let cvText = (n8nCv.content && n8nCv.content[0]) ? n8nCv.content[0].text : (Array.isArray(n8nCv) && n8nCv[0]?.content ? n8nCv[0].content[0].text : n8nCv);
+                    if (typeof cvText !== 'string' && cvText.text) cvText = cvText.text;
+                    let parsedCv = typeof cvText === 'string' ? JSON.parse(cvText.replace(/```json|```/g, "")) : cvText;
+                    
+                    document.getElementById('ai-experience-container').innerHTML = ''; // Limpiar
+                    (parsedCv.experiencias ||[]).forEach(e => addExpField(e));
+                }
+
+                // 2. Subir Diplomas a Drive y luego a N8N
+                document.getElementById('ai-education-container').innerHTML = '';
+                const diplomaItems = document.querySelectorAll('.diploma-item');
+                
+                for (let item of diplomaItems) {
+                    const dipFile = item.querySelector('.dip-file').files[0];
+                    const currentGrado = item.querySelector('.dip-grado').value;
+                    
+                    if (dipFile) {
+                        const b64 = await getBase64(dipFile);
+                        const diplomaUrl = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64, name: dipFile.name, type: dipFile.type }) }).then(r=>r.json()).then(r=>r.url);
+                        
+                        const n8nDip = await fetch(N8N_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ fileUrl: diplomaUrl, id: userId, grado: currentGrado })}).then(r=>r.json());
+                        let dipText = (n8nDip.content && n8nDip.content[0]) ? n8nDip.content[0].text : n8nDip;
+                        let dataDip = typeof dipText === 'string' ? JSON.parse(dipText.replace(/```json|```/g, "")) : dipText;
+                        dataDip.url_diploma = diplomaUrl;
+                        dataDip.grado = currentGrado;
+                        
+                        addEduReviewField(dataDip);
+                    }
+                }
+
+                iaEjecutada = true;
+                document.getElementById('ia-loader').style.display = 'none';
+                cambiarUI(1); // Ahora sí, avanzamos al paso 6
+
+            } catch(e) {
+                console.error(e);
+                document.getElementById('ia-loader').style.display = 'none';
+                Swal.fire('Atención', 'No se pudo extraer todos los datos automáticamente. Por favor, llénalos manualmente.', 'info');
+                cambiarUI(1);
+            }
+        }
+
+        function cambiarUI(direccion) {
+            document.getElementById(`step-${pasoActual}`).classList.remove('active');
+            if(direccion === 1) { const tab = document.getElementById(`tab-${pasoActual}`); tab.classList.add('completed'); tab.innerHTML = `<i class="fa-solid fa-circle-check text-success"></i> ${tab.innerText}`; }
+            pasoActual += direccion;
+            document.getElementById(`step-${pasoActual}`).classList.add('active');
+            document.getElementById(`tab-${pasoActual}`).classList.add('active');
+            document.getElementById('btnPrev').style.display = pasoActual === 1 ? 'none' : 'block';
+            document.getElementById('step-counter').innerText = `PASO ${pasoActual} DE ${totalPasos}`;
+            
+            const btnNext = document.getElementById('btnNext');
+            if(pasoActual === totalPasos) { btnNext.innerHTML = 'Finalizar Registro <i class="fa-solid fa-check-double ms-2"></i>'; btnNext.style.background = 'var(--success)'; } 
+            else { btnNext.innerHTML = 'Guardar y Continuar <i class="fa-solid fa-arrow-right ms-2"></i>'; btnNext.style.background = 'var(--primary)'; }
+        }
+    </script>
+</body>
+</html>

@@ -2,7 +2,6 @@
 <html lang="es">
 <head>
     <script>
-        // Protección de ruta
         if (sessionStorage.getItem('isLoggedIn') !== 'true' || (sessionStorage.getItem('userRole') !== 'Administrativo' && sessionStorage.getItem('userRole') !== 'Administrador')) {
             window.location.href = "login.html"; 
         }
@@ -31,14 +30,12 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            margin: 0; display: flex; height: 100vh; overflow: hidden;
+            font-family: 'Inter', sans-serif; background-color: var(--bg-body);
+            color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden;
             letter-spacing: -0.01em;
         }
 
-        /* --- SIDEBAR MODERNA --- */
+        /* --- SIDEBAR & LAYOUT --- */
         .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid rgba(0,0,0,0.05); display: flex; flex-direction: column; transition: var(--transition); position: relative; padding: 24px 16px; flex-shrink: 0; }
         .sidebar.collapsed { width: var(--sidebar-collapsed-width); }
         .brand-section { display: flex; align-items: center; gap: 12px; padding: 0 12px 32px; text-decoration: none; overflow: hidden; }
@@ -57,92 +54,41 @@
         .sidebar.collapsed .link-text { display: none; }
         .collapse-btn { position: absolute; right: -12px; top: 48px; width: 24px; height: 24px; background: white; border: 1px solid #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; font-size: 10px; color: var(--text-muted); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
-        /* --- MAIN WRAPPER & HEADER --- */
         .main-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; }
         header { padding: 20px 48px; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 5; }
         .content-area { padding: 40px; display: flex; flex-direction: column; align-items: center; width: 100%; font-size: var(--dynamic-font-size); }
         .centered-container { width: 100%; max-width: 1200px; text-align: left; }
-        
         .breadcrumb-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; color: var(--text-muted); font-size: 14px; }
         .back-link { text-decoration: none; color: var(--text-muted); display: flex; align-items: center; gap: 6px; transition: 0.2s; font-weight: 500;}
         .back-link:hover { color: var(--primary); }
-
         .page-header h1 { font-weight: 800; font-size: 2.2rem; margin-bottom: 8px; letter-spacing: -0.03em; color: var(--primary-dark); }
         .page-header p { color: var(--text-muted); font-size: 1.1rem; }
 
-        /* --- PESTAÑAS (TABS) MODERNAS --- */
+        /* --- TABS & CARDS --- */
         .nav-tabs { border-bottom: 2px solid #e2e8f0; gap: 10px; margin-bottom: 30px; }
-        .nav-tabs .nav-link {
-            border: none; color: var(--text-muted); font-weight: 600; font-size: 0.95rem;
-            padding: 12px 20px; background: none; transition: var(--transition);
-            border-bottom: 3px solid transparent; border-radius: 8px 8px 0 0;
-        }
+        .nav-tabs .nav-link { border: none; color: var(--text-muted); font-weight: 600; font-size: 0.95rem; padding: 12px 20px; background: none; transition: var(--transition); border-bottom: 3px solid transparent; border-radius: 8px 8px 0 0; }
         .nav-tabs .nav-link:hover { color: var(--primary); background: #f8fafc; }
-        .nav-tabs .nav-link.active {
-            color: var(--primary-dark); background: none;
-            border-bottom-color: var(--primary); font-weight: 700;
-        }
+        .nav-tabs .nav-link.active { color: var(--primary-dark); background: none; border-bottom-color: var(--primary); font-weight: 700; }
 
-        /* --- TARJETAS (CARDS) --- */
-        .form-card {
-            background: white; border-radius: var(--card-radius);
-            padding: 35px; border: 1px solid rgba(0,0,0,0.04);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.02); height: 100%;
-        }
-
-        .section-badge {
-            background: #eff6ff; color: var(--primary); padding: 6px 14px;
-            border-radius: 8px; font-weight: 700; font-size: 0.75rem;
-            text-transform: uppercase; letter-spacing: 0.5px; display: inline-block;
-            margin-bottom: 24px;
-        }
+        .form-card { background: white; border-radius: var(--card-radius); padding: 35px; border: 1px solid rgba(0,0,0,0.04); box-shadow: 0 10px 30px rgba(0,0,0,0.02); height: 100%; }
+        .section-badge { background: #eff6ff; color: var(--primary); padding: 6px 14px; border-radius: 8px; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; margin-bottom: 24px; }
 
         .info-group { margin-bottom: 15px; }
         .info-label { display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 4px; font-weight: 600; }
         .info-value { font-size: 0.95rem; color: #0f172a; font-weight: 500; }
 
-        .btn-action {
-            width: 100%; background-color: #f8fafc; color: var(--primary-dark);
-            border: 1px solid #e2e8f0; padding: 16px; border-radius: 14px;
-            display: flex; align-items: center; transition: 0.2s; text-decoration: none; font-weight: 600;
-        }
+        /* BOTONES DE ACCIÓN */
+        .btn-action { width: 100%; background-color: #f8fafc; color: var(--primary-dark); border: 1px solid #e2e8f0; padding: 16px; border-radius: 14px; display: flex; align-items: center; transition: 0.2s; text-decoration: none; font-weight: 600; }
         .btn-action:hover { background-color: #eff6ff; border-color: #bfdbfe; color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(37,99,235,0.05);}
         .btn-action i { font-size: 1.2rem; flex-shrink: 0; width: 30px; color: var(--primary); }
         .btn-action span { flex-grow: 1; text-align: left; font-size: 0.9rem; }
 
-        /* Invitaciones Box */
-        .invitation-box { border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; margin-bottom: 20px; transition: 0.3s; }
-        .invitation-box:hover { border-color: #cbd5e1; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
-        .invitation-title { font-weight: 800; color: var(--primary-dark); font-size: 1.1rem; margin: 0; }
-        
-        .badge-status { font-size: 0.75rem; padding: 6px 14px; border-radius: 50px; font-weight: 700; text-transform: uppercase; }
-        .badge-exp-pendiente { background: #fffbeb; color: #b45309; border: 1px solid #fef3c7; }
-        .badge-exp-aprobado { background: #f0fdf4; color: #15803d; border: 1px solid #dcfce7; }
-
-        .btn-primary { background: var(--primary); border: none; border-radius: 12px; padding: 12px 24px; font-weight: 700; font-size: 14px; transition: var(--transition); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); color: white; }
-        .btn-primary:hover { transform: translateY(-2px); background: var(--primary-dark); color: white; }
-        .btn-primary:disabled { background: #94a3b8; box-shadow: none; transform: none; }
-
         /* --- MODALES --- */
         .modal-modern .modal-content { border: none; border-radius: 24px; overflow: hidden; }
         .modal-modern .modal-header { background: #f8fafc; color: var(--primary-dark); border-bottom: 1px solid #e2e8f0; padding: 24px 30px; }
-        .modal-modern .modal-header .btn-close { opacity: 0.5; }
         .input-modern { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 18px; font-size: 0.95rem; color: #334155; }
-        .input-modern:focus { background-color: #ffffff; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+        .input-modern:focus { background-color: #ffffff; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); outline: none;}
         .label-modern { font-size: 0.85rem; color: #64748b; font-weight: 600; margin-bottom: 8px; }
-        
-        .section-review { background: #f8fafc; border-radius: 16px; padding: 24px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
-        .file-item { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; transition: 0.2s; }
-        .file-item:hover { border-color: var(--primary); background: #eff6ff; }
-        .file-info i { font-size: 1.4rem; color: var(--primary); margin-right: 12px;}
-        .file-name { font-size: 0.9rem; font-weight: 600; color: #334155; }
-        .btn-ver-file { font-size: 0.8rem; font-weight: 700; color: var(--primary); text-decoration: none; background: #e0e7ff; padding: 6px 12px; border-radius: 8px; }
-
-        .course-assigned-card { border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; margin-bottom: 15px; background: #f8fafc; transition: 0.3s; }
-        .course-assigned-card:hover { border-color: #cbd5e1; background: white; }
-        .course-label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; font-weight: 700; margin-bottom: 4px; display: block;}
-        .course-value { font-size: 0.9rem; color: var(--text-main); font-weight: 600; }
-
     </style>
 </head>
 <body>
@@ -158,9 +104,11 @@
             <div class="user-meta"><b id="userName">Admin User</b><span>Administrador</span></div>
         </div>
         <ul class="nav-list">
-            <li><a href="registrodocente.html" class="nav-link"><i class="fa-solid fa-user-plus"></i> <span class="link-text">Registrar</span></a></li>
-            <li><a href="gestion-docentes.html" class="nav-link active"><i class="fa-solid fa-users"></i> <span class="link-text">Docentes</span></a></li>
+            <li><a href="administrativo.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
+            <li><a href="registrodocente.html" class="nav-link "><i class="fa-solid fa-user-plus"></i> <span class="link-text">Registrar</span></a></li>
+            <li><a href="gestion-docentes.html" class="nav-link active"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
             <li><a href="revision-docs.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
+            <li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-upload"></i> <span class="link-text">Gestión de Cursos</span></a></li>
             <li><a href="#" class="nav-link"><i class="fa-solid fa-chart-pie"></i> <span class="link-text">Reportes</span></a></li>
         </ul>
         <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;">
@@ -194,11 +142,8 @@
                     <p>Expediente completo y gestión de contratos</p>
                 </div>
 
-                <!-- TABS -->
                 <ul class="nav nav-tabs" id="teacherTabs" role="tablist">
-                    <li class="nav-item">
-                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#general" type="button">Información General</button>
-                    </li>
+                    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#general">Información General</button></li>
                     <li class="nav-item">
                         <button class="nav-link" data-bs-toggle="tab" data-bs-target="#invitaciones" type="button">Expedientes & Invitaciones</button>
                     </li>
@@ -207,10 +152,8 @@
                     </li>
                 </ul>
 
-                <!-- TAB CONTENT -->
                 <div class="tab-content">
                     
-                    <!-- PESTAÑA 1: INFO GENERAL -->
                     <div class="tab-pane fade show active" id="general" role="tabpanel">
                         <div class="row g-4">
                             <!-- Datos -->
@@ -222,36 +165,42 @@
                                         <div class="col-md-8"><span class="info-label">Correo Electrónico</span><div class="info-value text-primary fw-bold" id="det-correo">-</div></div>
                                         <div class="col-md-4"><span class="info-label">Teléfono</span><div class="info-value" id="det-telefono">-</div></div>
                                         <div class="col-md-4"><span class="info-label">País</span><div class="info-value" id="det-pais">-</div></div>
-                                        <div class="col-md-4"><span class="info-label">Ciudad / Estado</span><div class="info-value" id="det-ciudad-estado">-</div></div>
                                         <div class="col-12"><span class="info-label">Dirección Completa</span><div class="info-value" id="det-direccion">-</div></div>
                                     </div>
-
                                     <span class="section-badge"><i class="fa-solid fa-building-columns me-2"></i>Datos Financieros</span>
                                     <div class="row g-3">
                                         <div class="col-md-6"><span class="info-label">Banco</span><div class="info-value" id="det-banco">-</div></div>
-                                        <div class="col-md-6"><span class="info-label">Moneda / Tipo</span><div class="info-value" id="det-moneda-tipo">-</div></div>
-                                        <div class="col-md-6"><span class="info-label">Cuenta Bancaria</span><div class="info-value" id="det-cuenta">-</div></div>
-                                        <div class="col-md-6"><span class="info-label">CCI</span><div class="info-value" id="det-cci">-</div></div>
-                                        <div class="col-md-6"><span class="info-label">Tipo de Ruta</span><div class="info-value" id="det-tipo-ruta">-</div></div>
-                                        <div class="col-md-6"><span class="info-label">Código Ruta</span><div class="info-value" id="det-cod-ruta">-</div></div>
+                                        <div class="col-md-6"><span class="info-label">Cuenta / CCI</span><div class="info-value" id="det-cuenta">-</div></div>
                                     </div>
                                 </div>
                             </div>
-                            <!-- Acciones -->
+                            
+                            <!-- Acciones (Botones Diferenciados) -->
                             <div class="col-lg-5">
                                 <div class="form-card">
                                     <span class="section-badge bg-light text-dark"><i class="fa-solid fa-bolt me-2"></i>Acciones Rápidas</span>
                                     <div class="row g-3">
-                                        <div class="col-12"><button class="btn-action" data-bs-toggle="modal" data-bs-target="#modalInvitacion"><i class="fa-regular fa-paper-plane"></i><span>Enviar Nueva Invitación</span></button></div>
-                                        <div class="col-12"><button class="btn-action" onclick="generarForm402(this)"><i class="fa-solid fa-file-contract"></i><span>Generar Contrato (FORM 402)</span></button></div>
-                                        <div class="col-12"><button class="btn-action"><i class="fa-solid fa-cloud-arrow-up"></i><span>Subir Material Interno</span></button></div>
+                                        <div class="col-12">
+                                            <button class="btn-action" onclick="abrirModalInvitacion('expediente')">
+                                                <i class="fa-solid fa-folder-plus"></i><span>Crear Expediente + Invitación</span>
+                                            </button>
+                                        </div>
+                                        <div class="col-12">
+                                            <button class="btn-action" onclick="abrirModalInvitacion('invitacion')">
+                                                <i class="fa-regular fa-paper-plane"></i><span>Enviar Invitación a curso</span>
+                                            </button>
+                                        </div>
+                                        <div class="col-12">
+                                            <button class="btn-action" onclick="generarForm402(this)">
+                                                <i class="fa-solid fa-file-contract"></i><span>Generar Contrato (FORM 402)</span>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- PESTAÑA 2: INVITACIONES -->
                     <div class="tab-pane fade" id="invitaciones" role="tabpanel">
                         <div class="form-card">
                             <span class="section-badge"><i class="fa-solid fa-folder-open me-2"></i>Historial de Expedientes</span>
@@ -266,13 +215,13 @@
                         <div class="form-card">
                             <div class="d-flex justify-content-between align-items-center mb-4">
                                 <span class="section-badge m-0"><i class="fa-solid fa-chalkboard-user me-2"></i>Cursos Académicos Asignados</span>
-                                <button class="btn btn-sm btn-outline-primary fw-bold px-3 border-2"><i class="fa-solid fa-plus me-1"></i> Asignar</button>
                             </div>
                             <div id="contenedor-cursos-asignados">
                                 <p class="text-muted">No hay cursos asignados actualmente.</p>
                             </div>
                         </div>
                     </div>
+
                 </div>            
             </div>
         </div>
@@ -283,7 +232,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content shadow-lg">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold m-0"><i class="fa-regular fa-paper-plane me-2 text-primary"></i>Configurar Invitación</h5>
+                    <h5 class="modal-title fw-bold m-0" id="modalInvTitle"><i class="fa-solid fa-folder-plus me-2 text-primary"></i>Crear Expediente</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
@@ -322,14 +271,13 @@
                                 <input type="number" id="invCosto" class="form-control input-modern" placeholder="Ej: 360">
                             </div>
 
-                            <div class="col-12 mt-4 pt-3 border-top">
-                                <label class="label-modern text-dark">Documentos a solicitar (Requisitos):</label>
+                            <div class="col-12 mt-4 pt-3 border-top" id="docs-section">
+                                <label class="label-modern text-dark">Documentos a solicitar para el Expediente:</label>
                                 <div class="row g-2 mt-2">
                                     <div class="col-md-6">
                                         <div class="form-check mb-2"><input class="form-check-input doc-checkbox" type="checkbox" value="CV documentado" checked> <label class="form-check-label">CV documentado</label></div>
                                         <div class="form-check mb-2"><input class="form-check-input doc-checkbox" type="checkbox" value="ID (Ambas caras)" checked> <label class="form-check-label">ID (ambas caras)</label></div>
                                         <div class="form-check mb-2"><input class="form-check-input doc-checkbox" type="checkbox" value="Faculty Handbook Firmado" checked> <label class="form-check-label">Handbook Firmado</label></div>
-                                        <div class="form-check mb-2"><input class="form-check-input doc-checkbox" type="checkbox" value="Fotografía" checked> <label class="form-check-label">Fotografía</label></div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-check mb-2"><input class="form-check-input doc-checkbox" type="checkbox" value="Diplomas de posgrados" checked> <label class="form-check-label">Diplomas</label></div>
@@ -341,52 +289,8 @@
                     </form>                    
                 </div>
                 <div class="modal-footer bg-light p-3">
-                    <button type="button" class="btn btn-light border px-4 fw-bold text-secondary" onclick="guardarInvitacion()">Guardar Borrador</button>
+                    <button type="button" class="btn btn-light border px-4 fw-bold text-secondary" onclick="guardarInvitacion()">Guardar Sistema</button>
                     <button type="button" class="btn btn-primary px-4 fw-bold" id="btnEnviarCorreo" disabled onclick="enviarCorreoInvitacion()"><i class="fa-regular fa-paper-plane me-2"></i>Guardar y Enviar Correo</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: Revisar Expediente -->
-    <div class="modal fade modal-modern" id="modalRevision" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content shadow-lg border-0">
-                <div class="modal-header">
-                    <h4 class="modal-title fw-bold"><i class="fa-solid fa-folder-open me-2 text-primary"></i>Revisión de Expediente</h4>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <div class="section-review">
-                        <h6 class="fw-bold mb-3"><i class="fa-solid fa-circle-info me-2 text-primary"></i>Estado de la Invitación</h6>
-                        <div class="row g-3">
-                            <div class="col-md-3"><span class="info-label">Estado</span><div id="rev-estado" class="info-value fw-bold text-primary">-</div></div>
-                            <div class="col-md-3"><span class="info-label">Día Elegido</span><div id="rev-dia" class="info-value">-</div></div>
-                            <div class="col-md-3"><span class="info-label">Horario Elegido</span><div id="rev-horario" class="info-value">-</div></div>
-                            <div class="col-md-3"><span class="info-label">Pago Acordado</span><div id="rev-pago" class="info-value text-success fw-bold">-</div></div>
-                        </div>
-                    </div>
-
-                    <div class="section-review">
-                        <h6 class="fw-bold mb-3"><i class="fa-solid fa-building-columns me-2 text-primary"></i>Datos Bancarios Proporcionados</h6>
-                        <div class="row g-3">
-                            <div class="col-md-3"><span class="info-label">Banco</span><div id="rev-banco" class="info-value">-</div></div>
-                            <div class="col-md-3"><span class="info-label">Moneda / Tipo</span><div id="rev-mon-tipo" class="info-value">-</div></div>
-                            <div class="col-md-3"><span class="info-label">Cuenta / CCI</span><div id="rev-cuentas" class="info-value">-</div></div>
-                            <div class="col-md-3"><span class="info-label">Ruta (Si aplica)</span><div id="rev-ruta" class="info-value">-</div></div>
-                        </div>
-                    </div>
-
-                    <div class="section-review border-0 bg-white p-0 mt-4">
-                        <h6 class="fw-bold mb-3"><i class="fa-solid fa-file-pdf me-2 text-primary"></i>Documentos Subidos</h6>
-                        <div id="contenedor-adjuntos-revision" class="row g-3">
-                            <!-- Archivos inyectados por JS -->
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer bg-light p-4 d-flex justify-content-between">
-                    <button type="button" class="btn btn-light text-danger border-danger px-4 fw-bold" onclick="cambiarEstadoExpediente('Rechazado')"><i class="fa-solid fa-xmark me-2"></i>Rechazar Expediente</button>
-                    <button type="button" class="btn btn-success px-5 fw-bold" onclick="cambiarEstadoExpediente('Aprobado')" style="background: #16a34a; border: none; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);"><i class="fa-solid fa-check-double me-2"></i>Aprobar Expediente</button>
                 </div>
             </div>
         </div>
@@ -399,15 +303,9 @@
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec"; 
 
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); document.getElementById('toggleIcon').classList.toggle('fa-chevron-right'); document.getElementById('toggleIcon').classList.toggle('fa-chevron-left');}
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
         function logout() { if(confirm("¿Cerrar sesión?")) { sessionStorage.clear(); window.location.href = "login.html"; } }
-
-        let currentSize = 1; const sizes =["0.9rem", "1rem", "1.1rem"]; const labels =["Pequeño", "Normal", "Grande"];
-        function changeFontSize(dir) {
-            currentSize += dir; if(currentSize < 0) currentSize=0; if(currentSize > 2) currentSize=2;
-            document.getElementById('fontSizeLabel').innerText = labels[currentSize];
-            document.documentElement.style.setProperty('--dynamic-font-size', sizes[currentSize]);
-        }
+        function changeFontSize(dir) { /* Logica de fuente */ }
 
         const urlParams = new URLSearchParams(window.location.search);
         const docenteId = urlParams.get('id');
@@ -415,23 +313,18 @@
         function showToast(mensaje, tipo = 'success') {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
-            const bgClass = tipo === 'success' ? 'text-bg-success' : (tipo === 'danger' ? 'text-bg-danger' : 'text-bg-warning text-dark');
-            const icon = tipo === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
+            const bgClass = tipo === 'success' ? 'text-bg-success' : 'text-bg-danger';
             toast.className = `toast align-items-center ${bgClass} border-0 show shadow-lg rounded-4 mb-3`;
-            toast.innerHTML = `<div class="d-flex p-1"><div class="toast-body fw-medium" style="font-size: 0.95rem;"><i class="fa-solid ${icon} me-2 fs-5 align-middle"></i> ${mensaje}</div><button type="button" class="btn-close ${tipo==='warning'?'':'btn-close-white'} me-3 m-auto" data-bs-dismiss="toast" onclick="this.parentElement.parentElement.remove()"></button></div>`;
+            toast.innerHTML = `<div class="d-flex p-1"><div class="toast-body fw-medium" style="font-size: 0.95rem;">${mensaje}</div><button type="button" class="btn-close btn-close-white me-3 m-auto" data-bs-dismiss="toast" onclick="this.parentElement.parentElement.remove()"></button></div>`;
             container.appendChild(toast); setTimeout(() => toast.remove(), 4000);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const name = sessionStorage.getItem('userName') || "Administrador";
+            const name = sessionStorage.getItem('userName') || "Admin";
             document.getElementById('userName').innerText = name;
-            document.getElementById('userInitial').innerText = name.substring(0,2).toUpperCase();
-            
-            if(docenteId) { cargarPerfilDocente(docenteId); cargarInvitaciones(docenteId); cargarCursosAsignados(docenteId); } 
-            else { document.getElementById('det-nombre').innerText = "Docente no encontrado"; }
+            if(docenteId) { cargarPerfilDocente(docenteId); } 
         });
 
-        // 1. CARGAR PERFIL (AHORA CON NUEVOS CAMPOS)
         async function cargarPerfilDocente(id) {
             try {
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: id }) });
@@ -441,142 +334,53 @@
                     document.getElementById('det-nombre').innerText = `${d.nombres} ${d.apellidos}` || "No especificado";
                     document.getElementById('det-dni').innerText = d.dni || "-";
                     document.getElementById('det-correo').innerText = d.correo || "-";
-                    document.getElementById('det-telefono').innerText = d.celular || "-";
-                    document.getElementById('det-pais').innerText = d.pais || "-";
-                    document.getElementById('det-ciudad-estado').innerText = `${d.ciudad || ''} / ${d.estado_region || ''}`;
-                    document.getElementById('det-direccion').innerText = `${d.direccion || ''} (CP: ${d.cp || '-'})`;
-                    
                     document.getElementById('det-banco').innerText = d.banco || "-";
-                    document.getElementById('det-moneda-tipo').innerText = `${d.moneda || ''} / ${d.tipo_cuenta || ''}`;
                     document.getElementById('det-cuenta').innerText = d.cuenta || "-";
-                    document.getElementById('det-cci').innerText = d.cci || "-";
-                    document.getElementById('det-tipo-ruta').innerText = d.tipo_ruta || "-";
-                    document.getElementById('det-cod-ruta').innerText = d.codigo_ruta || "-";
                 }
-            } catch(e) { console.error(e); showToast("Error al cargar datos", "danger"); }
+            } catch(e) { console.error(e); }
         }
 
-        // 2. INVITACIONES
-        async function cargarInvitaciones(id) {
-            const container = document.getElementById('contenedor-invitaciones');
-            try {
-                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_invitations', docenteId: id }) });
-                const result = await res.json();
-                
-                if (result.status === 'success' && result.data.length > 0) {
-                    container.innerHTML = result.data.map(inv => {
-                        let isAprobado = inv.estado === 'Aprobado';
-                        let badgeClass = isAprobado ? 'badge-exp-aprobado' : 'badge-exp-pendiente';
-                        
-                        return `
-                        <div class="invitation-box">
-                            <div class="d-flex justify-content-between align-items-start mb-3">
-                                <div>
-                                    <h3 class="invitation-title">${inv.curso}</h3>
-                                    <div class="mt-1 small text-muted">Programa: <span class="fw-medium text-dark">${inv.programa}</span></div>
-                                </div>
-                                <span class="badge-status ${badgeClass} ms-2"><i class="fa-solid fa-circle-check me-1"></i>${inv.estado}</span>
-                            </div>
-                            <div class="bg-light rounded p-2 mb-3 d-flex gap-3 small text-muted">
-                                <div><i class="fa-regular fa-calendar me-1"></i>${inv.dias}</div>
-                                <div><i class="fa-regular fa-clock me-1"></i>${inv.horario}</div>
-                                <div><i class="fa-solid fa-money-bill-wave me-1"></i>${inv.pago}</div>
-                            </div>
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-sm btn-light border fw-bold px-3 text-secondary" onclick="abrirRevision('${inv.id}')"><i class="fa-solid fa-folder-open me-1"></i> Revisar</button>
-                                <button class="btn btn-sm btn-primary fw-bold px-3" onclick="generarForm402(this, '${inv.id}')" ${!isAprobado ? 'disabled' : ''}><i class="fa-solid fa-file-signature me-1"></i> Form 402</button>
-                            </div>
-                        </div>`;
-                    }).join('');
-                } else { container.innerHTML = `<p class="text-muted"><i class="fa-regular fa-folder-open me-2"></i>No hay invitaciones registradas.</p>`; }
-            } catch(e) { container.innerHTML = `<p class="text-danger">Error al cargar.</p>`; }
-        }
-
-        let currentRevInvId = null;
-        async function abrirRevision(invId) {
-            currentRevInvId = invId;
-            new bootstrap.Modal(document.getElementById('modalRevision')).show();
-            document.getElementById('contenedor-adjuntos-revision').innerHTML = '<div class="text-center p-4 text-muted"><i class="fa-solid fa-spinner fa-spin fs-4"></i><br>Buscando documentos...</div>';
-
-            try {
-                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: docenteId }) });
-                const profile = await res.json();
-                const resInv = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_invitations', docenteId: docenteId }) });
-                const invs = await resInv.json();
-                const inv = invs.data.find(i => i.id === invId);
-
-                if (profile.status === 'success' && inv) {
-                    const d = profile.data;
-                    document.getElementById('rev-estado').innerText = inv.estado;
-                    document.getElementById('rev-dia').innerText = inv.dias || "-";
-                    document.getElementById('rev-horario').innerText = inv.horario || "-";
-                    document.getElementById('rev-pago').innerText = inv.pago || "-";
-                    
-                    document.getElementById('rev-banco').innerText = d.banco || "-";
-                    document.getElementById('rev-mon-tipo').innerText = `${d.moneda || ''} / ${d.tipo_cuenta || ''}`;
-                    document.getElementById('rev-cuentas').innerText = `C: ${d.cuenta || '-'} | CCI: ${d.cci || '-'}`;
-                    document.getElementById('rev-ruta').innerText = `${d.tipo_ruta || ''} ${d.codigo_ruta || ''}`;
-
-                    let htmlDocs = "";
-                    if(d.url_cv) htmlDocs += crearItemArchivo("Currículum Vitae (CV)", d.url_cv);
-                    if(d.url_handbook) htmlDocs += crearItemArchivo("Faculty Handbook", d.url_handbook);
-                    
-                    const resDocs = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_documents', id: docenteId }) });
-                    const docs = await resDocs.json();
-                    if(docs.status === 'success') {
-                        docs.diplomas.forEach(dip => { htmlDocs += crearItemArchivo(`Diploma: ${dip.grado}`, dip.url); });
-                    }
-                    document.getElementById('contenedor-adjuntos-revision').innerHTML = htmlDocs || '<p class="text-muted m-0">No hay documentos adjuntos.</p>';
-                }
-            } catch (e) { }
-        }
-
-        function crearItemArchivo(nombre, url) {
-            return `<div class="col-md-6"><div class="file-item"><div class="file-info"><i class="fa-regular fa-file-pdf"></i><span class="file-name">${nombre}</span></div><a href="${url}" target="_blank" class="btn-ver-file">Abrir</a></div></div>`;
-        }
-
-        async function cambiarEstadoExpediente(nuevoEstado) {
-            if(!confirm(`¿Marcar expediente como ${nuevoEstado}?`)) return;
-            try {
-                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'update_invitation_status', id: currentRevInvId, estado: nuevoEstado }) });
-                const result = await res.json();
-                if(result.status === 'success') {
-                    showToast(`Expediente ${nuevoEstado}`, "success");
-                    bootstrap.Modal.getInstance(document.getElementById('modalRevision')).hide();
-                    cargarInvitaciones(docenteId); 
-                }
-            } catch(e) { showToast("Error al actualizar", "danger"); }
-        }
-
-        // 3. CURSOS ASIGNADOS
-        async function cargarCursosAsignados(id) {
-            const container = document.getElementById('contenedor-cursos-asignados');
-            try {
-                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_assigned_courses', docenteId: id }) });
-                const result = await res.json();
-                if (result.status === 'success' && result.data.length > 0) {
-                    container.innerHTML = result.data.map(c => `
-                        <div class="course-assigned-card d-flex justify-content-between align-items-center">
-                            <div><div class="fw-bold text-dark fs-6">${c.nombreCurso}</div><div class="small text-primary fw-medium">${c.programa}</div></div>
-                            <div class="text-center"><span class="course-label">Días</span><span class="course-value">${c.dias}</span></div>
-                            <div class="text-center"><span class="course-label">Horario</span><span class="course-value">${c.horario}</span></div>
-                            <div class="text-center"><span class="course-label">Pago</span><span class="course-value text-success">${c.pago}</span></div>
-                        </div>`).join('');
-                } else { container.innerHTML = `<p class="text-muted"><i class="fa-solid fa-ghost me-2 opacity-50"></i>No hay cursos asignados aún.</p>`; }
-            } catch(e) { }
-        }
-
-        // 4. LÓGICA MODAL INVITACIÓN
+        // LÓGICA DEL MODAL SEGÚN BOTÓN SELECCIONADO
         let catalogoCursos =[], currentInvitacionId = null;
-        document.getElementById('modalInvitacion').addEventListener('show.bs.modal', async () => {
-            const selP = document.getElementById('selPrograma');
-            try {
-                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({action: 'get_catalogs'}) });
-                const data = await res.json(); catalogoCursos = data.cursos;
-                selP.innerHTML = '<option value="">Seleccionar programa</option>';
-                data.programas.forEach(p => { selP.innerHTML += `<option value="${p.id}">${p.nombre}</option>`; });
-            } catch(e) {}
-        });
+        let modoAccionActual = 'expediente'; // Puede ser 'expediente' o 'invitacion'
+
+        async function abrirModalInvitacion(modo) {
+            modoAccionActual = modo;
+            currentInvitacionId = null; // Resetea ID para crear uno nuevo
+
+            const title = document.getElementById('modalInvTitle');
+            const docsDiv = document.getElementById('docs-section');
+            
+            if(modo === 'expediente') {
+                title.innerHTML = '<i class="fa-solid fa-folder-plus me-2 text-primary"></i>Crear Expediente e Invitación';
+                docsDiv.style.display = 'block';
+            } else {
+                title.innerHTML = '<i class="fa-regular fa-paper-plane me-2 text-primary"></i>Enviar Solo Invitación a Curso';
+                docsDiv.style.display = 'none'; // Esconde los requisitos de documentos
+            }
+
+            // 1. ¡ABRIMOS EL MODAL INMEDIATAMENTE! (Esto elimina el retraso)
+            const modalElement = document.getElementById('modalInvitacion');
+            const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+            modalInstance.show();
+
+            // 2. CARGAMOS LOS CATÁLOGOS EN SEGUNDO PLANO SI ESTÁN VACÍOS
+            if(catalogoCursos.length === 0) {
+                const selP = document.getElementById('selPrograma');
+                selP.innerHTML = '<option value="">Cargando programas...</option>'; // Feedback visual
+                
+                try {
+                    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({action: 'get_catalogs'}) });
+                    const data = await res.json(); 
+                    catalogoCursos = data.cursos;
+                    
+                    selP.innerHTML = '<option value="">Seleccionar programa</option>';
+                    data.programas.forEach(p => { selP.innerHTML += `<option value="${p.id}">${p.nombre}</option>`; });
+                } catch(e) {
+                    selP.innerHTML = '<option value="">Error al cargar programas</option>';
+                }
+            }
+        }
 
         function filtrarCursos() {
             const progId = document.getElementById('selPrograma').value;
@@ -587,40 +391,74 @@
 
         async function guardarInvitacion() {
             const selP = document.getElementById('selPrograma'), selC = document.getElementById('selCurso');
-            if(!selP.value || !selC.value) { showToast("Complete Programa y Curso", "warning"); return; }
+            if(!selP.value || !selC.value || !document.getElementById('invFechaInicio').value) { 
+                showToast("Complete Programa, Curso y Fecha Inicial", "danger"); return; 
+            }
+            
             const payload = {
-                action: 'save_invitation', idInvitacion: currentInvitacionId, docenteId: docenteId, 
-                docenteNombre: document.getElementById('det-nombre').innerText.split(' ')[0], docenteCorreo: document.getElementById('det-correo').innerText,
-                programa: selP.options[selP.selectedIndex].text, curso: selC.options[selC.selectedIndex].text,
+                action: 'save_invitation', 
+                modo: modoAccionActual,
+                docenteId: docenteId, 
+                idCurso: selC.value,  // <--- NUEVO: CAPTURAMOS EL ID DEL CURSO AQUÍ
+                docenteNombre: document.getElementById('det-nombre').innerText.split(' ')[0], 
+                docenteCorreo: document.getElementById('det-correo').innerText,
+                programa: selP.options[selP.selectedIndex].text, 
+                curso: selC.options[selC.selectedIndex].text,
+                fechaInicio: document.getElementById('invFechaInicio').value,
+                fechaFin: document.getElementById('invFechaFin').value,
                 rangoFechas: `${document.getElementById('invFechaInicio').value} al ${document.getElementById('invFechaFin').value}`,
-                horario: document.getElementById('invHorario').value, cantidadClases: document.getElementById('invCantClases').value,
-                monedaSimbolo: document.getElementById('invMoneda').value, costo: document.getElementById('invCosto').value,
-                documentos: Array.from(document.querySelectorAll('.doc-checkbox:checked')).map(cb => cb.value).join(',')
+                horario: document.getElementById('invHorario').value, 
+                cantidadClases: document.getElementById('invCantClases').value,
+                monedaSimbolo: document.getElementById('invMoneda').value, 
+                costo: document.getElementById('invCosto').value,
+                documentos: modoAccionActual === 'expediente' ? Array.from(document.querySelectorAll('.doc-checkbox:checked')).map(cb => cb.value).join(',') : ""
             };
+
             try {
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const result = await res.json();
-                if(result.status === "success") { currentInvitacionId = result.idInvitacion; showToast("Borrador guardado.", "success"); document.getElementById('btnEnviarCorreo').disabled = false; cargarInvitaciones(docenteId); }
+                if(result.status === "success") { 
+                    currentInvitacionId = result.idInvitacion; 
+                    showToast(modoAccionActual === 'expediente' ? "Expediente e Invitación creados" : "Invitación creada.", "success"); 
+                    document.getElementById('btnEnviarCorreo').disabled = false; 
+                }
             } catch(e) { showToast("Error al guardar.", "danger"); }
         }
 
         async function enviarCorreoInvitacion() {
-            const btn = document.getElementById('btnEnviarCorreo'); btn.disabled = true; btn.innerHTML = 'Enviando...';
+            const btn = document.getElementById('btnEnviarCorreo'); 
+            btn.disabled = true; 
+            btn.innerHTML = 'Enviando...';
+            
+            const selP = document.getElementById('selPrograma'), selC = document.getElementById('selCurso');
+            
+            const payload = { 
+                action: 'send_invitation_email', 
+                modo: modoAccionActual,
+                idInvitacion: currentInvitacionId, 
+                docenteId: docenteId, 
+                idCurso: selC.value, // <--- NUEVO: ENVIAMOS EL ID CURSO
+                docenteCorreo: document.getElementById('det-correo').innerText, 
+                docenteNombre: document.getElementById('det-nombre').innerText.split(' ')[0],
+                programa: selP.options[selP.selectedIndex].text, 
+                curso: selC.options[selC.selectedIndex].text,
+                rangoFechas: `${document.getElementById('invFechaInicio').value} al ${document.getElementById('invFechaFin').value}`,
+                horario: document.getElementById('invHorario').value, 
+                cantidadClases: document.getElementById('invCantClases').value,
+                monedaSimbolo: document.getElementById('invMoneda').value, 
+                costo: document.getElementById('invCosto').value,
+                documentos: modoAccionActual === 'expediente' ? Array.from(document.querySelectorAll('.doc-checkbox:checked')).map(cb => cb.value).join(',') : ""
+            };
+
             try {
-                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'send_invitation_email', idInvitacion: currentInvitacionId, docenteId: docenteId, docenteCorreo: document.getElementById('det-correo').innerText, docenteNombre: document.getElementById('det-nombre').innerText.split(' ')[0] }) });
-                if((await res.json()).status === "success") { showToast("Correo enviado con éxito", "success"); bootstrap.Modal.getInstance(document.getElementById('modalInvitacion')).hide(); cargarInvitaciones(docenteId); }
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+                if((await res.json()).status === "success") { 
+                    showToast("Correo enviado con éxito", "success"); 
+                    bootstrap.Modal.getInstance(document.getElementById('modalInvitacion')).hide(); 
+                }
             } catch(e) { showToast("Error al enviar", "danger"); } finally { btn.innerHTML = 'Guardar y Enviar Correo'; }
         }
 
-        // 5. GENERAR FORM 402
-        async function generarForm402(btn) {
-            const org = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Generando...';
-            try {
-                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'generate_document', id: docenteId }) });
-                const r = await res.json();
-                if(r.status === 'success') { showToast("Documento generado.", "success"); window.open(r.url, '_blank'); }
-            } catch(e) { showToast("Error de conexión.", "danger"); } finally { btn.disabled = false; btn.innerHTML = org; }
-        }
     </script>
 </body>
 </html>

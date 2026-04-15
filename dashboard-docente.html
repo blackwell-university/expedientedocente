@@ -1,123 +1,483 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <script>
+        // Protección de ruta: Solo para docentes
+        if (sessionStorage.getItem('isLoggedIn') !== 'true' || sessionStorage.getItem('userRole') !== 'Docente') {
+            window.location.href = "login.html";
+        }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Docente - Blackwell</title>
+    <title>Dashboard Docente | Blackwell University</title>
+    
+    <!-- Frameworks & Fonts -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js para los gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         :root {
-            --primary: #6366f1;
-            --bg: #f8fafc;
+            --primary: #2563eb; 
+            --primary-dark: #1e3a8a; 
+            --bg-body: #f8fafc;
+            --sidebar-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --card-radius: 20px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --sidebar-width: 260px;
+            --sidebar-collapsed-width: 88px;
+            --dynamic-font-size: 1rem;
         }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); display: flex; height: 100vh; }
 
-        /* Estilos similares a la Sidebar anterior pero con el color Primary del docente */
-        .sidebar { width: 280px; background: white; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; padding: 20px; }
-        .nav-link { display: flex; align-items: center; gap: 12px; padding: 12px; color: #64748b; text-decoration: none; border-radius: 12px; margin-bottom: 5px; }
-        .nav-link.active { background: #eef2ff; color: var(--primary); font-weight: 600; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; letter-spacing: -0.01em; }
 
-        .main-content { flex-grow: 1; overflow-y: auto; padding: 40px; }
+        /* --- SIDEBAR MODERNA --- */
+        .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid rgba(0,0,0,0.05); display: flex; flex-direction: column; transition: var(--transition); position: relative; padding: 24px 16px; flex-shrink: 0; }
+        .sidebar.collapsed { width: var(--sidebar-collapsed-width); }
+        .brand-section { display: flex; align-items: center; gap: 12px; padding: 0 12px 32px; text-decoration: none; overflow: hidden; }
+        .logo-box { min-width: 42px; height: 42px; background: var(--primary-dark); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
+        .brand-text { font-weight: 800; font-size: 1.2rem; color: var(--primary-dark); }
+        .sidebar.collapsed .brand-text { opacity: 0; pointer-events: none; }
+        .user-preview { display: flex; align-items: center; gap: 12px; padding: 12px; background: #f1f5f9; border-radius: 16px; margin-bottom: 24px; overflow: hidden; }
+        .avatar { min-width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 13px; }
+        .user-meta { display: flex; flex-direction: column; line-height: 1.2; }
+        .user-meta b { font-size: 13px; white-space: nowrap; color: var(--text-main); } .user-meta span { font-size: 11px; color: var(--text-muted); }
+        .sidebar.collapsed .user-meta { display: none; }
+        .nav-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+        .nav-link { display: flex; align-items: center; gap: 16px; padding: 12px 14px; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 6px; transition: var(--transition); white-space: nowrap; }
+        .nav-link i { font-size: 18px; width: 24px; text-align: center; }
+        .nav-link:hover, .nav-link.active { background: #eff6ff; color: var(--primary); } .nav-link.active { font-weight: 600; }
+        .sidebar.collapsed .link-text { display: none; }
+        .collapse-btn { position: absolute; right: -12px; top: 48px; width: 24px; height: 24px; background: white; border: 1px solid #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; font-size: 10px; color: var(--text-muted); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
-        /* Banner de Bienvenida Estilo Moderno */
-        .welcome-banner {
-            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-            border-radius: 24px; padding: 40px; color: white; margin-bottom: 30px;
-            position: relative; overflow: hidden;
+        /* --- MAIN WRAPPER & HEADER --- */
+        .main-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        header { padding: 20px 48px; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 5; }
+        .content-area { padding: 40px; display: flex; flex-direction: column; align-items: center; width: 100%; font-size: var(--dynamic-font-size); }
+        .centered-container { width: 100%; max-width: 1200px; text-align: left; }
+
+        .page-header { margin-bottom: 32px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .page-header h1 { font-weight: 800; font-size: 2.2rem; margin-bottom: 8px; letter-spacing: -0.03em; color: var(--primary-dark); }
+        .page-header p { color: var(--text-muted); font-size: 1.1rem; margin: 0; }
+
+        /* --- STAT CARDS --- */
+        .stat-card {
+            background: white; border-radius: var(--card-radius); padding: 24px; border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.02); height: 100%; display: flex; flex-direction: column; justify-content: space-between;
+            transition: var(--transition);
         }
-        .welcome-banner h2 { font-weight: 800; margin-bottom: 10px; }
-        .welcome-banner p { opacity: 0.9; max-width: 500px; }
-        .welcome-image { position: absolute; right: 40px; bottom: -20px; width: 200px; opacity: 0.2; }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(0,0,0,0.04); }
+        .stat-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+        .stat-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
+        
+        .icon-blue { background-color: #eff6ff; color: var(--primary); }
+        .icon-green { background-color: #f0fdf4; color: #10b981; }
+        .icon-yellow { background-color: #fefce8; color: #eab308; }
+        .icon-purple { background-color: #faf5ff; color: #a855f7; }
 
-        /* Tarjetas de Estadísticas */
-        .stat-card { background: white; padding: 25px; border-radius: 20px; border: 1px solid #e2e8f0; height: 100%; transition: 0.3s; }
-        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        .icon-box { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 15px; }
+        .stat-title { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 5px; font-weight: 600; }
+        .stat-value { font-size: 2rem; font-weight: 800; color: var(--text-main); line-height: 1; letter-spacing: -0.03em; }
 
-        .list-card { background: white; border-radius: 20px; padding: 25px; border: 1px solid #e2e8f0; }
-        .doc-item { display: flex; align-items: center; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #f1f5f9; }
-        .doc-item:last-child { border: none; }
+        /* --- PANEL CARDS (Gráficos y Listas) --- */
+        .panel-card {
+            background: white; border-radius: var(--card-radius); padding: 30px; border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.02); height: 100%; display: flex; flex-direction: column;
+        }
+        .panel-title { font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin-bottom: 24px; display: flex; align-items: center; gap: 10px; }
+        .chart-container { position: relative; height: 300px; width: 100%; }
+
+        /* --- LISTAS MODERNAS --- */
+        .list-block {
+            background-color: #f8fafc; border-radius: 14px; padding: 16px 20px; margin-bottom: 12px;
+            display: flex; justify-content: space-between; align-items: center; border: 1px solid transparent; transition: var(--transition);
+        }
+        .list-block:hover { border-color: #e2e8f0; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+        .list-block:last-child { margin-bottom: 0; }
+        .list-info b { display: block; color: var(--text-main); font-size: 0.95rem; font-weight: 700;}
+        .list-info span { color: var(--text-muted); font-size: 0.85rem; margin-top: 2px; display: flex; align-items: center; gap: 6px;}
+        
+        .action-btn-light { background: #eff6ff; color: var(--primary); border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; transition: 0.2s; text-decoration: none;}
+        .action-btn-light:hover { background: var(--primary); color: white; }
+
+        /* Actividad */
+        .activity-item { display: flex; gap: 16px; padding: 16px; background-color: #f8fafc; border-radius: 14px; margin-bottom: 12px; border: 1px solid transparent; transition: var(--transition); }
+        .activity-item:hover { background: white; border-color: #e2e8f0; }
+        .activity-icon { width: 36px; height: 36px; border-radius: 10px; background: white; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; color: var(--text-muted); flex-shrink: 0;}
+        .activity-details b { display: block; color: var(--text-main); font-size: 0.9rem; font-weight: 700;}
+        .activity-details span { display: block; color: var(--text-muted); font-size: 0.85rem; margin-top: 2px;}
+        .activity-details small { display: block; color: #94a3b8; font-size: 0.75rem; font-weight: 600; margin-top: 6px; }
+
+        @media (max-width: 768px) { .sidebar { display: none; } header, .content-area { padding: 20px; } .page-header { flex-direction: column; align-items: flex-start; } }
     </style>
 </head>
 <body>
 
-    <aside class="sidebar">
-        <div class="mb-5 px-3">
-            <h4 class="fw-bold">Blackwell</h4>
+    <!-- Sidebar Lateral -->
+    <aside class="sidebar" id="sidebar">
+        <div class="collapse-btn" onclick="toggleSidebar()">
+            <i class="fa-solid fa-chevron-left" id="toggleIcon"></i>
         </div>
-        <nav>
-            <a href="#" class="nav-link active"><i class="fa-solid fa-house"></i> Inicio</a>
-            <a href="#" class="nav-link"><i class="fa-solid fa-file-signature"></i> Mis Documentos</a>
-            <a href="#" class="nav-link"><i class="fa-solid fa-calendar"></i> Mi Horario</a>
+        <a href="#" class="brand-section">
+            <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div>
+            <span class="brand-text">Blackwell</span>
+        </a>
+
+        <div class="user-preview">
+            <div class="avatar" id="userInitial">DO</div>
+            <div class="user-meta"><b id="userNameSidebar">Cargando...</b><span>Docente</span></div>
+        </div>
+
+        <nav class="nav-menu">
+            <!-- NUEVO ENLACE AL DASHBOARD -->
+            <a href="dashboard-docente.html" class="nav-link active"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a>
+            <a href="docente.html" class="nav-link"><i class="fa-solid fa-user"></i> <span class="link-text">Información Personal</span></a>
+            <a href="gestionexpedientes.html" class="nav-link"><i class="fa-solid fa-file-lines"></i> <span class="link-text">Mis Expedientes</span></a>
+            <a href="carpetadocente.html" class="nav-link"><i class="fa-solid fa-folder-open"></i> <span class="link-text">Carpeta Docente</span></a>
+            <a href="gestioncursos.html" class="nav-link"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Mis Clases</span></a>
         </nav>
-        <div class="mt-auto">
-            <a href="#" class="nav-link" style="color: #ef4444;"><i class="fa-solid fa-sign-out"></i> Salir</a>
-        </div>
+
+        <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto; margin-left: 15px; margin-right: 15px;">
+            <i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span>
+        </a>
     </aside>
 
-    <main class="main-content">
-        <div class="welcome-banner">
-            <h2>¡Hola, Dr. Juan Pérez! 👋</h2>
-            <p>Bienvenido a tu portal docente. Aquí puedes gestionar tu documentación, revisar tus clases y completar tu expediente institucional.</p>
-            <i class="fa-solid fa-graduation-cap welcome-image"></i>
-        </div>
+    <main class="main-wrapper">
+        <header>
+            <div>
+                <h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Portal del Docente</h5>
+                <p class="text-muted small m-0">Sistema de Gestión Académica</p>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-white px-3 py-2 rounded-pill shadow-sm d-flex gap-2 align-items-center">
+                    <button onclick="changeFontSize(-1)" class="btn btn-sm btn-link p-0 text-dark text-decoration-none fw-bold">A-</button>
+                    <span id="fontSizeLabel" class="small fw-bold px-1" style="min-width: 50px; text-align: center;">Normal</span>
+                    <button onclick="changeFontSize(1)" class="btn btn-sm btn-link p-0 text-dark text-decoration-none fw-bold">A+</button>
+                </div>
+            </div>
+        </header>
 
-        <div class="row g-4 mb-4">
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <div class="icon-box" style="background: #ecfdf5; color: #10b981;"><i class="fa-solid fa-check-double"></i></div>
-                    <div class="text-muted small fw-bold">ESTADO EXPEDIENTE</div>
-                    <div class="h4 fw-800 m-0">90% Completado</div>
+        <div class="content-area">
+            <div class="centered-container">
+                
+                <div class="page-header">
+                    <div>
+                        <h1 id="welcomeMessage">¡Hola, Docente!</h1>
+                        <p>Resumen de tu actividad académica y estado de expedientes.</p>
+                    </div>
+                    <a href="carpetadocente.html" class="btn btn-primary shadow-sm" style="background: var(--primary); border: none; padding: 12px 24px; border-radius: 12px; font-weight: 700; text-decoration: none;">
+                        <i class="fa-solid fa-cloud-arrow-up me-2"></i> Subir Materiales
+                    </a>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <div class="icon-box" style="background: #fff7ed; color: #f97316;"><i class="fa-solid fa-clock"></i></div>
-                    <div class="text-muted small fw-bold">CURSOS ASIGNADOS</div>
-                    <div class="h4 fw-800 m-0">3 Cursos Activos</div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <div class="icon-box" style="background: #eef2ff; color: #6366f1;"><i class="fa-solid fa-file-pdf"></i></div>
-                    <div class="text-muted small fw-bold">DOCS. PENDIENTES</div>
-                    <div class="h4 fw-800 m-0">2 por Firmar</div>
-                </div>
-            </div>
-        </div>
 
-        <div class="row g-4">
-            <div class="col-md-8">
-                <div class="list-card">
-                    <h5 class="fw-bold mb-4">Actividad Reciente</h5>
-                    <div class="doc-item">
-                        <div>
-                            <div class="fw-bold">Contrato de Servicios - 2024-II</div>
-                            <div class="text-muted small">Pendiente de firma digital</div>
+                <!-- 1. FILA DE ESTADÍSTICAS (KPIs) -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6 col-xl-3">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon icon-blue"><i class="fa-solid fa-chalkboard-user"></i></div>
+                            </div>
+                            <div>
+                                <div class="stat-title">Cursos Asignados</div>
+                                <div class="stat-value">3</div>
+                            </div>
                         </div>
-                        <button class="btn btn-sm btn-primary px-3" style="border-radius: 8px;">Firmar</button>
                     </div>
-                    <div class="doc-item">
-                        <div>
-                            <div class="fw-bold">Grado Académico de Doctor</div>
-                            <div class="text-muted small">Verificado por administración</div>
+                    <div class="col-md-6 col-xl-3">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon icon-green"><i class="fa-regular fa-clock"></i></div>
+                            </div>
+                            <div>
+                                <div class="stat-title">Horas Dictadas (Mes)</div>
+                                <div class="stat-value">24<span style="font-size: 1rem; color: #94a3b8;">h</span></div>
+                            </div>
                         </div>
-                        <span class="badge bg-success">Validado</span>
+                    </div>
+                    <div class="col-md-6 col-xl-3">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon icon-yellow"><i class="fa-regular fa-file-lines"></i></div>
+                                <span class="badge bg-warning text-dark px-2 py-1 rounded-pill" style="font-size: 0.7rem;">Acción requerida</span>
+                            </div>
+                            <div>
+                                <div class="stat-title">Documentos Pendientes</div>
+                                <div class="stat-value" style="color: #d97706;">1</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xl-3">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon icon-purple"><i class="fa-regular fa-star"></i></div>
+                            </div>
+                            <div>
+                                <div class="stat-title">Calificación Promedio</div>
+                                <div class="stat-value">4.8<span style="font-size: 1rem; color: #94a3b8;">/5</span></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="list-card" style="background: #1e293b; color: white;">
-                    <h5 class="fw-bold mb-3">Soporte Académico</h5>
-                    <p class="small opacity-75">¿Tienes dudas con tu proceso de ingreso?</p>
-                    <button class="btn btn-light w-100 fw-bold" style="border-radius: 12px;">Contactar</button>
+
+                <!-- 2. FILA DE PANELES PRINCIPALES -->
+                <div class="row g-4 mb-4">
+                    
+                    <!-- Panel Izquierdo: Próximas Clases -->
+                    <div class="col-lg-7">
+                        <div class="panel-card">
+                            <h3 class="panel-title"><i class="fa-regular fa-calendar-check text-primary"></i> Mis Próximas Clases</h3>
+                            
+                            <div class="list-block">
+                                <div class="list-info">
+                                    <b>Introducción a la Inteligencia Artificial</b>
+                                    <span><i class="fa-regular fa-clock"></i> Hoy, 18:00 - 19:30 (GMT-5)</span>
+                                </div>
+                                <a href="#" class="action-btn-light"><i class="fa-solid fa-video me-1"></i> Aula Virtual</a>
+                            </div>
+
+                            <div class="list-block">
+                                <div class="list-info">
+                                    <b>Metodología de la Investigación</b>
+                                    <span><i class="fa-regular fa-clock"></i> Mañana, 20:00 - 21:30 (GMT-5)</span>
+                                </div>
+                                <a href="#" class="action-btn-light"><i class="fa-solid fa-video me-1"></i> Aula Virtual</a>
+                            </div>
+
+                            <div class="list-block">
+                                <div class="list-info">
+                                    <b>Diseño de Sistemas I</b>
+                                    <span><i class="fa-regular fa-clock"></i> Jueves 18, 19:00 - 20:30 (GMT-5)</span>
+                                </div>
+                                <a href="#" class="action-btn-light"><i class="fa-solid fa-video me-1"></i> Aula Virtual</a>
+                            </div>
+
+                            <a href="misclases.html" class="mt-3 text-center d-block text-decoration-none fw-bold" style="color: var(--primary); font-size: 0.9rem;">Ver todo mi horario <i class="fa-solid fa-arrow-right ms-1"></i></a>
+                        </div>
+                    </div>
+
+                    <!-- Panel Derecho: Gráfico de Horas -->
+                    <div class="col-lg-5">
+                        <div class="panel-card">
+                            <h3 class="panel-title"><i class="fa-solid fa-chart-simple text-primary"></i> Horas de Enseñanza</h3>
+                            <div class="chart-container">
+                                <canvas id="horasChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
+
+                <!-- 3. FILA DE ACTIVIDAD Y DOCUMENTOS -->
+                <div class="row g-4">
+                    
+                    <!-- Actividad Reciente -->
+                    <div class="col-lg-6">
+                        <div class="panel-card">
+                            <h3 class="panel-title"><i class="fa-solid fa-bolt text-warning"></i> Actividad Reciente</h3>
+                            
+                            <div class="activity-item">
+                                <div class="activity-icon"><i class="fa-solid fa-file-signature text-success"></i></div>
+                                <div class="activity-details">
+                                    <b>Contrato FORM 402 firmado</b>
+                                    <span>Has firmado el contrato para el curso "Inteligencia Artificial".</span>
+                                    <small>Hace 2 días</small>
+                                </div>
+                            </div>
+
+                            <div class="activity-item">
+                                <div class="activity-icon"><i class="fa-solid fa-cloud-arrow-up text-primary"></i></div>
+                                <div class="activity-details">
+                                    <b>Material subido correctamente</b>
+                                    <span>PPT Sesión 1 - Metodología de la Investigación.</span>
+                                    <small>Hace 3 días</small>
+                                </div>
+                            </div>
+
+                            <div class="activity-item">
+                                <div class="activity-icon"><i class="fa-regular fa-circle-check text-info"></i></div>
+                                <div class="activity-details">
+                                    <b>Expediente aprobado</b>
+                                    <span>El equipo administrativo ha aprobado tu expediente docente.</span>
+                                    <small>Hace 1 semana</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico de Carga de Materiales -->
+                    <div class="col-lg-6">
+                        <div class="panel-card">
+                            <h3 class="panel-title"><i class="fa-solid fa-folder-open text-primary"></i> Progreso de Materiales</h3>
+                            <div class="d-flex align-items-center justify-content-center" style="height: 250px; position: relative;">
+                                <canvas id="materialesChart" style="max-height: 100%;"></canvas>
+                                <!-- Texto en el centro del Doughnut -->
+                                <div style="position: absolute; text-align: center;">
+                                    <span style="display: block; font-size: 2rem; font-weight: 800; color: var(--text-main); line-height: 1;">75%</span>
+                                    <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Completado</span>
+                                </div>
+                            </div>
+                            <p class="text-center text-muted small mt-3 m-0">Te falta subir 2 presentaciones (PPT) para la próxima semana.</p>
+                        </div>
+                    </div>
+
+                </div>
+
             </div>
         </div>
     </main>
 
+    <!-- MODAL DE BIENVENIDA (BLOQUEO PARA NUEVOS DOCENTES) -->
+    <div class="modal fade modal-modern" id="modalBienvenida" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0" style="border-radius: 24px;">
+                <div class="modal-body text-center p-5">
+                    <div style="width: 80px; height: 80px; background: #eff6ff; color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 20px;">
+                        <i class="fa-solid fa-hand-sparkles"></i>
+                    </div>
+                    <h3 class="fw-bold text-primary-dark mb-3">¡Bienvenido a Blackwell!</h3>
+                    <p class="text-muted" style="font-size: 0.95rem;">Hemos detectado que es tu primer ingreso al portal. Para habilitar tus clases y formalizar tu expediente, es necesario completar tu registro de datos.</p>
+                    
+                    <div class="bg-light p-3 rounded-3 text-start mb-4 mt-4">
+                        <small class="text-muted d-block fw-bold mb-2">TEN A LA MANO:</small>
+                        <ul class="text-muted small m-0" style="padding-left: 15px;">
+                            <li>Tu Currículum Vitae (CV)</li>
+                            <li>Tus diplomas o certificados</li>
+                            <li>Tus datos bancarios</li>
+                        </ul>
+                    </div>
+
+                    <a href="registroexpediente.html" class="btn btn-primary w-100 py-3 fw-bold" style="border-radius: 14px; font-size: 1.05rem; background: #10b981; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
+                        Comenzar mi Registro <i class="fa-solid fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // CONFIGURACIÓN DE APPS SCRIPT
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
+
+        // CONFIGURACIÓN UI
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); document.getElementById('toggleIcon').classList.toggle('fa-chevron-right'); document.getElementById('toggleIcon').classList.toggle('fa-chevron-left');}
+        function logout() { if(confirm("¿Seguro que deseas salir?")) { sessionStorage.clear(); window.location.href = "login.html"; } }
+        
+        let currentSize = 1; const sizes =["0.9rem", "1rem", "1.1rem"]; const labels =["Pequeño", "Normal", "Grande"];
+        function changeFontSize(dir) { currentSize += dir; if(currentSize < 0) currentSize=0; if(currentSize > 2) currentSize=2; document.getElementById('fontSizeLabel').innerText = labels[currentSize]; document.documentElement.style.setProperty('--dynamic-font-size', sizes[currentSize]); }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // El userName guarda el Correo (si es nuevo) o el DNI
+            const userId = sessionStorage.getItem('userName'); 
+            
+            if (userId) {
+                // Ponemos un nombre temporal (su correo antes del @) mientras carga el real
+                const nombreTemporal = userId.split("@")[0].split(" ")[0];
+                document.getElementById('userNameSidebar').innerText = nombreTemporal;
+                document.getElementById('userInitial').innerText = nombreTemporal.substring(0,2).toUpperCase();
+                document.getElementById('welcomeMessage').innerText = `¡Hola!`;
+
+                initCharts();
+                verificarDocenteNuevo(userId); // <--- VALIDACIÓN DE USUARIO NUEVO
+            }
+        });
+
+        // FUNCIÓN QUE VERIFICA SI EL DOCENTE YA TIENE DNI
+        async function verificarDocenteNuevo(userId) {
+            try {
+                const response = await fetch(GAS_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ action: 'get_profile', id: userId }) 
+                });
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    const d = result.data;
+                    
+                    // Convertimos el DNI a texto de forma segura y le quitamos los espacios
+                    const dniDocente = d.dni ? String(d.dni).trim() : "";
+
+                    // Si el DNI está completamente vacío o es un guion, ES UN DOCENTE NUEVO
+                    if (dniDocente === "" || dniDocente === "-") {
+                        // Mostramos el modal estático que lo obliga a registrar su expediente
+                        const modalBienvenida = new bootstrap.Modal(document.getElementById('modalBienvenida'));
+                        modalBienvenida.show();
+                    } else {
+                        // Si no es nuevo, actualizamos la pantalla con sus datos reales de forma segura
+                        const nombreReal = (d.nombres || "Docente").split(" ")[0];
+                        document.getElementById('userNameSidebar').innerText = nombreReal;
+                        document.getElementById('userInitial').innerText = nombreReal.substring(0,2).toUpperCase();
+                        document.getElementById('welcomeMessage').innerText = `¡Hola, ${nombreReal}!`;
+                    }
+                }
+            } catch (e) {
+                console.error("Error validando al docente:", e);
+            }
+        }
+        
+        // INICIALIZACIÓN DE GRÁFICOS (CHART.JS)
+        function initCharts() {
+            // 1. Gráfico de Líneas (Horas de Enseñanza)
+            const ctxHoras = document.getElementById('horasChart').getContext('2d');
+            let gradientBlue = ctxHoras.createLinearGradient(0, 0, 0, 400);
+            gradientBlue.addColorStop(0, 'rgba(37, 99, 235, 0.2)'); 
+            gradientBlue.addColorStop(1, 'rgba(37, 99, 235, 0)');
+
+            new Chart(ctxHoras, {
+                type: 'line',
+                data: {
+                    labels:['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+                    datasets:[{
+                        label: 'Horas Dictadas',
+                        data:[12, 19, 15, 24, 22, 30],
+                        borderColor: '#2563eb',
+                        backgroundColor: gradientBlue,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#2563eb',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1e293b', padding: 12 } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { borderDash: [5, 5], color: '#f1f5f9' }, border: {display: false} },
+                        x: { grid: { display: false }, border: {display: false} }
+                    }
+                }
+            });
+
+            // 2. Gráfico Doughnut (Progreso de Materiales)
+            const ctxMateriales = document.getElementById('materialesChart').getContext('2d');
+            new Chart(ctxMateriales, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Subidos', 'Pendientes'],
+                    datasets: [{
+                        data: [75, 25],
+                        backgroundColor:['#10b981', '#f1f5f9'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '80%', 
+                    plugins: { legend: { display: false }, tooltip: { enabled: false } }
+                }
+            });
+        }
+    </script>
 </body>
 </html>
