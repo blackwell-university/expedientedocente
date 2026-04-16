@@ -145,7 +145,7 @@
             <a href="dashboard-docente.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a>
             <a href="docente.html" class="nav-link"><i class="fa-solid fa-user"></i> <span class="link-text">Información Personal</span></a>
             <a href="gestionexpedientes.html" class="nav-link active"><i class="fa-solid fa-folder-open"></i> <span class="link-text">Mis Expedientes</span></a>
-            <a href="carpetadocente.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Carpeta Docente</span></a>
+            <!--<a href="carpetadocente.html" class="nav-link"><i class="fa-solid fa-folder-open"></i> <span class="link-text">Carpeta Docente</span></a>-->
             <a href="gestioncursos.html" class="nav-link"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Mis Clases</span></a>
         </nav>
         <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto; margin-left: 15px; margin-right: 15px;">
@@ -195,8 +195,14 @@
                             <h4 class="fw-800 mb-2">Documentación Base</h4>
                             <p class="text-muted mb-4">Sube tu CV actualizado y el Faculty Handbook firmado.</p>
                             
-                            <!-- VISTA: MODO SUBIDA -->
-                            <div id="step1-upload-mode">
+                            <!-- LOADER: Se muestra mientras busca en la base de datos -->
+                            <div id="step1-loader" class="text-center py-5">
+                                <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+                                <h6 class="fw-bold text-muted">Verificando tus documentos...</h6>
+                            </div>
+
+                            <!-- VISTA: MODO SUBIDA (Oculto por defecto) -->
+                            <div id="step1-upload-mode" style="display: none;">
                                 <div class="row g-4">
                                     <div class="col-md-6">
                                         <label class="form-label text-primary">Curriculum Vitae (PDF) *</label>
@@ -219,7 +225,7 @@
                                 </div>
                             </div>
 
-                            <!-- VISTA: MODO LECTURA -->
+                            <!-- VISTA: MODO LECTURA (Oculto por defecto) -->
                             <div id="step1-view-mode" style="display: none;">
                                 <div class="uploaded-doc-card">
                                     <div class="info">
@@ -241,28 +247,64 @@
                             </div>
                         </div>
 
-                        <!-- PASO 2: GRADOS DINÁMICOS -->
+                        <!-- PASO 2: GRADOS ACADÉMICOS -->
                         <div class="step-content" id="step-2">
                             <h4 class="fw-800 mb-2">Grados Académicos</h4>
-                            <p class="text-muted mb-4">Añade los diplomas de tus grados más altos.</p>
+                            <p class="text-muted mb-4">Añade los diplomas y certificados de notas de tus grados más altos.</p>
                             
-                            <div id="diplomas-container">
-                                <div class="dynamic-card diploma-item">
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <label class="form-label">Nivel de Grado *</label>
-                                            <select class="form-select dip-grado">
-                                                <option value="">Seleccionar...</option><option value="Bachelor">Bachelor</option><option value="Master">Master</option><option value="Doctorado">Doctorado</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Diploma (PDF) *</label>
-                                            <input type="file" class="form-control dip-file" accept=".pdf">
+                            <!-- LOADER PASO 2 -->
+                            <div id="step2-loader" class="text-center py-5">
+                                <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+                                <h6 class="fw-bold text-muted">Verificando tus grados registrados...</h6>
+                            </div>
+
+                            <!-- VISTA: MODO SUBIDA -->
+                            <div id="step2-upload-mode" class="d-none">
+                                <div id="diplomas-container">
+                                    <div class="dynamic-card diploma-item">
+                                        <div class="row g-3">
+                                            <div class="col-md-12">
+                                                <label class="form-label">Nivel de Grado *</label>
+                                                <select class="form-select dip-grado">
+                                                    <option value="">Seleccionar...</option>
+                                                    <option value="Bachelor">Bachelor</option>
+                                                    <option value="Master">Master</option>
+                                                    <option value="Doctorado">Doctorado</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Diploma (PDF) *</label>
+                                                <input type="file" class="form-control dip-file" accept=".pdf">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label d-flex align-items-center gap-2">
+                                                    Transcript / Certificado de Notas
+                                                    <i class="fa-solid fa-circle-info text-primary" style="cursor:help;" title="Este documento es su documento de certificado de notas"></i>
+                                                </label>
+                                                <input type="file" class="form-control dip-transcript" accept=".pdf">
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+                                <button type="button" class="btn-add-dynamic mt-2" onclick="addDiplomaField()">
+                                    <i class="fa-solid fa-plus me-1"></i> Agregar otro Grado
+                                </button>
                             </div>
-                            <button type="button" class="btn-add-dynamic mt-2" onclick="addDiplomaField()"><i class="fa-solid fa-plus me-1"></i> Agregar otro Grado</button>
+
+                            <!-- VISTA: MODO LECTURA -->
+                            <div id="step2-view-mode" class="d-none">
+                                <div class="p-4 bg-light border rounded-4 text-center">
+                                    <i class="fa-solid fa-graduation-cap text-success fs-1 mb-3"></i>
+                                    <h5 class="fw-bold text-dark">Grados Académicos Registrados</h5>
+                                    <p class="text-muted small">Ya hemos procesado y guardado tus diplomas anteriores.</p>
+                                    <div id="lista-diplomas-guardados" class="text-start mt-3"></div>
+                                </div>
+                                <div class="text-end mt-3">
+                                    <button type="button" class="btn btn-outline-primary fw-bold px-4" style="border-radius: 12px;" onclick="habilitarEdicionPaso2()">
+                                        <i class="fa-solid fa-pen me-2"></i> Subir Nuevos Diplomas
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- PASO 3: DATOS PERSONALES -->
@@ -325,7 +367,10 @@
                             <span class="text-muted small fw-bold" id="step-counter">PASO 1 DE 6</span>
                             <div class="d-flex gap-2">
                                 <button type="button" class="btn-cancel" id="btnPrev" onclick="cambiarUI(-1)" style="display: none;">Anterior</button>
-                                <button type="button" class="btn-continue" id="btnNext" onclick="guardarYAvanzar()">Guardar y Continuar <i class="fa-solid fa-arrow-right ms-2"></i></button>
+                                <!-- BOTÓN DESHABILITADO POR DEFECTO HASTA QUE CARGUE LA BD -->
+                                <button type="button" class="btn-continue" id="btnNext" onclick="guardarYAvanzar()" disabled>
+                                    Guardar y Continuar <i class="fa-solid fa-arrow-right ms-2"></i>
+                                </button>
                             </div>
                         </div>
                     </form>
@@ -346,7 +391,8 @@
         
         let urlCVGlobal = ""; 
         let urlHbGlobal = "";
-        let isEditingDocs = true; 
+        let isEditingDocs = true;
+        let isEditingDiplomas = true; 
 
         // MEMORIA TEMPORAL PARA LA IA
         let ia_DataEducacion = [];
@@ -362,10 +408,16 @@
 
         // 1. CARGAR DATOS SI EL USUARIO YA HABÍA ENTRADO ANTES
         async function cargarDatosPrevios() {
+            document.getElementById('btnNext').disabled = true;
             try {
-                const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: userId }) });
+                const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: userId, id_expediente: idExpedienteUrl }) });
                 const result = await response.json();
                 
+                document.getElementById('step1-loader').style.display = 'none';
+                // NUEVO: Ocultar loader paso 2
+                document.getElementById('step2-loader').classList.add('d-none');
+                document.getElementById('btnNext').disabled = false;
+
                 if (result.status === 'success') {
                     const d = result.data;
                     if(d.nombres) document.getElementById('reg-nombres').value = d.nombres;
@@ -378,22 +430,74 @@
                     if(d.moneda) document.getElementById('reg-moneda').value = d.moneda;
                     if(d.cuenta) document.getElementById('reg-cuenta').value = d.cuenta;
                     
+                    // --- LÓGICA DE VISTA PASO 1 ---
                     if(d.url_cv && d.url_handbook) {
-                        urlCVGlobal = d.url_cv; urlHbGlobal = d.url_handbook;
-                        document.getElementById('view-link-cv').href = urlCVGlobal; document.getElementById('view-link-hb').href = urlHbGlobal;
-                        document.getElementById('step1-upload-mode').style.display = 'none'; document.getElementById('step1-view-mode').style.display = 'block';
+                        urlCVGlobal = d.url_cv; 
+                        urlHbGlobal = d.url_handbook;
+                        
+                        document.getElementById('view-link-cv').href = urlCVGlobal; 
+                        document.getElementById('view-link-hb').href = urlHbGlobal;
+                        
+                        // Si hay documentos, encendemos Modo Lectura
+                        document.getElementById('step1-view-mode').style.display = 'block';
                         isEditingDocs = false; 
+                        marcarTabComoCompletada(1);
+                    } else {
+                        // Si NO hay documentos, encendemos Modo Subida
+                        document.getElementById('step1-upload-mode').style.display = 'block';
                     }
 
-                    if(result.drafts) {
-                        if(result.drafts.educacion) ia_DataEducacion = result.drafts.educacion;
-                        if(result.drafts.experiencia) ia_DataExperiencia = result.drafts.experiencia;
+                    // --- LÓGICA CORREGIDA PASO 2 ---
+                    if (result.drafts && result.drafts.educacion && result.drafts.educacion.length > 0) {
+                        ia_DataEducacion = result.drafts.educacion;
+                        
+                        // Renderizar lista simple para el modo lectura
+                        const lista = document.getElementById('lista-diplomas-guardados');
+                        lista.innerHTML = ia_DataEducacion.map(edu => 
+                            `<div class="small mb-2 border-bottom pb-1"><i class="fa-solid fa-check text-success me-2"></i> <b>${edu.grado}:</b> ${edu.rama || 'Procesando...'}</div>`
+                        ).join('');
+
+                        document.getElementById('step2-upload-mode').classList.add('d-none');
+                        document.getElementById('step2-view-mode').classList.remove('d-none');
+                        document.getElementById('step2-view-mode').classList.add('d-block');
+                        
+                        isEditingDiplomas = false;
+                        marcarTabComoCompletada(2);
+                    } else {
+                        document.getElementById('step2-upload-mode').classList.remove('d-none');
+                        document.getElementById('step2-upload-mode').classList.add('d-block');
                     }
+
+                    if(d.nombres && d.apellidos && d.dni) marcarTabComoCompletada(3);
+                    if(d.banco && d.cuenta) marcarTabComoCompletada(5);
+                } else {
+                    // Si el servidor no encontró datos, muestra el modo subida
+                    document.getElementById('step1-upload-mode').style.display = 'block';
                 }
-            } catch(e) { console.error(e); }
+            } catch(e) { 
+                console.error(e); 
+                // En caso de error de internet, muestra modo subida y habilita el botón
+                if(document.getElementById('step1-loader')) document.getElementById('step1-loader').style.display = 'none';
+                document.getElementById('step1-upload-mode').style.display = 'block';
+                document.getElementById('btnNext').disabled = false;
+            }
         }
 
-        function habilitarEdicionPaso1() { isEditingDocs = true; document.getElementById('step1-view-mode').style.display = 'none'; document.getElementById('step1-upload-mode').style.display = 'block'; }
+        // FUNCIÓN FALTANTE: Pinta de verde las pestañas completadas
+        function marcarTabComoCompletada(paso) {
+            const tab = document.getElementById(`tab-${paso}`);
+            if(tab && !tab.classList.contains('active')) { 
+                tab.classList.add('completed');
+                tab.innerHTML = `<i class="fa-solid fa-circle-check text-success"></i> ${tab.innerText.replace(/<[^>]*>?/gm, '').trim()}`;
+            }
+        }
+
+        // HABILITAR EDICIÓN PASO 1
+        function habilitarEdicionPaso1() { 
+            isEditingDocs = true; 
+            document.getElementById('step1-view-mode').style.display = 'none'; 
+            document.getElementById('step1-upload-mode').style.display = 'block'; 
+        }
 
         // UTILIDADES UI
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
@@ -402,9 +506,15 @@
         const getBase64 = (file) => new Promise((resolve) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result.split(',')[1]); });
 
         function addDiplomaField() {
+            const container = document.getElementById('diplomas-container');
             const div = document.createElement('div'); div.className = 'dynamic-card diploma-item';
-            div.innerHTML = `<button type="button" class="btn-remove" onclick="this.parentElement.remove()"><i class="fa-solid fa-trash"></i></button><div class="row g-3"><div class="col-md-6"><label class="form-label">Nivel de Grado *</label><select class="form-select dip-grado"><option value="">Seleccionar...</option><option value="Bachelor">Bachelor</option><option value="Master">Master</option><option value="Doctorado">Doctorado</option></select></div><div class="col-md-6"><label class="form-label">Diploma (PDF) *</label><input type="file" class="form-control dip-file" accept=".pdf"></div></div>`;
-            document.getElementById('diplomas-container').appendChild(div);
+            div.innerHTML = `<button type="button" class="btn-remove" onclick="this.parentElement.remove()"><i class="fa-solid fa-trash"></i></button>
+                <div class="row g-3">
+                    <div class="col-md-12"><label class="form-label">Nivel de Grado *</label><select class="form-select dip-grado"><option value="">Seleccionar...</option><option value="Bachelor">Bachelor</option><option value="Master">Master</option><option value="Doctorado">Doctorado</option></select></div>
+                    <div class="col-md-6"><label class="form-label">Diploma (PDF) *</label><input type="file" class="form-control dip-file" accept=".pdf"></div>
+                    <div class="col-md-6"><label class="form-label d-flex align-items-center gap-2">Transcript / Certificado de Notas <i class="fa-solid fa-circle-info text-primary" title="Certificado de notas"></i></label><input type="file" class="form-control dip-transcript" accept=".pdf"></div>
+                </div>`;
+            container.appendChild(div);
         }
 
         // CARGAR INVITACIONES
@@ -426,91 +536,210 @@
         async function guardarYAvanzar() {
             const btnNext = document.getElementById('btnNext');
             const originalHTML = btnNext.innerHTML;
-            btnNext.disabled = true; btnNext.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin me-2"></i> Procesando...';
+            btnNext.disabled = true; 
+            btnNext.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin me-2"></i> Procesando...';
 
             let payload = { action: "save_expediente_step", step: pasoActual, idDocente: userId, idExpediente: idExpedienteUrl, idInvitacion: selectedInvitationId };
 
             try {
+                // PASO 1: DOCUMENTOS BASE
                 if (pasoActual === 1) {
                     if (isEditingDocs) {
                         const cvFile = document.getElementById('cvFile').files[0];
                         const hbFile = document.getElementById('hbFile').files[0];
                         
-                        if (cvFile) { 
-                            const b64 = await getBase64(cvFile); 
-                            urlCVGlobal = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64, name: cvFile.name, type: cvFile.type }) }).then(r=>r.json()).then(r=>r.url); 
-                            payload.url_cv = urlCVGlobal; 
-                            
-                            // Enviar a N8N y guardar respuesta en memoria temporal
-                            fetch(N8N_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ fileUrl: urlCVGlobal, id: userId, grado: "CV" }) })
-                            .then(r=>r.json()).then(n8nCv => {
-                                let cvText = (n8nCv.content && n8nCv.content[0]) ? n8nCv.content[0].text : (Array.isArray(n8nCv) && n8nCv[0]?.content ? n8nCv[0].content[0].text : n8nCv);
-                                let parsedCv = typeof cvText === 'string' ? JSON.parse(cvText.replace(/```json|```/g, "")) : cvText;
-                                ia_DataExperiencia = parsedCv.experiencias || [];
-                            });
+                        if (!cvFile || !hbFile) {
+                            alert("Por favor, selecciona tanto tu CV como el Faculty Handbook.");
+                            btnNext.disabled = false; btnNext.innerHTML = originalHTML;
+                            return; 
                         }
-                        if (hbFile) { 
-                            const b64 = await getBase64(hbFile); 
-                            urlHbGlobal = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64, name: hbFile.name, type: hbFile.type }) }).then(r=>r.json()).then(r=>r.url); 
-                            payload.url_handbook = urlHbGlobal; 
-                        }
+
+                        // Subir CV a Drive
+                        const b64Cv = await getBase64(cvFile); 
+                        const resCv = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Cv, name: cvFile.name, type: cvFile.type, idExpediente: idExpedienteUrl }) }).then(r=>r.json());
+                        urlCVGlobal = resCv.url;
+                        payload.url_cv = urlCVGlobal;
+
+                        // Subir Handbook a Drive
+                        const b64Hb = await getBase64(hbFile); 
+                        const resHb = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Hb, name: hbFile.name, type: hbFile.type, idExpediente: idExpedienteUrl }) }).then(r=>r.json());
+                        urlHbGlobal = resHb.url;
+                        payload.url_handbook = urlHbGlobal;
+
+                        // ENVIAR A N8N (Sin await para que sea segundo plano)
+                        fetch(N8N_URL, { 
+                            method: 'POST', 
+                            headers: {'Content-Type': 'application/json'}, 
+                            body: JSON.stringify({ action: "extract_cv", fileUrl: urlCVGlobal, idDocente: userId, idExpediente: idExpedienteUrl }) 
+                        }).catch(e => console.log("n8n ok"));
+
                         await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
                         isEditingDocs = false; 
                     }
+                    cambiarUI(1);
+                    return; 
                 } 
-                else if (pasoActual === 2) {
-                    const diplomaItems = document.querySelectorAll('.diploma-item');
-                    let hayNuevos = false;
-                    
-                    for (let item of diplomaItems) {
-                        const dipFile = item.querySelector('.dip-file').files[0];
-                        const currentGrado = item.querySelector('.dip-grado').value;
-                        if (dipFile) {
-                            hayNuevos = true;
-                            const b64 = await getBase64(dipFile);
-                            const urlDip = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64, name: dipFile.name, type: dipFile.type }) }).then(r=>r.json()).then(r=>r.url);
-                            
-                            // Enviar a N8N y guardar en memoria
-                            fetch(N8N_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ fileUrl: urlDip, id: userId, grado: currentGrado }) })
-                            .then(r=>r.json()).then(n8nDip => {
-                                let dipText = (n8nDip.content && n8nDip.content[0]) ? n8nDip.content[0].text : n8nDip;
-                                let dataDip = typeof dipText === 'string' ? JSON.parse(dipText.replace(/```json|```/g, "")) : dipText;
-                                dataDip.url_diploma = urlDip; dataDip.grado = currentGrado;
-                                ia_DataEducacion.push(dataDip);
-                            });
-                        }
-                    }
-                    if(hayNuevos) { /* Aquí ya subieron al Drive, GAS se guarda al final en paso 6 */ }
-                }
-                else if (pasoActual === 3) { payload.nombres = document.getElementById('reg-nombres').value; payload.apellidos = document.getElementById('reg-apellidos').value; payload.dni = document.getElementById('reg-dni').value; payload.celular = document.getElementById('reg-celular').value; payload.pais = document.getElementById('reg-pais').value; payload.direccion = document.getElementById('reg-direccion').value; }
-                else if (pasoActual === 4) { if(selectedInvitationId) { payload.dia = document.getElementById('reg-dia').value; payload.hora = document.getElementById('reg-hora').value; } }
-                else if (pasoActual === 5) { payload.banco = document.getElementById('reg-banco').value; payload.moneda = document.getElementById('reg-moneda').value; payload.cuenta = document.getElementById('reg-cuenta').value; }
                 
+                // PASO 2: DIPLOMAS
+                else if (pasoActual === 2) {
+                    if (isEditingDiplomas) {
+                        const diplomaItems = document.querySelectorAll('.diploma-item');
+                        let hayArchivos = false;
+                        for (let item of diplomaItems) { if (item.querySelector('.dip-file').files[0]) hayArchivos = true; }
+
+                        if (!hayArchivos) {
+                            alert("Por favor, sube al menos un Diploma.");
+                            btnNext.disabled = false; btnNext.innerHTML = originalHTML;
+                            return;
+                        }
+
+                        for (let item of diplomaItems) {
+                            const dipFile = item.querySelector('.dip-file').files[0];
+                            const transFile = item.querySelector('.dip-transcript').files[0];
+                            const currentGrado = item.querySelector('.dip-grado').value;
+
+                            if (dipFile) {
+                                // Subir Diploma
+                                const b64Dip = await getBase64(dipFile);
+                                const resDip = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Dip, name: dipFile.name, type: dipFile.type, idExpediente: idExpedienteUrl }) }).then(r => r.json());
+                                
+                                // Subir Transcript (Opcional)
+                                if (transFile) {
+                                    const b64Trans = await getBase64(transFile);
+                                    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Trans, name: transFile.name, type: transFile.type, idExpediente: idExpedienteUrl }) });
+                                }
+
+                                // Enviar SOLO diploma a N8N
+                                fetch(N8N_URL, { 
+                                    method: 'POST', 
+                                    headers: {'Content-Type': 'application/json'}, 
+                                    body: JSON.stringify({ action: "extract_diploma", fileUrl: resDip.url, idDocente: userId, idExpediente: idExpedienteUrl, grado: currentGrado }) 
+                                }).catch(e => console.log("n8n ok"));
+                            }
+                        }
+                        isEditingDiplomas = false;
+                    }
+                    cambiarUI(1);
+                    return;
+                }// LÓGICA DEL PASO 2 (Diplomas)
+                else if (pasoActual === 2) {
+                    if (isEditingDiplomas) {
+                        const diplomaItems = document.querySelectorAll('.diploma-item');
+                        let hayArchivosValidos = false;
+
+                        // 1. Verificación rápida
+                        for (let item of diplomaItems) {
+                            if (item.querySelector('.dip-file').files[0]) hayArchivosValidos = true;
+                        }
+
+                        if (!hayArchivosValidos) {
+                            alert("Por favor, sube al menos un Diploma.");
+                            btnNext.disabled = false; btnNext.innerHTML = originalHTML;
+                            return;
+                        }
+
+                        // 2. Subida secuencial
+                        for (let item of diplomaItems) {
+                            const dipFile = item.querySelector('.dip-file').files[0];
+                            const transFile = item.querySelector('.dip-transcript').files[0];
+                            const currentGrado = item.querySelector('.dip-grado').value;
+
+                            if (dipFile) {
+                                // Subir Diploma
+                                const b64Dip = await getBase64(dipFile);
+                                const resDip = await fetch(GAS_URL, { 
+                                    method: 'POST', 
+                                    body: JSON.stringify({ action: 'get_url', file: b64Dip, name: dipFile.name, type: dipFile.type, idExpediente: idExpedienteUrl }) 
+                                }).then(r => r.json());
+
+                                // Subir Transcript (Solo se guarda en Drive, NO va a n8n)
+                                if (transFile) {
+                                    const b64Trans = await getBase64(transFile);
+                                    await fetch(GAS_URL, { 
+                                        method: 'POST', 
+                                        body: JSON.stringify({ action: 'get_url', file: b64Trans, name: transFile.name, type: transFile.type, idExpediente: idExpedienteUrl }) 
+                                    });
+                                }
+
+                                // 3. ENVIAR ÚNICAMENTE EL DIPLOMA A N8N
+                                fetch(N8N_URL, { 
+                                    method: 'POST', 
+                                    headers: {'Content-Type': 'application/json'}, 
+                                    body: JSON.stringify({ 
+                                        action: "extract_diploma", 
+                                        fileUrl: resDip.url, // SOLO EL DIPLOMA
+                                        idDocente: userId, 
+                                        idExpediente: idExpedienteUrl, 
+                                        grado: currentGrado 
+                                    }) 
+                                }).catch(e => console.log("n8n ok"));
+                            }
+                        }
+                        isEditingDiplomas = false;
+                    }
+                    cambiarUI(1);
+                    return;
+                }
+                
+                // RESTO DE PASOS (3, 4, 5, 6)
+                else if (pasoActual === 3) {
+                    payload.nombres = document.getElementById('reg-nombres').value;
+                    payload.apellidos = document.getElementById('reg-apellidos').value;
+                    payload.dni = document.getElementById('reg-dni').value;
+                    payload.celular = document.getElementById('reg-celular').value;
+                    payload.pais = document.getElementById('reg-pais').value;
+                    payload.direccion = document.getElementById('reg-direccion').value;
+                }
+                else if (pasoActual === 4) {
+                    if(selectedInvitationId) {
+                        payload.idInvitacion = selectedInvitationId;
+                        payload.dia = document.getElementById('reg-dia').value;
+                        payload.hora = document.getElementById('reg-hora').value;
+                    }
+                }
+                else if (pasoActual === 5) {
+                    payload.banco = document.getElementById('reg-banco').value;
+                    payload.moneda = document.getElementById('reg-moneda').value;
+                    payload.cuenta = document.getElementById('reg-cuenta').value;
+                }
                 else if (pasoActual === 6) {
                     payload.educacion = Array.from(document.querySelectorAll('.ai-edu-record')).map(r => ({ grado: r.dataset.grado, rama: r.querySelector('.ai-rama').value, instituto: r.querySelector('.ai-institucion').value, ubicacion: r.querySelector('.ai-ubicacion').value, inicio: r.querySelector('.ai-inicio').value, fin: r.querySelector('.ai-fin').value, url_diploma: r.dataset.url }));
                     payload.experiencia = Array.from(document.querySelectorAll('.exp-item')).map(i => ({ empresa: i.querySelector('.exp-empresa').value, cargo: i.querySelector('.exp-cargo').value, area: i.querySelector('.exp-area').value, direccion: i.querySelector('.exp-direccion').value, inicio: i.querySelector('.exp-inicio').value, fin: i.querySelector('.exp-fin').value }));
                 }
 
-                // Disparar Fetch
                 if(pasoActual >= 3) {
                     const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
-                    if ((await response.json()).status === "success") {
-                        if (pasoActual === totalPasos) { Swal.fire({ title: '¡Expediente Completado!', text: 'Se ha guardado tu expediente de forma exitosa.', icon: 'success' }).then(()=>window.location.href = "gestionexpedientes.html"); return;}
+                    const resJson = await response.json();
+                    if (resJson.status === "success") {
+                        if (pasoActual === totalPasos) {
+                            Swal.fire({ title: '¡Completado!', text: 'Expediente guardado.', icon: 'success' }).then(()=>window.location.href = "gestionexpedientes.html");
+                            return;
+                        }
                     }
                 }
-                
-                // Pinta los datos de IA en el paso 6 antes de llegar ahí (se pintan en el paso 5)
+
+                // Carga de borradores antes del paso 6
                 if (pasoActual === 5) {
-                    document.getElementById('ai-education-container').innerHTML = '';
-                    document.getElementById('ai-experience-container').innerHTML = '';
-                    ia_DataEducacion.forEach(edu => addEduReviewField(edu));
-                    ia_DataExperiencia.forEach(exp => addExpField(exp));
+                    try {
+                        const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: userId, id_expediente: idExpedienteUrl }) }).then(r=>r.json());
+                        if(res.status === 'success' && res.drafts) {
+                            document.getElementById('ai-education-container').innerHTML = '';
+                            document.getElementById('ai-experience-container').innerHTML = '';
+                            if(res.drafts.educacion) res.drafts.educacion.forEach(edu => addEduReviewField(edu));
+                            if(res.drafts.experiencia) res.drafts.experiencia.forEach(exp => addExpField(exp));
+                        }
+                    } catch(e) {}
                 }
 
                 cambiarUI(1);
 
-            } catch (error) { console.error(error); alert("Hubo un error de conexión."); } 
-            finally { btnNext.disabled = false; btnNext.innerHTML = originalHTML; }
+            } catch (error) { 
+                console.error(error); 
+                alert("Ocurrió un error. Revisa tu conexión e inténtalo de nuevo."); 
+            } finally { 
+                btnNext.disabled = false; 
+                btnNext.innerHTML = originalHTML; 
+            }
         }
 
         // DIBUJAR PANTALLA 6

@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script>
+        if (sessionStorage.getItem('isLoggedIn') !== 'true' || (sessionStorage.getItem('userRole') !== 'Administrativo' && sessionStorage.getItem('userRole') !== 'Administrador')) {
+            window.location.href = "login.html"; 
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expediente Docente | Blackwell University</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #2563eb; 
+            --primary-dark: #1e3a8a; 
+            --bg-body: #f8fafc;
+            --sidebar-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --card-radius: 20px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --sidebar-width: 260px;
+            --sidebar-collapsed-width: 88px;
+            --dynamic-font-size: 1rem;
+        }
+
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; letter-spacing: -0.01em; }
+
+        /* --- SIDEBAR & LAYOUT --- */
+        .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid rgba(0,0,0,0.05); display: flex; flex-direction: column; transition: var(--transition); position: relative; padding: 24px 16px; flex-shrink: 0; }
+        .sidebar.collapsed { width: var(--sidebar-collapsed-width); }
+        .brand-section { display: flex; align-items: center; gap: 12px; padding: 0 12px 32px; text-decoration: none; overflow: hidden; }
+        .logo-box { min-width: 42px; height: 42px; background: var(--primary-dark); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
+        .brand-text { font-weight: 800; font-size: 1.2rem; color: var(--primary-dark); }
+        .sidebar.collapsed .brand-text { opacity: 0; pointer-events: none; }
+        .user-preview { display: flex; align-items: center; gap: 12px; padding: 12px; background: #f1f5f9; border-radius: 16px; margin-bottom: 24px; overflow: hidden; }
+        .avatar { min-width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 13px; }
+        .user-meta { display: flex; flex-direction: column; line-height: 1.2; }
+        .user-meta b { font-size: 13px; white-space: nowrap; } .user-meta span { font-size: 11px; color: var(--text-muted); }
+        .sidebar.collapsed .user-meta { display: none; }
+        .nav-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+        .nav-link { display: flex; align-items: center; gap: 16px; padding: 12px 14px; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 6px; transition: var(--transition); white-space: nowrap; }
+        .nav-link i { font-size: 18px; width: 24px; text-align: center; }
+        .nav-link:hover, .nav-link.active { background: #eff6ff; color: var(--primary); } .nav-link.active { font-weight: 600; }
+        .sidebar.collapsed .link-text { display: none; }
+        .collapse-btn { position: absolute; right: -12px; top: 48px; width: 24px; height: 24px; background: white; border: 1px solid #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; font-size: 10px; color: var(--text-muted); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+        .main-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        header { padding: 20px 48px; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 5; }
+        .content-area { padding: 40px; display: flex; flex-direction: column; align-items: center; width: 100%; font-size: var(--dynamic-font-size); }
+        .centered-container { width: 100%; max-width: 1200px; text-align: left; }
+        .breadcrumb-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; color: var(--text-muted); font-size: 14px; }
+        .back-link { text-decoration: none; color: var(--text-muted); display: flex; align-items: center; gap: 6px; transition: 0.2s; font-weight: 500;}
+        .back-link:hover { color: var(--primary); }
+        
+        .page-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px; }
+        .page-header h1 { font-weight: 800; font-size: 2.2rem; margin-bottom: 8px; letter-spacing: -0.03em; color: var(--primary-dark); }
+        .page-header p { color: var(--text-muted); font-size: 1.1rem; margin: 0;}
+
+        /* --- TABS & CARDS --- */
+        .nav-tabs { border-bottom: 2px solid #e2e8f0; gap: 10px; margin-bottom: 30px; }
+        .nav-tabs .nav-link { border: none; color: var(--text-muted); font-weight: 600; font-size: 0.95rem; padding: 12px 20px; background: none; transition: var(--transition); border-bottom: 3px solid transparent; border-radius: 8px 8px 0 0; }
+        .nav-tabs .nav-link:hover { color: var(--primary); background: #f8fafc; }
+        .nav-tabs .nav-link.active { color: var(--primary-dark); background: none; border-bottom-color: var(--primary); font-weight: 700; }
+
+        .form-card { background: white; border-radius: var(--card-radius); padding: 35px; border: 1px solid rgba(0,0,0,0.04); box-shadow: 0 10px 30px rgba(0,0,0,0.02); height: 100%; }
+        .section-badge { background: #eff6ff; color: var(--primary); padding: 6px 14px; border-radius: 8px; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; display: inline-flex; align-items: center; margin-bottom: 24px; }
+        
+        .info-group { margin-bottom: 15px; }
+        .info-label { display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 6px; font-weight: 600; }
+        .info-value { font-size: 0.95rem; color: #0f172a; font-weight: 500; min-height: 40px; padding: 8px 0; }
+
+        .input-modern { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px; font-size: 0.95rem; color: #334155; width: 100%; transition: 0.2s;}
+        .input-modern:focus { background-color: #ffffff; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); outline: none;}
+
+        .file-item { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; transition: 0.2s; }
+        .file-item:hover { border-color: var(--primary); background: #eff6ff; }
+        .file-info { display: flex; align-items: center; gap: 12px; overflow: hidden;}
+        .file-info i { font-size: 1.4rem; color: var(--primary); }
+        .file-name { font-size: 0.9rem; font-weight: 600; color: #334155; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;}
+        .btn-ver-file { font-size: 0.8rem; font-weight: 700; color: var(--primary); text-decoration: none; background: #e0e7ff; padding: 6px 12px; border-radius: 8px; flex-shrink: 0; cursor: pointer; border: none;}
+
+        /* BOTONES DE ACCIÓN INFERIORES RE-DISEÑADOS */
+        .btn-outline-danger-custom {
+            color: #ef4444; background-color: #fef2f2; border: 1px solid #fecaca;
+            border-radius: 10px; padding: 12px 24px; font-weight: 600; transition: all 0.2s;
+        }
+        .btn-outline-danger-custom:hover { background-color: #fee2e2; border-color: #fca5a5; }
+
+        .btn-success-solid {
+            background-color: #22c55e; color: white; border: none; border-radius: 10px;
+            padding: 12px 24px; font-weight: 600; transition: all 0.2s;
+        }
+        .btn-success-solid:hover { background-color: #16a34a; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3); }
+
+        .btn-primary-solid {
+            background-color: #1e3a8a; color: white; border: none; border-radius: 10px;
+            padding: 12px 24px; font-weight: 600; transition: all 0.2s; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+        }
+        .btn-primary-solid:hover { background-color: #1e40af; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(30, 58, 138, 0.3); }
+
+        /* --- VISOR MODAL SPLIT VIEW --- */
+        .modal-visor .modal-content { height: 95vh; border-radius: 16px; overflow: hidden; border: none; }
+        .modal-visor .modal-body { padding: 0; display: flex; height: 100%; }
+        .visor-left { flex: 6; background-color: #1e293b; display: flex; flex-direction: column; }
+        .visor-right { flex: 4; background-color: #ffffff; overflow-y: auto; padding: 40px; }
+        .visor-header { background: rgba(15, 23, 42, 0.9); padding: 15px 20px; color: white; display: flex; justify-content: space-between; align-items: center; }
+        
+        .bgu-logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.2rem; color: #1e3a8a; margin-bottom: 25px; }
+        .bgu-logo img { height: 35px; }
+
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="collapse-btn" onclick="toggleSidebar()"><i class="fa-solid fa-chevron-left" id="toggleIcon"></i></div>
+        <a href="#" class="brand-section">
+            <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div>
+            <span class="brand-text">Blackwell</span>
+        </a>
+        <div class="user-preview">
+            <div class="avatar" id="userInitial">AD</div>
+            <div class="user-meta"><b id="userName">Admin User</b><span>Administrador</span></div>
+        </div>
+        <ul class="nav-list">
+            <li><a href="administrativo.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
+            <li><a href="registrodocente.html" class="nav-link"><i class="fa-solid fa-user-plus"></i> <span class="link-text">Registrar</span></a></li>
+            <li><a href="gestion-docentes.html" class="nav-link"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
+            <li><a href="revision-docs.html" class="nav-link active"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
+            <li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-upload"></i> <span class="link-text">Gestión de Cursos</span></a></li>
+        </ul>
+        <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;">
+            <i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span>
+        </a>
+    </aside>
+
+    <main class="main-wrapper">
+        <header>
+            <div>
+                <h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Gestión de Personal</h5>
+                <p class="text-muted small m-0">Portal Administrativo</p>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-white px-3 py-2 rounded-pill shadow-sm d-flex gap-2 align-items-center">
+                    <button onclick="changeFontSize(-1)" class="btn btn-sm btn-link p-0 text-dark text-decoration-none fw-bold">A-</button>
+                    <span id="fontSizeLabel" class="small fw-bold px-1" style="min-width: 50px; text-align: center;">Normal</span>
+                    <button onclick="changeFontSize(1)" class="btn btn-sm btn-link p-0 text-dark text-decoration-none fw-bold">A+</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-area">
+            <div class="centered-container">
+                <div class="breadcrumb-nav">
+                    <a href="revision-docs.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Volver a Revisión de Expedientes</a>
+                </div>
+
+                <div class="page-header">
+                    <div>
+                        <h1 id="det-nombre-curso">Cargando Expediente...</h1>
+                        <p id="det-subtitle">Obteniendo datos...</p>
+                    </div>
+                    <div id="status-badge-container">
+                        <!-- Badge inyectado por JS -->
+                    </div>
+                </div>
+
+                <ul class="nav nav-tabs" id="expedienteTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#datos">Datos del Expediente</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#generados">Documentos Generados</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    
+                    <!-- PESTAÑA 1: DATOS DEL EXPEDIENTE -->
+                    <div class="tab-pane fade show active" id="datos" role="tabpanel">
+                        
+                        <!-- SECCIÓN 1: INVITACIÓN -->
+                        <div class="form-card mb-4">
+                            <span class="section-badge"><i class="fa-solid fa-circle-info me-2"></i>Información de la Invitación</span>
+                            <div class="row g-3">
+                                <div class="col-md-3"><span class="info-label">Estado</span><div id="view-estado" class="info-value fw-bold text-primary">-</div></div>
+                                <div class="col-md-3"><span class="info-label">Curso Propuesto</span><div id="view-curso" class="info-value">-</div></div>
+                                <div class="col-md-3"><span class="info-label">Día / Horario Elegido</span><div id="view-horario" class="info-value">-</div></div>
+                                <div class="col-md-3"><span class="info-label">Pago Acordado</span><div id="view-pago" class="info-value text-success fw-bold">-</div></div>
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN 2: DATOS DOCENTE (EDITABLE) -->
+                        <div class="form-card mb-4" style="position: relative;">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="section-badge m-0"><i class="fa-solid fa-user me-2"></i>Datos del Docente (Financieros)</span>
+                                <div id="edit-controls">
+                                    <button class="btn btn-sm btn-outline-primary fw-bold" id="btnEditar" onclick="toggleEdit()" style="border-radius: 8px;">
+                                        <i class="fa-solid fa-pencil me-1"></i> Editar Datos
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-4 info-group">
+                                    <span class="info-label">Nombres</span>
+                                    <div id="view-nombres" class="info-value view-mode">-</div>
+                                    <input type="text" id="edit-nombres" class="input-modern edit-mode d-none">
+                                </div>
+                                <div class="col-md-4 info-group">
+                                    <span class="info-label">Apellidos</span>
+                                    <div id="view-apellidos" class="info-value view-mode">-</div>
+                                    <input type="text" id="edit-apellidos" class="input-modern edit-mode d-none">
+                                </div>
+                                <div class="col-md-4 info-group">
+                                    <span class="info-label">Correo</span>
+                                    <div id="view-correo" class="info-value view-mode">-</div>
+                                    <input type="email" id="edit-correo" class="input-modern edit-mode d-none">
+                                </div>
+
+                                <div class="col-md-3 info-group">
+                                    <span class="info-label">Banco</span>
+                                    <div id="view-banco" class="info-value view-mode">-</div>
+                                    <input type="text" id="edit-banco" class="input-modern edit-mode d-none">
+                                </div>
+                                <div class="col-md-3 info-group">
+                                    <span class="info-label">Moneda</span>
+                                    <div id="view-moneda" class="info-value view-mode">-</div>
+                                    <select id="edit-moneda" class="form-select input-modern edit-mode d-none">
+                                        <option value="Dólares">Dólares ($)</option>
+                                        <option value="Soles">Soles (S/.)</option>
+                                        <option value="Euros">Euros (€)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 info-group">
+                                    <span class="info-label">Cuenta Bancaria</span>
+                                    <div id="view-cuenta" class="info-value view-mode">-</div>
+                                    <input type="text" id="edit-cuenta" class="input-modern edit-mode d-none">
+                                </div>
+                                <div class="col-md-3 info-group">
+                                    <span class="info-label">CCI / Cuenta Interbancaria</span>
+                                    <div id="view-cci" class="info-value view-mode">-</div>
+                                    <input type="text" id="edit-cci" class="input-modern edit-mode d-none">
+                                </div>
+                                <!-- Campos ocultos necesarios para el payload completo -->
+                                <input type="hidden" id="edit-celular"><input type="hidden" id="edit-pais"><input type="hidden" id="edit-ciudad">
+                                <input type="hidden" id="edit-estado_region"><input type="hidden" id="edit-direccion"><input type="hidden" id="edit-tipo_cuenta">
+                                <input type="hidden" id="edit-tipo_ruta"><input type="hidden" id="edit-codigo_ruta">
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN 3: DOCUMENTOS SUBIDOS -->
+                        <div class="form-card mb-4">
+                            <span class="section-badge"><i class="fa-solid fa-file-pdf me-2"></i>Documentos Subidos por el Docente</span>
+                            <div id="contenedor-adjuntos-revision" class="row g-3 mt-1">
+                                <p class="text-muted"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando...</p>
+                            </div>
+                        </div>
+
+                        <!-- BOTONES DE APROBACIÓN (REDSIEÑADOS) -->
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <button class="btn-outline-danger-custom" onclick="cambiarEstadoExpediente('Rechazado')">
+                                <i class="fa-solid fa-xmark me-2"></i>Rechazar Expediente
+                            </button>
+                            <button class="btn-success-solid" onclick="cambiarEstadoExpediente('Aprobado')">
+                                <i class="fa-solid fa-check-double me-2"></i>Aprobar Expediente
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- PESTAÑA 2: DOCUMENTOS GENERADOS -->
+                    <div class="tab-pane fade" id="generados" role="tabpanel">
+                        <div class="form-card">
+                            <div class="d-flex justify-content-between align-items-center border-bottom pb-4 mb-4">
+                                <div>
+                                    <h4 class="fw-bold text-primary-dark mb-1">Documentos Formales</h4>
+                                    <p class="text-muted m-0 small">Genera y gestiona los documentos oficiales del expediente.</p>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-light fw-bold border shadow-sm" onclick="generarForm402(this)" style="color: #475569;">
+                                        <i class="fa-solid fa-file-contract me-1"></i> Form 402
+                                    </button>
+                                    <button class="btn-primary-solid" data-bs-toggle="modal" data-bs-target="#modalSeleccionarDocs">
+                                        <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Generar Documentos
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="lista-documentos-generados" class="row g-3">
+                                <!-- Aquí se listarán los documentos que se vayan generando -->
+                                <div class="col-12 text-center py-5">
+                                    <div style="width: 60px; height: 60px; background: #f1f5f9; color: #94a3b8; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 15px;">
+                                        <i class="fa-regular fa-folder-open"></i>
+                                    </div>
+                                    <p class="text-muted fw-medium m-0">Aún no hay documentos generados para este expediente.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>            
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL: SELECCIONAR DOCUMENTOS A GENERAR -->
+    <div class="modal fade modal-modern" id="modalSeleccionarDocs" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold m-0"><i class="fa-solid fa-list-check me-2 text-primary"></i>Seleccionar Documentos</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <p class="text-muted small mb-3">Elige qué documentos deseas generar para anexarlos al expediente del docente.</p>
+                    
+                    <div class="bg-white border rounded-3 p-3">
+                        <div class="form-check mb-2"><input class="form-check-input doc-gen-cb" type="checkbox" value="Letter of Appointment" id="doc1"> <label class="form-check-label fw-medium text-dark" for="doc1">Letter of Appointment</label></div>
+                        <div class="form-check mb-2"><input class="form-check-input doc-gen-cb" type="checkbox" value="Resume" id="doc2"> <label class="form-check-label fw-medium text-dark" for="doc2">Resume</label></div>
+                        <div class="form-check mb-2"><input class="form-check-input doc-gen-cb" type="checkbox" value="Reference Check Forms" id="doc3"> <label class="form-check-label fw-medium text-dark" for="doc3">Reference Check Forms</label></div>
+                        <div class="form-check mb-2"><input class="form-check-input doc-gen-cb" type="checkbox" value="Proposed Salary" id="doc4"> <label class="form-check-label fw-medium text-dark" for="doc4">Proposed Salary</label></div>
+                        <div class="form-check mb-2"><input class="form-check-input doc-gen-cb" type="checkbox" value="Academic Preparation Evaluation Form" id="doc5"> <label class="form-check-label fw-medium text-dark" for="doc5">Academic Preparation Evaluation Form</label></div>
+                        <div class="form-check mb-2"><input class="form-check-input doc-gen-cb" type="checkbox" value="Assigned Employee Notice" id="doc6"> <label class="form-check-label fw-medium text-dark" for="doc6">Assigned Employee Notice and Acknowledgments</label></div>
+                        <div class="form-check mb-2"><input class="form-check-input doc-gen-cb" type="checkbox" value="Direct Deposit Authorization Form" id="doc7"> <label class="form-check-label fw-medium text-dark" for="doc7">Direct Deposit Authorization Form</label></div>
+                        <div class="form-check mb-2"><input class="form-check-input doc-gen-cb" type="checkbox" value="Confidentiality Agreement" id="doc8"> <label class="form-check-label fw-medium text-dark" for="doc8">Confidentiality and Non-Disclosure Agreement</label></div>
+                        <div class="form-check m-0"><input class="form-check-input doc-gen-cb" type="checkbox" value="Job Description" id="doc9"> <label class="form-check-label fw-medium text-dark" for="doc9">Job Description</label></div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-3">
+                    <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn-primary-solid" onclick="simularGeneracionMultiple()">Generar Seleccionados</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: VISOR Y EDITOR DE DOCUMENTO (SPLIT VIEW COMO LA IMAGEN) -->
+    <div class="modal fade modal-visor" id="modalVisorDocumento" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 95%;">
+            <div class="modal-content shadow-lg">
+                <div class="modal-body">
+                    
+                    <!-- Lado Izquierdo: PREVIEW PDF -->
+                    <div class="visor-left">
+                        <div class="visor-header">
+                            <div><i class="fa-solid fa-file-pdf me-2 text-danger"></i> <span id="visor-doc-title" class="fw-bold">Documento.pdf</span></div>
+                            <div>
+                                <button class="btn btn-sm btn-outline-light me-2"><i class="fa-solid fa-expand"></i></button>
+                                <button class="btn btn-sm btn-outline-light" data-bs-dismiss="modal"><i class="fa-solid fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="w-100 flex-grow-1 d-flex align-items-center justify-content-center" style="color: #64748b;">
+                            <!-- Placeholder: En producción aquí va el <iframe> -->
+                            <div class="text-center">
+                                <i class="fa-solid fa-file-pdf mb-3" style="font-size: 4rem; opacity: 0.5;"></i>
+                                <p>Vista previa del documento generado</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lado Derecho: FORMULARIO EDITOR -->
+                    <div class="visor-right">
+                        <button type="button" class="btn-close float-end mb-2" data-bs-dismiss="modal"></button>
+                        
+                        <!-- Logo BGU (Como en la imagen) -->
+                        <div class="bgu-logo">
+                            <div style="background: var(--primary-dark); color:white; width:32px; height:32px; border-radius:6px; display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-graduation-cap"></i></div>
+                            Blackwell Global University
+                        </div>
+
+                        <h3 class="fw-bold mb-2 text-dark" id="editor-title">Nombre del Formulario</h3>
+                        <p class="text-muted small mb-4">Complete los campos requeridos para terminar de rellenar este documento antes de su firma final.</p>
+
+                        <!-- Formulario dinámico -->
+                        <div class="bg-light border rounded-3 p-4">
+                            <h6 class="fw-bold text-primary-dark mb-3"><i class="fa-solid fa-user me-2"></i>Datos Requeridos</h6>
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-muted">NOMBRE *</label>
+                                    <input type="text" class="form-control bg-white" id="ed-nom">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-muted">APELLIDO *</label>
+                                    <input type="text" class="form-control bg-white" id="ed-ape">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label small fw-bold text-muted">CORREO INSTITUCIONAL/PERSONAL *</label>
+                                    <input type="email" class="form-control bg-white" id="ed-correo">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label small fw-bold text-muted">CAMPO ESPECÍFICO *</label>
+                                    <input type="text" class="form-control bg-white" placeholder="Dependerá del documento">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn-primary-solid w-100 mt-4 py-3" onclick="guardarEdicionDocumento()">
+                            Guardar y Actualizar Documento <i class="fa-solid fa-arrow-right ms-1"></i>
+                        </button>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-4" style="z-index: 1055;" id="toastContainer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
+
+        // PARÁMETROS URL (¡CORREGIDO!)
+        const urlParams = new URLSearchParams(window.location.search);
+        const expId = urlParams.get('expId'); // Ahora busca el ID del Expediente
+        const docId = urlParams.get('docId');
+
+        // UI HELPERS
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+        function logout() { if(confirm("¿Cerrar sesión?")) { sessionStorage.clear(); window.location.href = "login.html"; } }
+        function changeFontSize(dir) { /* Lógica de fuente */ }
+
+        function showToast(mensaje, tipo = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const bgClass = tipo === 'success' ? 'text-bg-success' : 'text-bg-danger';
+            toast.className = `toast align-items-center ${bgClass} border-0 show shadow-lg rounded-4 mb-3`;
+            toast.innerHTML = `<div class="d-flex p-1"><div class="toast-body fw-medium" style="font-size: 0.95rem;">${mensaje}</div><button type="button" class="btn-close btn-close-white me-3 m-auto" data-bs-dismiss="toast" onclick="this.parentElement.parentElement.remove()"></button></div>`;
+            container.appendChild(toast); setTimeout(() => toast.remove(), 4000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const name = sessionStorage.getItem('userName') || "Admin";
+            document.getElementById('userName').innerText = name;
+            
+            // Validamos que los parámetros correctos existan en la URL
+            if(!expId || !docId) {
+                document.getElementById('det-nombre-curso').innerText = "Error: Faltan datos";
+                document.getElementById('det-subtitle').innerText = "Vuelve a la pantalla anterior.";
+                return;
+            }
+            cargarExpediente();
+        });
+
+        // 1. CARGAR DATOS COMPLETOS
+        async function cargarExpediente() {
+            try {
+                // A) Cargar Perfil del Docente (Le enviamos el expId para que traiga sus diplomas y CV)
+                const resProfile = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: docId, id_expediente: expId }) });
+                const profile = await resProfile.json();
+                
+                // B) Cargar Expedientes para obtener el estado actual
+                const resExp = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_expedientes_docente', docenteId: docId }) });
+                const exps = await resExp.json();
+                const exp = exps.data ? exps.data.find(e => e.idExpediente === expId) : null;
+
+                // C) Cargar Invitaciones (Solo para mostrar el nombre del curso propuesto)
+                const resInv = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_invitations', docenteId: docId }) });
+                const invs = await resInv.json();
+                const inv = invs.data && invs.data.length > 0 ? invs.data[0] : {}; // Toma la info del curso más reciente
+
+                if (profile.status === 'success' && exp) {
+                    const d = profile.data;
+                    
+                    document.getElementById('det-nombre-curso').innerText = `Expediente: ${exp.idExpediente}`;
+                    document.getElementById('det-subtitle').innerText = `Docente: ${d.nombres} ${d.apellidos}`;
+                    
+                    let bgBadge = exp.estado === 'Aprobado' ? '#15803d' : (exp.estado === 'Completado' ? '#2563eb' : '#ea580c');
+                    document.getElementById('status-badge-container').innerHTML = `<span class="badge" style="background:${bgBadge}; padding: 8px 16px; font-size: 0.9rem; border-radius: 50px;">Estado: ${exp.estado}</span>`;
+
+                    document.getElementById('view-estado').innerText = exp.estado;
+                    document.getElementById('view-curso').innerText = inv.curso || "No especificado";
+                    document.getElementById('view-horario').innerText = `${inv.dias || '-'} / ${inv.horario || '-'}`;
+                    document.getElementById('view-pago').innerText = inv.pago || "-";
+                    
+                    document.getElementById('view-nombres').innerText = d.nombres || '-';
+                    document.getElementById('view-apellidos').innerText = d.apellidos || '-';
+                    document.getElementById('view-correo').innerText = d.correo || '-';
+                    document.getElementById('view-banco').innerText = d.banco || '-';
+                    document.getElementById('view-moneda').innerText = d.moneda || '-';
+                    document.getElementById('view-cuenta').innerText = d.cuenta || '-';
+                    document.getElementById('view-cci').innerText = d.cci || '-';
+
+                    // Ocultos para Payload
+                    document.getElementById('edit-celular').value = d.celular || '';
+                    document.getElementById('edit-pais').value = d.pais || '';
+                    document.getElementById('edit-ciudad').value = d.ciudad || '';
+                    document.getElementById('edit-estado_region').value = d.estado_region || '';
+                    document.getElementById('edit-direccion').value = d.direccion || '';
+                    document.getElementById('edit-tipo_cuenta').value = d.tipo_cuenta || '';
+                    document.getElementById('edit-tipo_ruta').value = d.tipo_ruta || '';
+                    document.getElementById('edit-codigo_ruta').value = d.codigo_ruta || '';
+
+                    // Cargar Documentos subidos (Extraídos del backend con get_profile)
+                    let htmlDocs = "";
+                    if(d.url_cv) htmlDocs += crearItemArchivo("Currículum Vitae", d.url_cv);
+                    if(d.url_handbook) htmlDocs += crearItemArchivo("Handbook Firmado", d.url_handbook);
+                    
+                    if(profile.drafts && profile.drafts.educacion) {
+                        profile.drafts.educacion.forEach(dip => {
+                            if(dip.url_diploma) htmlDocs += crearItemArchivo(`Diploma: ${dip.grado}`, dip.url_diploma);
+                        });
+                    }
+
+                    document.getElementById('contenedor-adjuntos-revision').innerHTML = htmlDocs || '<p class="text-muted m-0">No se encontraron documentos adjuntos.</p>';
+                } else {
+                    mostrarErrorDatos();
+                }
+            } catch (e) { 
+                mostrarErrorDatos();
+            }
+        }
+
+        function mostrarErrorDatos() {
+            document.getElementById('det-nombre-curso').innerText = `Expediente no encontrado`;
+            document.getElementById('det-subtitle').innerText = `No se pudo obtener la información de la base de datos.`;
+            document.getElementById('contenedor-adjuntos-revision').innerHTML = '<p class="text-danger m-0">No se encontraron datos.</p>';
+        }
+
+        function crearItemArchivo(nombre, url) {
+            return `
+            <div class="col-md-6">
+                <div class="file-item">
+                    <div class="file-info"><i class="fa-regular fa-file-pdf"></i><span class="file-name">${nombre}</span></div>
+                    <a href="${url}" target="_blank" class="btn-ver-file">Abrir</a>
+                </div>
+            </div>`;
+        }
+
+        // 2. MODO EDICIÓN
+        let isEditing = false;
+        const editableFields =['nombres', 'apellidos', 'correo', 'banco', 'moneda', 'cuenta', 'cci'];
+
+        function toggleEdit() {
+            const controls = document.getElementById('edit-controls');
+            if(!isEditing) {
+                editableFields.forEach(f => {
+                    const text = document.getElementById(`view-${f}`).innerText;
+                    document.getElementById(`edit-${f}`).value = text === '-' ? '' : text;
+                });
+                
+                document.querySelectorAll('.view-mode').forEach(el => el.classList.add('d-none'));
+                document.querySelectorAll('.edit-mode').forEach(el => el.classList.remove('d-none'));
+
+                controls.innerHTML = `
+                    <button class="btn btn-sm btn-light border me-2 fw-bold text-secondary" style="border-radius: 8px;" onclick="cancelEdit()">Cancelar</button>
+                    <button class="btn btn-sm btn-success-solid" style="padding: 6px 16px;" onclick="guardarCambiosDocente()"><i class="fa-solid fa-save me-1"></i> Guardar</button>
+                `;
+                isEditing = true;
+            }
+        }
+
+        function cancelEdit() {
+            document.querySelectorAll('.view-mode').forEach(el => el.classList.remove('d-none'));
+            document.querySelectorAll('.edit-mode').forEach(el => el.classList.add('d-none'));
+            document.getElementById('edit-controls').innerHTML = `<button class="btn btn-sm btn-outline-primary fw-bold" id="btnEditar" onclick="toggleEdit()" style="border-radius: 8px;"><i class="fa-solid fa-pencil me-1"></i> Editar Datos</button>`;
+            isEditing = false;
+        }
+
+        async function guardarCambiosDocente() {
+            const controls = document.getElementById('edit-controls');
+            controls.innerHTML = `<button class="btn btn-sm btn-light border" disabled><i class="fa-solid fa-spinner fa-spin me-1"></i> Guardando...</button>`;
+
+            const payload = {
+                action: "update_profile",
+                id: docId,
+                nombres: document.getElementById('edit-nombres').value,
+                apellidos: document.getElementById('edit-apellidos').value,
+                correo: document.getElementById('edit-correo').value,
+                banco: document.getElementById('edit-banco').value,
+                moneda: document.getElementById('edit-moneda').value,
+                cuenta: document.getElementById('edit-cuenta').value,
+                cci: document.getElementById('edit-cci').value,
+                
+                // Ocultos
+                celular: document.getElementById('edit-celular').value,
+                pais: document.getElementById('edit-pais').value,
+                ciudad: document.getElementById('edit-ciudad').value,
+                estado_region: document.getElementById('edit-estado_region').value,
+                direccion: document.getElementById('edit-direccion').value,
+                tipo_cuenta: document.getElementById('edit-tipo_cuenta').value,
+                tipo_ruta: document.getElementById('edit-tipo_ruta').value,
+                codigo_ruta: document.getElementById('edit-codigo_ruta').value
+            };
+
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+                if((await res.json()).status === "success") {
+                    showToast("Datos actualizados correctamente.", "success");
+                    editableFields.forEach(f => {
+                        const val = document.getElementById(`edit-${f}`).value;
+                        document.getElementById(`view-${f}`).innerText = val || '-';
+                    });
+                    document.getElementById('det-subtitle').innerText = `Docente: ${payload.nombres} ${payload.apellidos}`;
+                    cancelEdit();
+                } else { showToast("No se pudo actualizar.", "danger"); cancelEdit(); }
+            } catch(e) { showToast("Error de red.", "danger"); cancelEdit(); }
+        }
+
+        // 3. CAMBIAR ESTADO DE EXPEDIENTE
+        async function cambiarEstadoExpediente(nuevoEstado) {
+            if(!confirm(`¿Desea marcar este expediente como ${nuevoEstado}?`)) return;
+            try {
+                // Ahora llama a la nueva acción de Expediente
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'update_expediente_status', id: expId, estado: nuevoEstado }) });
+                if((await res.json()).status === 'success') {
+                    showToast(`Expediente marcado como ${nuevoEstado}`, "success");
+                    document.getElementById('view-estado').innerText = nuevoEstado;
+                    let bgBadge = nuevoEstado === 'Aprobado' ? '#15803d' : '#e11d48';
+                    document.getElementById('status-badge-container').innerHTML = `<span class="badge" style="background:${bgBadge}; padding: 8px 16px; font-size: 0.9rem; border-radius: 50px;">Estado: ${nuevoEstado}</span>`;
+                }
+            } catch(e) { showToast("Error al actualizar.", "danger"); }
+        }
+
+        // 4. GENERAR FORM 402 ORIGINAL
+        async function generarForm402(btn) {
+            const orgText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Generando Documento...';
+            try {
+                const res = await fetch(GAS_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ 
+                        action: 'generate_document', 
+                        id: docId, 
+                        idExpediente: expId  // <--- Agregamos esto para buscar la carpeta
+                    }) 
+                });
+                const result = await res.json();
+                if(result.status === 'success') { 
+                    showToast("Form 402 generado.", "success"); 
+                    window.open(result.url, '_blank'); 
+                } else showToast("Error", "danger");
+            } catch(e) { showToast("Error", "danger"); } finally { btn.disabled = false; btn.innerHTML = orgText; }
+        }
+
+        // 5. NUEVOS DOCUMENTOS (MODALES)
+        function simularGeneracionMultiple() {
+            const checkboxes = document.querySelectorAll('.doc-gen-cb:checked');
+            if(checkboxes.length === 0) { showToast("Selecciona al menos un documento.", "danger"); return; }
+            
+            bootstrap.Modal.getInstance(document.getElementById('modalSeleccionarDocs')).hide();
+            showToast(`Generando ${checkboxes.length} documentos...`, "success");
+            
+            // Simular agregar a la lista de generados
+            const list = document.getElementById('lista-documentos-generados');
+            list.innerHTML = ""; 
+            
+            checkboxes.forEach(cb => {
+                list.innerHTML += `
+                <div class="col-md-6">
+                    <div class="file-item">
+                        <div class="file-info"><i class="fa-solid fa-file-signature text-success"></i><span class="file-name">${cb.value}</span></div>
+                        <button class="btn-ver-file" onclick="abrirEditorDocumento('${cb.value}')">Ver / Editar</button>
+                    </div>
+                </div>`;
+            });
+        }
+
+        function abrirEditorDocumento(titulo) {
+            document.getElementById('visor-doc-title').innerText = titulo + ".pdf";
+            document.getElementById('editor-title').innerText = titulo;
+            
+            document.getElementById('ed-nom').value = document.getElementById('view-nombres').innerText;
+            document.getElementById('ed-ape').value = document.getElementById('view-apellidos').innerText;
+            document.getElementById('ed-correo').value = document.getElementById('view-correo').innerText;
+
+            new bootstrap.Modal(document.getElementById('modalVisorDocumento')).show();
+        }
+
+        function guardarEdicionDocumento() {
+            showToast("Documento actualizado e inyectado correctamente.", "success");
+            bootstrap.Modal.getInstance(document.getElementById('modalVisorDocumento')).hide();
+        }
+    </script>
+</body>
+</html>

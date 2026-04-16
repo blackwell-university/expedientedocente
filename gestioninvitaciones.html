@@ -76,10 +76,24 @@
 
         /* Estados */
         .badge-status { padding: 6px 14px; border-radius: 50px; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 6px;}
-        .status-Pendiente { background: #fef3c7; color: #92400e; }
-        .status-Completado { background: #eff6ff; color: #1d4ed8; }
+        .status-Enviado { background: #eff6ff; color: #1d4ed8; }
+        .status-Respondido { background: #fffbeb; color: #b45309; }
         .status-Aprobado { background: #f0fdf4; color: #15803d; }
         .status-Rechazado { background: #fef2f2; color: #b91c1c; }
+
+        /* --- MODAL REVISIÓN --- */
+        .modal-modern .modal-content { border: none; border-radius: 24px; overflow: hidden; }
+        .modal-modern .modal-header { background: #f8fafc; color: var(--primary-dark); border-bottom: 1px solid #e2e8f0; padding: 24px 30px; }
+        .section-review { background: #f8fafc; border-radius: 16px; padding: 24px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
+        .info-label { font-size: 0.8rem; color: #64748b; font-weight: 600; margin-bottom: 4px; display: block;}
+        .info-value { font-size: 0.95rem; color: #0f172a; font-weight: 500; margin-bottom: 15px;}
+        
+        .file-item { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; transition: 0.2s; }
+        .file-item:hover { border-color: var(--primary); background: #eff6ff; }
+        .file-info { display: flex; align-items: center; gap: 12px; overflow: hidden;}
+        .file-info i { font-size: 1.4rem; color: var(--primary); }
+        .file-name { font-size: 0.9rem; font-weight: 600; color: #334155; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;}
+        .btn-ver-file { font-size: 0.8rem; font-weight: 700; color: var(--primary); text-decoration: none; background: #e0e7ff; padding: 6px 12px; border-radius: 8px; flex-shrink: 0;}
 
         @media (max-width: 768px) { .sidebar { display: none; } header, .content-area { padding: 20px; } }
     </style>
@@ -129,27 +143,31 @@
                 
                 <div class="page-header">
                     <h1>Revisión de Expedientes</h1> 
-                    <p>Filtra y revisa los expedientes formales de la plana docente.</p>
+                    <p>Filtra, revisa y aprueba las invitaciones y documentos de la plana docente.</p>
                 </div>
 
                 <!-- FILTROS AVANZADOS -->
                 <div class="filter-section">
                     <div class="row g-3 align-items-end">
-                        <div class="col-md-5">
-                            <label class="form-label-sm">Buscar por Docente o ID Expediente</label>
-                            <input type="text" id="filterText" class="form-control input-filter" placeholder="Ej: Juan Pérez o EXP-123456...">
-                        </div>
                         <div class="col-md-4">
+                            <label class="form-label-sm">Buscar Docente o Curso</label>
+                            <input type="text" id="filterText" class="form-control input-filter" placeholder="Ej: Juan Pérez o Programación...">
+                        </div>
+                        <div class="col-md-3">
                             <label class="form-label-sm">Estado de Expediente</label>
                             <select id="filterStatus" class="form-select input-filter" style="cursor: pointer;">
                                 <option value="Todos">Todos los estados</option>
-                                <option value="Pendiente">Pendiente (Sin completar)</option>
-                                <option value="Completado">Completado (Listo para revisar)</option>
+                                <option value="Enviado">Enviado</option>
+                                <option value="Respondido">Respondido (Para revisar)</option>
                                 <option value="Aprobado">Aprobado</option>
                                 <option value="Rechazado">Rechazado</option>
                             </select>
                         </div>
                         <div class="col-md-3">
+                            <label class="form-label-sm">Fecha de Invitación</label>
+                            <input type="date" id="filterDate" class="form-control input-filter" style="cursor: pointer;">
+                        </div>
+                        <div class="col-md-2">
                             <button class="btn w-100" style="height: 48px; background: #f1f5f9; border-radius: 12px; font-weight: 600; color: #475569;" onclick="resetFilters()">
                                 Limpiar Filtros
                             </button>
@@ -163,14 +181,14 @@
                         <table class="table mb-0 align-middle">
                             <thead>
                                 <tr>
-                                    <th>Docente / ID</th>
-                                    <th>Período (Inicio - Fin)</th>
-                                    <th>Fecha de Creación</th>
+                                    <th>Docente</th>
+                                    <th>Curso / Programa</th>
+                                    <th>Fecha</th>
                                     <th>Estado</th>
                                     <th class="text-center">Acción</th>
                                 </tr>
                             </thead>
-                            <tbody id="lista-expedientes">
+                            <tbody id="lista-invitaciones">
                                 <!-- JS cargarán aquí -->
                             </tbody>
                         </table>
@@ -185,13 +203,58 @@
         </div>
     </main>
 
+    <!-- MODAL REVISIÓN (Idéntico a detallesdocente) -->
+    <div class="modal fade modal-modern" id="modalRevision" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content shadow-lg border-0">
+                <div class="modal-header">
+                    <h4 class="modal-title fw-bold"><i class="fa-solid fa-folder-open me-2 text-primary"></i>Revisión de Expediente</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    
+                    <div class="section-review">
+                        <h6 class="fw-bold mb-3"><i class="fa-solid fa-circle-info me-2 text-primary"></i>Información de la Invitación</h6>
+                        <div class="row g-3">
+                            <div class="col-md-3"><span class="info-label">Estado</span><div id="rev-estado" class="info-value fw-bold text-primary">-</div></div>
+                            <div class="col-md-3"><span class="info-label">Curso Propuesto</span><div id="rev-curso" class="info-value">-</div></div>
+                            <div class="col-md-3"><span class="info-label">Día / Horario Elegido</span><div id="rev-horario" class="info-value">-</div></div>
+                            <div class="col-md-3"><span class="info-label">Pago Acordado</span><div id="rev-pago" class="info-value text-success fw-bold">-</div></div>
+                        </div>
+                    </div>
+
+                    <div class="section-review">
+                        <h6 class="fw-bold mb-3"><i class="fa-solid fa-user me-2 text-primary"></i>Datos del Docente (Financieros)</h6>
+                        <div class="row g-3">
+                            <div class="col-md-4"><span class="info-label">Docente</span><div id="rev-nombre" class="info-value">-</div></div>
+                            <div class="col-md-4"><span class="info-label">Correo</span><div id="rev-correo" class="info-value">-</div></div>
+                            <div class="col-md-4"><span class="info-label">Banco y Cuentas</span><div id="rev-cuentas" class="info-value">-</div></div>
+                        </div>
+                    </div>
+
+                    <div class="section-review border-0 bg-white p-0 mt-4">
+                        <h6 class="fw-bold mb-3"><i class="fa-solid fa-file-pdf me-2 text-primary"></i>Documentos Subidos</h6>
+                        <div id="contenedor-adjuntos-revision" class="row g-3"></div>
+                    </div>
+
+                </div>
+                <div class="modal-footer bg-light p-4 d-flex justify-content-between">
+                    <button type="button" class="btn btn-light text-danger border-danger px-4 fw-bold" onclick="cambiarEstadoExpediente('Rechazado')"><i class="fa-solid fa-xmark me-2"></i>Rechazar</button>
+                    <button type="button" class="btn btn-success px-5 fw-bold" onclick="cambiarEstadoExpediente('Aprobado')" style="background: #16a34a; border: none; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);"><i class="fa-solid fa-check-double me-2"></i>Aprobar Expediente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- TOAST NOTIFICATION -->
     <div class="toast-container position-fixed bottom-0 end-0 p-4" style="z-index: 1055;" id="toastContainer"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
-        let todosExpedientes =[];
+        let todasInvitaciones =[];
+        let currentInvId = null;
+        let currentDocenteId = null;
 
         // UI Helpers
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); document.getElementById('toggleIcon').classList.toggle('fa-chevron-right'); document.getElementById('toggleIcon').classList.toggle('fa-chevron-left');}
@@ -214,19 +277,20 @@
             document.getElementById('userName').innerText = name;
             document.getElementById('userInitial').innerText = name.substring(0,2).toUpperCase();
 
-            await cargarTodosExpedientes();
+            await cargarTodasInvitaciones();
             
             document.getElementById('filterText').addEventListener('input', filtrar);
             document.getElementById('filterStatus').addEventListener('change', filtrar);
+            document.getElementById('filterDate').addEventListener('change', filtrar);
         });
 
-        async function cargarTodosExpedientes() {
+        async function cargarTodasInvitaciones() {
             try {
-                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_all_expedientes_global' }) });
-                const result = await res.json();
+                const responseInv = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_all_invitations_global' }) });
+                const result = await responseInv.json();
                 
                 if(result.status === 'success') {
-                    todosExpedientes = result.data;
+                    todasInvitaciones = result.data;
                     filtrar();
                 }
             } catch(e) { showToast("Error al cargar datos", "danger"); }
@@ -236,72 +300,129 @@
         function filtrar() {
             const text = document.getElementById('filterText').value.toLowerCase();
             const status = document.getElementById('filterStatus').value;
+            const date = document.getElementById('filterDate').value;
 
-            const filtradas = todosExpedientes.filter(exp => {
-                const matchText = exp.nombreDocente.toLowerCase().includes(text) || exp.idExpediente.toLowerCase().includes(text);
-                const matchStatus = status === "Todos" || exp.estado === status;
-                return matchText && matchStatus;
+            const filtradas = todasInvitaciones.filter(inv => {
+                const matchText = inv.nombreDocente.toLowerCase().includes(text) || inv.curso.toLowerCase().includes(text);
+                const matchStatus = status === "Todos" || inv.estado === status;
+                const matchDate = !date || inv.fecha.split('T')[0] === date;
+                return matchText && matchStatus && matchDate;
             });
             renderTabla(filtradas);
         }
 
         function getIconForStatus(status) {
-            if(status === 'Pendiente') return '<i class="fa-solid fa-clock"></i>';
-            if(status === 'Completado') return '<i class="fa-solid fa-file-circle-check"></i>';
-            if(status === 'Aprobado') return '<i class="fa-solid fa-check-double"></i>';
+            if(status === 'Enviado') return '<i class="fa-solid fa-paper-plane"></i>';
+            if(status === 'Respondido') return '<i class="fa-solid fa-clock"></i>';
+            if(status === 'Aprobado') return '<i class="fa-solid fa-check"></i>';
             if(status === 'Rechazado') return '<i class="fa-solid fa-xmark"></i>';
             return '';
         }
 
-        function formatCustomDate(dateString) {
-            if(!dateString) return '-';
-            const d = new Date(dateString);
-            if(isNaN(d.getTime())) return String(dateString);
-            return d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
-        }
-
         function renderTabla(datos) {
-            const tbody = document.getElementById('lista-expedientes');
+            const tbody = document.getElementById('lista-invitaciones');
             if(datos.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted"><i class="fa-regular fa-folder-open fs-2 mb-2 opacity-50"></i><br>No se encontraron expedientes.</td></tr>';
                 return;
             }
 
-            tbody.innerHTML = datos.map(exp => {
-                const fIni = formatCustomDate(exp.fechaInicio);
-                const fFin = formatCustomDate(exp.fechaFin);
-                const fCrea = formatCustomDate(exp.fechaCreacion);
-
-                // Determinar el enlace. Al hacer clic enviamos expId y docId a expediente.html
-                // Se asume que no todas las tablas tendrán invId asociado directamente desde la vista global de expedientes,
-                // Si la invitacion se necesita, se debe extraer dentro de expediente.html.
-                const linkHref = `expediente.html?expId=${exp.idExpediente}&docId=${exp.docenteId}`;
-
+            tbody.innerHTML = datos.map(inv => {
+                const fecha = new Date(inv.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
                 return `
                 <tr>
                     <td>
-                        <div class="fw-bold" style="color: var(--primary-dark)">${exp.nombreDocente}</div>
-                        <div class="text-muted" style="font-size: 0.75rem;">Docente: <span class="fw-medium">${exp.docenteId}</span> <br> Exp: <span class="text-dark fw-medium">${exp.idExpediente}</span></div>
+                        <div class="fw-bold" style="color: var(--primary-dark)">${inv.nombreDocente}</div>
+                        <div class="text-muted" style="font-size: 0.75rem;">ID: ${inv.docenteId}</div>
                     </td>
                     <td>
-                        <div class="fw-medium text-dark bg-light px-2 py-1 rounded d-inline-block border" style="font-size: 0.85rem;">
-                            ${fIni} <i class="fa-solid fa-arrow-right mx-1 text-muted"></i> ${fFin}
-                        </div>
+                        <div class="fw-medium text-dark">${inv.curso}</div>
+                        <div class="text-primary fw-medium" style="font-size: 0.75rem;">${inv.programa}</div>
                     </td>
-                    <td><div class="text-muted"><i class="fa-regular fa-calendar me-2"></i>${fCrea}</div></td>
-                    <td><span class="badge-status status-${exp.estado}">${getIconForStatus(exp.estado)} ${exp.estado}</span></td>
+                    <td><div class="text-muted"><i class="fa-regular fa-calendar me-2"></i>${fecha}</div></td>
+                    <td><span class="badge-status status-${inv.estado}">${getIconForStatus(inv.estado)} ${inv.estado}</span></td>
                     <td class="text-center">
-                        <a href="${linkHref}" class="btn btn-sm btn-light border fw-bold text-secondary" style="border-radius: 8px; padding: 6px 12px; text-decoration: none; display:inline-flex; align-items:center; gap:6px;">
-                            <i class="fa-regular fa-folder-open" style="color: var(--primary)"></i> Revisar
+                        <a href="expediente.html?invId=${inv.id}&docId=${inv.docenteId}" class="btn btn-sm btn-light border fw-bold text-secondary" style="border-radius: 8px; padding: 6px 12px; text-decoration: none;">
+                            <i class="fa-regular fa-folder-open me-1" style="color: var(--primary)"></i> Revisar
                         </a>
                     </td>
                 </tr>`;
             }).join('');
         }
 
+        async function abrirRevision(invId, docId) {
+            currentInvId = invId;
+            currentDocenteId = docId;
+            new bootstrap.Modal(document.getElementById('modalRevision')).show();
+
+            document.getElementById('contenedor-adjuntos-revision').innerHTML = '<div class="col-12 text-center p-4 text-muted"><i class="fa-solid fa-spinner fa-spin fs-4 mb-2"></i><br>Extrayendo documentos...</div>';
+
+            try {
+                // Se reutiliza la funcion de perfil de backend para traer los datos del docente
+                const resProfile = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: docId }) });
+                const profile = await resProfile.json();
+                
+                const inv = todasInvitaciones.find(i => i.id === invId);
+
+                if (profile.status === 'success' && inv) {
+                    const d = profile.data;
+                    document.getElementById('rev-estado').innerText = inv.estado;
+                    document.getElementById('rev-curso').innerText = inv.curso;
+                    document.getElementById('rev-horario').innerText = `${inv.dias || '-'} / ${inv.horario || '-'}`;
+                    document.getElementById('rev-pago').innerText = inv.pago;
+                    
+                    document.getElementById('rev-nombre').innerText = `${d.nombres} ${d.apellidos}`;
+                    document.getElementById('rev-correo').innerText = d.correo;
+                    document.getElementById('rev-cuentas').innerText = `${d.banco || '-'} | C: ${d.cuenta || '-'} | CCI: ${d.cci || '-'}`;
+
+                    let htmlDocs = "";
+                    if(d.url_cv) htmlDocs += crearItemArchivo("Currículum Vitae", d.url_cv);
+                    if(d.url_handbook) htmlDocs += crearItemArchivo("Handbook Firmado", d.url_handbook);
+                    
+                    const resDocs = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_documents', id: docId }) });
+                    const docs = await resDocs.json();
+                    if(docs.status === 'success') {
+                        docs.diplomas.forEach(dip => htmlDocs += crearItemArchivo(`Diploma: ${dip.grado}`, dip.url));
+                    }
+                    document.getElementById('contenedor-adjuntos-revision').innerHTML = htmlDocs || '<p class="text-muted m-0">No se encontraron documentos.</p>';
+                }
+            } catch (e) { showToast("Error al abrir expediente", "danger"); }
+        }
+
+        function crearItemArchivo(nombre, url) {
+            return `
+            <div class="col-md-6">
+                <div class="file-item">
+                    <div class="file-info">
+                        <i class="fa-regular fa-file-pdf"></i>
+                        <span class="file-name">${nombre}</span>
+                    </div>
+                    <a href="${url}" target="_blank" class="btn-ver-file">Abrir</a>
+                </div>
+            </div>`;
+        }
+
+        async function cambiarEstadoExpediente(nuevoEstado) {
+            if(!confirm(`¿Desea marcar este expediente como ${nuevoEstado}?`)) return;
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'update_invitation_status', id: currentInvId, estado: nuevoEstado }) });
+                if((await res.json()).status === 'success') {
+                    showToast(`Expediente marcado como ${nuevoEstado}`, "success");
+                    bootstrap.Modal.getInstance(document.getElementById('modalRevision')).hide();
+                    
+                    // Recargar tabla disimuladamente en lugar de recargar toda la pagina
+                    document.getElementById('loading-spinner').style.display = 'block';
+                    document.getElementById('lista-invitaciones').innerHTML = '';
+                    await cargarTodasInvitaciones();
+                } else {
+                    showToast("No se pudo actualizar el estado", "danger");
+                }
+            } catch(e) { showToast("Error de conexión", "danger"); }
+        }
+
         function resetFilters() {
             document.getElementById('filterText').value = '';
             document.getElementById('filterStatus').value = 'Todos';
+            document.getElementById('filterDate').value = '';
             filtrar();
         }
     </script>

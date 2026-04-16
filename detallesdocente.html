@@ -280,8 +280,11 @@
                                         <div class="form-check mb-2"><input class="form-check-input doc-checkbox" type="checkbox" value="Faculty Handbook Firmado" checked> <label class="form-check-label">Handbook Firmado</label></div>
                                     </div>
                                     <div class="col-md-6">
-                                        <div class="form-check mb-2"><input class="form-check-input doc-checkbox" type="checkbox" value="Diplomas de posgrados" checked> <label class="form-check-label">Diplomas</label></div>
+                                        <div class="form-check mb-2"><input class="form-check-input doc-checkbox" type="checkbox" value="Diplomas de Pregardo y Posgrados" checked> <label class="form-check-label">Diplomas de Posgrados</label></div>
+                                        <div class="form-check mb-2"><input class="form-check-input doc-checkbox" type="checkbox" value=" Diplomas de Posgrados (Especialmente Doctorado)" > <label class="form-check-label"> Diplomas de Posgrados (Especialmente Doctorado)</label></div>
                                         <div class="form-check mb-2"><input class="form-check-input doc-checkbox" type="checkbox" value="Registro de notas (Transcript)" checked> <label class="form-check-label">Transcript de Notas</label></div>
+                                        <div class="form-check mb-2"><input class="form-check-input doc-checkbox" type="checkbox" value="Registro de notas (Transcript especialmente Doctorado)" > <label class="form-check-label">Transcript de Notas (Especialmente Doctorado)</label></div>
+
                                     </div>
                                 </div>
                             </div>
@@ -383,10 +386,21 @@
         }
 
         function filtrarCursos() {
-            const progId = document.getElementById('selPrograma').value;
+            const selP = document.getElementById('selPrograma');
             const selC = document.getElementById('selCurso');
+            
+            // Limpiamos el segundo selector por defecto
             selC.innerHTML = '<option value="">Seleccionar curso</option>';
-            catalogoCursos.filter(c => c.idPrograma == progId).forEach(c => { selC.innerHTML += `<option value="${c.idCurso}">${c.nombre}</option>`; });
+            
+            // Si regresa a la opción por defecto, detenemos aquí
+            if (selP.selectedIndex === 0 || !selP.value) return;
+
+            const progId = String(selP.value).trim();
+            const progName = String(selP.options[selP.selectedIndex].text).trim();
+            
+            catalogoCursos.filter(c => c.idPrograma === progId || c.idPrograma === progName).forEach(c => { 
+                selC.innerHTML += `<option value="${c.idCurso}">${c.nombre}</option>`; 
+            });
         }
 
         async function guardarInvitacion() {

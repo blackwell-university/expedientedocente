@@ -143,7 +143,7 @@
             <a href="dashboard-docente.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a>
             <a href="docente.html" class="nav-link"><i class="fa-solid fa-user"></i> <span class="link-text">Información Personal</span></a>
             <a href="gestionexpedientes.html" class="nav-link"><i class="fa-solid fa-file-lines"></i> <span class="link-text">Mis Expedientes</span></a>
-            <a href="carpetadocente.html" class="nav-link"><i class="fa-solid fa-folder-open"></i> <span class="link-text">Carpeta Docente</span></a>
+            <!--<a href="carpetadocente.html" class="nav-link"><i class="fa-solid fa-folder-open"></i> <span class="link-text">Carpeta Docente</span></a>-->
             <a href="gestioncursos.html" class="nav-link active"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Mis Clases</span></a>
         </nav>
 
@@ -273,7 +273,7 @@
                     statusIcon = 'fa-exclamation-circle'; 
                     // Si el admin se lo envió, el docente debe confirmarlo usando el formulario de expediente
                     const nameCodificado = encodeURIComponent(document.getElementById('userNameSidebar').innerText);
-                    const linkConfirmar = `registroexpediente.html`; 
+                    const linkConfirmar = `dashboard-docente.html`; 
                     btnHtml = `<a href="${linkConfirmar}" class="btn-card-action btn-action-primary"><i class="fa-solid fa-calendar-plus"></i> Confirmar Horario</a>`;
                 }
 
