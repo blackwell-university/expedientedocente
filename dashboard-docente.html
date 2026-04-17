@@ -168,9 +168,6 @@
                         <h1 id="welcomeMessage">¡Hola, Docente!</h1>
                         <p>Resumen de tu actividad académica y estado de expedientes.</p>
                     </div>
-                    <a href="carpetadocente.html" class="btn btn-primary shadow-sm" style="background: var(--primary); border: none; padding: 12px 24px; border-radius: 12px; font-weight: 700; text-decoration: none;">
-                        <i class="fa-solid fa-cloud-arrow-up me-2"></i> Subir Materiales
-                    </a>
                 </div>
 
                 <!-- 1. FILA DE ESTADÍSTICAS (KPIs) -->
@@ -186,7 +183,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6 col-xl-3">
+                    <!--<div class="col-md-6 col-xl-3">
                         <div class="stat-card">
                             <div class="stat-header">
                                 <div class="stat-icon icon-green"><i class="fa-regular fa-clock"></i></div>
@@ -196,7 +193,7 @@
                                 <div class="stat-value">24<span style="font-size: 1rem; color: #94a3b8;">h</span></div>
                             </div>
                         </div>
-                    </div>
+                    </div>-->
                     <div class="col-md-6 col-xl-3">
                         <div class="stat-card">
                             <div class="stat-header">
@@ -209,7 +206,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6 col-xl-3">
+                    <!--<div class="col-md-6 col-xl-3">
                         <div class="stat-card">
                             <div class="stat-header">
                                 <div class="stat-icon icon-purple"><i class="fa-regular fa-star"></i></div>
@@ -219,14 +216,14 @@
                                 <div class="stat-value">4.8<span style="font-size: 1rem; color: #94a3b8;">/5</span></div>
                             </div>
                         </div>
-                    </div>
+                    </div>-->
                 </div>
 
                 <!-- 2. FILA DE PANELES PRINCIPALES -->
                 <div class="row g-4 mb-4">
                     
                     <!-- Panel Izquierdo: Próximas Clases -->
-                    <div class="col-lg-7">
+                    <div class="col-lg-6">
                         <div class="panel-card">
                             <h3 class="panel-title"><i class="fa-regular fa-calendar-check text-primary"></i> Mis Próximas Clases</h3>
                             
@@ -258,22 +255,6 @@
                         </div>
                     </div>
 
-                    <!-- Panel Derecho: Gráfico de Horas -->
-                    <div class="col-lg-5">
-                        <div class="panel-card">
-                            <h3 class="panel-title"><i class="fa-solid fa-chart-simple text-primary"></i> Horas de Enseñanza</h3>
-                            <div class="chart-container">
-                                <canvas id="horasChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- 3. FILA DE ACTIVIDAD Y DOCUMENTOS -->
-                <div class="row g-4">
-                    
-                    <!-- Actividad Reciente -->
                     <div class="col-lg-6">
                         <div class="panel-card">
                             <h3 class="panel-title"><i class="fa-solid fa-bolt text-warning"></i> Actividad Reciente</h3>
@@ -307,13 +288,61 @@
                         </div>
                     </div>
 
-                    <!-- Gráfico de Carga de Materiales -->
+                    <!-- Panel Derecho: Gráfico de Horas 
+                    <div class="col-lg-5">
+                        <div class="panel-card">
+                            <h3 class="panel-title"><i class="fa-solid fa-chart-simple text-primary"></i> Horas de Enseñanza</h3>
+                            <div class="chart-container">
+                                <canvas id="horasChart"></canvas>
+                            </div>
+                        </div>
+                    </div>-->
+
+                </div>
+
+                <!-- 3. FILA DE ACTIVIDAD Y DOCUMENTOS -->
+                <div class="row g-4">
+                    
+                    <!-- Actividad Reciente 
+                    <div class="col-lg-6">
+                        <div class="panel-card">
+                            <h3 class="panel-title"><i class="fa-solid fa-bolt text-warning"></i> Actividad Reciente</h3>
+                            
+                            <div class="activity-item">
+                                <div class="activity-icon"><i class="fa-solid fa-file-signature text-success"></i></div>
+                                <div class="activity-details">
+                                    <b>Contrato FORM 402 firmado</b>
+                                    <span>Has firmado el contrato para el curso "Inteligencia Artificial".</span>
+                                    <small>Hace 2 días</small>
+                                </div>
+                            </div>
+
+                            <div class="activity-item">
+                                <div class="activity-icon"><i class="fa-solid fa-cloud-arrow-up text-primary"></i></div>
+                                <div class="activity-details">
+                                    <b>Material subido correctamente</b>
+                                    <span>PPT Sesión 1 - Metodología de la Investigación.</span>
+                                    <small>Hace 3 días</small>
+                                </div>
+                            </div>
+
+                            <div class="activity-item">
+                                <div class="activity-icon"><i class="fa-regular fa-circle-check text-info"></i></div>
+                                <div class="activity-details">
+                                    <b>Expediente aprobado</b>
+                                    <span>El equipo administrativo ha aprobado tu expediente docente.</span>
+                                    <small>Hace 1 semana</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>-->
+
+                    <!-- Gráfico de Carga de Materiales 
                     <div class="col-lg-6">
                         <div class="panel-card">
                             <h3 class="panel-title"><i class="fa-solid fa-folder-open text-primary"></i> Progreso de Materiales</h3>
                             <div class="d-flex align-items-center justify-content-center" style="height: 250px; position: relative;">
                                 <canvas id="materialesChart" style="max-height: 100%;"></canvas>
-                                <!-- Texto en el centro del Doughnut -->
                                 <div style="position: absolute; text-align: center;">
                                     <span style="display: block; font-size: 2rem; font-weight: 800; color: var(--text-main); line-height: 1;">75%</span>
                                     <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Completado</span>
@@ -321,7 +350,7 @@
                             </div>
                             <p class="text-center text-muted small mt-3 m-0">Te falta subir 2 presentaciones (PPT) para la próxima semana.</p>
                         </div>
-                    </div>
+                    </div>-->
 
                 </div>
 
