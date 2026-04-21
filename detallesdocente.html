@@ -13,6 +13,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
 
     <style>
         :root {
@@ -185,11 +186,11 @@
                                                 <i class="fa-solid fa-folder-plus"></i><span>Crear Expediente + Invitación</span>
                                             </button>
                                         </div>
-                                        <div class="col-12">
+                                        <!--<div class="col-12">
                                             <button class="btn-action" onclick="abrirModalInvitacion('invitacion')">
                                                 <i class="fa-regular fa-paper-plane"></i><span>Enviar Invitación a curso</span>
                                             </button>
-                                        </div>
+                                        </div>-->
                                         <div class="col-12">
                                             <button class="btn-action" onclick="generarForm402(this)">
                                                 <i class="fa-solid fa-file-contract"></i><span>Generar Contrato (FORM 402)</span>
@@ -325,7 +326,10 @@
         document.addEventListener('DOMContentLoaded', () => {
             const name = sessionStorage.getItem('userName') || "Admin";
             document.getElementById('userName').innerText = name;
-            if(docenteId) { cargarPerfilDocente(docenteId); } 
+            if(docenteId) { 
+                cargarPerfilDocente(docenteId);
+                cargarExpedientes();
+            } 
         });
 
         async function cargarPerfilDocente(id) {
@@ -413,7 +417,8 @@
                 action: 'save_invitation', 
                 modo: modoAccionActual,
                 docenteId: docenteId, 
-                idCurso: selC.value,  // <--- NUEVO: CAPTURAMOS EL ID DEL CURSO AQUÍ
+                idPrograma: selP.value, // <--- AÑADE ESTO (Es crucial para la base de datos)
+                idCurso: selC.value,    // Ya lo habías puesto excelente
                 docenteNombre: document.getElementById('det-nombre').innerText.split(' ')[0], 
                 docenteCorreo: document.getElementById('det-correo').innerText,
                 programa: selP.options[selP.selectedIndex].text, 
@@ -471,6 +476,179 @@
                     bootstrap.Modal.getInstance(document.getElementById('modalInvitacion')).hide(); 
                 }
             } catch(e) { showToast("Error al enviar", "danger"); } finally { btn.innerHTML = 'Guardar y Enviar Correo'; }
+        }
+
+        // --- FUNCIÓN EXPERTA: CARGAR Y DIBUJAR EXPEDIENTES (DISEÑO PREMIUM) ---
+        async function cargarExpedientes() {
+            const contenedor = document.getElementById('contenedor-invitaciones');
+            contenedor.innerHTML = '<p class="text-muted"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando expedientes...</p>';
+            
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_expedientes_docente', docenteId: docenteId }) });
+                const json = await res.json();
+                
+                if (json.status === 'success') {
+                    window.listaExpedientesGlobal = json.data; // Guardado en memoria
+                    
+                    if (json.data.length === 0) {
+                        contenedor.innerHTML = '<div class="p-4 bg-light border rounded-4 text-center text-muted" style="border-style: dashed !important;">No hay expedientes creados para este docente.</div>';
+                        return;
+                    }
+
+                    let html = '';
+                    json.data.forEach(exp => {
+                        // Estado del EXPEDIENTE (para la etiqueta top derecha)
+                        const estExp = (exp.estado || "Pendiente").toString().trim().toLowerCase();
+                        let estadoTextoExp = exp.estado || 'Pendiente';
+                        let badgeClass = 'bg-secondary bg-opacity-10 text-secondary border border-secondary';
+                        if (estExp === 'pendiente' || estExp === 'guardado') badgeClass = 'bg-warning bg-opacity-10 text-warning border border-warning';
+                        else if (estExp === 'enviado') badgeClass = 'bg-info bg-opacity-10 text-info border border-info'; 
+                        else if (estExp === 'completado') badgeClass = 'bg-success bg-opacity-10 text-success border border-success';
+                        else if (estExp === 'aprobado') { badgeClass = 'bg-primary bg-opacity-10 text-primary border border-primary'; estadoTextoExp = "Aprobado"; }
+
+                        // NUEVO: Estado de la INVITACIÓN (Para diseño y lógica del botón)
+                        const estInv = (exp.estadoInvitacion || "Pendiente").toString().trim().toLowerCase();
+                        let iconInv = 'fa-solid fa-envelope-open-text';
+                        let colorInv = '#f59e0b'; // Amarillo si falta enviar
+                        let textoInv = exp.estadoInvitacion || 'Pendiente';
+
+                        let btnEnviar = '';
+                        // Solo muestra el botón si la Invitación NO ha sido enviada (Guardado/Pendiente)
+                        if (estInv === 'pendiente' || estInv === 'guardado') {
+                            btnEnviar = `<button class="btn btn-sm btn-primary fw-bold px-3 shadow-sm" style="border-radius: 8px; padding: 8px 16px; transition: 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'" onclick="enviarExpediente('${exp.idExpediente}')"><i class="fa-regular fa-paper-plane me-2"></i>Enviar Invitación</button>`;
+                        } else {
+                            colorInv = '#10b981'; // Verde si ya fue enviada/respondida
+                            iconInv = 'fa-solid fa-check-double';
+                        }
+
+                        // Formateo visual de fechas
+                        const fInicio = exp.fechaInicio ? new Date(exp.fechaInicio).toLocaleDateString('es-ES', {day: '2-digit', month: 'short', year:'numeric'}) : '-';
+                        const fFin = exp.fechaFin ? new Date(exp.fechaFin).toLocaleDateString('es-ES', {day: '2-digit', month: 'short', year:'numeric'}) : '-';
+                        const fCreacion = exp.fechaCreacion ? new Date(exp.fechaCreacion).toLocaleDateString('es-ES', {day: '2-digit', month: 'short', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '-';
+
+                        // Tarjeta Premium con 3 columnas
+                        html += `
+                        <div class="expediente-card p-4 mb-4" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+                            
+                            <!-- Cabecera de la Tarjeta -->
+                            <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="icon-box shadow-sm" style="width: 42px; height: 42px; background: #eff6ff; color: #2563eb; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                                        <i class="fa-solid fa-folder-open"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold m-0 text-dark" style="font-size: 1.1rem; letter-spacing: -0.01em;">${exp.idExpediente}</h6>
+                                        <span class="text-muted" style="font-size: 0.8rem; font-weight: 500;">Expediente de Registro</span>
+                                    </div>
+                                </div>
+                                <span class="badge ${badgeClass} px-3 py-1" style="border-radius: 8px; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase;" title="Estado del Expediente">${estadoTextoExp}</span>
+                            </div>
+
+                            <!-- Cuerpo de la Tarjeta (Datos) - Dividido en 3 -->
+                            <div class="row g-3 mb-4 mt-1">
+                                <div class="col-md-4">
+                                    <span style="display: block; font-size: 0.75rem; color: #64748b; margin-bottom: 6px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Periodo Asignado</span>
+                                    <div style="font-size: 0.95rem; color: #1e293b; font-weight: 500;">
+                                        <i class="fa-regular fa-calendar text-primary opacity-75 me-2"></i>${fInicio} al ${fFin}
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <span style="display: block; font-size: 0.75rem; color: #64748b; margin-bottom: 6px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Fecha de Creación</span>
+                                    <div style="font-size: 0.95rem; color: #1e293b; font-weight: 500;">
+                                        <i class="fa-solid fa-clock-rotate-left text-primary opacity-75 me-2"></i>${fCreacion}
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <span style="display: block; font-size: 0.75rem; color: #64748b; margin-bottom: 6px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Correo Invitación</span>
+                                    <div style="font-size: 0.95rem; font-weight: 700; color: ${colorInv};">
+                                        <i class="${iconInv} me-2"></i>${textoInv}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Footer de la Tarjeta (Acciones) -->
+                            <div class="d-flex gap-2 justify-content-end align-items-center pt-2">
+                                <a href="revision-docs.html?exp=${exp.idExpediente}&doc=${docenteId}" class="btn btn-sm" style="background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; font-weight: 600; padding: 8px 16px; border-radius: 8px; transition: 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
+                                    <i class="fa-regular fa-eye me-2"></i>Ver Detalles
+                                </a>
+                                ${btnEnviar}
+                            </div>
+
+                        </div>
+                        `;
+                    });
+                    contenedor.innerHTML = html;
+                } else {
+                    contenedor.innerHTML = '<p class="text-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i> Error al cargar los expedientes.</p>';
+                }
+            } catch (e) {
+                console.error(e);
+                contenedor.innerHTML = '<p class="text-danger"><i class="fa-solid fa-wifi me-1"></i> Error de conexión con el servidor.</p>';
+            }
+        }
+
+        // --- FUNCIÓN EXPERTA PARA EL BOTÓN ENVIAR (TARJETA) ---
+        async function enviarExpediente(idExp) {
+            Swal.fire({
+                title: '¿Enviar Invitación al Docente?',
+                text: "Se enviará el correo oficial y el estado de la invitación cambiará a 'Enviado'.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: '<i class="fa-regular fa-paper-plane me-1"></i> Sí, enviar',
+                cancelButtonText: 'Cancelar'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    showToast("Recopilando datos y enviando correo...", "success");
+                    
+                    try {
+                        const expData = window.listaExpedientesGlobal.find(e => e.idExpediente === idExp);
+                        if(!expData || !expData.idInvitacion) {
+                            showToast("Error: No se encontró la invitación asociada.", "danger"); return;
+                        }
+
+                        // Buscamos los datos limpios en el backend usando tu nuevo endpoint
+                        const resInv = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_invitation_for_email', idInvitacion: expData.idInvitacion }) });
+                        const jsonInv = await resInv.json();
+
+                        if (jsonInv.status !== 'success') {
+                            showToast("Error al obtener detalles del curso.", "danger"); return;
+                        }
+
+                        const d = jsonInv.data;
+                        const payloadEmail = { 
+                            action: 'send_invitation_email', 
+                            modo: 'expediente',
+                            idInvitacion: expData.idInvitacion, 
+                            docenteId: docenteId, 
+                            docenteCorreo: document.getElementById('det-correo').innerText, 
+                            docenteNombre: document.getElementById('det-nombre').innerText.split(' ')[0],
+                            programa: d.programa, 
+                            curso: d.curso,
+                            rangoFechas: `${new Date(d.fechaInicio).toLocaleDateString('es-ES')} al ${new Date(d.fechaFin).toLocaleDateString('es-ES')}`,
+                            horario: d.franjas, 
+                            cantidadClases: d.clases,
+                            monedaSimbolo: d.moneda, 
+                            costo: d.costo,
+                            documentos: expData.documentos
+                        };
+
+                        // Disparamos el correo con el endpoint oficial
+                        const resEmail = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payloadEmail) });
+                        const jsonEmail = await resEmail.json();
+
+                        if (jsonEmail.status === 'success') {
+                            showToast("¡Correo enviado exitosamente!", "success");
+                            cargarExpedientes(); // Refresca la tarjeta: el botón desaparecerá y dirá "Enviado" en verde
+                        } else {
+                            showToast("Error del servidor al enviar el correo.", "danger");
+                        }
+                    } catch (e) {
+                        showToast("Error de conexión al procesar el envío.", "danger");
+                    }
+                }
+            });
         }
 
     </script>

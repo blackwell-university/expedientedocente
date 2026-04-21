@@ -17,6 +17,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <!-- Intl-Tel-Input (Selector de País para Celular) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@24.5.0/build/css/intlTelInput.css">
+    <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@24.5.0/build/js/intlTelInput.min.js"></script>
+
     <style>
         :root {
             --primary: #2563eb; 
@@ -79,6 +83,17 @@
         .step-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
         .step-tab.completed { color: #10b981; }
 
+        /* CLASE PARA BLOQUEO VISUAL DEL PASO 6 */
+        .step-locked {
+            opacity: 0.5;
+            cursor: not-allowed !important;
+            filter: grayscale(1);
+        }
+        .step-locked:hover {
+            color: #94a3b8 !important;
+            border-bottom-color: transparent !important;
+        }
+
         /* --- CONTENIDO DE PASOS --- */
         .step-content { display: none; }
         .step-content.active { display: block; animation: fadeIn 0.4s; }
@@ -126,7 +141,47 @@
         .btn-continue:disabled { opacity: 0.7; cursor: not-allowed; }
         .btn-cancel { background: #f1f5f9; color: #475569; border: none; font-weight: 600; padding: 14px 32px; border-radius: 14px; }
 
+        
+        /* Ajuste Aesthetic para intl-tel-input */
+        .iti { width: 100%; display: block; }
+        .iti__dropdown-content { border-radius: 12px; border: 1px solid #cbd5e1; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .iti__search-input { border-radius: 8px !important; padding: 10px !important; border: 1px solid #cbd5e1 !important; background: #f8fafc !important;}
+
         @media (max-width: 768px) { .sidebar { display: none; } header, .content-area { padding: 20px; } .wizard-card { padding: 25px; } }
+        /* Switch Estético para "Actualidad" */
+        .form-check-switch {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        .form-check-switch input {
+            width: 34px;
+            height: 18px;
+            appearance: none;
+            background: #cbd5e1;
+            border-radius: 20px;
+            position: relative;
+            cursor: pointer;
+            transition: .3s;
+        }
+        .form-check-switch input:checked { background: var(--primary); }
+        .form-check-switch input::before {
+            content: "";
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: .3s;
+        }
+        .form-check-switch input:checked::before { transform: translateX(16px); }
+
     </style>
 </head>
 <body>
@@ -180,12 +235,13 @@
 
                 <div class="wizard-card">
                     <div class="stepper-container" id="stepper">
-                        <div class="step-tab active" id="tab-1"><i class="fa-regular fa-circle-dot"></i> 1. Docs</div>
-                        <div class="step-tab" id="tab-2"><i class="fa-regular fa-circle"></i> 2. Grados</div>
-                        <div class="step-tab" id="tab-3"><i class="fa-regular fa-circle"></i> 3. Perfil</div>
-                        <div class="step-tab" id="tab-4"><i class="fa-regular fa-circle"></i> 4. Curso</div>
-                        <div class="step-tab" id="tab-5"><i class="fa-regular fa-circle"></i> 5. Banco</div>
-                        <div class="step-tab" id="tab-6"><i class="fa-regular fa-circle"></i> 6. Revisión IA</div>
+                        <div class="step-tab active" id="tab-1" onclick="irAPaso(1)"><i class="fa-regular fa-circle-dot"></i> 1. Docs</div>
+                        <div class="step-tab" id="tab-2" onclick="irAPaso(2)"><i class="fa-regular fa-circle"></i> 2. Grados</div>
+                        <div class="step-tab" id="tab-3" onclick="irAPaso(3)"><i class="fa-regular fa-circle"></i> 3. Perfil</div>
+                        <div class="step-tab" id="tab-4" onclick="irAPaso(4)"><i class="fa-regular fa-circle"></i> 4. Curso</div>
+                        <div class="step-tab" id="tab-5" onclick="irAPaso(5)"><i class="fa-regular fa-circle"></i> 5. Banco</div>
+                        <!-- PASO 6 BLOQUEADO POR DEFECTO -->
+                        <div class="step-tab step-locked" id="tab-6" onclick="irAPaso(6)"><i class="fa-solid fa-lock"></i> 6. Revisión IA</div>
                     </div>
 
                     <form id="wizardForm">
@@ -230,7 +286,12 @@
                                 <div class="uploaded-doc-card">
                                     <div class="info">
                                         <i class="fa-solid fa-file-pdf"></i>
-                                        <div><h6 class="fw-bold m-0 text-dark">Curriculum Vitae</h6><span class="small text-success"><i class="fa-solid fa-check"></i> Archivo guardado correctamente</span></div>
+                                        <div>
+                                            <h6 class="fw-bold m-0 text-dark">Curriculum Vitae</h6>
+                                            <div id="cv-status-container">
+                                                <span class="small text-success"><i class="fa-solid fa-check"></i> Archivo guardado correctamente</span>
+                                            </div>
+                                        </div>
                                     </div>
                                     <a href="#" id="view-link-cv" target="_blank" class="btn btn-sm btn-light fw-bold px-3">Ver Archivo</a>
                                 </div>
@@ -311,12 +372,68 @@
                         <div class="step-content" id="step-3">
                             <h4 class="fw-800 mb-4">Información del Perfil</h4>
                             <div class="row g-3">
+                                <div class="col-md-6"><label class="form-label">Correo Electrónico</label><input type="email" class="form-control" id="reg-correo"></div>
+                                <div class="col-md-6"><label class="form-label">Celular (con código de país)</label><input type="text" class="form-control" id="reg-celular" placeholder="  999 999 999"></div>
+                                
                                 <div class="col-md-6"><label class="form-label">Nombres Completos</label><input type="text" class="form-control" id="reg-nombres"></div>
                                 <div class="col-md-6"><label class="form-label">Apellidos</label><input type="text" class="form-control" id="reg-apellidos"></div>
-                                <div class="col-md-6"><label class="form-label">DNI / Pasaporte</label><input type="text" class="form-control" id="reg-dni"></div>
-                                <div class="col-md-6"><label class="form-label">Celular</label><input type="text" class="form-control" id="reg-celular"></div>
-                                <div class="col-md-4"><label class="form-label">País</label><input type="text" class="form-control" id="reg-pais"></div>
-                                <div class="col-8"><label class="form-label">Dirección Completa</label><input type="text" class="form-control" id="reg-direccion"></div>
+                                
+                                <div class="col-md-4">
+                                    <label class="form-label">Tipo de ID</label>
+                                    <select class="form-select" id="reg-tipo-id">
+                                        <option value="">Seleccionar...</option>
+                                        <option value="DNI">DNI</option>
+                                        <option value="Pasaporte">Pasaporte</option>
+                                        <option value="RUT">RUT</option>
+                                        <option value="Cédula de Identidad">Cédula de Identidad</option>
+                                        <option value="ID Nacional">ID Nacional</option>
+                                        <option value="SSN">SSN</option>
+                                        <option value="Otro">Otro</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4"><label class="form-label">Nro. de Documento</label><input type="text" class="form-control" id="reg-dni"></div>
+                                <div class="col-md-4"><label class="form-label">Fecha de Nacimiento</label><input type="date" class="form-control" id="reg-fecha-nac"></div>
+                                
+                                <div class="col-md-4">
+                                    <label class="form-label">País</label>
+                                    <select class="form-select" id="reg-pais" onchange="verificarEstadoEEUU()">
+                                        <option value="">Cargando países...</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4"><label class="form-label">Estado / Región</label><input type="text" class="form-control" id="reg-estado-region" placeholder="Solo aplica para EE.UU." disabled></div>
+                                <div class="col-md-4"><label class="form-label">Ciudad</label><input type="text" class="form-control" id="reg-ciudad"></div>
+                                
+                                <div class="col-md-8"><label class="form-label">Dirección Domicilio</label><input type="text" class="form-control" id="reg-direccion"></div>
+                                <div class="col-md-4"><label class="form-label">Código Postal (CP)</label><input type="text" class="form-control" id="reg-cp"></div>
+
+                                <!-- SECCIÓN PARA SUBIR EL PDF DE IDENTIFICACIÓN -->
+                                <div class="col-12 mt-4 pt-2 border-top">
+                                    <label class="form-label text-primary"><i class="fa-solid fa-id-card"></i> Documento de Identidad (PDF) *</label>
+                                    
+                                    <!-- Modo Subida -->
+                                    <div id="step3-upload-mode">
+                                        <div class="file-upload-box py-3" onclick="document.getElementById('idFile').click()">
+                                            <i class="fa-solid fa-file-pdf fs-3 mb-2"></i>
+                                            <h6 class="fw-bold text-dark m-0" id="idTextLabel">Subir Identificación (PDF)</h6>
+                                            <p class="text-muted small m-0">Sube una copia escaneada de tu ID oficial.</p>
+                                            <input type="file" id="idFile" class="d-none" accept=".pdf" onchange="mostrarNombre(this, 'idTextLabel')">
+                                        </div>
+                                    </div>
+
+                                    <!-- Modo Lectura -->
+                                    <div id="step3-view-mode" class="d-none">
+                                        <div class="uploaded-doc-card py-2 px-3 m-0">
+                                            <div class="info">
+                                                <i class="fa-solid fa-id-card"></i>
+                                                <div><h6 class="fw-bold m-0 text-dark">Identificación Guardada</h6><span class="small text-success"><i class="fa-solid fa-check"></i> Archivo procesado</span></div>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <a href="#" id="view-link-id" target="_blank" class="btn btn-sm btn-light border fw-bold px-3">Ver PDF</a>
+                                                <button type="button" class="btn btn-sm btn-outline-primary fw-bold" onclick="habilitarEdicionPaso3()"><i class="fa-solid fa-pen"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -348,18 +465,115 @@
                         <div class="step-content" id="step-5">
                             <h4 class="fw-800 mb-4">Información Bancaria</h4>
                             <div class="row g-3">
-                                <div class="col-md-8"><label class="form-label">Banco</label><input type="text" class="form-control" id="reg-banco"></div>
-                                <div class="col-md-4"><label class="form-label">Moneda</label><select class="form-select" id="reg-moneda"><option value="Dólares">USD ($)</option><option value="Soles">PEN (S/.)</option></select></div>
-                                <div class="col-12"><label class="form-label">Número de Cuenta / CCI</label><input type="text" class="form-control" id="reg-cuenta"></div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Nombre del Banco</label>
+                                    <input type="text" class="form-control" id="reg-banco" placeholder="Ej: Interbank, Bank of America...">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Moneda de Cuenta</label>
+                                    <select class="form-select" id="reg-moneda">
+                                        <option value="">Seleccionar...</option>
+                                        <option value="Dólares">Dólares</option>
+                                        <option value="Soles">Soles</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Tipo de Cuenta</label>
+                                    <select class="form-select" id="reg-tipo-cuenta">
+                                        <option value="">Seleccionar...</option>
+                                        <option value="Checking (Cuenta corriente)">Checking (Cuenta corriente)</option>
+                                        <option value="Savings (Cuenta de Ahorro)">Savings (Cuenta de Ahorro)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label class="form-label">Cuenta Bancaria</label>
+                                    <input type="text" class="form-control" id="reg-cuenta">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Cuenta Interbancaria (Opcional)</label>
+                                    <input type="text" class="form-control" id="reg-cci">
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label class="form-label">Tipo Número Ruta</label>
+                                    <select class="form-select" id="reg-tipo-ruta">
+                                        <option value="">Seleccionar...</option>
+                                        <option value="Cuenta de EE. UU. (ACH)">Cuenta de EE. UU. (ACH)</option>
+                                        <option value="Cuenta Europea (IBAN)">Cuenta Europea (IBAN)</option>
+                                        <option value="Cuenta Internacional (SWIFT)">Cuenta Internacional (SWIFT)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Código Ruta</label>
+                                    <input type="text" class="form-control" id="reg-codigo-ruta">
+                                </div>
                             </div>
                         </div>
 
                         <!-- PASO 6: EXPERIENCIA -->
                         <div class="step-content" id="step-6">
-                            <h4 class="fw-800 mb-4">Revisión de Datos (Extraídos por IA)</h4>
-                            <div id="ai-education-container"></div>
-                            <div id="ai-experience-container"></div>
-                            <button type="button" class="btn-add-dynamic mt-4" onclick="addExpField()"><i class="fa-solid fa-plus me-1"></i> Agregar Experiencia Manual</button>
+                            <div class="d-flex align-items-center gap-2 mb-4">
+                                <div class="logo-box" style="width: 32px; height: 32px; font-size: 14px;"><i class="fa-solid fa-robot"></i></div>
+                                <h4 class="fw-800 m-0">Revisión de Datos (Procesados)</h4>
+                            </div>
+
+                            <!-- SECCIÓN: GRADOS -->
+                            <div class="mb-5">
+                                <h5 class="fw-700 text-primary mb-3 d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-graduation-cap"></i> Grados Académicos
+                                </h5>
+                                <div id="ai-education-container"></div>
+                            </div>
+
+                            <!-- SECCIÓN: EXPERIENCIA -->
+                            <div class="mb-5">
+                                <h5 class="fw-700 text-primary mb-3 d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-briefcase"></i> Experiencia Laboral
+                                </h5>
+                                <div id="ai-experience-container"></div>
+                                <button type="button" class="btn-add-dynamic mt-2" onclick="addExpField()">
+                                    <i class="fa-solid fa-plus me-1"></i> Agregar Experiencia Manual
+                                </button>
+                            </div>
+
+                            <!-- SECCIÓN: COMPETENCIAS (NUEVA) -->
+                            <div class="mb-4 pt-4 border-top">
+                                <h5 class="fw-700 text-primary mb-3 d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-star"></i> Competencias y Habilidades
+                                </h5>
+                                <div class="dynamic-card" style="background: #ffffff; border-left: 4px solid var(--primary);">
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label small fw-bold">Competencias Tecnológicas</label>
+                                            <select class="form-select bg-white" id="skill-tech">
+                                                <option value="">Seleccionar...</option>
+                                                <option value="Basic">Basic (Básico)</option>
+                                                <option value="Intermediate">Intermediate (Intermedio)</option>
+                                                <option value="Advanced">Advanced (Avanzado)</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label small fw-bold">Competencias Lingüísticas</label>
+                                            <select class="form-select bg-white" id="skill-lang">
+                                                <option value="">Seleccionar...</option>
+                                                <option value="Basic">Basic (Básico)</option>
+                                                <option value="Intermediate">Intermediate (Intermedio)</option>
+                                                <option value="Advanced">Advanced (Avanzado)</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label small fw-bold">Habilidades Sociales (Soft Skills)</label>
+                                            <select class="form-select bg-white" id="skill-social">
+                                                <option value="">Seleccionar...</option>
+                                                <option value="Low">Low (Bajo)</option>
+                                                <option value="Average">Average (Promedio)</option>
+                                                <option value="High">High (Alto)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- NAVEGACIÓN -->
@@ -379,9 +593,13 @@
         </div>
     </main>
 
+    <!-- TOAST NOTIFICATION CONTENEDOR (Requerido para que showToast funcione) -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-4" style="z-index: 1055;" id="toastContainer"></div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
         const N8N_URL = "https://n8n.balticec.com/webhook/ad08f4fd-2709-460a-9368-238395ad8533";
         
         let pasoActual = 1; const totalPasos = 6;
@@ -392,8 +610,74 @@
         let urlCVGlobal = ""; 
         let urlHbGlobal = "";
         let isEditingDocs = true;
+        let urlIdGlobal = "";
+        let isEditingId = true;
+        let itiCelular;
+
+        function formatToMonthInput(dateString) {
+            if (!dateString || dateString.toLowerCase().includes('actual')) return "";
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return "";
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            return `${year}-${month}`;
+        }
+
+        // --- FUNCIONES PARA EL PASO 3 ---
+        async function cargarPaises() {
+            try {
+                const res = await fetch('https://restcountries.com/v3.1/all?fields=name,translations');
+                const paises = await res.json();
+                paises.sort((a, b) => a.translations.spa.common.localeCompare(b.translations.spa.common));
+                
+                const selectPais = document.getElementById('reg-pais');
+                selectPais.innerHTML = '<option value="">Seleccionar país...</option>';
+                paises.forEach(p => {
+                    const nombreEsp = p.translations.spa.common;
+                    const option = document.createElement('option');
+                    option.value = nombreEsp;
+                    option.textContent = nombreEsp;
+                    selectPais.appendChild(option);
+                });
+            } catch (e) {
+                document.getElementById('reg-pais').innerHTML = '<option value="">Error cargando países</option>';
+            }
+        }
+
+        function verificarEstadoEEUU() {
+            const pais = document.getElementById('reg-pais').value.toLowerCase();
+            const inputEstado = document.getElementById('reg-estado-region');
+            
+            if (pais === 'estados unidos' || pais === 'united states' || pais === 'estados unidos de américa') {
+                inputEstado.disabled = false;
+                inputEstado.placeholder = "Ingrese su estado (Ej: Florida)";
+            } else {
+                inputEstado.disabled = true;
+                inputEstado.value = "";
+                inputEstado.placeholder = "Solo aplica para EE.UU.";
+            }
+        }
+
+        function habilitarEdicionPaso3() {
+            isEditingId = true;
+            document.getElementById('step3-view-mode').classList.add('d-none');
+            document.getElementById('step3-upload-mode').classList.remove('d-none');
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
+            cargarPaises();
+
+            // Inicializar el selector de código de país
+            const inputCelular = document.querySelector("#reg-celular");
+            itiCelular = window.intlTelInput(inputCelular, {
+                initialCountry: "auto", // Autodetecta el país por IP
+                geoIpLookup: callback => {
+                    fetch("https://ipapi.co/json").then(res => res.json()).then(data => callback(data.country_code)).catch(() => callback("pe"));
+                },
+                utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@24.5.0/build/js/utils.js",
+                separateDialCode: true, // Muestra el código separado (+51) para mejor UX
+            });
+
             const name = sessionStorage.getItem('userName') || "Docente";
             document.getElementById('userNameSidebar').innerText = name.split("@")[0];
             document.getElementById('userInitial').innerText = name.substring(0,2).toUpperCase();
@@ -429,10 +713,15 @@
 
                 if (result.status === 'success') {
                     const d = result.data;
+                    // ... (rellenado de campos nombre, apellidos, etc)
                     if(d.nombres) document.getElementById('reg-nombres').value = d.nombres;
                     if(d.apellidos) document.getElementById('reg-apellidos').value = d.apellidos;
                     if(d.dni) document.getElementById('reg-dni').value = d.dni;
-                    if(d.celular) document.getElementById('reg-celular').value = d.celular;
+                    if(d.celular) { 
+                        // Limpia duplicados visuales del código de país (Ej: "+51 +51910852228" -> "+51910852228")
+                        let celStr = d.celular.toString().replace(/^(\+\d+)\s*(?:\1|\+\d+)/, '$1');
+                        itiCelular.setNumber(celStr); 
+                    }
                     if(d.pais) document.getElementById('reg-pais').value = d.pais;
                     if(d.direccion) document.getElementById('reg-direccion').value = d.direccion;
                     if(d.banco) document.getElementById('reg-banco').value = d.banco;
@@ -447,8 +736,25 @@
                         document.getElementById('step1-view-mode').style.display = 'block';
                         isEditingDocs = false; 
                         marcarTabComoCompletada(1);
+
+                        // *** INICIO DE LÓGICA EXPERTA: ESTADO DINÁMICO DEL CV ***
+                        const statusContainer = document.getElementById('cv-status-container');
+                        if (statusContainer) {
+                            // Si el expediente ya tiene experiencias extraídas, marcamos como PROCESADO
+                            if (result.drafts && result.drafts.experiencia && result.drafts.experiencia.length > 0) {
+                                statusContainer.dataset.estado = "Procesado"; // Etiqueta oculta para la lógica del Paso 6
+                                statusContainer.innerHTML = `<span class="badge bg-light text-dark border mt-1">Procesado</span>`;
+                            } else {
+                                // Si no hay datos de IA aún, está solo subido
+                                statusContainer.dataset.estado = "Subido";
+                                statusContainer.innerHTML = `<span class="badge bg-light text-dark border mt-1">Subido</span>`;
+                            }
+                        }
+                        // *** FIN DE LÓGICA EXPERTA ***
+
                     } else { document.getElementById('step1-upload-mode').style.display = 'block'; }
 
+                    // ... (Resto de tu código: PASO 2, PASO 3, PASO 5, etc.)
                     // PASO 2: RENDERIZAR TARJETAS DINÁMICAS
                     const dipContainer = document.getElementById('diplomas-container');
                     dipContainer.innerHTML = '';
@@ -456,18 +762,69 @@
                         result.drafts.educacion.forEach(edu => renderDiplomaReadonly(edu));
                         marcarTabComoCompletada(2);
                     } else {
-                        addDiplomaEdit(); // Formulario vacío por defecto si no hay nada
+                        addDiplomaEdit(); 
                     }
 
-                    if(d.nombres && d.apellidos && d.dni) marcarTabComoCompletada(3);
-                    if(d.banco && d.cuenta) marcarTabComoCompletada(5);
+                    // Asignar campos del paso 3 
+                    if(d.correo) document.getElementById('reg-correo').value = d.correo;
+                    if(d.celular) document.getElementById('reg-celular').value = d.celular;
+                    if(d.nombres) document.getElementById('reg-nombres').value = d.nombres;
+                    if(d.apellidos) document.getElementById('reg-apellidos').value = d.apellidos;
+                    if(d.tipo_id) document.getElementById('reg-tipo-id').value = d.tipo_id;
+                    if(d.dni) document.getElementById('reg-dni').value = d.dni;
+                    
+                    if(d.fecha_nacimiento) {
+                        try {
+                            const dObj = new Date(d.fecha_nacimiento);
+                            if (!isNaN(dObj)) document.getElementById('reg-fecha-nac').value = dObj.toISOString().split('T')[0];
+                        } catch(e){}
+                    }
+                    
+                    if(d.ciudad) document.getElementById('reg-ciudad').value = d.ciudad;
+                    if(d.cp) document.getElementById('reg-cp').value = d.cp;
+                    if(d.direccion) document.getElementById('reg-direccion').value = d.direccion;
+                    
+                    // Bancos
+                    if(d.banco) document.getElementById('reg-banco').value = d.banco;
+                    if(d.moneda) document.getElementById('reg-moneda').value = d.moneda;
+                    if(d.tipo_cuenta) document.getElementById('reg-tipo-cuenta').value = d.tipo_cuenta;
+                    if(d.cuenta) document.getElementById('reg-cuenta').value = d.cuenta;
+                    if(d.cci) document.getElementById('reg-cci').value = d.cci;
+                    if(d.tipo_ruta) document.getElementById('reg-tipo-ruta').value = d.tipo_ruta;
+                    if(d.codigo_ruta) document.getElementById('reg-codigo-ruta').value = d.codigo_ruta;
+
+                    setTimeout(() => {
+                        if(d.pais) { document.getElementById('reg-pais').value = d.pais; verificarEstadoEEUU(); }
+                        if(d.estado_region) document.getElementById('reg-estado-region').value = d.estado_region;
+                    }, 1000);
+
+                    if(d.url_id) {
+                        urlIdGlobal = d.url_id;
+                        document.getElementById('view-link-id').href = urlIdGlobal;
+                        document.getElementById('step3-view-mode').classList.remove('d-none');
+                        document.getElementById('step3-upload-mode').classList.add('d-none');
+                        isEditingId = false;
+                    }
+
+                    if (validarPaso3Completo()) { marcarTabComoCompletada(3); }
+                    if(validarPaso5Completo()) marcarTabComoCompletada(5);
+                    evaluarDesbloqueoPaso6();
+
+                    if (result.drafts) {
+                        const eduCont = document.getElementById('ai-education-container');
+                        const expCont = document.getElementById('ai-experience-container');
+                        if (eduCont) eduCont.innerHTML = '';
+                        if (expCont) expCont.innerHTML = '';
+                        if (result.drafts.educacion && result.drafts.educacion.length > 0) { result.drafts.educacion.forEach(edu => addEduReviewField(edu)); }
+                        if (result.drafts.experiencia && result.drafts.experiencia.length > 0) { result.drafts.experiencia.forEach(exp => addExpField(exp)); }
+                    }
                 } else { document.getElementById('step1-upload-mode').style.display = 'block'; addDiplomaEdit(); }
             } catch(e) { document.getElementById('step1-upload-mode').style.display = 'block'; document.getElementById('btnNext').disabled = false; addDiplomaEdit(); }
         }
 
         function marcarTabComoCompletada(paso) {
             const tab = document.getElementById(`tab-${paso}`);
-            if(tab && !tab.classList.contains('active')) { 
+            if(tab) { 
                 tab.classList.add('completed');
                 tab.innerHTML = `<i class="fa-solid fa-circle-check text-success"></i> ${tab.innerText.replace(/<[^>]*>?/gm, '').trim()}`;
             }
@@ -574,18 +931,113 @@
 
         // CARGAR INVITACIONES
         async function cargarCursosPendientes() {
-            const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_invitations', docenteId: userId }) });
+            // Le enviamos el idExpedienteUrl al backend para que nos devuelva solo 1 curso
+            const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_invitationsexpediente', docenteId: userId, idExpediente: idExpedienteUrl }) });
             const result = await response.json();
             const lista = document.getElementById('lista-invitaciones');
+            
             if (result.status === 'success' && result.data.length > 0) {
-                const pendientes = result.data.filter(i => i.estado.toLowerCase() === 'enviado');
-                if(pendientes.length === 0) { lista.innerHTML = `<div class="p-3 bg-light border rounded text-center text-muted">No tienes cursos por confirmar.</div>`; return; }
+                // Quitamos el filtro estricto, porque el backend ya nos garantizó que esta es la invitación de ESTE expediente
+                const pendientes = result.data.filter(i => {
+                    const est = (i.estado || "").toString().trim().toLowerCase();
+                    return est !== 'cancelado'; 
+                });
+                
+                if(pendientes.length === 0) { 
+                    lista.innerHTML = `<div class="p-3 bg-light border rounded text-center text-muted">No se encontró un curso vinculado a este expediente.</div>`; 
+                    return; 
+                }
+                
                 let html = "";
-                pendientes.forEach(inv => { html += `<label class="course-radio-card w-100 mb-2" onclick="seleccionarCurso('${inv.id}', this)"><input type="radio" name="cursoSelect" value="${inv.id}"><div><h6 class="fw-bold m-0 text-dark">${inv.curso}</h6><span class="small text-muted">${inv.programa}</span></div></label>`; });
+                pendientes.forEach(inv => { 
+                    const est = (inv.estado || "").toString().trim().toLowerCase();
+                    const isRespondido = est === 'respondido' || est === 'completado' || est === 'procesado';
+                    
+                    const badge = isRespondido 
+                        ? `<span class="badge bg-success bg-opacity-10 text-success border border-success fw-bold px-2 py-1">Respondido</span>` 
+                        : `<span class="badge bg-warning bg-opacity-10 text-warning border border-warning fw-bold px-2 py-1">Pendiente</span>`;
+                    
+                    let infoExtra = "";
+                    if (isRespondido) {
+                        infoExtra = `
+                            <div class="mt-3 p-2 rounded d-flex align-items-center justify-content-between" style="background-color: #eff6ff; border: 1px dashed #bfdbfe; font-size: 13px;">
+                                <div><i class="fa-solid fa-calendar-check text-primary me-1"></i> <span class="text-dark fw-bold">Horario confirmado:</span> <span class="text-muted">${inv.dias}, de ${inv.horario}</span></div>
+                                <button type="button" class="btn btn-sm btn-white text-primary fw-bold border-0 p-1 text-decoration-underline" onclick="editarHorario(event, '${inv.id}', '${inv.dias}', '${inv.horario}')">Editar</button>
+                            </div>
+                        `;
+                    }
+
+                    // Magia UX: Si es el ÚNICO curso en la lista y NO está respondido, lo autoseleccionamos
+                    const isAutoSelected = (!isRespondido && pendientes.length === 1);
+
+                    html += `
+                    <label class="course-radio-card w-100 mb-3 ${isRespondido || isAutoSelected ? 'selected' : ''}" onclick="seleccionarCurso('${inv.id}', this, ${isRespondido})">
+                        <input type="radio" name="cursoSelect" value="${inv.id}" ${isRespondido || isAutoSelected ? 'checked' : ''}>
+                        <div class="w-100">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <h6 class="fw-bold m-0 text-dark">${inv.curso}</h6>
+                                ${badge}
+                            </div>
+                            <span class="small text-muted d-block">${inv.programa}</span>
+                            ${infoExtra}
+                        </div>
+                    </label>`; 
+
+                    // Desplegar automáticamente los inputs si se autoseleccionó
+                    if (isAutoSelected) {
+                        selectedInvitationId = inv.id;
+                        setTimeout(() => document.getElementById('horario-container').style.display = 'flex', 50);
+                    }
+                });
                 lista.innerHTML = html;
+
+                // Validamos si ya fue respondida para precargar memoria y ocultar combo
+                const respondido = pendientes.find(i => {
+                    const est = (i.estado || "").toString().trim().toLowerCase();
+                    return est === 'respondido' || est === 'completado' || est === 'procesado';
+                });
+                
+                if (respondido) {
+                    selectedInvitationId = respondido.id;
+                    document.getElementById('horario-container').style.display = 'none'; 
+                    marcarTabComoCompletada(4);
+                }
             }
         }
-        function seleccionarCurso(invId, el) { selectedInvitationId = invId; document.querySelectorAll('.course-radio-card').forEach(e => e.classList.remove('selected')); el.classList.add('selected'); el.querySelector('input').checked = true; document.getElementById('horario-container').style.display = 'flex'; }
+
+        function seleccionarCurso(invId, el, isRespondido) { 
+            selectedInvitationId = invId; 
+            document.querySelectorAll('.course-radio-card').forEach(e => e.classList.remove('selected')); 
+            el.classList.add('selected'); 
+            el.querySelector('input').checked = true; 
+            
+            // Si es nuevo (pendiente), mostramos el selector. Si ya fue respondido, lo mantenemos oculto hasta que le de a "Editar".
+            if (!isRespondido) {
+                document.getElementById('horario-container').style.display = 'flex'; 
+            } else {
+                document.getElementById('horario-container').style.display = 'none'; 
+            }
+        }
+
+        function editarHorario(event, invId, dia, hora) {
+            event.stopPropagation(); // Evita que el clic se cruce con el click de la tarjeta padre
+            
+            // 1. Simulamos la selección de la tarjeta, forzando a que se despliegue el contenedor (pasando isRespondido = false)
+            const tarjeta = event.target.closest('.course-radio-card');
+            seleccionarCurso(invId, tarjeta, false);
+            
+            // 2. Precargamos los selects con los datos guardados
+            document.getElementById('reg-dia').value = dia || "";
+            
+            const selectHora = document.getElementById('reg-hora');
+            for (let i = 0; i < selectHora.options.length; i++) {
+                // Buscamos que coincida el texto para seleccionarlo
+                if (selectHora.options[i].value.includes(hora) || (hora && hora.includes(selectHora.options[i].value))) {
+                    selectHora.selectedIndex = i;
+                    break;
+                }
+            }
+        }
 
         // --- AUTOGUARDADO POR PASOS ---
         async function guardarYAvanzar() {
@@ -634,9 +1086,11 @@
                     if (diplomaItems.length === 0) { alert("Sube al menos un Diploma."); btnNext.disabled=false; btnNext.innerHTML=originalHTML; return; }
 
                     let diplomasParaGuardar =[];
+                    let hayNuevosOEditados = false; // Control para saber si usamos Google Sheets
 
                     for (let item of diplomaItems) {
-                        if (item.classList.contains('edit-mode-dip')) { // Solo procesamos los nuevos o editados
+                        if (item.classList.contains('edit-mode-dip')) { // Archivos nuevos o en edición
+                            hayNuevosOEditados = true;
                             const dipFile = item.querySelector('.dip-file').files[0];
                             const transFile = item.querySelector('.dip-transcript').files[0];
                             const currentGrado = item.querySelector('.dip-grado').value;
@@ -659,77 +1113,163 @@
                                 grado: currentGrado, url_diploma: resDip.url, url_transcript: urlTrans, estado: "Subido"
                             });
 
+                            // Enviar al Webhook de N8N (Es un documento nuevo/editado)
                             fetch(N8N_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: "extract_diploma", fileUrl: resDip.url, idDocente: userId, idExpediente: idExpedienteUrl, grado: currentGrado }) }).catch(e => console.log(e));
 
                         } else {
-                            // Los que no se editaron, los volvemos a empujar para no perderlos
+                            // MODO LECTURA (Ya estaban guardados en BD)
+                            const estadoItem = item.dataset.estado || "Subido";
+
                             diplomasParaGuardar.push({
                                 id_diploma: item.dataset.id, grado: item.dataset.grado, rama: item.dataset.rama,
                                 instituto: item.dataset.instituto, ubicacion: item.dataset.ubicacion,
                                 inicio: item.dataset.inicio, fin: item.dataset.fin, url_diploma: item.dataset.url,
-                                url_transcript: item.dataset.transcript, estado: item.dataset.estado
+                                url_transcript: item.dataset.transcript, estado: estadoItem
                             });
+                            
+                            // LÓGICA CLAVE: Si ya estaba guardado pero se quedó en "Subido", mandamos a N8N otra vez. Si dice "Procesado", lo ignora y avanza.
+                            if (estadoItem.toLowerCase() === "subido") {
+                                fetch(N8N_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: "extract_diploma", fileUrl: item.dataset.url, idDocente: userId, idExpediente: idExpedienteUrl, grado: item.dataset.grado }) }).catch(e => console.log(e));
+                            }
                         }
                     }
                     
-                    // 3. AHORA SÍ ENVIAMOS LOS DATOS PARA GUARDAR EN LA HOJA 'DIPLOMAS' INMEDIATAMENTE
-                    payload.step = 2;
-                    payload.diplomas = diplomasParaGuardar;
-                    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+                    if (hayNuevosOEditados) {
+                        payload.step = 2;
+                        payload.diplomas = diplomasParaGuardar;
+                        await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
 
-                    isEditingDiplomas = false;
+                        isEditingDiplomas = false;
 
-                    // NUEVO: Repintamos los diplomas en "Modo Lectura" con estado "Subido" por si el usuario retrocede
-                    const dipContainer = document.getElementById('diplomas-container');
-                    dipContainer.innerHTML = '';
-                    diplomasParaGuardar.forEach(dip => {
-                        renderDiplomaReadonly({
-                            id_diploma: dip.id_diploma,
-                            grado: dip.grado,
-                            rama: dip.rama || "",
-                            instituto: dip.instituto || "",
-                            ubicacion: dip.ubicacion || "",
-                            inicio: dip.inicio || "",
-                            fin: dip.fin || "",
-                            url_diploma: dip.url_diploma,
-                            url_transcript: dip.url_transcript,
-                            estado: dip.estado || "Subido" // Garantiza que se vea como Subido
+                        // Repintamos los diplomas en "Modo Lectura"
+                        const dipContainer = document.getElementById('diplomas-container');
+                        dipContainer.innerHTML = '';
+                        diplomasParaGuardar.forEach(dip => {
+                            renderDiplomaReadonly({
+                                id_diploma: dip.id_diploma,
+                                grado: dip.grado,
+                                rama: dip.rama || "",
+                                instituto: dip.instituto || "",
+                                ubicacion: dip.ubicacion || "",
+                                inicio: dip.inicio || "",
+                                fin: dip.fin || "",
+                                url_diploma: dip.url_diploma,
+                                url_transcript: dip.url_transcript,
+                                estado: dip.estado || "Subido"
+                            });
                         });
-                    });
+                    }
                     
-                    cambiarUI(1);
+                    cambiarUI(1); // Cambia al Paso 3 instantáneamente
                     return;
                 }
                 
-                // RESTO DE PASOS (3, 4, 5, 6)
+                // PASO 3: DATOS PERSONALES Y DOCUMENTO DE IDENTIDAD
                 else if (pasoActual === 3) {
+                    if (isEditingId) {
+                        const idFile = document.getElementById('idFile').files[0];
+                                                
+                        if (idFile) {
+                            const b64Id = await getBase64(idFile);
+                            
+                            // NUEVO: Guardar en la carpeta del DOCENTE usando "uploadTo: 'docente'"
+                            const resId = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Id, name: idFile.name, type: idFile.type, uploadTo: 'docente', idDocente: userId }) }).then(r=>r.json());
+                            urlIdGlobal = resId.url;
+                            
+                            // NUEVO: Cambiar la interfaz inmediatamente a "Guardado" sin necesidad de presionar F5
+                            isEditingId = false;
+                            document.getElementById('view-link-id').href = urlIdGlobal;
+                            document.getElementById('step3-view-mode').classList.remove('d-none');
+                            document.getElementById('step3-upload-mode').classList.add('d-none');
+                        }
+                    }
+
+                    payload.url_id = urlIdGlobal;
+                    payload.correo = document.getElementById('reg-correo').value;
+                    payload.celular = itiCelular.getNumber();
                     payload.nombres = document.getElementById('reg-nombres').value;
                     payload.apellidos = document.getElementById('reg-apellidos').value;
+                    payload.tipo_id = document.getElementById('reg-tipo-id').value;
                     payload.dni = document.getElementById('reg-dni').value;
-                    payload.celular = document.getElementById('reg-celular').value;
+                    payload.fecha_nacimiento = document.getElementById('reg-fecha-nac').value;
                     payload.pais = document.getElementById('reg-pais').value;
+                    payload.estado_region = document.getElementById('reg-estado-region').value;
+                    payload.ciudad = document.getElementById('reg-ciudad').value;
                     payload.direccion = document.getElementById('reg-direccion').value;
+                    payload.cp = document.getElementById('reg-cp').value;
                 }
+                // PASO 4: Confirmar Horario de Invitación
                 else if (pasoActual === 4) {
-                    if(selectedInvitationId) {
-                        payload.idInvitacion = selectedInvitationId;
-                        payload.dia = document.getElementById('reg-dia').value;
-                        payload.hora = document.getElementById('reg-hora').value;
+                    if (selectedInvitationId) {
+                        // Verificamos si los inputs de edición están visibles
+                        const isEditing = document.getElementById('horario-container').style.display !== 'none';
+                        
+                        if (isEditing) {
+                            payload.idInvitacion = selectedInvitationId;
+                            payload.dia = document.getElementById('reg-dia').value;
+                            payload.hora = document.getElementById('reg-hora').value;
+                            
+                            // Validar que no envíe campos vacíos si está editando
+                            if (!payload.dia || !payload.hora) {
+                                Swal.fire({ toast: true, position: 'top-end', icon: 'warning', title: 'Selecciona tu disponibilidad de día y hora.', showConfirmButton: false, timer: 3000 });
+                                btnNext.disabled = false; btnNext.innerHTML = originalHTML; return;
+                            }
+                        } else {
+                            // Ya estaba respondido y el usuario NO lo editó.
+                            // Avanza instantáneamente al Paso 5 sin hacer esperar al usuario ni llamar a Google Sheets.
+                            cambiarUI(1); 
+                            return; 
+                        }
+                    } else {
+                        // No seleccionó ni siquiera la tarjeta
+                        Swal.fire({ toast: true, position: 'top-end', icon: 'warning', title: 'Por favor selecciona un curso.', showConfirmButton: false, timer: 3000 });
+                        btnNext.disabled = false; btnNext.innerHTML = originalHTML; return;
                     }
                 }
+
+                // --- NUEVO: PASO 5 (DATOS BANCARIOS) ---
                 else if (pasoActual === 5) {
                     payload.banco = document.getElementById('reg-banco').value;
                     payload.moneda = document.getElementById('reg-moneda').value;
+                    payload.tipo_cuenta = document.getElementById('reg-tipo-cuenta').value;
                     payload.cuenta = document.getElementById('reg-cuenta').value;
+                    payload.cci = document.getElementById('reg-cci').value;
+                    payload.tipo_ruta = document.getElementById('reg-tipo-ruta').value;
+                    payload.codigo_ruta = document.getElementById('reg-codigo-ruta').value;
                 }
+                
                 else if (pasoActual === 6) {
                     payload.educacion = Array.from(document.querySelectorAll('.ai-edu-record')).map(r => ({ 
-                        id_diploma: r.dataset.id, // MANTENEMOS EL ID
-                        grado: r.dataset.grado, rama: r.querySelector('.ai-rama').value, instituto: r.querySelector('.ai-institucion').value, 
-                        ubicacion: r.querySelector('.ai-ubicacion').value, inicio: r.querySelector('.ai-inicio').value, fin: r.querySelector('.ai-fin').value, 
-                        url_diploma: r.dataset.url, url_transcript: r.dataset.transcript 
+                        id_diploma: r.dataset.id, 
+                        grado: r.dataset.grado, 
+                        rama: r.querySelector('.ai-rama').value, 
+                        instituto: r.querySelector('.ai-institucion').value, 
+                        ubicacion: r.querySelector('.ai-ubicacion').value, 
+                        inicio: r.querySelector('.ai-inicio').value, 
+                        fin: r.querySelector('.ai-fin').value, 
+                        url_diploma: r.dataset.url, 
+                        url_transcript: r.dataset.transcript 
                     }));
-                    payload.experiencia = Array.from(document.querySelectorAll('.exp-item')).map(i => ({ empresa: i.querySelector('.exp-empresa').value, cargo: i.querySelector('.exp-cargo').value, area: i.querySelector('.exp-area').value, direccion: i.querySelector('.exp-direccion').value, inicio: i.querySelector('.exp-inicio').value, fin: i.querySelector('.exp-fin').value }));
+
+                    payload.experiencia = Array.from(document.querySelectorAll('.exp-item')).map(i => {
+                        const esActualidad = i.querySelector('.actualidad-check').checked;
+                        return { 
+                            empresa: i.querySelector('.exp-empresa').value, 
+                            tipo: i.querySelector('.exp-tipo').value,
+                            cargo: i.querySelector('.exp-cargo').value, 
+                            area: i.querySelector('.exp-area').value, 
+                            direccion: i.querySelector('.exp-direccion').value, 
+                            inicio: i.querySelector('.exp-inicio').value, 
+                            fin: esActualidad ? "Actualidad" : i.querySelector('.exp-fin').value 
+                        };
+                    });
+
+                    // NUEVO: Guardar Competencias
+                    payload.habilidades = {
+                        tecnologicas: document.getElementById('skill-tech').value,
+                        linguisticas: document.getElementById('skill-lang').value,
+                        sociales: document.getElementById('skill-social').value
+                    };
                 }
 
                 if(pasoActual >= 3) {
@@ -739,8 +1279,13 @@
                         if (pasoActual === totalPasos) {
                             Swal.fire({ title: '¡Completado!', text: 'Expediente guardado.', icon: 'success' }).then(()=>window.location.href = "misexpedientes.html");
                             return;
+                        } else {
+                            showToast("Avance guardado correctamente.", "success");
                         }
                     }
+                }
+                if (pasoActual === 4) {
+                    cargarCursosPendientes();
                 }
 
                 // Carga de borradores (IA) antes del paso 6
@@ -770,52 +1315,313 @@
         // DIBUJAR PANTALLA 6
         function addEduReviewField(data = {}) {
             const container = document.getElementById('ai-education-container');
-            const div = document.createElement('div'); div.className = 'dynamic-card ai-edu-record mb-3'; 
-            div.dataset.id = data.id_diploma || ""; // CRUCIAL PARA MANTENER EL DATO
-            div.dataset.url = data.url_diploma || ""; 
-            div.dataset.transcript = data.url_transcript || ""; 
+            const div = document.createElement('div'); 
+            div.className = 'dynamic-card ai-edu-record mb-3'; 
+            div.style.background = "#ffffff";
+            div.style.border = "1px solid #e2e8f0";
+
+            div.dataset.id = data.id_diploma || ""; 
             div.dataset.grado = data.grado || "";
-            div.innerHTML = `<button type="button" class="btn-remove" onclick="this.parentElement.remove()"><i class="fa-solid fa-trash"></i></button>
-                <h6 class="fw-bold mb-3 text-dark">Grado: ${data.grado || 'Detectado'}</h6>
-                <div class="row g-2">
-                    <div class="col-md-6"><label class="form-label small">Carrera / Especialidad</label><input type="text" class="form-control ai-rama" value="${data.rama || data.carrera || ''}"></div>
-                    <div class="col-md-6"><label class="form-label small">Institución</label><input type="text" class="form-control ai-institucion" value="${data.instituto || ''}"></div>
-                    <div class="col-md-4"><label class="form-label small">Ubicación</label><input type="text" class="form-control ai-ubicacion" value="${data.ubicacion || ''}"></div>
-                    <div class="col-md-4"><label class="form-label small">Inicio</label><input type="text" class="form-control ai-inicio" value="${data.inicio || data.fecha_inicio || ''}"></div>
-                    <div class="col-md-4"><label class="form-label small">Fin</label><input type="text" class="form-control ai-fin" value="${data.fin || data.fecha_fin || ''}"></div>
-                </div>`;
-            container.appendChild(div);
-        }
-        
-        function addExpField(data = {}) {
-            const container = document.getElementById('ai-experience-container');
-            const div = document.createElement('div'); div.className = 'dynamic-card exp-item mb-3';
-            div.innerHTML = `<button type="button" class="btn-remove" onclick="this.parentElement.remove()"><i class="fa-solid fa-trash"></i></button>
-                <div class="row g-2">
-                    <div class="col-md-6"><label class="form-label small">Empresa / Institución</label><input type="text" class="form-control exp-empresa" value="${data.empresa || ''}"></div>
-                    <div class="col-md-6"><label class="form-label small">Cargo</label><input type="text" class="form-control exp-cargo" value="${data.cargo || ''}"></div>
-                    <div class="col-md-6"><label class="form-label small">Área de Enseñanza</label><input type="text" class="form-control exp-area" value="${data.area || ''}"></div>
-                    <div class="col-md-6"><label class="form-label small">Ubicación</label><input type="text" class="form-control exp-direccion" value="${data.direccion || ''}"></div>
-                    <div class="col-md-6"><label class="form-label small">Inicio</label><input type="text" class="form-control exp-inicio" value="${data.inicio || ''}"></div>
-                    <div class="col-md-6"><label class="form-label small">Fin</label><input type="text" class="form-control exp-fin" value="${data.fin || ''}"></div>
+
+            div.innerHTML = `
+                <button type="button" class="btn-remove" onclick="this.parentElement.remove()"><i class="fa-solid fa-trash"></i></button>
+                <h6 class="fw-bold mb-3 text-primary">Grado: ${data.grado || 'Detectado'}</h6>
+                <div class="row g-3">
+                    <div class="col-md-6"><label class="form-label small fw-bold">Carrera *</label><input type="text" class="form-control ai-rama" value="${data.rama || data.carrera || ''}"></div>
+                    <div class="col-md-6"><label class="form-label small fw-bold">Institución *</label><input type="text" class="form-control ai-institucion" value="${data.instituto || ''}"></div>
+                    <div class="col-md-6"><label class="form-label small fw-bold">Ubicación (Ciudad, País) *</label><input type="text" class="form-control ai-ubicacion" value="${data.ubicacion || ''}"></div>
+                    <div class="col-md-3"><label class="form-label small fw-bold">Inicio *</label><input type="month" class="form-control ai-inicio" value="${formatToMonthInput(data.inicio)}"></div>
+                    <div class="col-md-3"><label class="form-label small fw-bold">Fin *</label><input type="month" class="form-control ai-fin" value="${formatToMonthInput(data.fin)}"></div>
                 </div>`;
             container.appendChild(div);
         }
 
-        // --- SOLO CAMBIO VISUAL DE PANTALLA ---
-        function cambiarUI(direccion) {
-            document.getElementById(`step-${pasoActual}`).classList.remove('active');
-            if(direccion === 1) { const tab = document.getElementById(`tab-${pasoActual}`); tab.classList.add('completed'); tab.innerHTML = `<i class="fa-solid fa-circle-check text-success"></i> ${tab.innerText.replace(/<[^>]*>?/gm, '').trim()}`; }
+        function addExpField(data = {}) {
+            const container = document.getElementById('ai-experience-container');
+            const div = document.createElement('div'); 
+            div.className = 'dynamic-card exp-item mb-4';
+            div.style.background = "#ffffff";
+            div.style.border = "1px solid #e2e8f0";
+
+            const isActualidad = data.fin && data.fin.toLowerCase().includes('actual');
+
+            div.innerHTML = `
+                <button type="button" class="btn-remove" onclick="this.parentElement.remove()"><i class="fa-solid fa-trash"></i></button>
+                <div class="row g-3">
+                    <div class="col-md-6"><label class="form-label small fw-bold">Empresa</label><input type="text" class="form-control exp-empresa" value="${data.empresa || ''}"></div>
+                    <div class="col-md-6"><label class="form-label small fw-bold">Tipo de Experiencia</label>
+                        <select class="form-select exp-tipo">
+                            <option value="General" ${data.tipo === 'General' ? 'selected' : ''}>General</option>
+                            <option value="Academic or Education" ${data.tipo === 'Academic or Education' ? 'selected' : ''}>Academic or Education</option>
+                        </select>
+                    </div>
+                    <div class="col-md-12"><label class="form-label small fw-bold">Cargo</label><input type="text" class="form-control exp-cargo" value="${data.cargo || ''}"></div>
+                    <div class="col-md-12"><label class="form-label small fw-bold">Área de enseñanza (*Solo si enseñó)</label><input type="text" class="form-control exp-area" value="${data.area || ''}"></div>
+                    <div class="col-md-12"><label class="form-label small fw-bold">Dirección (Calle, Ciudad/Pais, Opcional: Código postal)</label><input type="text" class="form-control exp-direccion" value="${data.direccion || ''}"></div>
+                    <div class="col-md-6"><label class="form-label small fw-bold">Inicio</label><input type="month" class="form-control exp-inicio" value="${formatToMonthInput(data.inicio)}"></div>
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label small fw-bold m-0">Culminación</label>
+                            <label class="form-check-switch">
+                                <input type="checkbox" class="actualidad-check" onchange="toggleActualidad(this)" ${isActualidad ? 'checked' : ''}> Actualidad
+                            </label>
+                        </div>
+                        <input type="month" class="form-control exp-fin" value="${isActualidad ? '' : formatToMonthInput(data.fin)}" ${isActualidad ? 'disabled' : ''}>
+                    </div>
+                </div>`;
+            container.appendChild(div);
+        }
+
+        // Función para manejar el bloqueo del input de fecha
+        function toggleActualidad(checkbox) {
+            const inputFin = checkbox.closest('.col-md-6').querySelector('.exp-fin');
+            if (checkbox.checked) {
+                inputFin.disabled = true;
+                inputFin.value = "";
+            } else {
+                inputFin.disabled = false;
+            }
+        }
+        // --- NUEVA FUNCIÓN: ACTUALIZACIÓN SILENCIOSA DEL PASO 2 ---
+        async function refrescarDiplomasIA() {
+            try {
+                // Solo ejecutamos esto si estamos viendo el Paso 2
+                if (pasoActual !== 2) return; 
+
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: userId, id_expediente: idExpedienteUrl }) });
+                const result = await res.json();
+                
+                if (result.status === 'success' && result.drafts && result.drafts.educacion) {
+                    const dipContainer = document.getElementById('diplomas-container');
+                    if (dipContainer) {
+                        // Solo actualizamos si el usuario NO está a la mitad de subir un archivo nuevo
+                        const editando = dipContainer.querySelector('.edit-mode-dip');
+                        if (!editando && result.drafts.educacion.length > 0) {
+                            dipContainer.innerHTML = '';
+                            result.drafts.educacion.forEach(edu => renderDiplomaReadonly(edu));
+                            evaluarDesbloqueoPaso6();
+                        }
+                    }
+                }
+            } catch(e) { console.log("Error refrescando diplomas en segundo plano", e); }
+        }
+
+        // --- NUEVA NAVEGACIÓN FLEXIBLE ---
+        function irAPaso(pasoDestino) {
+            // 1. VALIDACIÓN LÓGICA PARA EL PASO 6
+            if (pasoDestino === 6) {
+                const step1Listo = document.getElementById('tab-1').classList.contains('completed');
+                const step2Listo = document.getElementById('tab-2').classList.contains('completed');
+
+                // Validamos los estados al hacer clic
+                let todosProcesados = true;
+                const diplomas = document.querySelectorAll('.diploma-item.view-mode-dip');
+                if (diplomas.length > 0) {
+                    diplomas.forEach(dip => {
+                        const estado = (dip.dataset.estado || "").toLowerCase();
+                        if (estado !== 'procesado' && estado !== 'completado') {
+                            todosProcesados = false;
+                        }
+                    });
+                } else {
+                    todosProcesados = false;
+                }
+                // NUEVA LÓGICA: Verificar que el CV también esté Procesado para dejarlo entrar
+                const cvContainer = document.getElementById('cv-status-container');
+                if (cvContainer) {
+                    const cvEstado = (cvContainer.dataset.estado || "").toLowerCase();
+                    if (cvEstado !== 'procesado' && cvEstado !== 'completado') {
+                        todosProcesados = false;
+                    }
+                }
+
+                if (!step1Listo || !step2Listo || !todosProcesados) {
+                    // Texto dinámico: Depende de si le faltan documentos o si solo está esperando a la IA
+                    let mensajeError = 'Para acceder a la revisión, primero sube tus documentos y grados.';
+                    if (step1Listo && step2Listo && !todosProcesados) {
+                        mensajeError = 'Tus documentos aún están siendo analizados por la IA. Por favor, espera a que cambien a estado "Procesado".';
+                    }
+
+                    // TOAST Aesthetic con SweetAlert2
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'warning',
+                        title: mensajeError,
+                        showConfirmButton: false,
+                        timer: 4500,
+                        timerProgressBar: true,
+                        background: '#fff',
+                        color: '#1e293b',
+                        iconColor: '#f59e0b'
+                    });
+                    return; // Detiene la navegación, no lo deja pasar
+                }
+            }
+
+            // 2. CAMBIO DE PANTALLA
+            document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.step-tab').forEach(el => el.classList.remove('active'));
             
-            pasoActual += direccion;
+            // Actualizar icono del tab anterior (si no está completado, vuelve a círculo vacío)
+            const tabAnterior = document.getElementById(`tab-${pasoActual}`);
+            if(!tabAnterior.classList.contains('completed')) {
+                tabAnterior.innerHTML = `<i class="fa-regular fa-circle"></i> ${tabAnterior.innerText.replace(/<[^>]*>?/gm, '').trim()}`;
+            }
+
+            pasoActual = pasoDestino;
+
+            // Mostrar el nuevo paso
             document.getElementById(`step-${pasoActual}`).classList.add('active');
-            document.getElementById(`tab-${pasoActual}`).classList.add('active');
+            const nuevoTab = document.getElementById(`tab-${pasoActual}`);
+            nuevoTab.classList.add('active');
+            
+            // Si el nuevo tab no está completado, ponerle el círculo con punto (dot)
+            if(!nuevoTab.classList.contains('completed')) {
+                nuevoTab.innerHTML = `<i class="fa-regular fa-circle-dot"></i> ${nuevoTab.innerText.replace(/<[^>]*>?/gm, '').trim()}`;
+            }
+
+            // 3. ACTUALIZAR UI DE BOTONES
             document.getElementById('btnPrev').style.display = pasoActual === 1 ? 'none' : 'block';
             document.getElementById('step-counter').innerText = `PASO ${pasoActual} DE ${totalPasos}`;
             
             const btnNext = document.getElementById('btnNext');
-            if(pasoActual === totalPasos) { btnNext.innerHTML = 'Finalizar Registro <i class="fa-solid fa-check-double ms-2"></i>'; btnNext.style.background = '#10b981'; } 
-            else { btnNext.innerHTML = 'Guardar y Continuar <i class="fa-solid fa-arrow-right ms-2"></i>'; btnNext.style.background = 'var(--primary)'; }
+            if(pasoActual === totalPasos) { 
+                btnNext.innerHTML = 'Finalizar Registro <i class="fa-solid fa-check-double ms-2"></i>'; 
+                btnNext.style.background = '#10b981'; 
+            } else { 
+                btnNext.innerHTML = 'Guardar y Continuar <i class="fa-solid fa-arrow-right ms-2"></i>'; 
+                btnNext.style.background = 'var(--primary)'; 
+            }
+
+            // NUEVO: Refrescar los diplomas visualmente al volver al paso 2
+            if (pasoActual === 2) {
+                refrescarDiplomasIA();
+            }
+        }
+
+        // --- PUENTE PARA EL BOTÓN "GUARDAR Y CONTINUAR" ---
+        function cambiarUI(direccion) {
+            let nuevoPaso = pasoActual + direccion;
+            
+            if(direccion === 1) { 
+                // Lógica para el Paso 3
+                if (pasoActual === 3) {
+                    if (validarPaso3Completo()) {
+                        marcarTabComoCompletada(3); 
+                    } else {
+                        document.getElementById('tab-3').classList.remove('completed');
+                        document.getElementById('tab-3').innerHTML = `<i class="fa-regular fa-circle-dot"></i> 3. PERFIL`;
+                    }
+                } 
+                // NUEVA Lógica para el Paso 5
+                else if (pasoActual === 5) {
+                    if (validarPaso5Completo()) {
+                        marcarTabComoCompletada(5); 
+                    } else {
+                        document.getElementById('tab-5').classList.remove('completed');
+                        document.getElementById('tab-5').innerHTML = `<i class="fa-regular fa-circle-dot"></i> 5. BANCO`;
+                    }
+                } 
+                else {
+                    marcarTabComoCompletada(pasoActual); 
+                }
+                evaluarDesbloqueoPaso6(); 
+            }
+            
+            if (nuevoPaso >= 1 && nuevoPaso <= totalPasos) {
+                irAPaso(nuevoPaso);
+            }
+        }
+
+        // Función experta para verificar si el paso 3 está realmente lleno
+        function validarPaso3Completo() {
+            const campos = [
+                document.getElementById('reg-correo').value.trim(),
+                itiCelular.getNumber(), // Verificamos el número completo con código
+                document.getElementById('reg-nombres').value.trim(),
+                document.getElementById('reg-apellidos').value.trim(),
+                document.getElementById('reg-tipo-id').value,
+                document.getElementById('reg-dni').value.trim(),
+                document.getElementById('reg-fecha-nac').value,
+                document.getElementById('reg-pais').value,
+                document.getElementById('reg-ciudad').value.trim(),
+                document.getElementById('reg-direccion').value.trim(),
+                document.getElementById('reg-cp').value.trim()
+            ];
+
+            // Verificar si falta algún campo básico
+            const incompleto = campos.some(valor => valor === "" || valor === null || valor === undefined);
+            
+            // Verificación especial para EE.UU. (Estado/Región)
+            const pais = document.getElementById('reg-pais').value.toLowerCase();
+            const requiereEstado = (pais.includes('estados unidos') || pais.includes('united states'));
+            const estadoRegion = document.getElementById('reg-estado-region').value.trim();
+            
+            if (requiereEstado && estadoRegion === "") return false;
+
+            // Verificar si el PDF de identidad ya está guardado o subido
+            const idListo = (urlIdGlobal !== "" && !isEditingId) || (document.getElementById('idFile').files.length > 0);
+
+            return !incompleto && idListo;
+        }
+
+        // Función experta para verificar si el paso 5 está realmente lleno
+        function validarPaso5Completo() {
+            const campos = [
+                document.getElementById('reg-banco').value.trim(),
+                document.getElementById('reg-moneda').value,
+                document.getElementById('reg-tipo-cuenta').value,
+                document.getElementById('reg-cuenta').value.trim(),
+                document.getElementById('reg-tipo-ruta').value,
+                document.getElementById('reg-codigo-ruta').value.trim()
+            ];
+
+            // Verificar si falta algún campo (ignorando el CCI que es opcional)
+            const incompleto = campos.some(valor => valor === "" || valor === null || valor === undefined);
+            
+            return !incompleto;
+        }
+
+        // --- FUNCIÓN PARA DESBLOQUEAR VISUALMENTE EL PASO 6 ---
+        function evaluarDesbloqueoPaso6() {
+            const step1Listo = document.getElementById('tab-1').classList.contains('completed');
+            const step2Listo = document.getElementById('tab-2').classList.contains('completed');
+            const tab6 = document.getElementById('tab-6');
+
+            // NUEVA LÓGICA: Verificar que todos los diplomas estén "Procesados"
+            let todosProcesados = true;
+            const diplomas = document.querySelectorAll('.diploma-item.view-mode-dip');
+            
+            if (diplomas.length === 0) {
+                todosProcesados = false; // Si no hay diplomas, no puede estar listo
+            } else {
+                diplomas.forEach(dip => {
+                    const estado = (dip.dataset.estado || "").toLowerCase();
+                    if (estado !== 'procesado' && estado !== 'completado') {
+                        todosProcesados = false;
+                    }
+                });                
+            }
+            // NUEVA LÓGICA: Verificar que el CV también esté Procesado
+            const cvContainer = document.getElementById('cv-status-container');
+            if (cvContainer) {
+                const cvEstado = (cvContainer.dataset.estado || "").toLowerCase();
+                if (cvEstado !== 'procesado' && cvEstado !== 'completado') {
+                    todosProcesados = false;
+                }
+            }
+
+            // Solo se quita el candado si Paso 1, Paso 2 y el Procesamiento están listos
+            if (step1Listo && step2Listo && todosProcesados) {
+                tab6.classList.remove('step-locked');
+                if(tab6.innerHTML.includes('fa-lock')) {
+                    tab6.innerHTML = `<i class="fa-regular fa-circle"></i> 6. Revisión IA`;
+                }
+            } else {
+                tab6.classList.add('step-locked');
+                tab6.innerHTML = `<i class="fa-solid fa-lock"></i> 6. Revisión IA`;
+            }
         }
     </script>
 </body>
