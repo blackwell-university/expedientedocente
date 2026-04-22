@@ -198,7 +198,6 @@
         </div>
         <nav class="nav-menu">
             <a href="dashboard-docente.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a>
-            <a href="docente.html" class="nav-link"><i class="fa-solid fa-user"></i> <span class="link-text">Información Personal</span></a>
             <a href="misexpedientes.html" class="nav-link active"><i class="fa-solid fa-folder-open"></i> <span class="link-text">Mis Expedientes</span></a>
             <!--<a href="carpetadocente.html" class="nav-link"><i class="fa-solid fa-folder-open"></i> <span class="link-text">Carpeta Docente</span></a>-->
             <a href="miscursos.html" class="nav-link"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Mis Clases</span></a>
@@ -251,16 +250,16 @@
                             <h4 class="fw-800 mb-2">Documentación Base</h4>
                             <p class="text-muted mb-4">Sube tu CV actualizado y el Faculty Handbook firmado.</p>
                             
-                            <!-- LOADER: Se muestra mientras busca en la base de datos -->
+                            <!-- LOADER -->
                             <div id="step1-loader" class="text-center py-5">
                                 <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
                                 <h6 class="fw-bold text-muted">Verificando tus documentos...</h6>
                             </div>
 
-                            <!-- VISTA: MODO SUBIDA (Oculto por defecto) -->
+                            <!-- VISTA: MODO SUBIDA -->
                             <div id="step1-upload-mode" style="display: none;">
                                 <div class="row g-4">
-                                    <div class="col-md-6">
+                                    <div class="col-md-6" id="cv-upload-box">
                                         <label class="form-label text-primary">Curriculum Vitae (PDF) *</label>
                                         <div class="file-upload-box" onclick="document.getElementById('cvFile').click()">
                                             <i class="fa-solid fa-file-pdf"></i>
@@ -269,7 +268,7 @@
                                             <input type="file" id="cvFile" class="d-none" accept=".pdf" onchange="mostrarNombre(this, 'cvTextLabel')">
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-6" id="hb-upload-box">
                                         <label class="form-label text-primary">Faculty Handbook (PDF) *</label>
                                         <div class="file-upload-box" onclick="document.getElementById('hbFile').click()">
                                             <i class="fa-solid fa-book-open"></i>
@@ -281,9 +280,9 @@
                                 </div>
                             </div>
 
-                            <!-- VISTA: MODO LECTURA (Oculto por defecto) -->
-                            <div id="step1-view-mode" style="display: none;">
-                                <div class="uploaded-doc-card">
+                            <!-- VISTA: MODO LECTURA -->
+                            <div id="step1-view-mode" style="display: none; margin-top: 24px;">
+                                <div class="uploaded-doc-card" id="cv-view-card">
                                     <div class="info">
                                         <i class="fa-solid fa-file-pdf"></i>
                                         <div>
@@ -293,17 +292,20 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <a href="#" id="view-link-cv" target="_blank" class="btn btn-sm btn-light fw-bold px-3">Ver Archivo</a>
+                                    <div class="d-flex gap-2">
+                                        <a href="#" id="view-link-cv" target="_blank" class="btn btn-sm btn-light border fw-bold px-3">Ver PDF</a>
+                                        <button type="button" class="btn btn-sm btn-outline-primary fw-bold" onclick="editarDocumento('cv')"><i class="fa-solid fa-pen"></i></button>
+                                    </div>
                                 </div>
-                                <div class="uploaded-doc-card">
+                                <div class="uploaded-doc-card" id="hb-view-card">
                                     <div class="info">
                                         <i class="fa-solid fa-book-open"></i>
                                         <div><h6 class="fw-bold m-0 text-dark">Faculty Handbook</h6><span class="small text-success"><i class="fa-solid fa-check"></i> Archivo guardado correctamente</span></div>
                                     </div>
-                                    <a href="#" id="view-link-hb" target="_blank" class="btn btn-sm btn-light fw-bold px-3">Ver Archivo</a>
-                                </div>
-                                <div class="text-end mt-3">
-                                    <button type="button" class="btn btn-outline-primary fw-bold px-4" style="border-radius: 12px;" onclick="habilitarEdicionPaso1()"><i class="fa-solid fa-pen me-2"></i> Editar Documentos</button>
+                                    <div class="d-flex gap-2">
+                                        <a href="#" id="view-link-hb" target="_blank" class="btn btn-sm btn-light border fw-bold px-3">Ver PDF</a>
+                                        <button type="button" class="btn btn-sm btn-outline-primary fw-bold" onclick="editarDocumento('hb')"><i class="fa-solid fa-pen"></i></button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -609,7 +611,8 @@
         
         let urlCVGlobal = ""; 
         let urlHbGlobal = "";
-        let isEditingDocs = true;
+        let isEditingCV = true;
+        let isEditingHb = true;
         let urlIdGlobal = "";
         let isEditingId = true;
         let itiCelular;
@@ -621,6 +624,18 @@
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, '0');
             return `${year}-${month}`;
+        }
+
+        // --- FUNCIÓN PARA MOSTRAR ALERTAS TOAST ---
+        function showToast(mensaje, tipo = 'success') {
+            const container = document.getElementById('toastContainer');
+            if(!container) return;
+            const toast = document.createElement('div');
+            const bgClass = tipo === 'success' ? 'text-bg-success' : 'text-bg-danger';
+            toast.className = `toast align-items-center ${bgClass} border-0 show shadow-lg rounded-4 mb-3`;
+            toast.innerHTML = `<div class="d-flex p-1"><div class="toast-body fw-medium" style="font-size: 0.95rem;">${mensaje}</div><button type="button" class="btn-close btn-close-white me-3 m-auto" data-bs-dismiss="toast" onclick="this.parentElement.parentElement.remove()"></button></div>`;
+            container.appendChild(toast); 
+            setTimeout(() => toast.remove(), 4000);
         }
 
         // --- FUNCIONES PARA EL PASO 3 ---
@@ -728,33 +743,36 @@
                     if(d.moneda) document.getElementById('reg-moneda').value = d.moneda;
                     if(d.cuenta) document.getElementById('reg-cuenta').value = d.cuenta;
                     
-                    // PASO 1
-                    if(d.url_cv && d.url_handbook) {
-                        urlCVGlobal = d.url_cv; urlHbGlobal = d.url_handbook;
-                        document.getElementById('view-link-cv').href = urlCVGlobal; 
-                        document.getElementById('view-link-hb').href = urlHbGlobal;
-                        document.getElementById('step1-view-mode').style.display = 'block';
-                        isEditingDocs = false; 
-                        marcarTabComoCompletada(1);
+                    // PASO 1: Evaluación Independiente (Fricción Cero)
+                    document.getElementById('step1-upload-mode').style.display = 'block';
+                    document.getElementById('step1-view-mode').style.display = 'block';
 
-                        // *** INICIO DE LÓGICA EXPERTA: ESTADO DINÁMICO DEL CV ***
+                    // PASO 1: Carga Inteligente e Individual
+                    if (d.url_cv) {
+                        urlCVGlobal = d.url_cv;
+                        isEditingCV = false;
+                        document.getElementById('view-link-cv').href = urlCVGlobal;
+                        
                         const statusContainer = document.getElementById('cv-status-container');
                         if (statusContainer) {
-                            // Si el expediente ya tiene experiencias extraídas, marcamos como PROCESADO
                             if (result.drafts && result.drafts.experiencia && result.drafts.experiencia.length > 0) {
-                                statusContainer.dataset.estado = "Procesado"; // Etiqueta oculta para la lógica del Paso 6
+                                statusContainer.dataset.estado = "Procesado";
                                 statusContainer.innerHTML = `<span class="badge bg-light text-dark border mt-1">Procesado</span>`;
                             } else {
-                                // Si no hay datos de IA aún, está solo subido
                                 statusContainer.dataset.estado = "Subido";
                                 statusContainer.innerHTML = `<span class="badge bg-light text-dark border mt-1">Subido</span>`;
                             }
                         }
-                        // *** FIN DE LÓGICA EXPERTA ***
+                    } else { isEditingCV = true; }
 
-                    } else { document.getElementById('step1-upload-mode').style.display = 'block'; }
+                    if (d.url_handbook) {
+                        urlHbGlobal = d.url_handbook;
+                        isEditingHb = false;
+                        document.getElementById('view-link-hb').href = urlHbGlobal;
+                    } else { isEditingHb = true; }
 
-                    // ... (Resto de tu código: PASO 2, PASO 3, PASO 5, etc.)
+                    actualizarVistaPaso1(); // Dibuja la pantalla según lo que falte
+
                     // PASO 2: RENDERIZAR TARJETAS DINÁMICAS
                     const dipContainer = document.getElementById('diplomas-container');
                     dipContainer.innerHTML = '';
@@ -921,9 +939,60 @@
             container.appendChild(div);
         }
 
-        // HABILITAR EDICIÓN PASO 1
-        function habilitarEdicionPaso1() { isEditingDocs = true; document.getElementById('step1-view-mode').style.display = 'none'; document.getElementById('step1-upload-mode').style.display = 'block'; }
-        
+        // --- MOTOR INTELIGENTE DE VISTAS (PASO 1) ---
+        function actualizarVistaPaso1() {
+            const uploadMode = document.getElementById('step1-upload-mode');
+            const viewMode = document.getElementById('step1-view-mode');
+
+            // Control Individual de Cajas
+            document.getElementById('cv-upload-box').style.display = isEditingCV ? 'block' : 'none';
+            document.getElementById('cv-view-card').style.display = isEditingCV ? 'none' : 'flex';
+            
+            document.getElementById('hb-upload-box').style.display = isEditingHb ? 'block' : 'none';
+            document.getElementById('hb-view-card').style.display = isEditingHb ? 'none' : 'flex';
+
+            // Control General de Contenedores
+            uploadMode.style.display = (isEditingCV || isEditingHb) ? 'block' : 'none';
+            viewMode.style.display = (!isEditingCV || !isEditingHb) ? 'block' : 'none';
+            
+            // Actualizar Candado y Pasos
+            if (!isEditingCV && !isEditingHb) { marcarTabComoCompletada(1); } 
+            else {
+                const tab1 = document.getElementById('tab-1');
+                tab1.classList.remove('completed');
+                tab1.innerHTML = `<i class="fa-regular fa-circle-dot"></i> 1. DOCS`;
+            }
+            evaluarDesbloqueoPaso6();
+        }
+
+        // --- BOTÓN INDIVIDUAL DE EDICIÓN ---
+        function editarDocumento(tipo) {
+            Swal.fire({
+                title: '¿Actualizar documento?',
+                text: 'Podrás seleccionar un nuevo archivo. Si te arrepientes, solo guarda sin subir nada y se conservará el anterior.',
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, editar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    if(tipo === 'cv') {
+                        isEditingCV = true;
+                        document.getElementById('cvFile').value = '';
+                        document.getElementById('cvTextLabel').innerText = 'Subir CV';
+                    }
+                    if(tipo === 'hb') {
+                        isEditingHb = true;
+                        document.getElementById('hbFile').value = '';
+                        document.getElementById('hbTextLabel').innerText = 'Subir Handbook';
+                    }
+                    actualizarVistaPaso1(); // Refresca la pantalla al instante
+                }
+            });
+        }
+
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
         function logout() { sessionStorage.clear(); window.location.href = "login.html"; }
         function mostrarNombre(input, id) { if(input.files.length > 0) document.getElementById(id).innerText = "✅ " + input.files[0].name; }
@@ -1051,34 +1120,59 @@
             try {
                 // PASO 1
                 if (pasoActual === 1) {
-                    if (isEditingDocs) {
-                        const cvFile = document.getElementById('cvFile').files[0];
-                        const hbFile = document.getElementById('hbFile').files[0];
-                        
-                        if ((!urlCVGlobal || !urlHbGlobal) && (!cvFile || !hbFile)) {
-                            alert("Por favor, selecciona tanto tu CV como el Faculty Handbook.");
-                            btnNext.disabled = false; btnNext.innerHTML = originalHTML; return; 
-                        }
-
-                        if (cvFile) {
-                            const b64Cv = await getBase64(cvFile); 
-                            const resCv = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Cv, name: cvFile.name, type: cvFile.type, idExpediente: idExpedienteUrl }) }).then(r=>r.json());
-                            urlCVGlobal = resCv.url; payload.url_cv = urlCVGlobal;
-
-                            fetch(N8N_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: "extract_cv", fileUrl: urlCVGlobal, idDocente: userId, idExpediente: idExpedienteUrl }) }).catch(e=>console.log(e));
-                        } else { payload.url_cv = urlCVGlobal; }
-
-                        if (hbFile) {
-                            const b64Hb = await getBase64(hbFile); 
-                            const resHb = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Hb, name: hbFile.name, type: hbFile.type, idExpediente: idExpedienteUrl }) }).then(r=>r.json());
-                            urlHbGlobal = resHb.url; payload.url_handbook = urlHbGlobal;
-                        } else { payload.url_handbook = urlHbGlobal; }
-
-                        await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
-                        isEditingDocs = false; 
+                    const cvFile = document.getElementById('cvFile').files[0];
+                    const hbFile = document.getElementById('hbFile').files[0];
+                    
+                    // 1. Validaciones
+                    if (isEditingCV && !urlCVGlobal && !cvFile) {
+                        Swal.fire({ toast: true, position: 'top-end', icon: 'warning', title: 'Por favor, selecciona tu Curriculum Vitae.', showConfirmButton: false, timer: 3500 });
+                        btnNext.disabled = false; btnNext.innerHTML = originalHTML; return; 
                     }
-                    cambiarUI(1); return; 
-                } 
+                    if (isEditingHb && !urlHbGlobal && !hbFile) {
+                        Swal.fire({ toast: true, position: 'top-end', icon: 'warning', title: 'Por favor, selecciona tu Faculty Handbook.', showConfirmButton: false, timer: 3500 });
+                        btnNext.disabled = false; btnNext.innerHTML = originalHTML; return; 
+                    }
+
+                    // 2. Magia UX: Revertir si presionó editar pero no subió nada
+                    let revertirCV = isEditingCV && !cvFile && urlCVGlobal;
+                    let revertirHb = isEditingHb && !hbFile && urlHbGlobal;
+                    let subioAlgo = cvFile || hbFile;
+
+                    if (!subioAlgo && (revertirCV || revertirHb)) {
+                        showToast("No subiste archivos nuevos. Se conservan los anteriores.", "success");
+                    } else if (subioAlgo) {
+                        showToast("Procesando y guardando documentos...", "success");
+                    }
+
+                    // 3. Procesar Subidas (Solo de lo que realmente editó)
+                    if (isEditingCV && cvFile) {
+                        const b64Cv = await getBase64(cvFile); 
+                        const resCv = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Cv, name: cvFile.name, type: cvFile.type, uploadTo: 'docente', idDocente: userId }) }).then(r=>r.json());
+                        urlCVGlobal = resCv.url; payload.url_cv = urlCVGlobal;
+                        fetch(N8N_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: "extract_cv", fileUrl: urlCVGlobal, idDocente: userId, idExpediente: idExpedienteUrl }) }).catch(e=>console.log(e));
+                    } else { payload.url_cv = urlCVGlobal; }
+
+                    if (isEditingHb && hbFile) {
+                        const b64Hb = await getBase64(hbFile); 
+                        const resHb = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Hb, name: hbFile.name, type: hbFile.type, uploadTo: 'docente', idDocente: userId }) }).then(r=>r.json());
+                        urlHbGlobal = resHb.url; payload.url_handbook = urlHbGlobal;
+                    } else { payload.url_handbook = urlHbGlobal; }
+
+                    // 4. Guardar en Base de Datos y Actualizar UI
+                    if(isEditingCV || isEditingHb) {
+                        await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+                    }
+
+                    // Forzamos a modo lectura y refrescamos la pantalla
+                    isEditingCV = false;
+                    isEditingHb = false;
+                    document.getElementById('view-link-cv').href = urlCVGlobal;
+                    document.getElementById('view-link-hb').href = urlHbGlobal;
+                    actualizarVistaPaso1(); 
+
+                    cambiarUI(1); 
+                    return; 
+                }
                 
                 // PASO 2: DIPLOMAS
                 else if (pasoActual === 2) {
@@ -1239,6 +1333,25 @@
                 }
                 
                 else if (pasoActual === 6) {
+                    // Verificamos el texto del botón para saber su intención
+                    const esFinalizar = document.getElementById('btnNext').innerText.includes('Finalizar');
+                    
+                    if (esFinalizar) {
+                        // Barrera de seguridad estricta con Toasts
+                        if (!validarPaso3Completo()) {
+                            showToast("Falta completar datos en el Paso 3 (Perfil).", "danger");
+                            btnNext.disabled = false; btnNext.innerHTML = originalHTML; return;
+                        }
+                        if (!validarPaso4Completo()) {
+                            showToast("Falta confirmar tu horario en el Paso 4 (Curso).", "danger");
+                            btnNext.disabled = false; btnNext.innerHTML = originalHTML; return;
+                        }
+                        if (!validarPaso5Completo()) {
+                            showToast("Falta completar datos en el Paso 5 (Banco).", "danger");
+                            btnNext.disabled = false; btnNext.innerHTML = originalHTML; return;
+                        }
+                    }
+
                     payload.educacion = Array.from(document.querySelectorAll('.ai-edu-record')).map(r => ({ 
                         id_diploma: r.dataset.id, 
                         grado: r.dataset.grado, 
@@ -1264,7 +1377,6 @@
                         };
                     });
 
-                    // NUEVO: Guardar Competencias
                     payload.habilidades = {
                         tecnologicas: document.getElementById('skill-tech').value,
                         linguisticas: document.getElementById('skill-lang').value,
@@ -1277,13 +1389,20 @@
                     const resJson = await response.json();
                     if (resJson.status === "success") {
                         if (pasoActual === totalPasos) {
-                            Swal.fire({ title: '¡Completado!', text: 'Expediente guardado.', icon: 'success' }).then(()=>window.location.href = "misexpedientes.html");
-                            return;
+                            const esFinalizar = document.getElementById('btnNext').innerText.includes('Finalizar');
+                            if (esFinalizar) {
+                                Swal.fire({ title: '¡Completado!', text: 'Expediente guardado con éxito.', icon: 'success' }).then(()=>window.location.href = "misexpedientes.html");
+                                return;
+                            } else {
+                                // Si solo guardó avance, se queda en la página y se le avisa
+                                showToast("Avance del Paso 6 guardado. Completa los pasos anteriores para finalizar.", "warning");
+                            }
                         } else {
                             showToast("Avance guardado correctamente.", "success");
                         }
                     }
                 }
+                
                 if (pasoActual === 4) {
                     cargarCursosPendientes();
                 }
@@ -1487,8 +1606,18 @@
             
             const btnNext = document.getElementById('btnNext');
             if(pasoActual === totalPasos) { 
-                btnNext.innerHTML = 'Finalizar Registro <i class="fa-solid fa-check-double ms-2"></i>'; 
-                btnNext.style.background = '#10b981'; 
+                // EXPERTO: Verificar si los pasos 3, 4 y 5 están listos (1 y 2 ya los valida el candado)
+                const p3 = document.getElementById('tab-3').classList.contains('completed') || validarPaso3Completo();
+                const p4 = document.getElementById('tab-4').classList.contains('completed') || validarPaso4Completo();
+                const p5 = document.getElementById('tab-5').classList.contains('completed') || validarPaso5Completo();
+                
+                if (p3 && p4 && p5) {
+                    btnNext.innerHTML = 'Finalizar Registro <i class="fa-solid fa-check-double ms-2"></i>'; 
+                    btnNext.style.background = '#10b981'; // Verde (Listo para terminar)
+                } else {
+                    btnNext.innerHTML = 'Guardar Avance <i class="fa-solid fa-save ms-2"></i>'; 
+                    btnNext.style.background = 'var(--primary)'; // Azul (Solo guarda progreso)
+                }
             } else { 
                 btnNext.innerHTML = 'Guardar y Continuar <i class="fa-solid fa-arrow-right ms-2"></i>'; 
                 btnNext.style.background = 'var(--primary)'; 
@@ -1507,31 +1636,38 @@
             if(direccion === 1) { 
                 // Lógica para el Paso 3
                 if (pasoActual === 3) {
-                    if (validarPaso3Completo()) {
-                        marcarTabComoCompletada(3); 
-                    } else {
+                    if (validarPaso3Completo()) { marcarTabComoCompletada(3); } 
+                    else {
                         document.getElementById('tab-3').classList.remove('completed');
                         document.getElementById('tab-3').innerHTML = `<i class="fa-regular fa-circle-dot"></i> 3. PERFIL`;
                     }
-                } 
-                // NUEVA Lógica para el Paso 5
+                }
+                // NUEVA Lógica para el Paso 4
+                else if (pasoActual === 4) {
+                    if (validarPaso4Completo()) { marcarTabComoCompletada(4); } 
+                    else {
+                        document.getElementById('tab-4').classList.remove('completed');
+                        document.getElementById('tab-4').innerHTML = `<i class="fa-regular fa-circle-dot"></i> 4. CURSO`;
+                    }
+                }
+                // Lógica para el Paso 5
                 else if (pasoActual === 5) {
-                    if (validarPaso5Completo()) {
-                        marcarTabComoCompletada(5); 
-                    } else {
+                    if (validarPaso5Completo()) { marcarTabComoCompletada(5); } 
+                    else {
                         document.getElementById('tab-5').classList.remove('completed');
                         document.getElementById('tab-5').innerHTML = `<i class="fa-regular fa-circle-dot"></i> 5. BANCO`;
                     }
+                    evaluarDesbloqueoPaso6();
+                    return;                
                 } 
                 else {
                     marcarTabComoCompletada(pasoActual); 
                 }
+                
                 evaluarDesbloqueoPaso6(); 
             }
             
-            if (nuevoPaso >= 1 && nuevoPaso <= totalPasos) {
-                irAPaso(nuevoPaso);
-            }
+            if (nuevoPaso >= 1 && nuevoPaso <= totalPasos) { irAPaso(nuevoPaso); }
         }
 
         // Función experta para verificar si el paso 3 está realmente lleno
@@ -1564,6 +1700,19 @@
             const idListo = (urlIdGlobal !== "" && !isEditingId) || (document.getElementById('idFile').files.length > 0);
 
             return !incompleto && idListo;
+        }
+
+        function validarPaso4Completo() {
+            if (!selectedInvitationId) return false;
+            
+            // Verificamos si las cajas de día y hora están visibles (modo edición)
+            const isEditing = document.getElementById('horario-container').style.display !== 'none';
+            if (isEditing) {
+                const dia = document.getElementById('reg-dia').value;
+                const hora = document.getElementById('reg-hora').value;
+                if (!dia || !hora) return false; // Faltó seleccionar el horario
+            }
+            return true;
         }
 
         // Función experta para verificar si el paso 5 está realmente lleno
