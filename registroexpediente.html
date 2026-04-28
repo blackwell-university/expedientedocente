@@ -1367,6 +1367,7 @@
                     payload.experiencia = Array.from(document.querySelectorAll('.exp-item')).map(i => {
                         const esActualidad = i.querySelector('.actualidad-check').checked;
                         return { 
+                            id_experiencia: i.dataset.id, // NUEVO: Atrapamos el ID
                             empresa: i.querySelector('.exp-empresa').value, 
                             tipo: i.querySelector('.exp-tipo').value,
                             cargo: i.querySelector('.exp-cargo').value, 
@@ -1461,6 +1462,8 @@
             div.className = 'dynamic-card exp-item mb-4';
             div.style.background = "#ffffff";
             div.style.border = "1px solid #e2e8f0";
+
+            div.dataset.id = data.id_experiencia || "";
 
             const isActualidad = data.fin && data.fin.toLowerCase().includes('actual');
 
