@@ -166,15 +166,13 @@
             .then(res => res.json())
             .then(response => {
                 if (response.status === "success") {
-                    
-                    // Normalizar el rol a mayúsculas
                     let rolAsignado = response.role ? response.role.toUpperCase() : "";
 
-                    // Guardamos la sesión general
+                    // GUARDADO INTELIGENTE
                     sessionStorage.setItem('isLoggedIn', 'true');
-                    sessionStorage.setItem('userName', response.user);
+                    sessionStorage.setItem('userId', response.userId);   // Guardamos el ID para procesos internos
+                    sessionStorage.setItem('userName', response.userName); // Guardamos el Nombre para la UI Aesthetic
 
-                    // Redirección Inteligente
                     if (rolAsignado === 'DOCENTE') {
                         sessionStorage.setItem('userRole', 'Docente');
                         window.location.href = "dashboard-docente.html";

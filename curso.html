@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script>
+        if (sessionStorage.getItem('isLoggedIn') !== 'true' || sessionStorage.getItem('userRole') !== 'Docente') {
+            window.location.href = "login.html";
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle del Curso | Blackwell University</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            --primary: #1e40af; 
+            --primary-light: #eff6ff;
+            --bg-body: #f4f7f9;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --card-radius: 20px;
+        }
+
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding-top: 70px; }
+        ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        /* Navegación copiada idéntica a tus vistas anteriores */
+        .top-nav { position: fixed; top: 0; left: 0; right: 0; height: 70px; background: rgba(255,255,255,0.8); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; z-index: 1000; }
+        .nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .logo-box { width: 38px; height: 38px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; }
+        .brand-text { font-weight: 800; font-size: 1.2rem; color: var(--primary); }
+        .nav-links-desktop { display: flex; gap: 8px; position: absolute; left: 50%; transform: translateX(-50%); }
+        .nav-item { text-decoration: none; color: var(--text-muted); font-weight: 600; font-size: 0.9rem; padding: 10px 20px; border-radius: 12px; transition: 0.2s; }
+        .nav-item:hover, .nav-item.active { background: var(--primary-light); color: var(--primary); }
+
+        .nav-user { position: relative; cursor: pointer; }
+        .user-trigger { display: flex; align-items: center; gap: 12px; padding: 6px 6px 6px 15px; background: #fff; border: 1px solid var(--border-color); border-radius: 50px; }
+        .user-avatar { width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem; }
+
+        .content-area { padding: 40px 30px; display: flex; flex-direction: column; align-items: center; width: 100%; }
+        .centered-container { width: 100%; max-width: 1250px; text-align: left; }
+
+        /* Estética Cards */
+        .dynamic-card { background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--card-radius); box-shadow: 0 4px 15px rgba(0,0,0,0.02); transition: 0.3s; }
+        
+        .info-pill { background: #f8fafc; border: 1px dashed #cbd5e1; padding: 15px 20px; border-radius: 12px; }
+        .info-pill-title { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; display: block; margin-bottom: 4px; }
+        .info-pill-value { font-size: 0.95rem; font-weight: 600; color: var(--text-main); }
+
+        /* Estética Links Oficiales y Subidos */
+        .file-card { background: transparent; border: 1px solid #e2e8f0; padding: 18px 20px; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; text-decoration: none; margin-bottom: 15px; }
+        .file-card:hover { border-color: #cbd5e1; background: var(--primary-light); box-shadow: 0 4px 12px rgba(30, 64, 175, 0.05); transform: translateY(-1px); }
+        .file-card .icon-box { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-right: 15px;}
+        .file-card.oficial .icon-box { background: #e0e7ff; color: #4f46e5; }
+        .file-card.material .icon-box { background: #ecfdf5; color: #059669; }
+        .file-card.extra .icon-box { background: #fef3c7; color: #d97706; }
+        
+        .file-card-texts { display: flex; flex-direction: column; width: 100%; }
+        .file-card h6 { margin: 0 0 2px 0; font-weight: 700; color: var(--text-main); font-size: 0.95rem;}
+        .file-card span { font-size: 0.8rem; font-weight: 600; color: #94a3b8; }
+        
+        /* Modal Upload Zone */
+        .upload-zone { border: 2px dashed #cbd5e1; border-radius: 16px; padding: 40px 20px; text-align: center; background: #f8fafc; cursor: pointer; transition: 0.3s; margin-top:10px; }
+        .upload-zone:hover { border-color: var(--primary); background: var(--primary-light); }
+        .upload-zone i { font-size: 2.5rem; color: #94a3b8; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+
+    <!-- Navegación Superior -->
+    <nav class="top-nav">
+        <a href="dashboard-docente.html" class="nav-brand">
+            <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div>
+            <span class="brand-text">Blackwell</span>
+        </a>
+
+        <div class="nav-links-desktop">
+            <a href="dashboard-docente.html" class="nav-item"><i class="fa-solid fa-house"></i> Dashboard</a>
+            <a href="misexpedientes.html" class="nav-item"><i class="fa-solid fa-folder-open"></i> Mis Expedientes</a>
+            <a href="miscursos.html" class="nav-item active"><i class="fa-solid fa-chalkboard-user"></i> Mis Clases</a>
+        </div>
+
+        <div class="nav-user">
+            <div class="user-trigger">
+                <span id="userNameNav" class="fw-bold text-dark">Cargando...</span>
+                <div class="user-avatar" id="userInitialNav">--</div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-wrapper">
+        <div class="content-area">
+            <div class="centered-container">
+                
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
+                    <div>
+                        <a href="miscursos.html" class="text-decoration-none text-muted mb-2 d-inline-block fw-bold small text-uppercase" style="letter-spacing:0.5px;">
+                            <i class="fa-solid fa-arrow-left me-1"></i> Volver al menú
+                        </a>
+                        <h1 class="fw-bold mb-1" id="ui-titulo" style="font-size: 2rem; color: #1e3a8a; letter-spacing: -0.02em;">Cargando...</h1>
+                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle px-2 py-1 fw-bold" id="ui-programa">...</span>
+                    </div>
+                    <!--<div id="ui-estado-badge"></div>-->
+                </div>
+
+                <!-- MAIN LAYOUT -->
+                <div class="row g-4 align-items-start">
+                    
+                    <!-- LEFT COLUMN (INFO Y OFICIALES) -->
+                    <div class="col-lg-4 d-flex flex-column gap-4">
+                        
+                        <!-- TARJETA: INFO GENERAL -->
+                        <div class="dynamic-card p-4">
+                            <h5 class="fw-bold text-dark mb-4 border-bottom pb-3"><i class="fa-solid fa-circle-info text-primary me-2"></i> Información General</h5>
+                            <div class="d-flex flex-column gap-3">
+                                <div class="info-pill">
+                                    <span class="info-pill-title">Días y Horarios Confirmados</span>
+                                    <span class="info-pill-value"><i class="fa-regular fa-clock me-1 text-primary"></i> <span id="ui-horario">Cargando...</span></span>
+                                </div>
+                                <div class="info-pill">
+                                    <span class="info-pill-title">Cantidad de Sesiones</span>
+                                    <span class="info-pill-value"><i class="fa-solid fa-video me-1 text-primary"></i> <span id="ui-clases">...</span> clases (1h 30m c/u)</span>
+                                </div>
+                                <div class="info-pill bg-white">
+                                    <span class="info-pill-title">Vigencia Asignada</span>
+                                    <span class="info-pill-value small" style="color: #64748b;"><span id="ui-fechas">--/--/-- al --/--/--</span></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TARJETA: RECURSOS OFICIALES BGU -->
+                        <div class="dynamic-card p-4">
+                            <h5 class="fw-bold text-dark mb-4 border-bottom pb-3"><i class="fa-solid fa-building-columns text-primary me-2"></i> Biblioteca Oficial</h5>
+                            
+                            <a href="#" id="link-silabo" target="_blank" class="file-card oficial" style="display:none;">
+                                <div class="icon-box"><i class="fa-solid fa-file-pdf"></i></div>
+                                <div class="file-card-texts">
+                                    <h6>Sílabo Oficial</h6>
+                                    <span>Plan de estudios BGU</span>
+                                </div>
+                                <i class="fa-solid fa-arrow-up-right-from-square text-muted"></i>
+                            </a>
+                            
+                            <a href="https://docs.google.com/presentation/d/TU_LINK_DE_PLANTILLA" target="_blank" class="file-card oficial m-0">
+                                <div class="icon-box" style="background:#fff7ed; color:#ea580c;"><i class="fa-solid fa-file-powerpoint"></i></div>
+                                <div class="file-card-texts">
+                                    <h6>Plantilla de Clase</h6>
+                                    <span>Template en Power Point</span>
+                                </div>
+                                <i class="fa-solid fa-arrow-up-right-from-square text-muted"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN (REPOSITORIO DEL DOCENTE) -->
+                    <div class="col-lg-8">
+                        <div class="dynamic-card p-0 overflow-hidden h-100 d-flex flex-column">
+                            
+                            <!-- Header Seccion -->
+                            <div class="bg-light p-4 border-bottom d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="fw-bold text-dark m-0"><i class="fa-regular fa-folder-open text-primary me-2"></i> Archivos Subidos para Clase</h5>
+                                    <p class="text-muted small m-0 mt-1">Acá puedes subir los PDFs, PPTs o Lecturas que enviarás a tus alumnos.</p>
+                                </div>
+                                <button class="btn btn-primary fw-bold px-4 rounded-3 shadow-sm d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i> <span class="d-none d-md-block">Aportar Archivo</span>
+                                </button>
+                            </div>
+
+                            <!-- Listado/Loader/Vacio -->
+                            <div class="p-4 flex-grow-1" style="min-height: 400px; position:relative;">
+                                
+                                <div id="archivos-loader" class="position-absolute top-50 start-50 translate-middle text-center w-100">
+                                    <div class="spinner-border text-primary" role="status" style="width: 2.5rem; height: 2.5rem;"></div>
+                                    <p class="mt-2 text-muted fw-bold">Obteniendo tus documentos de Drive...</p>
+                                </div>
+                                
+                                <div id="archivos-empty" class="position-absolute top-50 start-50 translate-middle text-center w-100" style="display:none;">
+                                    <div style="background:#f1f5f9; width:80px; height:80px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 15px auto;">
+                                        <i class="fa-regular fa-face-frown-open text-muted fs-1"></i>
+                                    </div>
+                                    <h6 class="fw-bold text-dark mb-1">Tu repositorio de curso está vacío</h6>
+                                    <p class="text-muted small">Carga las diapositivas o papers antes de cada clase haciendo click en el botón azul superior.</p>
+                                </div>
+                                
+                                <div id="lista-archivos" class="row g-3">
+                                    <!-- Los items del repositorio dinámicos iran aquí -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL MINIMALISTA UPLOAD -->
+    <div class="modal fade" id="uploadModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:24px; border:none; box-shadow: 0 25px 50px rgba(0,0,0,0.1);">
+          <div class="modal-header border-bottom px-4 pt-4 pb-3">
+            <h5 class="modal-title fw-bold text-dark"><i class="fa-solid fa-cloud-arrow-up text-primary me-2"></i> Subir Documento a Drive</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body px-4 pb-4">
+              
+              <div class="mb-3">
+                  <label class="form-label fw-bold text-muted small text-uppercase">Categoría del Material</label>
+                  <select id="modal-cat" class="form-select form-select-lg shadow-none bg-light border-1 rounded-3" style="font-size:0.95rem;">
+                      <option value="Material del Curso">PPT, Separata Oficial o Diapositivas</option>
+                      <option value="Material Extra">Lecturas Opcionales / Referencias Extra</option>
+                  </select>
+              </div>
+
+              <div class="upload-zone" id="btn-select-file" onclick="document.getElementById('fileUploadInput').click()">
+                  <i class="fa-solid fa-file-arrow-up"></i>
+                  <h6 class="fw-bold text-dark mb-1" id="uploadNameFile">Selecciona tu archivo (.pdf, .pptx, .docx)</h6>
+                  <span class="text-muted small d-block">Haz clic aquí para buscar en tu dispositivo</span>
+              </div>
+              <input type="file" id="fileUploadInput" class="d-none" accept=".pdf,.ppt,.pptx,.doc,.docx" onchange="actualizarCaja(this)">
+          </div>
+          
+          <div class="modal-footer px-4 pb-4 pt-0 border-top-0 justify-content-between">
+            <button type="button" class="btn btn-light fw-bold px-4 py-2 text-muted" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-primary fw-bold px-4 py-2" id="btnUploadSubmit" onclick="subirArchivoCourse()" disabled>
+                Procesar Archivo
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
+        
+        let invIdGlobal = new URLSearchParams(window.location.search).get('id');
+        let docenteIdGlobal = sessionStorage.getItem('userId');
+        let selectedFileBlob = null;
+        let selectedFileDetails = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Pintar NAV
+            const fn = sessionStorage.getItem('userName') || "Docente";
+            document.getElementById('userNameNav').innerText = fn.split(' ')[0];
+            document.getElementById('userInitialNav').innerText = fn.substring(0,2).toUpperCase();
+
+            // Evitar problemas de recarga extraña y mostrar UI Skeleton o vacía
+            if (!invIdGlobal || !docenteIdGlobal) {
+                alert("Parámetros no encontrados."); 
+                window.location.href="miscursos.html";
+            } else {
+                fetchDetalle();
+            }
+        });
+
+        // 1. CARGA LOS DETALLES EXACTOS DEL CURSO 
+        async function fetchDetalle() {
+            try {
+                const res = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "get_course_detail", idInvitacion: invIdGlobal })
+                }).then(r=>r.json());
+
+                if (res.status === 'success') {
+                    const data = res.data;
+
+                    document.getElementById('ui-titulo').innerText = data.nombreCurso;
+                    document.getElementById('ui-programa').innerText = data.programa;
+                    document.getElementById('ui-horario').innerText = data.horario;
+                    document.getElementById('ui-clases').innerText = data.totalClases;
+
+                    // Formateador bonito de fecha simple
+                    const sd = new Date(data.fechaInicio); const ed = new Date(data.fechaFin);
+                    if (!isNaN(sd) && !isNaN(ed)) {
+                        const mths = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+                        document.getElementById('ui-fechas').innerText = `Desde ${sd.getUTCDate()} ${mths[sd.getUTCMonth()]} ${sd.getUTCFullYear()} hasta ${ed.getUTCDate()} ${mths[ed.getUTCMonth()]} ${ed.getUTCFullYear()}`;
+                    }
+                    
+                    // Colores de badges de estado como el resto de tu UI
+                    let estadoVal = String(data.estado).trim().toLowerCase();
+                    let eCol = 'bg-secondary';
+                    if (estadoVal.includes('respondido')) eCol = 'bg-primary text-white';
+                    else if (estadoVal.includes('completado') || estadoVal.includes('aprobado')) eCol = 'bg-success text-white';
+                    
+                    document.getElementById('ui-estado-badge').innerHTML = `<span class="badge ${eCol} py-2 px-3 fw-bold border-0 fs-6">${data.estado.toUpperCase()}</span>`;
+
+                    // PINTAR EL SÍLABO OFICIAL
+                    if(data.silabo) {
+                        const silaboDOM = document.getElementById('link-silabo');
+                        silaboDOM.style.display = 'flex';
+                        silaboDOM.href = data.silabo;
+                    }
+
+                    // PINTAR LOS ARCHIVOS CARGADOS EN LA INTERFAZ DERECHA
+                    dibujarRepositorio(data.archivos);
+
+                } else {
+                    alert("Error obteniendo datos del servidor.");
+                }
+            } catch(e) {
+                console.log("Error", e);
+            }
+        }
+
+        // Dibuja en tarjetas las JSON que viene de la celda
+        function dibujarRepositorio(archivosArr) {
+            const listCont = document.getElementById('lista-archivos');
+            document.getElementById('archivos-loader').style.display = 'none';
+
+            if (!archivosArr || archivosArr.length === 0) {
+                document.getElementById('archivos-empty').style.display = 'block';
+                return;
+            }
+
+            let ht = "";
+            archivosArr.forEach(arch => {
+                let tipoCat = (arch.categoria.includes("Extra")) ? "extra" : "material"; // Asigna CSS distinto
+
+                ht += `
+                <div class="col-md-6">
+                    <a href="${arch.url}" target="_blank" class="file-card ${tipoCat} m-0 bg-white h-100 align-items-start">
+                        <div class="icon-box m-0 me-3" style="min-width:44px;"><i class="fa-regular fa-file-pdf"></i></div>
+                        <div class="file-card-texts text-start">
+                            <h6 class="m-0 mb-1" style="font-size: 0.9rem; line-height:1.2; word-break:break-all;">${arch.nombre}</h6>
+                            <span class="d-flex align-items-center justify-content-between mt-auto">
+                                <span class="badge border border-secondary text-secondary bg-transparent fw-bold" style="font-size:10px;">${arch.categoria}</span>
+                                <small>${arch.fecha || '-'}</small>
+                            </span>
+                        </div>
+                    </a>
+                </div>
+                `;
+            });
+            listCont.innerHTML = ht;
+            listCont.style.display = 'flex';
+        }
+
+        // ======================== MODAL UPLOAD =============================
+
+        // Se acciona con el input File escondido
+        function actualizarCaja(input) {
+            const btnSubir = document.getElementById('btnUploadSubmit');
+            const textoTitle = document.getElementById('uploadNameFile');
+            
+            if (input.files.length > 0) {
+                const f = input.files[0];
+                textoTitle.innerHTML = `<span class="text-primary">${f.name}</span>`;
+                selectedFileDetails = { name: f.name, type: f.type || "application/octet-stream" };
+                
+                const reader = new FileReader();
+                reader.readAsDataURL(f);
+                reader.onload = () => {
+                    selectedFileBlob = reader.result.split(',')[1];
+                    btnSubir.disabled = false;
+                };
+            } else {
+                textoTitle.innerText = "Selecciona tu archivo (.pdf, .pptx, .docx)";
+                btnSubir.disabled = true;
+                selectedFileBlob = null;
+            }
+        }
+
+        async function subirArchivoCourse() {
+            const btn = document.getElementById('btnUploadSubmit');
+            const categ = document.getElementById('modal-cat').value;
+
+            // Feedback visual UI Loading State
+            const ogHtml = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i> Subiendo a Drive...`;
+            btn.disabled = true;
+
+            try {
+                const payload = {
+                    action: "upload_course_file",
+                    idInvitacion: invIdGlobal,
+                    idDocente: docenteIdGlobal,
+                    fileBase64: selectedFileBlob,
+                    fileName: selectedFileDetails.name,
+                    mimeType: selectedFileDetails.type,
+                    categoria: categ
+                };
+
+                const res = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                }).then(r => r.json());
+
+                if (res.status === 'success') {
+                    // Modal de Éxito Moderno de Swal
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Aportación Subida Éxitosamente.', showConfirmButton: false, timer: 3000 });
+                    
+                    // Cierra modal con BS y actualiza página por debajo para repintar
+                    const upModal = bootstrap.Modal.getInstance(document.getElementById('uploadModal'));
+                    upModal.hide();
+
+                    document.getElementById('archivos-loader').style.display = 'block';
+                    document.getElementById('archivos-empty').style.display = 'none';
+                    document.getElementById('lista-archivos').innerHTML = '';
+                    
+                    // Refresh la Data Principal Completa (Simula Tiempo real sin refrescar Web)
+                    fetchDetalle(); 
+                    
+                    // Resetear Modal para futuros Clicks
+                    document.getElementById('fileUploadInput').value = '';
+                    document.getElementById('uploadNameFile').innerText = "Selecciona tu archivo (.pdf, .pptx, .docx)";
+
+                } else {
+                    Swal.fire('Error', res.message, 'error');
+                }
+            } catch(e) {
+                Swal.fire('Oops...', 'Surgió un error con el archivo o conexión.', 'error');
+            } finally {
+                btn.innerHTML = ogHtml;
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

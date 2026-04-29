@@ -20,12 +20,14 @@
 
     <style>
         :root {
-            --primary: #2563eb; 
-            --primary-dark: #1e3a8a; 
-            --bg-body: #f8fafc;
+            --primary: #1e40af; 
+            --primary-light: #eff6ff;
+            --bg-body: #f4f7f9;
             --sidebar-bg: #ffffff;
             --text-main: #1e293b;
             --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --primary-dark: #1e3a8a;
             --card-radius: 20px;
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             --sidebar-width: 260px;
@@ -33,27 +35,91 @@
             --dynamic-font-size: 1rem;
         }
 
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; letter-spacing: -0.01em; }
+        /* --- AJUSTES DEL BODY PARA LA NUEVA NAVEGACIÓN --- */
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-body); 
+            color: var(--text-main); 
+            margin: 0; 
+            padding-top: 70px; /* Espacio exacto para que el top-nav no tape el contenido */
+        }
 
-        /* --- SIDEBAR MODERNA --- */
-        .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid rgba(0,0,0,0.05); display: flex; flex-direction: column; transition: var(--transition); position: relative; padding: 24px 16px; flex-shrink: 0; }
-        .sidebar.collapsed { width: var(--sidebar-collapsed-width); }
-        .brand-section { display: flex; align-items: center; gap: 12px; padding: 0 12px 32px; text-decoration: none; overflow: hidden; }
-        .logo-box { min-width: 42px; height: 42px; background: var(--primary-dark); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
-        .brand-text { font-weight: 800; font-size: 1.2rem; color: var(--primary-dark); }
-        .sidebar.collapsed .brand-text { opacity: 0; pointer-events: none; }
-        .user-preview { display: flex; align-items: center; gap: 12px; padding: 12px; background: #f1f5f9; border-radius: 16px; margin-bottom: 24px; overflow: hidden; }
-        .avatar { min-width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 13px; }
-        .user-meta { display: flex; flex-direction: column; line-height: 1.2; }
-        .user-meta b { font-size: 13px; white-space: nowrap; color: var(--text-main); } .user-meta span { font-size: 11px; color: var(--text-muted); }
-        .sidebar.collapsed .user-meta { display: none; }
-        .nav-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
-        .nav-link { display: flex; align-items: center; gap: 16px; padding: 12px 14px; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 6px; transition: var(--transition); white-space: nowrap; }
-        .nav-link i { font-size: 18px; width: 24px; text-align: center; }
-        .nav-link:hover, .nav-link.active { background: #eff6ff; color: var(--primary); } .nav-link.active { font-weight: 600; }
-        .sidebar.collapsed .link-text { display: none; }
-        .collapse-btn { position: absolute; right: -12px; top: 48px; width: 24px; height: 24px; background: white; border: 1px solid #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; font-size: 10px; color: var(--text-muted); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        /* --- TOP NAVIGATION (Escritorio) --- */
+        .top-nav {
+            position: fixed; top: 0; left: 0; right: 0; height: 70px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 40px; z-index: 1000;
+        }
 
+        .nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .logo-box { width: 38px; height: 38px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; }
+        .brand-text { font-weight: 800; font-size: 1.2rem; color: var(--primary); letter-spacing: -0.5px; }
+
+        .nav-links-desktop { display: flex; gap: 8px; position: absolute; left: 50%; transform: translateX(-50%); }
+        .nav-item {
+            text-decoration: none; color: var(--text-muted); font-weight: 600; font-size: 0.9rem;
+            padding: 10px 20px; border-radius: 12px; transition: var(--transition);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .nav-item:hover { background: #eff6ff; color: var(--primary); }
+        .nav-item.active { background: #eff6ff; color: var(--primary); }
+
+        /* --- USUARIO & DROPDOWN --- */
+        .nav-user { position: relative; cursor: pointer; }
+        .user-trigger { display: flex; align-items: center; gap: 12px; padding: 6px 6px 6px 15px; background: #fff; border: 1px solid var(--border-color); border-radius: 50px; transition: 0.2s; }
+        .user-trigger:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .user-trigger span { font-weight: 700; font-size: 0.85rem; color: var(--text-main); }
+        .user-avatar { width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem; }
+
+        .user-dropdown {
+            position: absolute; top: calc(100% + 10px); right: 0; width: 220px;
+            background: white; border-radius: 16px; border: 1px solid var(--border-color);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 8px;
+            opacity: 0; visibility: hidden; transform: translateY(10px); transition: var(--transition);
+        }
+        .user-dropdown.show { opacity: 1; visibility: visible; transform: translateY(0); }
+        .dropdown-link {
+            display: flex; align-items: center; gap: 12px; padding: 12px 15px;
+            text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 0.85rem;
+            border-radius: 10px; transition: 0.2s;
+        }
+        .dropdown-link:hover { background: #eff6ff; color: var(--primary); }
+        .dropdown-link.logout { color: #ef4444; }
+        .dropdown-link.logout:hover { background: #fef2f2; color: #ef4444; }
+
+        /* --- BOTTOM NAVIGATION (Móvil) --- */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 70px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--border-color);
+            display: none; justify-content: space-around; align-items: center;
+            padding-bottom: env(safe-area-inset-bottom); z-index: 1000;
+        }
+        .bottom-item {
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            text-decoration: none; color: var(--text-muted); transition: 0.2s;
+        }
+        .bottom-item i { font-size: 1.4rem; }
+        .bottom-item span { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+        .bottom-item.active { color: var(--primary); }
+
+        /* --- MEDIA QUERIES --- */
+        @media (max-width: 992px) {
+            .nav-links-desktop { display: none; }
+            .top-nav { padding: 0 20px; }
+        }
+
+        @media (max-width: 768px) {
+            body { padding-top: 60px; padding-bottom: 75px; } /* Evita que el Bottom Nav tape contenido */
+            .top-nav { height: 60px; }
+            .bottom-nav { display: flex; }
+            .content-area { padding: 20px 15px; }
+        }
         /* --- MAIN WRAPPER & HEADER --- */
         .main-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; }
         header { padding: 20px 48px; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 5; }
@@ -116,50 +182,55 @@
 </head>
 <body>
 
-    <!-- Sidebar Lateral -->
-    <aside class="sidebar" id="sidebar">
-        <div class="collapse-btn" onclick="toggleSidebar()">
-            <i class="fa-solid fa-chevron-left" id="toggleIcon"></i>
-        </div>
-        <a href="#" class="brand-section">
+    <!-- NUEVA NAVEGACIÓN SUPERIOR (ESCRITORIO) -->
+    <nav class="top-nav">
+        <a href="#" class="nav-brand">
             <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div>
             <span class="brand-text">Blackwell</span>
         </a>
 
-        <div class="user-preview">
-            <div class="avatar" id="userInitial">DO</div>
-            <div class="user-meta"><b id="userNameSidebar">Cargando...</b><span>Docente</span></div>
+        <div class="nav-links-desktop">
+            <a href="dashboard-docente.html" class="nav-item active"><i class="fa-solid fa-house"></i> Dashboard</a>
+            <a href="misexpedientes.html" class="nav-item "><i class="fa-solid fa-folder-open"></i> Mis Expedientes</a>
+            <a href="miscursos.html" class="nav-item"><i class="fa-solid fa-chalkboard-user"></i> Mis Clases</a>
         </div>
 
-        <nav class="nav-menu">
-            <!-- NUEVO ENLACE AL DASHBOARD -->
-            <a href="dashboard-docente.html" class="nav-link active"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a>
-            <!--<a href="docente.html" class="nav-link"><i class="fa-solid fa-user"></i> <span class="link-text">Información Personal</span></a>-->
-            <a href="misexpedientes.html" class="nav-link"><i class="fa-solid fa-file-lines"></i> <span class="link-text">Mis Expedientes</span></a>
-            <!--<a href="carpetadocente.html" class="nav-link"><i class="fa-solid fa-folder-open"></i> <span class="link-text">Carpeta Docente</span></a>-->
-            <a href="miscursos.html" class="nav-link"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Mis Clases</span></a>
-        </nav>
+        <div class="nav-user" id="userDropdownTrigger">
+            <div class="user-trigger">
+                <!-- ID Oculto para lógica interna -->
+                <span id="userHiddenId" style="display:none;">Docente</span>
+                <!-- Nombre visible -->
+                <span id="userNameNav">Cargando...</span>
+                <div class="user-avatar" id="userInitialNav">--</div>
+            </div>
+            
+            <div class="user-dropdown" id="userDropdownMenu">
+                <a href="#" class="dropdown-link"><i class="fa-solid fa-circle-user"></i> Ver mi Perfil</a>
+                <a href="#" class="dropdown-link"><i class="fa-solid fa-gear"></i> Configuración</a>
+                <div style="border-top: 1px solid var(--border-color); margin: 5px 0;"></div>
+                <a href="#" onclick="logout()" class="dropdown-link logout"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</a>
+            </div>
+        </div>
+    </nav>
 
-        <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto; margin-left: 15px; margin-right: 15px;">
-            <i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span>
+    <!-- NUEVA NAVEGACIÓN INFERIOR (MÓVIL) -->
+    <nav class="bottom-nav">
+        <a href="dashboard-docente.html" class="bottom-item active">
+            <i class="fa-solid fa-house"></i>
+            <span>Inicio</span>
         </a>
-    </aside>
+        <a href="misexpedientes.html" class="bottom-item ">
+            <i class="fa-solid fa-folder-open"></i>
+            <span>Expedientes</span>
+        </a>
+        <a href="miscursos.html" class="bottom-item">
+            <i class="fa-solid fa-chalkboard-user"></i>
+            <span>Mis Clases</span>
+        </a>
+    </nav>
 
     <main class="main-wrapper">
-        <header>
-            <div>
-                <h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Portal del Docente</h5>
-                <p class="text-muted small m-0">Sistema de Gestión Académica</p>
-            </div>
-            <div class="d-flex align-items-center gap-3">
-                <div class="bg-white px-3 py-2 rounded-pill shadow-sm d-flex gap-2 align-items-center">
-                    <button onclick="changeFontSize(-1)" class="btn btn-sm btn-link p-0 text-dark text-decoration-none fw-bold">A-</button>
-                    <span id="fontSizeLabel" class="small fw-bold px-1" style="min-width: 50px; text-align: center;">Normal</span>
-                    <button onclick="changeFontSize(1)" class="btn btn-sm btn-link p-0 text-dark text-decoration-none fw-bold">A+</button>
-                </div>
-            </div>
-        </header>
-
+        
         <div class="content-area">
             <div class="centered-container">
                 
@@ -394,30 +465,64 @@
         // CONFIGURACIÓN DE APPS SCRIPT
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
 
-        // CONFIGURACIÓN UI
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); document.getElementById('toggleIcon').classList.toggle('fa-chevron-right'); document.getElementById('toggleIcon').classList.toggle('fa-chevron-left');}
-        function logout() { if(confirm("¿Seguro que deseas salir?")) { sessionStorage.clear(); window.location.href = "login.html"; } }
+        // --- 1. LÓGICA DEL DROPDOWN DE USUARIO ---
+        const dropdownTrigger = document.getElementById('userDropdownTrigger');
+        const dropdownMenu = document.getElementById('userDropdownMenu');
+
+        if(dropdownTrigger && dropdownMenu) {
+            dropdownTrigger.addEventListener('click', function(e) {
+                e.stopPropagation();
+                dropdownMenu.classList.toggle('show');
+            });
+
+            document.addEventListener('click', function() {
+                dropdownMenu.classList.remove('show');
+            });
+        }
+
+        // --- 2. CONFIGURACIÓN UI (Logout y Letra) ---
+        function logout() { 
+            if(confirm("¿Seguro que deseas salir?")) { 
+                sessionStorage.clear(); 
+                window.location.href = "login.html"; 
+            } 
+        }
         
         let currentSize = 1; const sizes =["0.9rem", "1rem", "1.1rem"]; const labels =["Pequeño", "Normal", "Grande"];
         function changeFontSize(dir) { currentSize += dir; if(currentSize < 0) currentSize=0; if(currentSize > 2) currentSize=2; document.getElementById('fontSizeLabel').innerText = labels[currentSize]; document.documentElement.style.setProperty('--dynamic-font-size', sizes[currentSize]); }
 
+        // --- 3. CARGA DE DATOS UNIVERSAL ---
         document.addEventListener('DOMContentLoaded', () => {
-            // El userName guarda el Correo (si es nuevo) o el DNI
-            const userId = sessionStorage.getItem('userName'); 
-            
-            if (userId) {
-                // Ponemos un nombre temporal (su correo antes del @) mientras carga el real
-                const nombreTemporal = userId.split("@")[0].split(" ")[0];
-                document.getElementById('userNameSidebar').innerText = nombreTemporal;
-                document.getElementById('userInitial').innerText = nombreTemporal.substring(0,2).toUpperCase();
-                document.getElementById('welcomeMessage').innerText = `¡Hola!`;
 
+            // A) Lógica Estética Rápida (Nombre y Avatar desde Session)
+            const fullName = sessionStorage.getItem('userName') || "Docente";
+            const firstName = fullName.split(' ')[0]; 
+            const initial = fullName.substring(0, 2).toUpperCase(); 
+
+            // Asignamos a los nuevos IDs del Nav
+            const nameEl = document.getElementById('userNameNav');
+            const initialEl = document.getElementById('userInitialNav');
+            
+            if(nameEl) nameEl.innerText = firstName;
+            if(initialEl) initialEl.innerText = initial;
+            
+            // B) ID Docente para Base de Datos
+            const idDocente = sessionStorage.getItem('userId') || sessionStorage.getItem('userName');
+
+            if (idDocente) {
+                // Ponemos el mensaje de bienvenida
+                const welcomeMsg = document.getElementById('welcomeMessage');
+                if(welcomeMsg) welcomeMsg.innerText = `¡Hola, ${firstName}!`;
+
+                // Iniciamos los gráficos (ahora está protegido contra errores)
                 initCharts();
-                verificarDocenteNuevo(userId); // <--- VALIDACIÓN DE USUARIO NUEVO
+
+                // Verificamos si es nuevo para mostrar el modal
+                verificarDocenteNuevo(idDocente); 
             }
         });
 
-        // FUNCIÓN QUE VERIFICA SI EL DOCENTE YA TIENE DNI
+        // --- 4. VERIFICACIÓN DE NUEVO DOCENTE (Base de Datos) ---
         async function verificarDocenteNuevo(userId) {
             try {
                 const response = await fetch(GAS_URL, { 
@@ -429,20 +534,25 @@
                 if (result.status === 'success') {
                     const d = result.data;
                     
-                    // Convertimos el DNI a texto de forma segura y le quitamos los espacios
+                    // Convertimos el DNI a texto seguro
                     const dniDocente = d.dni ? String(d.dni).trim() : "";
 
-                    // Si el DNI está completamente vacío o es un guion, ES UN DOCENTE NUEVO
+                    // Si el DNI está vacío o es un guion, ES UN DOCENTE NUEVO
                     if (dniDocente === "" || dniDocente === "-") {
-                        // Mostramos el modal estático que lo obliga a registrar su expediente
                         const modalBienvenida = new bootstrap.Modal(document.getElementById('modalBienvenida'));
                         modalBienvenida.show();
                     } else {
-                        // Si no es nuevo, actualizamos la pantalla con sus datos reales de forma segura
+                        // Si no es nuevo, actualizamos EL NAV NUEVO con sus datos reales
                         const nombreReal = (d.nombres || "Docente").split(" ")[0];
-                        document.getElementById('userNameSidebar').innerText = nombreReal;
-                        document.getElementById('userInitial').innerText = nombreReal.substring(0,2).toUpperCase();
-                        document.getElementById('welcomeMessage').innerText = `¡Hola, ${nombreReal}!`;
+                        
+                        const nameEl = document.getElementById('userNameNav');
+                        const initialEl = document.getElementById('userInitialNav');
+                        
+                        if(nameEl) nameEl.innerText = nombreReal;
+                        if(initialEl) initialEl.innerText = nombreReal.substring(0,2).toUpperCase();
+                        
+                        const welcomeMsg = document.getElementById('welcomeMessage');
+                        if(welcomeMsg) welcomeMsg.innerText = `¡Hola, ${nombreReal}!`;
                     }
                 }
             } catch (e) {
@@ -450,64 +560,50 @@
             }
         }
         
-        // INICIALIZACIÓN DE GRÁFICOS (CHART.JS)
+        // --- 5. INICIALIZACIÓN DE GRÁFICOS PROTEGIDA ---
         function initCharts() {
-            // 1. Gráfico de Líneas (Horas de Enseñanza)
-            const ctxHoras = document.getElementById('horasChart').getContext('2d');
-            let gradientBlue = ctxHoras.createLinearGradient(0, 0, 0, 400);
-            gradientBlue.addColorStop(0, 'rgba(37, 99, 235, 0.2)'); 
-            gradientBlue.addColorStop(1, 'rgba(37, 99, 235, 0)');
+            // Buscamos los canvas. Si están comentados en el HTML, esto devolverá null.
+            const canvasHoras = document.getElementById('horasChart');
+            const canvasMateriales = document.getElementById('materialesChart');
+            
+            // Solo intentamos dibujar si el gráfico EXISTE en el HTML
+            if (canvasHoras) {
+                const ctxHoras = canvasHoras.getContext('2d');
+                let gradientBlue = ctxHoras.createLinearGradient(0, 0, 0, 400);
+                gradientBlue.addColorStop(0, 'rgba(37, 99, 235, 0.2)'); 
+                gradientBlue.addColorStop(1, 'rgba(37, 99, 235, 0)');
 
-            new Chart(ctxHoras, {
-                type: 'line',
-                data: {
-                    labels:['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-                    datasets:[{
-                        label: 'Horas Dictadas',
-                        data:[12, 19, 15, 24, 22, 30],
-                        borderColor: '#2563eb',
-                        backgroundColor: gradientBlue,
-                        borderWidth: 3,
-                        pointBackgroundColor: '#ffffff',
-                        pointBorderColor: '#2563eb',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 6,
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1e293b', padding: 12 } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { borderDash: [5, 5], color: '#f1f5f9' }, border: {display: false} },
-                        x: { grid: { display: false }, border: {display: false} }
-                    }
-                }
-            });
+                new Chart(ctxHoras, {
+                    type: 'line',
+                    data: {
+                        labels:['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+                        datasets:[{
+                            label: 'Horas Dictadas',
+                            data:[12, 19, 15, 24, 22, 30],
+                            borderColor: '#2563eb',
+                            backgroundColor: gradientBlue,
+                            borderWidth: 3,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: '#2563eb',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1e293b', padding: 12 } }, scales: { y: { beginAtZero: true, grid: { borderDash: [5, 5], color: '#f1f5f9' }, border: {display: false} }, x: { grid: { display: false }, border: {display: false} } } }
+                });
+            }
 
-            // 2. Gráfico Doughnut (Progreso de Materiales)
-            const ctxMateriales = document.getElementById('materialesChart').getContext('2d');
-            new Chart(ctxMateriales, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Subidos', 'Pendientes'],
-                    datasets: [{
-                        data: [75, 25],
-                        backgroundColor:['#10b981', '#f1f5f9'],
-                        borderWidth: 0,
-                        hoverOffset: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '80%', 
-                    plugins: { legend: { display: false }, tooltip: { enabled: false } }
-                }
-            });
+            if (canvasMateriales) {
+                const ctxMateriales = canvasMateriales.getContext('2d');
+                new Chart(ctxMateriales, {
+                    type: 'doughnut',
+                    data: { labels: ['Subidos', 'Pendientes'], datasets: [{ data: [75, 25], backgroundColor:['#10b981', '#f1f5f9'], borderWidth: 0, hoverOffset: 4 }] },
+                    options: { responsive: true, maintainAspectRatio: false, cutout: '80%', plugins: { legend: { display: false }, tooltip: { enabled: false } } }
+                });
+            }
         }
     </script>
 </body>
