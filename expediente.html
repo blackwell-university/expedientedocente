@@ -202,7 +202,8 @@
             <li><a href="administrativo.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
             <li><a href="gestion-docentes.html" class="nav-link"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
             <li><a href="gestionexpedientes.html" class="nav-link active"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
-            <li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-upload"></i> <span class="link-text">Gestión de Cursos</span></a></li>
+<!--<li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-upload"></i> <span class="link-text">Gestión de Cursos</span></a></li>
+            <li><a href="#" class="nav-link"><i class="fa-solid fa-chart-pie"></i> <span class="link-text">Reportes</span></a></li>-->
         </ul>
         <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;">
             <i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span>
@@ -332,7 +333,7 @@
                             </div>
                         </div>
 
-                        <!-- BOTONES DE APROBACIÓN (REDSIEÑADOS) -->
+                        <!-- BOTONES DE APROBACIÓN (REDSIEÑADOS) 
                         <div class="d-flex justify-content-between align-items-center mt-4">
                             <button class="btn-outline-danger-custom" onclick="cambiarEstadoExpediente('Rechazado')">
                                 <i class="fa-solid fa-xmark me-2"></i>Rechazar Expediente
@@ -340,7 +341,7 @@
                             <button class="btn-success-solid" onclick="cambiarEstadoExpediente('Aprobado')">
                                 <i class="fa-solid fa-check-double me-2"></i>Aprobar Expediente
                             </button>
-                        </div>
+                        </div>-->
                     </div>
 
                     <!-- PESTAÑA 2: DOCUMENTOS GENERADOS -->
@@ -700,7 +701,13 @@
                     let actionName = '';
                     if (docName === "Letter of Appointment") actionName = 'generate_letter_appointment';
                     else if (docName === "Resume") actionName = 'generate_resume';
+                    else if (docName === "Proposed Salary") actionName = 'generate_proposed_salary';
+                    else if (docName === "Reference Check Forms") actionName = 'generate_reference_checks_forms';
                     else if (docName === "Academic Preparation Evaluation Form") actionName = 'generate_academic_prep';
+                    else if (docName === "Assigned Employee Notice") actionName = 'generate_assigned_notice';
+                    else if (docName === "Direct Deposit Authorization Form") actionName = 'generate_direct_deposit';
+                    else if (docName === "Confidentiality Agreement") actionName = 'generate_confidentiality';
+                    else if (docName === "Job Description") actionName = 'generate_job_description';
                     
                     if (actionName !== '') {
                         const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: actionName, idExpediente: expId }) });
