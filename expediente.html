@@ -114,6 +114,76 @@
         .bgu-logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.2rem; color: #1e3a8a; margin-bottom: 25px; }
         .bgu-logo img { height: 35px; }
 
+        /* ==========================================================
+           📱 AJUSTES UX/UI PARA MÓVILES (Responsividad Perfecta)
+           ========================================================== */
+        @media (max-width: 768px) {
+            /* 1. Reducir los márgenes gigantes del escritorio */
+            header { padding: 15px 20px; }
+            .content-area { padding: 20px 15px; }
+            .form-card { padding: 20px; }
+            .breadcrumb-nav { margin-bottom: 15px; }
+
+            /* 2. Cabecera de la página (Título y Badge de Estado) */
+            .page-header { flex-direction: column; align-items: flex-start; gap: 12px; margin-bottom: 24px; }
+            .page-header h1 { font-size: 1.6rem; }
+
+            /* 3. TABS: Permite hacer scroll horizontal en lugar de aplastarse */
+            .nav-tabs { flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; padding-bottom: 2px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+            .nav-tabs::-webkit-scrollbar { display: none; }
+            .nav-tabs .nav-link { white-space: nowrap; padding: 10px 15px; font-size: 0.9rem; }
+
+            /* 4. EL ARREGLO DE LA FOTO: Tarjeta de Documentos Formales */
+            /* Rompemos el flex-row para que el título y los botones se apilen */
+            #generados .d-flex.justify-content-between.border-bottom { 
+                flex-direction: column !important; 
+                align-items: flex-start !important; 
+                gap: 20px; 
+            }
+            /* Hacemos que los botones ocupen el 100% del ancho del celular */
+            #generados .d-flex.gap-2 { 
+                width: 100%; 
+                flex-direction: column; 
+            }
+            #generados .d-flex.gap-2 button { 
+                width: 100%; 
+                justify-content: center; 
+                padding: 14px;
+            }
+
+            /* 5. ARREGLO DE LA LISTA DE DOCUMENTOS (Evitar botones aplastados) */
+            .file-item { 
+                flex-direction: column; 
+                align-items: flex-start; 
+                gap: 15px; 
+            }
+            .file-item .file-info { width: 100%; }
+            .file-item .d-flex.gap-2 { width: 100%; }
+            .file-item .btn-ver-file { 
+                flex: 1; /* Hace que "Ver" y "Enviar" midan mitad y mitad */
+                text-align: center; 
+                justify-content: center; 
+                display: flex; 
+                padding: 10px;
+            }
+
+            /* 6. Botones inferiores de Aprobar/Rechazar */
+            .tab-pane > .d-flex.justify-content-between.mt-4 {
+                flex-direction: column;
+                gap: 12px;
+            }
+            .tab-pane > .d-flex.justify-content-between.mt-4 button {
+                width: 100%;
+            }
+        }
+
+        /* Ajuste adicional para el Modal Visor en Tablets/Móviles */
+        @media (max-width: 992px) {
+            .modal-visor .modal-body { flex-direction: column; }
+            .visor-left { height: 35vh; flex: none; border-bottom: 2px solid #334155; }
+            .visor-right { height: 60vh; flex: none; padding: 25px; overflow-y: auto; }
+        }
+
     </style>
 </head>
 <body>

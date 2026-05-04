@@ -894,9 +894,25 @@
                     if(d.apellidos) document.getElementById('reg-apellidos').value = d.apellidos;
                     if(d.dni) document.getElementById('reg-dni').value = d.dni;
                     if(d.celular) { 
-                        // Limpia duplicados visuales del código de país (Ej: "+51 +51910852228" -> "+51910852228")
-                        let celStr = d.celular.toString().replace(/^(\+\d+)\s*(?:\1|\+\d+)/, '$1');
+                        // 1. Limpiamos espacios o duplicados raros que vengan de Google Sheets (+51+51...)
+                        let celStr = d.celular.toString().replace(/\s+/g, '').replace(/^(\+\d+)\1/, '$1');
+                        
+                        // 2. Le pasamos el número al plugin para que coloque la bandera
                         itiCelular.setNumber(celStr); 
+
+                        // 3. Forzamos limpieza estética: Si el código se coló en la caja, lo podamos
+                        setTimeout(() => {
+                            const countryData = itiCelular.getSelectedCountryData();
+                            if (countryData && countryData.dialCode) {
+                                const dialCodeStr = "+" + countryData.dialCode;
+                                const inputCelular = document.getElementById('reg-celular');
+                                
+                                // Si el texto dentro empieza con el código (+51), lo reemplazamos por nada
+                                if (inputCelular.value.startsWith(dialCodeStr)) {
+                                    inputCelular.value = inputCelular.value.replace(dialCodeStr, '').trim();
+                                }
+                            }
+                        }, 200); // 200ms da tiempo exacto a que la UI se dibuje antes de limpiar
                     }
                     if(d.pais) document.getElementById('reg-pais').value = d.pais;
                     if(d.direccion) document.getElementById('reg-direccion').value = d.direccion;
@@ -1512,26 +1528,22 @@
                     payload.esFinalizar = false; // Por defecto es solo un borrador
 
                     if (intencion === "finalizar") {
-                        // Si el botón está verde, ya pasó las pruebas locales, autorizamos finalizar.
                         payload.esFinalizar = true; 
                     } else {
-                        // SI ESTÁ AZUL (Guardar Avance), descubriremos QUÉ FALTÓ para decírselo al usuario
+                        // SI ESTÁ AZUL (Guardar Avance), evaluamos QUÉ FALTÓ
                         let pasosFaltantes = [];
                         if (!document.getElementById('tab-1').classList.contains('completed')) pasosFaltantes.push("1 (Docs)");
                         if (!document.getElementById('tab-2').classList.contains('completed')) pasosFaltantes.push("2 (Grados)");
                         if (!validarPaso3Completo()) pasosFaltantes.push("3 (Perfil)");
                         if (!validarPaso4Completo()) pasosFaltantes.push("4 (Curso)");
                         if (!validarPaso5Completo()) pasosFaltantes.push("5 (Banco)");
-                        
-                        // Forzamos validarPaso6Completo(true) para que si falta algo aquí, SE PINTE DE ROJO
-                        if (!validarPaso6Completo(true)) pasosFaltantes.push("6 (IA/Competencias vacías)"); 
+                        if (!validarPaso6Completo(true)) pasosFaltantes.push("6 (Datos vacíos)"); 
 
-                        // Armamos el mensaje inteligente
-                        let mensajeAlerta = `Avance guardado. Te falta completar: Paso(s) ${pasosFaltantes.join(', ')}`;
-                        showToast(mensajeAlerta, "warning");
+                        // Guardamos el mensaje en el payload para usarlo después del fetch
+                        payload.mensajeFaltantes = `Avance guardado. Te falta revisar el Paso: ${pasosFaltantes.join(', ')}`;
                     }
 
-                    // Preparamos los datos a guardar (sea borrador o final)
+                    // Preparamos los datos a guardar
                     payload.educacion = Array.from(document.querySelectorAll('.ai-edu-record')).map(r => ({ 
                         id_diploma: r.dataset.id, 
                         grado: r.dataset.grado, 
@@ -1568,15 +1580,16 @@
                 if(pasoActual >= 3) {
                     const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
                     const resJson = await response.json();
+                    
                     if (resJson.status === "success") {
                         if (pasoActual === totalPasos) {
-                            const esFinalizar = document.getElementById('btnNext').innerText.includes('Finalizar');
+                            const esFinalizar = document.getElementById('btnNext').dataset.intencion === "finalizar";
                             if (esFinalizar) {
-                                Swal.fire({ title: '¡Completado!', text: 'Expediente guardado con éxito.', icon: 'success' }).then(()=>window.location.href = "misexpedientes.html");
+                                Swal.fire({ title: '¡Completado!', text: 'Expediente guardado y enviado con éxito.', icon: 'success' }).then(()=>window.location.href = "misexpedientes.html");
                                 return;
                             } else {
-                                // Si solo guardó avance, se queda en la página y se le avisa
-                                showToast("Avance del Paso 6 guardado. Completa los pasos anteriores para finalizar.", "warning");
+                                // AQUI ESTA LA MAGIA UX: Mostramos exactamente lo que falta
+                                showToast(payload.mensajeFaltantes || "Por favor, revisa que todos los pasos estén completados.", "warning");
                             }
                         } else {
                             showToast("Avance guardado correctamente.", "success");
@@ -1866,9 +1879,11 @@
 
         // Función experta para verificar si el paso 3 está realmente lleno
         function validarPaso3Completo() {
+            const valorCelular = itiCelular.getNumber() || document.getElementById('reg-celular').value.trim();
+
             const campos = [
                 document.getElementById('reg-correo').value.trim(),
-                itiCelular.getNumber(), // Verificamos el número completo con código
+                valorCelular, // Usamos la variable corregida
                 document.getElementById('reg-nombres').value.trim(),
                 document.getElementById('reg-apellidos').value.trim(),
                 document.getElementById('reg-tipo-id').value,
@@ -1879,6 +1894,7 @@
                 document.getElementById('reg-direccion').value.trim(),
                 document.getElementById('reg-cp').value.trim()
             ];
+            // ... (el resto de la función se queda igual)
 
             // Verificar si falta algún campo básico
             const incompleto = campos.some(valor => valor === "" || valor === null || valor === undefined);

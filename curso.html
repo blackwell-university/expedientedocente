@@ -23,56 +23,308 @@
             --text-main: #1e293b;
             --text-muted: #64748b;
             --border-color: #e2e8f0;
-            --card-radius: 20px;
+            --card-radius: 24px;
         }
 
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding-top: 70px; }
-        ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        
-        /* Navegación copiada idéntica a tus vistas anteriores */
-        .top-nav { position: fixed; top: 0; left: 0; right: 0; height: 70px; background: rgba(255,255,255,0.8); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; z-index: 1000; }
+         /* --- AJUSTES DEL BODY PARA LA NUEVA NAVEGACIÓN --- */
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-body); 
+            color: var(--text-main); 
+            margin: 0; 
+            padding-top: 70px; /* Espacio exacto para que el top-nav no tape el contenido */
+        }
+
+        /* --- TOP NAVIGATION (Escritorio) --- */
+        .top-nav {
+            position: fixed; top: 0; left: 0; right: 0; height: 70px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 40px; z-index: 1000;
+        }
+
         .nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
         .logo-box { width: 38px; height: 38px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; }
-        .brand-text { font-weight: 800; font-size: 1.2rem; color: var(--primary); }
-        .nav-links-desktop { display: flex; gap: 8px; position: absolute; left: 50%; transform: translateX(-50%); }
-        .nav-item { text-decoration: none; color: var(--text-muted); font-weight: 600; font-size: 0.9rem; padding: 10px 20px; border-radius: 12px; transition: 0.2s; }
-        .nav-item:hover, .nav-item.active { background: var(--primary-light); color: var(--primary); }
+        .brand-text { font-weight: 800; font-size: 1.2rem; color: var(--primary); letter-spacing: -0.5px; }
 
+        .nav-links-desktop { display: flex; gap: 8px; position: absolute; left: 50%; transform: translateX(-50%); }
+        .nav-item {
+            text-decoration: none; color: var(--text-muted); font-weight: 600; font-size: 0.9rem;
+            padding: 10px 20px; border-radius: 12px; transition: var(--transition);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .nav-item:hover { background: #eff6ff; color: var(--primary); }
+        .nav-item.active { background: #eff6ff; color: var(--primary); }
+
+        /* --- USUARIO & DROPDOWN --- */
         .nav-user { position: relative; cursor: pointer; }
-        .user-trigger { display: flex; align-items: center; gap: 12px; padding: 6px 6px 6px 15px; background: #fff; border: 1px solid var(--border-color); border-radius: 50px; }
+        .user-trigger { display: flex; align-items: center; gap: 12px; padding: 6px 6px 6px 15px; background: #fff; border: 1px solid var(--border-color); border-radius: 50px; transition: 0.2s; }
+        .user-trigger:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .user-trigger span { font-weight: 700; font-size: 0.85rem; color: var(--text-main); }
         .user-avatar { width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem; }
 
+        .user-dropdown {
+            position: absolute; top: calc(100% + 10px); right: 0; width: 220px;
+            background: white; border-radius: 16px; border: 1px solid var(--border-color);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 8px;
+            opacity: 0; visibility: hidden; transform: translateY(10px); transition: var(--transition);
+        }
+        .user-dropdown.show { opacity: 1; visibility: visible; transform: translateY(0); }
+        .dropdown-link {
+            display: flex; align-items: center; gap: 12px; padding: 12px 15px;
+            text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 0.85rem;
+            border-radius: 10px; transition: 0.2s;
+        }
+        .dropdown-link:hover { background: #eff6ff; color: var(--primary); }
+        .dropdown-link.logout { color: #ef4444; }
+        .dropdown-link.logout:hover { background: #fef2f2; color: #ef4444; }
+
+        /* --- BOTTOM NAVIGATION (Móvil) --- */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 70px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--border-color);
+            display: none; justify-content: space-around; align-items: center;
+            padding-bottom: env(safe-area-inset-bottom); z-index: 1000;
+        }
+        .bottom-item {
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            text-decoration: none; color: var(--text-muted); transition: 0.2s;
+        }
+        .bottom-item i { font-size: 1.4rem; }
+        .bottom-item span { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+        .bottom-item.active { color: var(--primary); }
+
+        /* --- MEDIA QUERIES --- */
+        @media (max-width: 992px) {
+            .nav-links-desktop { display: none; }
+            .top-nav { padding: 0 20px; }
+        }
+
+        @media (max-width: 768px) {
+            body { padding-top: 60px; padding-bottom: 75px; } /* Evita que el Bottom Nav tape contenido */
+            .top-nav { height: 60px; }
+            .bottom-nav { display: flex; }
+            .content-area { padding: 20px 15px; }
+        }
         .content-area { padding: 40px 30px; display: flex; flex-direction: column; align-items: center; width: 100%; }
         .centered-container { width: 100%; max-width: 1250px; text-align: left; }
 
-        /* Estética Cards */
-        .dynamic-card { background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--card-radius); box-shadow: 0 4px 15px rgba(0,0,0,0.02); transition: 0.3s; }
+        /* ========== MEJORAS DE DISEÑO ========== */
         
-        .info-pill { background: #f8fafc; border: 1px dashed #cbd5e1; padding: 15px 20px; border-radius: 12px; }
-        .info-pill-title { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; display: block; margin-bottom: 4px; }
-        .info-pill-value { font-size: 0.95rem; font-weight: 600; color: var(--text-main); }
+        /* Tarjetas principales */
+        .card-modern {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--card-radius);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.03);
+            transition: all 0.2s ease;
+        }
+        
+        /* Header de tarjeta */
+        .card-header-custom {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            background: transparent;
+        }
+        
+        /* Estadísticas estilo primer diseño */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        .stat-item {
+            background: #f8fafc;
+            border-radius: 18px;
+            padding: 1rem 1.25rem;
+            transition: all 0.2s;
+            border: 1px solid #eef2f6;
+        }
+        .stat-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #94a3b8;
+            margin-bottom: 0.35rem;
+            display: block;
+        }
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .stat-value small {
+            font-size: 0.8rem;
+            font-weight: 400;
+            color: #64748b;
+        }
+        
+        /* Elementos de biblioteca y archivos */
+        .resource-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.25rem;
+            border-radius: 16px;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            text-decoration: none;
+            transition: all 0.2s;
+            margin-bottom: 0.75rem;
+        }
+        .resource-item:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            transform: translateY(-1px);
+        }
+        .resource-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        .resource-icon.oficial { background: #e0e7ff; color: #4f46e5; }
+        .resource-icon.material { background: #ecfdf5; color: #059669; }
+        .resource-icon.extra { background: #fef3c7; color: #d97706; }
+        
+        .resource-info { flex: 1; }
+        .resource-title { font-weight: 700; font-size: 0.9rem; color: var(--text-main); margin: 0 0 2px 0; }
+        .resource-sub { font-size: 0.7rem; font-weight: 500; color: var(--text-muted); }
+        
+        .resource-badge {
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            background: #f1f5f9;
+            color: #475569;
+        }
+        
+        /* Estado vacío mejorado */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: #fafcff;
+            border-radius: 20px;
+            border: 1px dashed #cbd5e1;
+        }
+        .empty-icon {
+            width: 72px;
+            height: 72px;
+            background: #f1f5f9;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem auto;
+        }
+        
+        /* Upload zone mejorada */
+        .upload-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 20px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            background: #fafcff;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .upload-zone:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+        
+       /* Corrección del botón principal */
+        .btn-primary-custom {
+            background: var(--primary) !important;
+            border: none !important;
+            border-radius: 40px !important;
+            padding: 0.5rem 1.5rem !important;
+            font-weight: 600 !important;
+            font-size: 0.85rem !important;
+            color: white !important;
+            transition: all 0.2s ease !important;
+        }
 
-        /* Estética Links Oficiales y Subidos */
-        .file-card { background: transparent; border: 1px solid #e2e8f0; padding: 18px 20px; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; text-decoration: none; margin-bottom: 15px; }
-        .file-card:hover { border-color: #cbd5e1; background: var(--primary-light); box-shadow: 0 4px 12px rgba(30, 64, 175, 0.05); transform: translateY(-1px); }
-        .file-card .icon-box { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-right: 15px;}
-        .file-card.oficial .icon-box { background: #e0e7ff; color: #4f46e5; }
-        .file-card.material .icon-box { background: #ecfdf5; color: #059669; }
-        .file-card.extra .icon-box { background: #fef3c7; color: #d97706; }
+        .btn-primary-custom:hover {
+            background: #0f2e7a !important;
+            color: white !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.25);
+        }
+
+        .btn-primary-custom:focus {
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.3);
+        }
+
+        /* Asegurar que el texto del botón dentro del modal también sea blanco */
+        .modal-footer .btn-primary {
+            background: var(--primary) !important;
+            border: none !important;
+            color: white !important;
+        }
+
+        .modal-footer .btn-primary:hover {
+            background: #0f2e7a !important;
+            color: white !important;
+        }
+
+        .modal-footer .btn-primary:disabled {
+            background: #94a3b8 !important;
+            color: #e2e8f0 !important;
+            cursor: not-allowed;
+        }
         
-        .file-card-texts { display: flex; flex-direction: column; width: 100%; }
-        .file-card h6 { margin: 0 0 2px 0; font-weight: 700; color: var(--text-main); font-size: 0.95rem;}
-        .file-card span { font-size: 0.8rem; font-weight: 600; color: #94a3b8; }
-        
-        /* Modal Upload Zone */
-        .upload-zone { border: 2px dashed #cbd5e1; border-radius: 16px; padding: 40px 20px; text-align: center; background: #f8fafc; cursor: pointer; transition: 0.3s; margin-top:10px; }
-        .upload-zone:hover { border-color: var(--primary); background: var(--primary-light); }
-        .upload-zone i { font-size: 2.5rem; color: #94a3b8; margin-bottom: 12px; }
+        /* Separadores sutiles */
+        .section-divider {
+            margin: 0 0 1rem 0;
+        }
     </style>
 </head>
 <body>
 
     <!-- Navegación Superior -->
+    <!-- NUEVA NAVEGACIÓN SUPERIOR (ESCRITORIO) -->
+    <nav class="top-nav">
+        <a href="#" class="nav-brand">
+            <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div>
+            <span class="brand-text">Blackwell</span>
+        </a>
+
+        <div class="nav-links-desktop">
+            <a href="dashboard-docente.html" class="nav-item"><i class="fa-solid fa-house"></i> Dashboard</a>
+            <a href="misexpedientes.html" class="nav-item"><i class="fa-solid fa-folder-open"></i> Mis Expedientes</a>
+            <a href="miscursos.html" class="nav-item active"><i class="fa-solid fa-chalkboard-user"></i> Mis Clases</a>
+        </div>
+
+        <div class="nav-user" id="userDropdownTrigger">
+            <div class="user-trigger">
+                <!-- ID Oculto para lógica interna -->
+                <span id="userHiddenId" style="display:none;">Docente</span>
+                <!-- Nombre visible -->
+                <span id="userNameNav">Cargando...</span>
+                <div class="user-avatar" id="userInitialNav">--</div>
+            </div>
+            
+            <div class="user-dropdown" id="userDropdownMenu">
+                <a href="#" class="dropdown-link"><i class="fa-solid fa-circle-user"></i> Ver mi Perfil</a>
+                <a href="#" class="dropdown-link"><i class="fa-solid fa-gear"></i> Configuración</a>
+                <div style="border-top: 1px solid var(--border-color); margin: 5px 0;"></div>
+                <a href="#" onclick="logout()" class="dropdown-link logout"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</a>
+            </div>
+        </div>
+    </nav>
+    
     <nav class="top-nav">
         <a href="dashboard-docente.html" class="nav-brand">
             <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div>
@@ -93,17 +345,34 @@
         </div>
     </nav>
 
+    <!-- NUEVA NAVEGACIÓN INFERIOR (MÓVIL) -->
+    <nav class="bottom-nav">
+        <a href="dashboard-docente.html" class="bottom-item">
+            <i class="fa-solid fa-house"></i>
+            <span>Inicio</span>
+        </a>
+        <a href="misexpedientes.html" class="bottom-item">
+            <i class="fa-solid fa-folder-open"></i>
+            <span>Expedientes</span>
+        </a>
+        <a href="miscursos.html" class="bottom-item active">
+            <i class="fa-solid fa-chalkboard-user"></i>
+            <span>Mis Clases</span>
+        </a>
+    </nav>
+
     <main class="main-wrapper">
         <div class="content-area">
             <div class="centered-container">
                 
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
+                <!-- Header del curso mejorado -->
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
                     <div>
-                        <a href="miscursos.html" class="text-decoration-none text-muted mb-2 d-inline-block fw-bold small text-uppercase" style="letter-spacing:0.5px;">
+                        <a href="miscursos.html" class="text-decoration-none text-muted mb-2 d-inline-block fw-semibold small" style="font-size: 0.75rem;">
                             <i class="fa-solid fa-arrow-left me-1"></i> Volver al menú
                         </a>
-                        <h1 class="fw-bold mb-1" id="ui-titulo" style="font-size: 2rem; color: #1e3a8a; letter-spacing: -0.02em;">Cargando...</h1>
-                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle px-2 py-1 fw-bold" id="ui-programa">...</span>
+                        <h1 class="fw-bold mb-1" id="ui-titulo" style="font-size: 1.8rem; color: #0f172a; letter-spacing: -0.02em;">Cargando...</h1>
+                        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-1 fw-semibold" id="ui-programa">...</span>
                     </div>
                     <div id="ui-estado-badge"></div>
                 </div>
@@ -111,85 +380,94 @@
                 <!-- MAIN LAYOUT -->
                 <div class="row g-4 align-items-start">
                     
-                    <!-- LEFT COLUMN (INFO Y OFICIALES) -->
+                    <!-- LEFT COLUMN -->
                     <div class="col-lg-4 d-flex flex-column gap-4">
                         
-                        <!-- TARJETA: INFO GENERAL -->
-                        <div class="dynamic-card p-4">
-                            <h5 class="fw-bold text-dark mb-4 border-bottom pb-3"><i class="fa-solid fa-circle-info text-primary me-2"></i> Información General</h5>
-                            <div class="d-flex flex-column gap-3">
-                                <div class="info-pill">
-                                    <span class="info-pill-title">Días y Horarios Confirmados</span>
-                                    <span class="info-pill-value"><i class="fa-regular fa-clock me-1 text-primary"></i> <span id="ui-horario">Cargando...</span></span>
-                                </div>
-                                <div class="info-pill">
-                                    <span class="info-pill-title">Cantidad de Sesiones</span>
-                                    <span class="info-pill-value"><i class="fa-solid fa-video me-1 text-primary"></i> <span id="ui-clases">...</span> clases (1h 30m c/u)</span>
-                                </div>
-                                <div class="info-pill bg-white">
-                                    <span class="info-pill-title">Vigencia Asignada</span>
-                                    <span class="info-pill-value small" style="color: #64748b;"><span id="ui-fechas">--/--/-- al --/--/--</span></span>
+                        <!-- TARJETA: INFO GENERAL (estilo estadísticas) -->
+                        <div class="card-modern">
+                            <div class="card-header-custom">
+                                <h5 class="fw-bold mb-0" style="font-size: 0.9rem; letter-spacing: -0.2px;">
+                                    <i class="fa-solid fa-calendar-alt text-primary me-2" style="font-size: 0.9rem;"></i> Información del curso
+                                </h5>
+                            </div>
+                            <div class="p-3 pt-3">
+                                <div class="stat-grid">
+                                    <div class="stat-item">
+                                        <span class="stat-label"><i class="fa-regular fa-clock me-1"></i> Horario confirmado</span>
+                                        <span class="stat-value" id="ui-horario">Cargando...</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label"><i class="fa-solid fa-video me-1"></i> Cantidad de sesiones</span>
+                                        <span class="stat-value"><span id="ui-clases">...</span> <small>clases (1h 30m c/u)</small></span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label"><i class="fa-regular fa-calendar me-1"></i> Vigencia asignada</span>
+                                        <span class="stat-value" id="ui-fechas" style="font-size: 0.9rem;">--/--/-- al --/--/--</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- TARJETA: RECURSOS OFICIALES BGU -->
-                        <div class="dynamic-card p-4">
-                            <h5 class="fw-bold text-dark mb-4 border-bottom pb-3"><i class="fa-solid fa-building-columns text-primary me-2"></i> Biblioteca Oficial</h5>
-                            
-                            <a href="#" id="link-silabo" target="_blank" class="file-card oficial" style="display:none;">
-                                <div class="icon-box"><i class="fa-solid fa-file-pdf"></i></div>
-                                <div class="file-card-texts">
-                                    <h6>Sílabo Oficial</h6>
-                                    <span>Plan de estudios BGU</span>
-                                </div>
-                                <i class="fa-solid fa-arrow-up-right-from-square text-muted"></i>
-                            </a>
-                            
-                            <a href="https://docs.google.com/presentation/d/TU_LINK_DE_PLANTILLA" target="_blank" class="file-card oficial m-0">
-                                <div class="icon-box" style="background:#fff7ed; color:#ea580c;"><i class="fa-solid fa-file-powerpoint"></i></div>
-                                <div class="file-card-texts">
-                                    <h6>Plantilla de Clase</h6>
-                                    <span>Template en Power Point</span>
-                                </div>
-                                <i class="fa-solid fa-arrow-up-right-from-square text-muted"></i>
-                            </a>
+                        <!-- TARJETA: BIBLIOTECA OFICIAL -->
+                        <div class="card-modern">
+                            <div class="card-header-custom">
+                                <h5 class="fw-bold mb-0" style="font-size: 0.9rem;">
+                                    <i class="fa-solid fa-building-columns text-primary me-2"></i> Biblioteca oficial
+                                </h5>
+                            </div>
+                            <div class="p-3 pt-3">
+                                <a href="#" id="link-silabo" target="_blank" class="resource-item" style="display:none;">
+                                    <div class="resource-icon oficial"><i class="fa-solid fa-file-pdf"></i></div>
+                                    <div class="resource-info">
+                                        <p class="resource-title">Sílabo Oficial</p>
+                                        <span class="resource-sub">Plan de estudios BGU</span>
+                                    </div>
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-muted" style="font-size: 0.75rem;"></i>
+                                </a>
+                                
+                                <a href="https://docs.google.com/presentation/d/TU_LINK_DE_PLANTILLA" target="_blank" class="resource-item">
+                                    <div class="resource-icon" style="background:#fff7ed; color:#ea580c;"><i class="fa-solid fa-file-powerpoint"></i></div>
+                                    <div class="resource-info">
+                                        <p class="resource-title">Plantilla de Clase</p>
+                                        <span class="resource-sub">Template en PowerPoint</span>
+                                    </div>
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-muted" style="font-size: 0.75rem;"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- RIGHT COLUMN (REPOSITORIO DEL DOCENTE) -->
+                    <!-- RIGHT COLUMN: REPOSITORIO DEL DOCENTE -->
                     <div class="col-lg-8">
-                        <div class="dynamic-card p-0 overflow-hidden h-100 d-flex flex-column">
+                        <div class="card-modern h-100 d-flex flex-column">
                             
-                            <!-- Header Seccion -->
-                            <div class="bg-light p-4 border-bottom d-flex justify-content-between align-items-center">
+                            <div class="card-header-custom d-flex justify-content-between align-items-center flex-wrap gap-2">
                                 <div>
-                                    <h5 class="fw-bold text-dark m-0"><i class="fa-regular fa-folder-open text-primary me-2"></i> Archivos Subidos para Clase</h5>
-                                    <p class="text-muted small m-0 mt-1">Acá puedes subir los PDFs, PPTs o Lecturas que enviarás a tus alumnos.</p>
+                                    <h5 class="fw-bold mb-0"><i class="fa-regular fa-folder-open text-primary me-2"></i> Archivos subidos para clase</h5>
+                                    <p class="text-muted small mb-0 mt-1">Subí PDFs, PPTs o lecturas para tus alumnos</p>
                                 </div>
-                                <button class="btn btn-primary fw-bold px-4 rounded-3 shadow-sm d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#uploadModal">
-                                    <i class="fa-solid fa-cloud-arrow-up"></i> <span class="d-none d-md-block">Aportar Archivo</span>
+                                <button class="btn btn-primary-custom shadow-sm d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i> Subir archivo
                                 </button>
                             </div>
 
-                            <!-- Listado/Loader/Vacio -->
-                            <div class="p-4 flex-grow-1" style="min-height: 400px; position:relative;">
+                            <div class="p-4 flex-grow-1" style="min-height: 400px;">
                                 
-                                <div id="archivos-loader" class="position-absolute top-50 start-50 translate-middle text-center w-100">
-                                    <div class="spinner-border text-primary" role="status" style="width: 2.5rem; height: 2.5rem;"></div>
-                                    <p class="mt-2 text-muted fw-bold">Obteniendo tus documentos de Drive...</p>
+                                <div id="archivos-loader" class="text-center py-5">
+                                    <div class="spinner-border text-primary" role="status" style="width: 2rem; height: 2rem;"></div>
+                                    <p class="mt-3 text-muted small">Cargando documentos...</p>
                                 </div>
                                 
-                                <div id="archivos-empty" class="position-absolute top-50 start-50 translate-middle text-center w-100" style="display:none;">
-                                    <div style="background:#f1f5f9; width:80px; height:80px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 15px auto;">
-                                        <i class="fa-regular fa-face-frown-open text-muted fs-1"></i>
+                                <div id="archivos-empty" class="empty-state" style="display:none;">
+                                    <div class="empty-icon">
+                                        <i class="fa-regular fa-folder-open text-muted fs-2"></i>
                                     </div>
-                                    <h6 class="fw-bold text-dark mb-1">Tu repositorio de curso está vacío</h6>
-                                    <p class="text-muted small">Carga las diapositivas o papers antes de cada clase haciendo click en el botón azul superior.</p>
+                                    <h6 class="fw-bold mb-1">Repositorio vacío</h6>
+                                    <p class="text-muted small mb-0">Subí tus primeras diapositivas o materiales desde el botón superior</p>
                                 </div>
                                 
                                 <div id="lista-archivos" class="row g-3">
-                                    <!-- Los items del repositorio dinámicos iran aquí -->
+                                    <!-- Los items del repositorio dinámicos van aquí -->
                                 </div>
                             </div>
                         </div>
@@ -200,43 +478,39 @@
         </div>
     </main>
 
-    <!-- MODAL MINIMALISTA UPLOAD -->
+    <!-- MODAL UPLOAD (mismo diseño refinado) -->
     <div class="modal fade" id="uploadModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border-radius:24px; border:none; box-shadow: 0 25px 50px rgba(0,0,0,0.1);">
-          <div class="modal-header border-bottom px-4 pt-4 pb-3">
-            <h5 class="modal-title fw-bold text-dark"><i class="fa-solid fa-cloud-arrow-up text-primary me-2"></i> Subir Documento a Drive</h5>
+        <div class="modal-content" style="border-radius:28px; border:none; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);">
+          <div class="modal-header border-bottom-0 px-4 pt-4">
+            <h5 class="modal-title fw-bold"><i class="fa-solid fa-cloud-arrow-up text-primary me-2"></i> Subir documento</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body px-4 pb-4">
-              
               <div class="mb-3">
-                  <label class="form-label fw-bold text-muted small text-uppercase">Categoría del Material</label>
-                  <select id="modal-cat" class="form-select form-select-lg shadow-none bg-light border-1 rounded-3" style="font-size:0.95rem;">
-                      <option value="Material del Curso">PPT, Separata Oficial o Diapositivas</option>
-                      <option value="Material Extra">Lecturas Opcionales / Referencias Extra</option>
+                  <label class="form-label fw-semibold small text-muted">Categoría</label>
+                  <select id="modal-cat" class="form-select shadow-none bg-light border rounded-3" style="font-size:0.9rem;">
+                      <option value="Material del Curso">📘 Material del curso (PPT, separata)</option>
+                      <option value="Material Extra">📚 Material extra / lecturas opcionales</option>
                   </select>
               </div>
 
-              <div class="upload-zone" id="btn-select-file" onclick="document.getElementById('fileUploadInput').click()">
-                  <i class="fa-solid fa-file-arrow-up"></i>
-                  <h6 class="fw-bold text-dark mb-1" id="uploadNameFile">Selecciona tu archivo (.pdf, .pptx, .docx)</h6>
-                  <span class="text-muted small d-block">Haz clic aquí para buscar en tu dispositivo</span>
+              <div class="upload-zone text-center" id="btn-select-file" onclick="document.getElementById('fileUploadInput').click()">
+                  <i class="fa-solid fa-cloud-arrow-up fa-2x text-muted mb-2 d-block"></i>
+                  <h6 class="fw-bold mb-1" id="uploadNameFile">Seleccionar archivo</h6>
+                  <span class="text-muted small">PDF, PPT, PPTX, DOC, DOCX</span>
               </div>
               <input type="file" id="fileUploadInput" class="d-none" accept=".pdf,.ppt,.pptx,.doc,.docx" onchange="actualizarCaja(this)">
           </div>
           
-          <div class="modal-footer px-4 pb-4 pt-0 border-top-0 justify-content-between">
-            <button type="button" class="btn btn-light fw-bold px-4 py-2 text-muted" data-bs-dismiss="modal">Cancelar</button>
-            <button type="button" class="btn btn-primary fw-bold px-4 py-2" id="btnUploadSubmit" onclick="subirArchivoCourse()" disabled>
-                Procesar Archivo
-            </button>
+          <div class="modal-footer border-top-0 px-4 pb-4 pt-0">
+            <button type="button" class="btn btn-light fw-semibold px-4" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-primary fw-semibold px-4 shadow-sm" id="btnUploadSubmit" onclick="subirArchivoCourse()" disabled>Subir ahora</button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
@@ -247,13 +521,43 @@
         let selectedFileBlob = null;
         let selectedFileDetails = null;
 
+        // --- 1. LÓGICA DEL DROPDOWN DE USUARIO ---
+        const dropdownTrigger = document.getElementById('userDropdownTrigger');
+        const dropdownMenu = document.getElementById('userDropdownMenu');
+
+        if(dropdownTrigger && dropdownMenu) {
+            dropdownTrigger.addEventListener('click', function(e) {
+                e.stopPropagation();
+                dropdownMenu.classList.toggle('show');
+            });
+
+            document.addEventListener('click', function() {
+                dropdownMenu.classList.remove('show');
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            // Pintar NAV
+
+            // --- 1. LÓGICA ESTÉTICA (UX/UI): Avatar y Nombre ---
+            const fullName = sessionStorage.getItem('userName') || "Docente";
+            const firstName = fullName.split(' ')[0]; // Solo el primer nombre para no descuadrar
+            const initial = fullName.substring(0, 2).toUpperCase(); // Iniciales
+
+            const nameEl = document.getElementById('userNameNav');
+            const initialEl = document.getElementById('userInitialNav');
+            
+            if(nameEl) nameEl.innerText = firstName;
+            if(initialEl) initialEl.innerText = initial;
+
+            // --- 2. LÓGICA FUNCIONAL (Back-End): Cargar Expedientes ---
+            // Rescatamos el ID del docente (He puesto 'userId' y 'userName' para asegurar compatibilidad con tu código anterior)
+            const idDocente = sessionStorage.getItem('userId') || sessionStorage.getItem('userName');
+            
+
             const fn = sessionStorage.getItem('userName') || "Docente";
             document.getElementById('userNameNav').innerText = fn.split(' ')[0];
             document.getElementById('userInitialNav').innerText = fn.substring(0,2).toUpperCase();
 
-            // Evitar problemas de recarga extraña y mostrar UI Skeleton o vacía
             if (!invIdGlobal || !docenteIdGlobal) {
                 alert("Parámetros no encontrados."); 
                 window.location.href="miscursos.html";
@@ -262,7 +566,6 @@
             }
         });
 
-        // 1. CARGA LOS DETALLES EXACTOS DEL CURSO 
         async function fetchDetalle() {
             try {
                 const res = await fetch(GAS_URL, {
@@ -278,75 +581,69 @@
                     document.getElementById('ui-horario').innerText = data.horario;
                     document.getElementById('ui-clases').innerText = data.totalClases;
 
-                    // Formateador bonito de fecha simple
                     const sd = new Date(data.fechaInicio); const ed = new Date(data.fechaFin);
                     if (!isNaN(sd) && !isNaN(ed)) {
                         const mths = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-                        document.getElementById('ui-fechas').innerText = `Desde ${sd.getUTCDate()} ${mths[sd.getUTCMonth()]} ${sd.getUTCFullYear()} hasta ${ed.getUTCDate()} ${mths[ed.getUTCMonth()]} ${ed.getUTCFullYear()}`;
+                        document.getElementById('ui-fechas').innerHTML = `${sd.getUTCDate()} ${mths[sd.getUTCMonth()]} ${sd.getUTCFullYear()} — ${ed.getUTCDate()} ${mths[ed.getUTCMonth()]} ${ed.getUTCFullYear()}`;
                     }
                     
-                    // Colores de badges de estado como el resto de tu UI
                     let estadoVal = String(data.estado).trim().toLowerCase();
                     let eCol = 'bg-secondary';
-                    if (estadoVal.includes('respondido')) eCol = 'bg-primary text-white';
-                    else if (estadoVal.includes('completado') || estadoVal.includes('aprobado')) eCol = 'bg-success text-white';
+                    if (estadoVal.includes('respondido')) eCol = 'bg-primary';
+                    else if (estadoVal.includes('completado') || estadoVal.includes('aprobado')) eCol = 'bg-success';
                     
-                    document.getElementById('ui-estado-badge').innerHTML = `<span class="badge ${eCol} py-2 px-3 fw-bold border-0 fs-6">${data.estado.toUpperCase()}</span>`;
+                    document.getElementById('ui-estado-badge').innerHTML = `<span class="badge ${eCol} px-3 py-2 fw-semibold">${data.estado.toUpperCase()}</span>`;
 
-                    // PINTAR EL SÍLABO OFICIAL
                     if(data.silabo) {
                         const silaboDOM = document.getElementById('link-silabo');
                         silaboDOM.style.display = 'flex';
                         silaboDOM.href = data.silabo;
                     }
 
-                    // PINTAR LOS ARCHIVOS CARGADOS EN LA INTERFAZ DERECHA
                     dibujarRepositorio(data.archivos);
-
                 } else {
-                    alert("Error obteniendo datos del servidor.");
+                    alert("Error obteniendo datos.");
                 }
             } catch(e) {
                 console.log("Error", e);
             }
         }
 
-        // Dibuja en tarjetas las JSON que viene de la celda
         function dibujarRepositorio(archivosArr) {
             const listCont = document.getElementById('lista-archivos');
             document.getElementById('archivos-loader').style.display = 'none';
 
             if (!archivosArr || archivosArr.length === 0) {
                 document.getElementById('archivos-empty').style.display = 'block';
+                listCont.innerHTML = '';
                 return;
             }
 
+            document.getElementById('archivos-empty').style.display = 'none';
             let ht = "";
             archivosArr.forEach(arch => {
-                let tipoCat = (arch.categoria.includes("Extra")) ? "extra" : "material"; // Asigna CSS distinto
-
+                let tipoIcon = arch.categoria.includes("Extra") ? "extra" : "material";
                 ht += `
                 <div class="col-md-6">
-                    <a href="${arch.url}" target="_blank" class="file-card ${tipoCat} m-0 bg-white h-100 align-items-start">
-                        <div class="icon-box m-0 me-3" style="min-width:44px;"><i class="fa-regular fa-file-pdf"></i></div>
-                        <div class="file-card-texts text-start">
-                            <h6 class="m-0 mb-1" style="font-size: 0.9rem; line-height:1.2; word-break:break-all;">${arch.nombre}</h6>
-                            <span class="d-flex align-items-center justify-content-between mt-auto">
-                                <span class="badge border border-secondary text-secondary bg-transparent fw-bold" style="font-size:10px;">${arch.categoria}</span>
-                                <small>${arch.fecha || '-'}</small>
-                            </span>
+                    <a href="${arch.url}" target="_blank" class="resource-item m-0">
+                        <div class="resource-icon ${tipoIcon}">
+                            <i class="fa-regular fa-file-lines"></i>
                         </div>
+                        <div class="resource-info">
+                            <p class="resource-title">${arch.nombre}</p>
+                            <div class="d-flex gap-2 align-items-center flex-wrap">
+                                <span class="resource-badge">${arch.categoria}</span>
+                                <span class="resource-sub">${arch.fecha || ''}</span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-muted" style="font-size: 0.7rem;"></i>
                     </a>
                 </div>
                 `;
             });
             listCont.innerHTML = ht;
-            listCont.style.display = 'flex';
         }
 
-        // ======================== MODAL UPLOAD =============================
-
-        // Se acciona con el input File escondido
         function actualizarCaja(input) {
             const btnSubir = document.getElementById('btnUploadSubmit');
             const textoTitle = document.getElementById('uploadNameFile');
@@ -363,7 +660,7 @@
                     btnSubir.disabled = false;
                 };
             } else {
-                textoTitle.innerText = "Selecciona tu archivo (.pdf, .pptx, .docx)";
+                textoTitle.innerHTML = "Seleccionar archivo";
                 btnSubir.disabled = true;
                 selectedFileBlob = null;
             }
@@ -373,9 +670,8 @@
             const btn = document.getElementById('btnUploadSubmit');
             const categ = document.getElementById('modal-cat').value;
 
-            // Feedback visual UI Loading State
             const ogHtml = btn.innerHTML;
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i> Subiendo a Drive...`;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i> Subiendo...`;
             btn.disabled = true;
 
             try {
@@ -395,10 +691,8 @@
                 }).then(r => r.json());
 
                 if (res.status === 'success') {
-                    // Modal de Éxito Moderno de Swal
-                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Aportación Subida Éxitosamente.', showConfirmButton: false, timer: 3000 });
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Archivo subido', showConfirmButton: false, timer: 3000 });
                     
-                    // Cierra modal con BS y actualiza página por debajo para repintar
                     const upModal = bootstrap.Modal.getInstance(document.getElementById('uploadModal'));
                     upModal.hide();
 
@@ -406,18 +700,16 @@
                     document.getElementById('archivos-empty').style.display = 'none';
                     document.getElementById('lista-archivos').innerHTML = '';
                     
-                    // Refresh la Data Principal Completa (Simula Tiempo real sin refrescar Web)
-                    fetchDetalle(); 
+                    fetchDetalle();
                     
-                    // Resetear Modal para futuros Clicks
                     document.getElementById('fileUploadInput').value = '';
-                    document.getElementById('uploadNameFile').innerText = "Selecciona tu archivo (.pdf, .pptx, .docx)";
+                    document.getElementById('uploadNameFile').innerHTML = "Seleccionar archivo";
 
                 } else {
                     Swal.fire('Error', res.message, 'error');
                 }
             } catch(e) {
-                Swal.fire('Oops...', 'Surgió un error con el archivo o conexión.', 'error');
+                Swal.fire('Error', 'No se pudo subir el archivo', 'error');
             } finally {
                 btn.innerHTML = ogHtml;
                 btn.disabled = false;
