@@ -292,8 +292,8 @@
                     </form>                    
                 </div>
                 <div class="modal-footer bg-light p-3">
-                    <button type="button" class="btn btn-light border px-4 fw-bold text-secondary" onclick="guardarInvitacion()">Guardar Invitación</button>
-                    <button type="button" class="btn btn-primary px-4 fw-bold" id="btnEnviarCorreo" disabled onclick="enviarCorreoInvitacion()"><i class="fa-regular fa-paper-plane me-2"></i>Guardar y Enviar Correo</button>
+                    <button type="button" class="btn btn-light border px-4 fw-bold text-secondary" id="btnGuardarSistema" onclick="guardarInvitacion()">Guardar Invitación</button>
+                    <button type="button" class="btn btn-primary px-4 fw-bold" id="btnEnviarCorreo"  disabled onclick="enviarCorreoInvitacion()"><i class="fa-regular fa-paper-plane me-2"></i>Guardar y Enviar Correo</button>
                 </div>
             </div>
         </div>
@@ -412,12 +412,18 @@
                 showToast("Complete Programa, Curso y Fecha Inicial", "danger"); return; 
             }
             
+            // 1. LÓGICA UX: CAPTURAR EL BOTÓN Y PONERLO EN MODO CARGA
+            const btnGuardar = document.getElementById('btnGuardarSistema');
+            const originalText = btnGuardar.innerHTML; // Guardamos el texto original
+            btnGuardar.disabled = true; // Deshabilitamos para evitar doble clic
+            btnGuardar.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Guardando...';
+
             const payload = {
                 action: 'save_invitation', 
                 modo: modoAccionActual,
                 docenteId: docenteId, 
-                idPrograma: selP.value, // <--- AÑADE ESTO (Es crucial para la base de datos)
-                idCurso: selC.value,    // Ya lo habías puesto excelente
+                idPrograma: selP.value,
+                idCurso: selC.value,
                 docenteNombre: document.getElementById('det-nombre').innerText.split(' ')[0], 
                 docenteCorreo: document.getElementById('det-correo').innerText,
                 programa: selP.options[selP.selectedIndex].text, 
@@ -438,9 +444,16 @@
                 if(result.status === "success") { 
                     currentInvitacionId = result.idInvitacion; 
                     showToast(modoAccionActual === 'expediente' ? "Expediente e Invitación creados" : "Invitación creada.", "success"); 
+                    // Habilitamos el botón de enviar correo (que ya tienes configurado)
                     document.getElementById('btnEnviarCorreo').disabled = false; 
                 }
-            } catch(e) { showToast("Error al guardar.", "danger"); }
+            } catch(e) { 
+                showToast("Error al guardar.", "danger"); 
+            } finally {
+                // 2. LÓGICA UX: RESTAURAR EL BOTÓN SIEMPRE (haya éxito o error)
+                btnGuardar.innerHTML = originalText;
+                btnGuardar.disabled = false;
+            }
         }
 
         async function enviarCorreoInvitacion() {
