@@ -3,7 +3,7 @@
 <head>
     <script>
         // Protección de ruta: Solo para docentes
-        if (sessionStorage.getItem('isLoggedIn') !== 'true' || sessionStorage.getItem('userRole') !== 'Docente') {
+        if (localStorage.getItem('isLoggedIn') !== 'true' || localStorage.getItem('userRole') !== 'Docente') {
             window.location.href = "login.html";
         }
     </script>
@@ -288,7 +288,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             // --- 1. LÓGICA ESTÉTICA (UX/UI): Avatar y Nombre ---
-            const fullName = sessionStorage.getItem('userName') || "Docente";
+            const fullName = localStorage.getItem('userName') || "Docente";
             const firstName = fullName.split(' ')[0]; // Solo el primer nombre para no descuadrar
             const initial = fullName.substring(0, 2).toUpperCase(); // Iniciales
 
@@ -299,9 +299,9 @@
             if(initialEl) initialEl.innerText = initial;
 
             // --- 2. LÓGICA FUNCIONAL (Back-End): Cargar Expedientes ---
-            // Rescatamos el ID del docente (He puesto 'userId' y 'userName' para asegurar compatibilidad con tu código anterior)
-            const idDocente = sessionStorage.getItem('userId') || sessionStorage.getItem('userName');
-            
+            // Rescatamos el ID del docente
+            const idDocente = localStorage.getItem('userId') || localStorage.getItem('userName');
+
             if (idDocente) {
                 // AQUÍ ESTÁ EL CÓDIGO QUE FALTABA: Llama a la función para pintar las tarjetas
                 cargarExpedientes(idDocente);
@@ -382,9 +382,9 @@
         }
         // --- 3. FUNCIÓN DE CERRAR SESIÓN ---
         function logout() { 
-            sessionStorage.clear(); 
+            localStorage.clear(); 
             window.location.href = "login.html"; 
-        }   
+        }  
     </script>
 </body>
 </html>

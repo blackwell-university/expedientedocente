@@ -2,9 +2,16 @@
 <html lang="es">
 <head>
     <script>
-        // Protección de ruta
-        if (sessionStorage.getItem('isLoggedIn') !== 'true' || sessionStorage.getItem('userRole') !== 'Administrativo') {
-            window.location.href = "login.html"; 
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        const userRole = localStorage.getItem('userRole');
+        
+        const rolesPermitidos = [
+            'Administrativo', 'Administrador', 'Ejecutivo Licenciamiento', 
+            'Asesora Academica', 'Ejecutiva Credenciales'
+        ];
+        
+        if (isLoggedIn !== 'true' || !rolesPermitidos.some(rol => userRole && userRole.toLowerCase() === rol.toLowerCase())) {
+            window.location.href = "login.html";
         }
     </script>
     <meta charset="UTF-8">

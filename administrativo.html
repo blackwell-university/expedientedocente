@@ -2,11 +2,17 @@
 <html lang="es">
 <head>
     <script>
-        // Lógica de protección de ruta adaptada para el rol Administrativo/Administrador
-        const isLoggedIn = sessionStorage.getItem('isLoggedIn');
-        const userRole = sessionStorage.getItem('userRole');
-    
-        if (isLoggedIn !== 'true' || (userRole !== 'Administrativo' && userRole !== 'Administrador')) {
+        // Protección de ruta: Solo para personal administrativo de Blackwell
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        const userRole = localStorage.getItem('userRole');
+        
+        const rolesPermitidos = [
+            'Administrativo', 'Administrador', 'Ejecutivo Licenciamiento', 
+            'Asesora Academica', 'Ejecutiva Credenciales'
+        ];
+        
+        // Verifica si NO está logueado, o si el rol NO está en la lista permitida
+        if (isLoggedIn !== 'true' || !rolesPermitidos.some(rol => userRole && userRole.toLowerCase() === rol.toLowerCase())) {
             window.location.href = "login.html";
         }
     </script>
@@ -374,16 +380,22 @@
     <script>
         function logout() {
             if(confirm("¿Estás seguro que deseas cerrar sesión?")) {
-                sessionStorage.clear();
+                localStorage.clear();
                 window.location.href = "login.html";
             }
         }
 
         // Carga de datos de sesión en el UI
         document.addEventListener('DOMContentLoaded', () => {
-            const name = sessionStorage.getItem('userName') || "Administrador";
+            const name = localStorage.getItem('userName') || "Usuario";
+            const role = localStorage.getItem('userRole') || "Personal Blackwell";
+            
             document.getElementById('userName').innerText = name;
             document.getElementById('userInitial').innerText = name.substring(0,2).toUpperCase();
+            
+            // Actualizar el texto del rol en el sidebar (para que no todos digan "Administrador")
+            const roleSpan = document.querySelector('.user-meta span');
+            if(roleSpan) roleSpan.innerText = role;
         });
 
         function toggleSidebar() {

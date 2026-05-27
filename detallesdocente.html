@@ -2,8 +2,16 @@
 <html lang="es">
 <head>
     <script>
-        if (sessionStorage.getItem('isLoggedIn') !== 'true' || (sessionStorage.getItem('userRole') !== 'Administrativo' && sessionStorage.getItem('userRole') !== 'Administrador')) {
-            window.location.href = "login.html"; 
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        const userRole = localStorage.getItem('userRole');
+        
+        const rolesPermitidos = [
+            'Administrativo', 'Administrador', 'Ejecutivo Licenciamiento', 
+            'Asesora Academica', 'Ejecutiva Credenciales'
+        ];
+        
+        if (isLoggedIn !== 'true' || !rolesPermitidos.some(rol => userRole && userRole.toLowerCase() === rol.toLowerCase())) {
+            window.location.href = "login.html";
         }
     </script>
     <meta charset="UTF-8">
@@ -90,6 +98,45 @@
         .input-modern { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 18px; font-size: 0.95rem; color: #334155; }
         .input-modern:focus { background-color: #ffffff; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); outline: none;}
         .label-modern { font-size: 0.85rem; color: #64748b; font-weight: 600; margin-bottom: 8px; }
+        
+        /* --- REDISEÑO DEL MODAL (Aesthetic & Minimalista) --- */
+        .modal-aesthetic .modal-content {
+            border: none; border-radius: 28px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); overflow: hidden;
+        }
+        .modal-aesthetic .modal-header {
+            background: #ffffff; border-bottom: 1px solid #f1f5f9; padding: 30px 40px 20px;
+        }
+        .modal-aesthetic .modal-body { padding: 30px 40px; background: #fcfdfe; }
+        .modal-aesthetic .modal-footer {
+            background: #ffffff; border-top: 1px solid #f1f5f9; padding: 25px 40px; display: flex; gap: 15px;
+        }
+        
+        .input-aesthetic {
+            background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 14px; padding: 14px 18px; font-size: 0.95rem; color: #334155; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+        }
+        .input-aesthetic:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); outline: none; }
+        .label-aesthetic { font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: block; }
+
+        /* Checkboxes Modernos */
+        .custom-check-group { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 16px; display: flex; align-items: flex-start; gap: 12px; transition: 0.2s; cursor: pointer; height: 100%;}
+        .custom-check-group:hover { border-color: #bfdbfe; background: #eff6ff; }
+        .custom-check-group input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--primary); margin-top: 2px; cursor: pointer;}
+        .custom-check-group label { font-size: 0.85rem; font-weight: 600; color: #334155; cursor: pointer; margin: 0; line-height: 1.4;}
+
+        /* Botones del Modal */
+        .btn-step { padding: 14px 24px; border-radius: 14px; font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; flex: 1;}
+        .btn-step.step-1 { background: #f1f5f9; color: var(--primary-dark); border: 1px solid #cbd5e1; }
+        .btn-step.step-1:hover { background: #e2e8f0; }
+        .btn-step.step-1.success { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; pointer-events: none; }
+        
+        .btn-step.step-2 { background: var(--primary); color: white; border: none; box-shadow: 0 4px 15px rgba(37,99,235,0.3); }
+        .btn-step.step-2:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37,99,235,0.4); }
+        .btn-step.step-2:disabled { background: #e2e8f0; color: #94a3b8; box-shadow: none; cursor: not-allowed; }
+
+        /* Animación para llamar la atención de la ejecutiva */
+        @keyframes pulse-btn { 0% { box-shadow: 0 0 0 0 rgba(37,99,235,0.4); } 70% { box-shadow: 0 0 0 15px rgba(37,99,235,0); } 100% { box-shadow: 0 0 0 0 rgba(37,99,235,0); } }
+        .pulse-active { animation: pulse-btn 2s infinite; }
+
     </style>
 </head>
 <body>
@@ -227,73 +274,99 @@
         </div>
     </main>
 
-    <!-- MODAL: Enviar Invitación -->
-    <div class="modal fade modal-modern" id="modalInvitacion" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content shadow-lg">
+    <!-- MODAL REDISEÑADO: Enviar Invitación -->
+    <div class="modal fade modal-aesthetic" id="modalInvitacion" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold m-0" id="modalInvTitle"><i class="fa-solid fa-folder-plus me-2 text-primary"></i>Crear Expediente</h5>
+                    <div>
+                        <h4 class="fw-bold m-0" id="modalInvTitle" style="color: var(--primary-dark);"><i class="fa-solid fa-folder-plus me-2 text-primary"></i>Crear Expediente</h4>
+                        <p class="text-muted small m-0 mt-1">Complete los detalles académicos y financieros para el docente.</p>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body p-4">
+                <div class="modal-body">
                     <form id="formInvitacion">
                         <div class="row g-4">
+                            <!-- Fila 1: Curso -->
                             <div class="col-md-6">
-                                <label class="label-modern">Programa</label>
-                                <select id="selPrograma" class="form-select input-modern" required onchange="filtrarCursos()"><option value="">Seleccionar programa</option></select>
+                                <label class="label-aesthetic">Programa Académico</label>
+                                <select id="selPrograma" class="form-select input-aesthetic" required onchange="filtrarCursos()">
+                                    <option value="">Cargando...</option>
+                                </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="label-modern">Curso</label>
-                                <select id="selCurso" class="form-select input-modern" required><option value="">Seleccionar curso</option></select>
+                                <label class="label-aesthetic">Curso Asignado</label>
+                                <select id="selCurso" class="form-select input-aesthetic" required>
+                                    <option value="">Seleccionar curso</option>
+                                </select>
                             </div>
-                            <div class="col-md-6">
-                                <label class="label-modern">Inicio de Clases</label>
-                                <input type="date" id="invFechaInicio" class="form-control input-modern" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="label-modern">Fin de Clases</label>
-                                <input type="date" id="invFechaFin" class="form-control input-modern" required>
-                            </div>
-                            <div class="col-12">
-                                <label class="label-modern">Franjas Horarias Sugeridas</label>
-                                <input type="text" id="invHorario" class="form-control input-modern" value="de 19:00 a 20:30 y las 20:30 a 22:00">
+                            
+                            <!-- Fila 2: Fechas -->
+                            <div class="col-md-4">
+                                <label class="label-aesthetic">Inicio de Clases</label>
+                                <input type="date" id="invFechaInicio" class="form-control input-aesthetic" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="label-modern">Cant. Clases</label>
-                                <input type="text" id="invCantClases" class="form-control input-modern" value="cuatro">
+                                <label class="label-aesthetic">Fin de Clases</label>
+                                <input type="date" id="invFechaFin" class="form-control input-aesthetic" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="label-modern">Moneda</label>
-                                <select id="invMoneda" class="form-select input-modern"><option value="$">Dólares ($)</option><option value="S/.">Soles (S/.)</option></select>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="label-modern">Pago Total</label>
-                                <input type="number" id="invCosto" class="form-control input-modern" placeholder="Ej: 360">
+                                <label class="label-aesthetic">Cantidad Sesiones</label>
+                                <input type="text" id="invCantClases" class="form-control input-aesthetic" value="cuatro">
                             </div>
 
-                            <div class="col-12 mt-4 pt-3 border-top" id="docs-section">
-                                <label class="label-modern text-dark">Documentos a solicitar para el Expediente:</label>
-                                <div class="row g-2 mt-2">
-                                    <div class="col-md-6">
-                                        <div class="form-check mb-2"><input class="form-check-input doc-checkbox" type="checkbox" value="CV documentado" checked> <label class="form-check-label">CV documentado</label></div>
-                                        <div class="form-check mb-2"><input class="form-check-input doc-checkbox" type="checkbox" value="ID (Ambas caras)" checked> <label class="form-check-label">ID (ambas caras)</label></div>
-                                        <div class="form-check mb-2"><input class="form-check-input doc-checkbox" type="checkbox" value="Faculty Handbook Firmado" checked> <label class="form-check-label">Handbook Firmado</label></div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-check mb-2"><input class="form-check-input doc-checkbox" type="checkbox" value="Diplomas de Pregardo y Posgrados" checked> <label class="form-check-label">Diplomas de Posgrados</label></div>
-                                        <div class="form-check mb-2"><input class="form-check-input doc-checkbox" type="checkbox" value=" Diplomas de Posgrados (Especialmente Doctorado)" > <label class="form-check-label"> Diplomas de Posgrados (Especialmente Doctorado)</label></div>
-                                        <div class="form-check mb-2"><input class="form-check-input doc-checkbox" type="checkbox" value="Registro de notas (Transcript)" checked> <label class="form-check-label">Transcript de Notas</label></div>
-                                        <div class="form-check mb-2"><input class="form-check-input doc-checkbox" type="checkbox" value="Registro de notas (Transcript especialmente Doctorado)" > <label class="form-check-label">Transcript de Notas (Especialmente Doctorado)</label></div>
+                            <!-- Fila 3: Finanzas y Horario -->
+                            <div class="col-md-12">
+                                <label class="label-aesthetic">Franjas Horarias Sugeridas (Opciones para el docente)</label>
+                                <input type="text" id="invHorario" class="form-control input-aesthetic" value="de 19:00 a 20:30 y las 20:30 a 22:00">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="label-aesthetic">Moneda de Pago</label>
+                                <select id="invMoneda" class="form-select input-aesthetic">
+                                    <option value="$">Dólares ($ USD)</option>
+                                    <option value="S/.">Soles (S/. PEN)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="label-aesthetic">Pago Total a depositar</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0 text-muted border-secondary-subtle px-3"><i class="fa-solid fa-money-bill-wave"></i></span>
+                                    <input type="number" id="invCosto" class="form-control input-aesthetic border-start-0 ps-0" placeholder="0.00">
+                                </div>
+                            </div>
 
+                            <!-- Fila 4: Checkboxes Tradicionales -->
+                            <div class="col-12 mt-2" id="docs-section">
+                                <div class="p-4 rounded-4" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                                    <label class="label-aesthetic text-dark mb-3">Documentos a solicitar para el Expediente:</label>
+                                    <div class="row g-2">
+                                        <div class="col-md-6">
+                                            <div class="form-check mb-2"><input class="form-check-input doc-checkbox" type="checkbox" value="CV documentado" checked> <label class="form-check-label">CV documentado</label></div>
+                                            <div class="form-check mb-2"><input class="form-check-input doc-checkbox" type="checkbox" value="ID (Ambas caras)" checked> <label class="form-check-label">ID (ambas caras)</label></div>
+                                            <div class="form-check mb-2"><input class="form-check-input doc-checkbox" type="checkbox" value="Faculty Handbook Firmado" checked> <label class="form-check-label">Handbook Firmado</label></div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-check mb-2"><input class="form-check-input doc-checkbox" type="checkbox" value="Diplomas de Posgrados" checked> <label class="form-check-label">Diplomas de Posgrados</label></div>
+                                            <div class="form-check mb-2"><input class="form-check-input doc-checkbox" type="checkbox" value="Diplomas de Posgrados (Especialmente Doctorado)"> <label class="form-check-label text-muted">Diplomas de Posgrados (Especialmente Doctorado)</label></div>
+                                            <div class="form-check mb-2"><input class="form-check-input doc-checkbox" type="checkbox" value="Transcript de Notas" checked> <label class="form-check-label">Transcript de Notas</label></div>
+                                            <div class="form-check mb-2"><input class="form-check-input doc-checkbox" type="checkbox" value="Transcript de Notas (Especialmente Doctorado)"> <label class="form-check-label text-muted">Transcript de Notas (Especialmente Doctorado)</label></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </form>                    
                 </div>
-                <div class="modal-footer bg-light p-3">
-                    <button type="button" class="btn btn-light border px-4 fw-bold text-secondary" id="btnGuardarSistema" onclick="guardarInvitacion()">Guardar Invitación</button>
-                    <button type="button" class="btn btn-primary px-4 fw-bold" id="btnEnviarCorreo"  disabled onclick="enviarCorreoInvitacion()"><i class="fa-regular fa-paper-plane me-2"></i>Guardar y Enviar Correo</button>
+                <div class="modal-footer bg-light p-3" style="justify-content: flex-end;">
+                    <!-- BOTÓN 1: GUARDAR (Visible al inicio) -->
+                    <button type="button" class="btn btn-light border px-4 fw-bold text-secondary shadow-sm" style="border-radius: 10px;" id="btnGuardarSistema" onclick="guardarInvitacion()">
+                        Guardar Invitación
+                    </button>
+                    <!-- BOTÓN 2: ENVIAR (Oculto al inicio) -->
+                    <button type="button" class="btn btn-primary px-4 fw-bold shadow-sm d-none" style="border-radius: 10px;" id="btnEnviarCorreo" onclick="enviarCorreoInvitacion()">
+                        <i class="fa-regular fa-paper-plane me-2"></i>Enviar Correo
+                    </button>
                 </div>
             </div>
         </div>
@@ -348,7 +421,7 @@
 
         // LÓGICA DEL MODAL SEGÚN BOTÓN SELECCIONADO
         let catalogoCursos =[], currentInvitacionId = null;
-        let modoAccionActual = 'expediente'; // Puede ser 'expediente' o 'invitacion'
+        let modoAccionActual = 'expediente'; 
 
         async function abrirModalInvitacion(modo) {
             modoAccionActual = modo;
@@ -357,50 +430,50 @@
             const title = document.getElementById('modalInvTitle');
             const docsDiv = document.getElementById('docs-section');
             
+            // --- RESETEAR BOTONES AL ABRIR EL MODAL ---
+            const btnGuardar = document.getElementById('btnGuardarSistema');
+            const btnEnviar = document.getElementById('btnEnviarCorreo');
+            
+            btnGuardar.style.display = 'block'; // Muestra "Guardar Invitación"
+            btnGuardar.innerHTML = 'Guardar Invitación';
+            btnGuardar.disabled = false;
+            
+            btnEnviar.classList.add('d-none'); // Oculta el botón azul "Enviar Correo"
+            btnEnviar.disabled = false;
+
             if(modo === 'expediente') {
                 title.innerHTML = '<i class="fa-solid fa-folder-plus me-2 text-primary"></i>Crear Expediente e Invitación';
                 docsDiv.style.display = 'block';
             } else {
                 title.innerHTML = '<i class="fa-regular fa-paper-plane me-2 text-primary"></i>Enviar Solo Invitación a Curso';
-                docsDiv.style.display = 'none'; // Esconde los requisitos de documentos
+                docsDiv.style.display = 'none'; 
             }
 
-            // 1. ¡ABRIMOS EL MODAL INMEDIATAMENTE! (Esto elimina el retraso)
             const modalElement = document.getElementById('modalInvitacion');
             const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
             modalInstance.show();
 
-            // 2. CARGAMOS LOS CATÁLOGOS EN SEGUNDO PLANO SI ESTÁN VACÍOS
             if(catalogoCursos.length === 0) {
                 const selP = document.getElementById('selPrograma');
-                selP.innerHTML = '<option value="">Cargando programas...</option>'; // Feedback visual
-                
+                selP.innerHTML = '<option value="">Cargando programas...</option>'; 
                 try {
                     const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({action: 'get_catalogs'}) });
                     const data = await res.json(); 
                     catalogoCursos = data.cursos;
-                    
                     selP.innerHTML = '<option value="">Seleccionar programa</option>';
                     data.programas.forEach(p => { selP.innerHTML += `<option value="${p.id}">${p.nombre}</option>`; });
-                } catch(e) {
-                    selP.innerHTML = '<option value="">Error al cargar programas</option>';
-                }
+                } catch(e) { selP.innerHTML = '<option value="">Error al cargar programas</option>'; }
             }
         }
 
+        // Ya tenías esta, se queda igual
         function filtrarCursos() {
             const selP = document.getElementById('selPrograma');
             const selC = document.getElementById('selCurso');
-            
-            // Limpiamos el segundo selector por defecto
             selC.innerHTML = '<option value="">Seleccionar curso</option>';
-            
-            // Si regresa a la opción por defecto, detenemos aquí
             if (selP.selectedIndex === 0 || !selP.value) return;
-
             const progId = String(selP.value).trim();
             const progName = String(selP.options[selP.selectedIndex].text).trim();
-            
             catalogoCursos.filter(c => c.idPrograma === progId || c.idPrograma === progName).forEach(c => { 
                 selC.innerHTML += `<option value="${c.idCurso}">${c.nombre}</option>`; 
             });
@@ -412,10 +485,10 @@
                 showToast("Complete Programa, Curso y Fecha Inicial", "danger"); return; 
             }
             
-            // 1. LÓGICA UX: CAPTURAR EL BOTÓN Y PONERLO EN MODO CARGA
             const btnGuardar = document.getElementById('btnGuardarSistema');
-            const originalText = btnGuardar.innerHTML; // Guardamos el texto original
-            btnGuardar.disabled = true; // Deshabilitamos para evitar doble clic
+            const btnEnviar = document.getElementById('btnEnviarCorreo');
+
+            btnGuardar.disabled = true;
             btnGuardar.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Guardando...';
 
             const payload = {
@@ -443,23 +516,32 @@
                 const result = await res.json();
                 if(result.status === "success") { 
                     currentInvitacionId = result.idInvitacion; 
-                    showToast(modoAccionActual === 'expediente' ? "Expediente e Invitación creados" : "Invitación creada.", "success"); 
-                    // Habilitamos el botón de enviar correo (que ya tienes configurado)
-                    document.getElementById('btnEnviarCorreo').disabled = false; 
+                    
+                    // NOTIFICACIÓN ELEGANTE DE ÉXITO
+                    Swal.fire({
+                        title: '¡Guardado Exitoso!',
+                        text: 'El registro se ha guardado. Ahora ya puedes enviar el correo al docente.',
+                        icon: 'success',
+                        confirmButtonColor: '#2563eb',
+                        timer: 3500, // Se cierra solito
+                        timerProgressBar: true
+                    });
+
+                    // LA MAGIA DE LOS BOTONES:
+                    btnGuardar.style.display = 'none'; // Desaparece "Guardar"
+                    btnEnviar.classList.remove('d-none'); // Aparece "Enviar Correo" en su lugar
                 }
             } catch(e) { 
                 showToast("Error al guardar.", "danger"); 
-            } finally {
-                // 2. LÓGICA UX: RESTAURAR EL BOTÓN SIEMPRE (haya éxito o error)
-                btnGuardar.innerHTML = originalText;
                 btnGuardar.disabled = false;
-            }
+                btnGuardar.innerHTML = 'Guardar Invitación';
+            } 
         }
-
         async function enviarCorreoInvitacion() {
             const btn = document.getElementById('btnEnviarCorreo'); 
             btn.disabled = true; 
-            btn.innerHTML = 'Enviando...';
+            btn.classList.remove('pulse-active');
+            btn.innerHTML = '<i class="fa-solid fa-paper-plane fa-bounce me-2"></i> Enviando Correo...';
             
             const selP = document.getElementById('selPrograma'), selC = document.getElementById('selCurso');
             
@@ -468,7 +550,7 @@
                 modo: modoAccionActual,
                 idInvitacion: currentInvitacionId, 
                 docenteId: docenteId, 
-                idCurso: selC.value, // <--- NUEVO: ENVIAMOS EL ID CURSO
+                idCurso: selC.value, 
                 docenteCorreo: document.getElementById('det-correo').innerText, 
                 docenteNombre: document.getElementById('det-nombre').innerText.split(' ')[0],
                 programa: selP.options[selP.selectedIndex].text, 
@@ -484,12 +566,17 @@
             try {
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
                 if((await res.json()).status === "success") { 
-                    showToast("Correo enviado con éxito", "success"); 
+                    Swal.fire('¡Correo Enviado!', 'El docente ha recibido las instrucciones y sus credenciales.', 'success');
                     bootstrap.Modal.getInstance(document.getElementById('modalInvitacion')).hide(); 
+                    cargarExpedientes(); // Actualiza la tarjeta de atrás automáticamente
                 }
-            } catch(e) { showToast("Error al enviar", "danger"); } finally { btn.innerHTML = 'Guardar y Enviar Correo'; }
+            } catch(e) { 
+                showToast("Error al enviar", "danger"); 
+                btn.disabled = false;
+                btn.innerHTML = 'Paso 2: Reintentar Enviar <i class="fa-regular fa-paper-plane"></i>';
+            } 
         }
-
+        
         // --- FUNCIÓN EXPERTA: CARGAR Y DIBUJAR EXPEDIENTES (DISEÑO PREMIUM) ---
         async function cargarExpedientes() {
             const contenedor = document.getElementById('contenedor-invitaciones');
@@ -580,7 +667,7 @@
 
                             <!-- Footer de la Tarjeta (Acciones) -->
                             <div class="d-flex gap-2 justify-content-end align-items-center pt-2">
-                                <a href="revision-docs.html?exp=${exp.idExpediente}&doc=${docenteId}" class="btn btn-sm" style="background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; font-weight: 600; padding: 8px 16px; border-radius: 8px; transition: 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
+                                <a href="expediente.html?expId=${exp.idExpediente}" class="btn btn-sm" style="background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; font-weight: 600; padding: 8px 16px; border-radius: 8px; transition: 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
                                     <i class="fa-regular fa-eye me-2"></i>Ver Detalles
                                 </a>
                                 ${btnEnviar}

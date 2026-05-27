@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
     <script>
-        if (sessionStorage.getItem('isLoggedIn') !== 'true' || sessionStorage.getItem('userRole') !== 'Docente') {
+        // Protección de ruta
+        if (localStorage.getItem('isLoggedIn') !== 'true' || localStorage.getItem('userRole') !== 'Docente') {
             window.location.href = "login.html";
         }
     </script>
@@ -22,6 +23,7 @@
             --bg-body: #f4f7f9;
             --text-main: #1e293b;
             --text-muted: #64748b;
+            --primary-dark: #1e3a8a;
             --border-color: #e2e8f0;
             --card-radius: 24px;
         }
@@ -294,7 +296,6 @@
 <body>
 
     <!-- Navegación Superior -->
-    <!-- NUEVA NAVEGACIÓN SUPERIOR (ESCRITORIO) -->
     <nav class="top-nav">
         <a href="#" class="nav-brand">
             <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div>
@@ -309,8 +310,6 @@
 
         <div class="nav-user" id="userDropdownTrigger">
             <div class="user-trigger">
-                <!-- ID Oculto para lógica interna -->
-                <span id="userHiddenId" style="display:none;">Docente</span>
                 <!-- Nombre visible -->
                 <span id="userNameNav">Cargando...</span>
                 <div class="user-avatar" id="userInitialNav">--</div>
@@ -324,28 +323,8 @@
             </div>
         </div>
     </nav>
-    
-    <nav class="top-nav">
-        <a href="dashboard-docente.html" class="nav-brand">
-            <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div>
-            <span class="brand-text">Blackwell</span>
-        </a>
 
-        <div class="nav-links-desktop">
-            <a href="dashboard-docente.html" class="nav-item"><i class="fa-solid fa-house"></i> Dashboard</a>
-            <a href="misexpedientes.html" class="nav-item"><i class="fa-solid fa-folder-open"></i> Mis Expedientes</a>
-            <a href="miscursos.html" class="nav-item active"><i class="fa-solid fa-chalkboard-user"></i> Mis Clases</a>
-        </div>
-
-        <div class="nav-user">
-            <div class="user-trigger">
-                <span id="userNameNav" class="fw-bold text-dark">Cargando...</span>
-                <div class="user-avatar" id="userInitialNav">--</div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- NUEVA NAVEGACIÓN INFERIOR (MÓVIL) -->
+    <!-- Navegación Inferior (Móvil) -->
     <nav class="bottom-nav">
         <a href="dashboard-docente.html" class="bottom-item">
             <i class="fa-solid fa-house"></i>
@@ -478,7 +457,7 @@
         </div>
     </main>
 
-    <!-- MODAL UPLOAD (mismo diseño refinado) -->
+    <!-- MODAL UPLOAD -->
     <div class="modal fade" id="uploadModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" style="border-radius:28px; border:none; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);">
@@ -511,17 +490,20 @@
       </div>
     </div>
 
+    <!-- EL MOTOR DE BOOTSTRAP -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
         
+        // CORRECCIÓN GLOBAL
         let invIdGlobal = new URLSearchParams(window.location.search).get('id');
-        let docenteIdGlobal = sessionStorage.getItem('userId');
+        let docenteIdGlobal = localStorage.getItem('userId');
+        
         let selectedFileBlob = null;
         let selectedFileDetails = null;
 
-        // --- 1. LÓGICA DEL DROPDOWN DE USUARIO ---
+        // --- LÓGICA DEL DROPDOWN DE USUARIO ---
         const dropdownTrigger = document.getElementById('userDropdownTrigger');
         const dropdownMenu = document.getElementById('userDropdownMenu');
 
@@ -536,12 +518,17 @@
             });
         }
 
+        function logout() { 
+            localStorage.clear(); 
+            window.location.href = "login.html"; 
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
 
-            // --- 1. LÓGICA ESTÉTICA (UX/UI): Avatar y Nombre ---
-            const fullName = sessionStorage.getItem('userName') || "Docente";
-            const firstName = fullName.split(' ')[0]; // Solo el primer nombre para no descuadrar
-            const initial = fullName.substring(0, 2).toUpperCase(); // Iniciales
+            // --- LÓGICA ESTÉTICA (UX/UI): Avatar y Nombre con LOCALSTORAGE ---
+            const fullName = localStorage.getItem('userName') || "Docente";
+            const firstName = fullName.split(' ')[0]; 
+            const initial = fullName.substring(0, 2).toUpperCase(); 
 
             const nameEl = document.getElementById('userNameNav');
             const initialEl = document.getElementById('userInitialNav');
@@ -549,15 +536,7 @@
             if(nameEl) nameEl.innerText = firstName;
             if(initialEl) initialEl.innerText = initial;
 
-            // --- 2. LÓGICA FUNCIONAL (Back-End): Cargar Expedientes ---
-            // Rescatamos el ID del docente (He puesto 'userId' y 'userName' para asegurar compatibilidad con tu código anterior)
-            const idDocente = sessionStorage.getItem('userId') || sessionStorage.getItem('userName');
-            
-
-            const fn = sessionStorage.getItem('userName') || "Docente";
-            document.getElementById('userNameNav').innerText = fn.split(' ')[0];
-            document.getElementById('userInitialNav').innerText = fn.substring(0,2).toUpperCase();
-
+            // --- LÓGICA FUNCIONAL (Back-End) con LOCALSTORAGE ---
             if (!invIdGlobal || !docenteIdGlobal) {
                 alert("Parámetros no encontrados."); 
                 window.location.href="miscursos.html";

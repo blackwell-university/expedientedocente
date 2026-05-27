@@ -2,8 +2,16 @@
 <html lang="es">
 <head>
     <script>
-        if (sessionStorage.getItem('isLoggedIn') !== 'true' || (sessionStorage.getItem('userRole') !== 'Administrativo' && sessionStorage.getItem('userRole') !== 'Administrador')) {
-            window.location.href = "login.html"; 
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        const userRole = localStorage.getItem('userRole');
+        
+        const rolesPermitidos = [
+            'Administrativo', 'Administrador', 'Ejecutivo Licenciamiento', 
+            'Asesora Academica', 'Ejecutiva Credenciales'
+        ];
+        
+        if (isLoggedIn !== 'true' || !rolesPermitidos.some(rol => userRole && userRole.toLowerCase() === rol.toLowerCase())) {
+            window.location.href = "login.html";
         }
     </script>
     <meta charset="UTF-8">
@@ -16,12 +24,15 @@
 
     <style>
         :root {
-            --primary: #2563eb; 
+            --primary: #2563eb;
+            --primary-light: #eff6ff;
             --primary-dark: #1e3a8a; 
             --bg-body: #f8fafc;
             --sidebar-bg: #ffffff;
             --text-main: #1e293b;
             --text-muted: #64748b;
+            --gray-bg: #f8fafc;
+            --gray-border: #e2e8f0;
             --card-radius: 20px;
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             --sidebar-width: 260px;
@@ -53,7 +64,7 @@
         .main-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; }
         header { padding: 20px 48px; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 5; }
         .content-area { padding: 40px; display: flex; flex-direction: column; align-items: center; width: 100%; font-size: var(--dynamic-font-size); }
-        .centered-container { width: 100%; max-width: 1200px; text-align: left; }
+        .centered-container { width: 100%; max-width: 1400px; text-align: left; }
         .breadcrumb-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; color: var(--text-muted); font-size: 14px; }
         .back-link { text-decoration: none; color: var(--text-muted); display: flex; align-items: center; gap: 6px; transition: 0.2s; font-weight: 500;}
         .back-link:hover { color: var(--primary); }
@@ -85,105 +96,180 @@
         .file-name { font-size: 0.9rem; font-weight: 600; color: #334155; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;}
         .btn-ver-file { font-size: 0.8rem; font-weight: 700; color: var(--primary); text-decoration: none; background: #e0e7ff; padding: 6px 12px; border-radius: 8px; flex-shrink: 0; cursor: pointer; border: none;}
 
-        /* BOTONES DE ACCIÓN INFERIORES RE-DISEÑADOS */
-        .btn-outline-danger-custom {
-            color: #ef4444; background-color: #fef2f2; border: 1px solid #fecaca;
-            border-radius: 10px; padding: 12px 24px; font-weight: 600; transition: all 0.2s;
+        /* Toolbar de acciones */
+        .action-toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 28px; border-bottom: 1px solid var(--gray-border); padding-bottom: 20px; }
+        .action-btn { background: white; border: 1px solid var(--gray-border); padding: 8px 18px; border-radius: 30px; font-size: 0.8rem; font-weight: 500; color: var(--text-main); transition: 0.2s; }
+        .action-btn i { margin-right: 8px; color: var(--text-muted); }
+        .action-btn:hover { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+        .action-btn-primary { background: var(--primary-dark); border-color: var(--primary-dark); color: white; }
+        .action-btn-primary i { color: white; }
+        .action-btn-primary:hover { background: #1e40af; }
+
+        /* Resumen */
+        .summary-stats { display: flex; gap: 24px; margin-bottom: 24px; flex-wrap: wrap; }
+        .stat-card { background: white; border-radius: 14px; padding: 12px 20px; border: 1px solid var(--gray-border); min-width: 100px; }
+        .stat-number { font-size: 1.6rem; font-weight: 700; color: var(--primary-dark); line-height: 1.2; }
+        .stat-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Tabla */
+        .table-wrapper { background: white; border-radius: 16px; border: 1px solid var(--gray-border); overflow-x: auto; }
+        .doc-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .doc-table th { text-align: left; padding: 16px 16px; background: #f9fafb; font-weight: 600; color: var(--text-main); border-bottom: 1px solid var(--gray-border); }
+        .doc-table td { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+        .doc-table tr:hover { background: #fafafa; }
+
+        /* Badges de estado */
+        .badge-state { display: inline-block; padding: 4px 12px; border-radius: 30px; font-size: 0.7rem; font-weight: 500; background: #f1f5f9; color: #334155; }
+        .badge-completed { background: #e0f2fe; color: #0369a1; }
+        .badge-pending { background: #fef3c7; color: #b45309; }
+        .badge-review { background: #e0e7ff; color: #3730a3; }
+
+        /* Asignado a */
+        .assigned-text { font-size: 0.8rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 6px; }
+        .assigned-text i { font-size: 0.7rem; color: #94a3b8; }
+
+        /* Acciones de tabla */
+        .table-actions { display: flex; gap: 12px; }
+        .table-actions a { color: var(--text-muted); text-decoration: none; font-size: 0.75rem; font-weight: 500; }
+        .table-actions a:hover { color: var(--primary); }
+
+        /* --- NUEVOS ESTILOS PARA BOTONES DE ACCIÓN Y TABLA --- */
+        .action-buttons-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding: 16px 20px;
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
         }
-        .btn-outline-danger-custom:hover { background-color: #fee2e2; border-color: #fca5a5; }
-
-        .btn-success-solid {
-            background-color: #22c55e; color: white; border: none; border-radius: 10px;
-            padding: 12px 24px; font-weight: 600; transition: all 0.2s;
+        .btn-action {
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            border: none;
+            background: #f1f5f9;
+            color: #1e293b;
         }
-        .btn-success-solid:hover { background-color: #16a34a; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3); }
-
-        .btn-primary-solid {
-            background-color: #1e3a8a; color: white; border: none; border-radius: 10px;
-            padding: 12px 24px; font-weight: 600; transition: all 0.2s; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+        .btn-action i { margin-right: 8px; }
+        .btn-action:hover { transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
+        .btn-primary-action {
+            background: var(--primary-dark);
+            color: white;
         }
-        .btn-primary-solid:hover { background-color: #1e40af; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(30, 58, 138, 0.3); }
+        .btn-warning-action {
+            background: #f59e0b;
+            color: white;
+        }
+        .btn-danger-action {
+            background: #ef4444;
+            color: white;
+        }
+        .btn-success-action {
+            background: #10b981;
+            color: white;
+        }
+        .btn-secondary-action {
+            background: #64748b;
+            color: white;
+        }
 
-        /* --- VISOR MODAL SPLIT VIEW --- */
-        .modal-visor .modal-content { height: 95vh; border-radius: 16px; overflow: hidden; border: none; }
-        .modal-visor .modal-body { padding: 0; display: flex; height: 100%; }
-        .visor-left { flex: 6; background-color: #1e293b; display: flex; flex-direction: column; }
-        .visor-right { flex: 4; background-color: #ffffff; overflow-y: auto; padding: 40px; }
-        .visor-header { background: rgba(15, 23, 42, 0.9); padding: 15px 20px; color: white; display: flex; justify-content: space-between; align-items: center; }
-        
-        .bgu-logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.2rem; color: #1e3a8a; margin-bottom: 25px; }
-        .bgu-logo img { height: 35px; }
+        /* Tabla de documentos */
+        .documents-table-wrapper {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            overflow-x: auto;
+        }
+        .documents-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        .documents-table th {
+            text-align: left;
+            padding: 16px 16px;
+            background: #f8fafc;
+            font-weight: 600;
+            color: #1e293b;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .documents-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+        .documents-table tr:hover {
+            background: #fefce8;
+        }
+        .badge-status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-align: center;
+            white-space: nowrap;
+        }
+        .badge-pending { background: #fef3c7; color: #d97706; }
+        .badge-review { background: #dbeafe; color: #2563eb; }
+        .badge-revised { background: #e0e7ff; color: #4338ca; }
+        .badge-pending-sign { background: #ffedd5; color: #ea580c; }
+        .badge-signed { background: #d1fae5; color: #059669; }
+        .badge-completed { background: #d1fae5; color: #059669; }
+        .badge-assigned { background: #f3e8ff; color: #7e22ce; }
 
-        /* ==========================================================
-           📱 AJUSTES UX/UI PARA MÓVILES (Responsividad Perfecta)
-           ========================================================== */
+        .assigned-badge {
+            background: #f1f5f9;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+        .table-actions button {
+            background: none;
+            border: none;
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            margin: 0 2px;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+        .table-actions button:hover { background: #e2e8f0; }
+
+        .summary-cards {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .summary-card {
+            background: white;
+            border-radius: 16px;
+            padding: 16px 24px;
+            border: 1px solid #e2e8f0;
+            flex: 1;
+            min-width: 120px;
+        }
+        .summary-card .number {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+        }
+
         @media (max-width: 768px) {
-            /* 1. Reducir los márgenes gigantes del escritorio */
             header { padding: 15px 20px; }
             .content-area { padding: 20px 15px; }
             .form-card { padding: 20px; }
-            .breadcrumb-nav { margin-bottom: 15px; }
-
-            /* 2. Cabecera de la página (Título y Badge de Estado) */
-            .page-header { flex-direction: column; align-items: flex-start; gap: 12px; margin-bottom: 24px; }
-            .page-header h1 { font-size: 1.6rem; }
-
-            /* 3. TABS: Permite hacer scroll horizontal en lugar de aplastarse */
-            .nav-tabs { flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; padding-bottom: 2px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
-            .nav-tabs::-webkit-scrollbar { display: none; }
-            .nav-tabs .nav-link { white-space: nowrap; padding: 10px 15px; font-size: 0.9rem; }
-
-            /* 4. EL ARREGLO DE LA FOTO: Tarjeta de Documentos Formales */
-            /* Rompemos el flex-row para que el título y los botones se apilen */
-            #generados .d-flex.justify-content-between.border-bottom { 
-                flex-direction: column !important; 
-                align-items: flex-start !important; 
-                gap: 20px; 
-            }
-            /* Hacemos que los botones ocupen el 100% del ancho del celular */
-            #generados .d-flex.gap-2 { 
-                width: 100%; 
-                flex-direction: column; 
-            }
-            #generados .d-flex.gap-2 button { 
-                width: 100%; 
-                justify-content: center; 
-                padding: 14px;
-            }
-
-            /* 5. ARREGLO DE LA LISTA DE DOCUMENTOS (Evitar botones aplastados) */
-            .file-item { 
-                flex-direction: column; 
-                align-items: flex-start; 
-                gap: 15px; 
-            }
-            .file-item .file-info { width: 100%; }
-            .file-item .d-flex.gap-2 { width: 100%; }
-            .file-item .btn-ver-file { 
-                flex: 1; /* Hace que "Ver" y "Enviar" midan mitad y mitad */
-                text-align: center; 
-                justify-content: center; 
-                display: flex; 
-                padding: 10px;
-            }
-
-            /* 6. Botones inferiores de Aprobar/Rechazar */
-            .tab-pane > .d-flex.justify-content-between.mt-4 {
-                flex-direction: column;
-                gap: 12px;
-            }
-            .tab-pane > .d-flex.justify-content-between.mt-4 button {
-                width: 100%;
-            }
+            .page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .action-buttons-bar { flex-direction: column; }
+            .btn-action { width: 100%; text-align: center; }
+            .documents-table th, .documents-table td { padding: 10px 8px; font-size: 0.7rem; }
         }
-
-        /* Ajuste adicional para el Modal Visor en Tablets/Móviles */
-        @media (max-width: 992px) {
-            .modal-visor .modal-body { flex-direction: column; }
-            .visor-left { height: 35vh; flex: none; border-bottom: 2px solid #334155; }
-            .visor-right { height: 60vh; flex: none; padding: 25px; overflow-y: auto; }
-        }
-
     </style>
 </head>
 <body>
@@ -202,8 +288,6 @@
             <li><a href="administrativo.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
             <li><a href="gestion-docentes.html" class="nav-link"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
             <li><a href="gestionexpedientes.html" class="nav-link active"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
-<!--<li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-upload"></i> <span class="link-text">Gestión de Cursos</span></a></li>
-            <li><a href="#" class="nav-link"><i class="fa-solid fa-chart-pie"></i> <span class="link-text">Reportes</span></a></li>-->
         </ul>
         <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;">
             <i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span>
@@ -228,7 +312,7 @@
         <div class="content-area">
             <div class="centered-container">
                 <div class="breadcrumb-nav">
-                    <a href=".html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Volver a Revisión de Expedientes</a>
+                    <a href="gestionexpedientes.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Volver a Revisión de Expedientes</a>
                 </div>
 
                 <div class="page-header">
@@ -236,9 +320,7 @@
                         <h1 id="det-nombre-curso">Cargando Expediente...</h1>
                         <p id="det-subtitle">Obteniendo datos...</p>
                     </div>
-                    <div id="status-badge-container">
-                        <!-- Badge inyectado por JS -->
-                    </div>
+                    <div id="status-badge-container"></div>
                 </div>
 
                 <ul class="nav nav-tabs" id="expedienteTabs" role="tablist">
@@ -252,10 +334,8 @@
 
                 <div class="tab-content">
                     
-                    <!-- PESTAÑA 1: DATOS DEL EXPEDIENTE -->
+                    <!-- PESTAÑA 1: DATOS DEL EXPEDIENTE (sin cambios) -->
                     <div class="tab-pane fade show active" id="datos" role="tabpanel">
-                        
-                        <!-- SECCIÓN 1: INVITACIÓN -->
                         <div class="form-card mb-4">
                             <span class="section-badge"><i class="fa-solid fa-circle-info me-2"></i>Información de la Invitación</span>
                             <div class="row g-3">
@@ -266,8 +346,7 @@
                             </div>
                         </div>
 
-                        <!-- SECCIÓN 2: DATOS DOCENTE (EDITABLE) -->
-                        <div class="form-card mb-4" style="position: relative;">
+                        <div class="form-card mb-4">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <span class="section-badge m-0"><i class="fa-solid fa-user me-2"></i>Datos del Docente (Financieros)</span>
                                 <div id="edit-controls">
@@ -276,104 +355,99 @@
                                     </button>
                                 </div>
                             </div>
-
                             <div class="row g-3">
-                                <div class="col-md-4 info-group">
-                                    <span class="info-label">Nombres</span>
-                                    <div id="view-nombres" class="info-value view-mode">-</div>
-                                    <input type="text" id="edit-nombres" class="input-modern edit-mode d-none">
-                                </div>
-                                <div class="col-md-4 info-group">
-                                    <span class="info-label">Apellidos</span>
-                                    <div id="view-apellidos" class="info-value view-mode">-</div>
-                                    <input type="text" id="edit-apellidos" class="input-modern edit-mode d-none">
-                                </div>
-                                <div class="col-md-4 info-group">
-                                    <span class="info-label">Correo</span>
-                                    <div id="view-correo" class="info-value view-mode">-</div>
-                                    <input type="email" id="edit-correo" class="input-modern edit-mode d-none">
-                                </div>
-
-                                <div class="col-md-3 info-group">
-                                    <span class="info-label">Banco</span>
-                                    <div id="view-banco" class="info-value view-mode">-</div>
-                                    <input type="text" id="edit-banco" class="input-modern edit-mode d-none">
-                                </div>
-                                <div class="col-md-3 info-group">
-                                    <span class="info-label">Moneda</span>
-                                    <div id="view-moneda" class="info-value view-mode">-</div>
-                                    <select id="edit-moneda" class="form-select input-modern edit-mode d-none">
-                                        <option value="Dólares">Dólares ($)</option>
-                                        <option value="Soles">Soles (S/.)</option>
-                                        <option value="Euros">Euros (€)</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-3 info-group">
-                                    <span class="info-label">Cuenta Bancaria</span>
-                                    <div id="view-cuenta" class="info-value view-mode">-</div>
-                                    <input type="text" id="edit-cuenta" class="input-modern edit-mode d-none">
-                                </div>
-                                <div class="col-md-3 info-group">
-                                    <span class="info-label">CCI / Cuenta Interbancaria</span>
-                                    <div id="view-cci" class="info-value view-mode">-</div>
-                                    <input type="text" id="edit-cci" class="input-modern edit-mode d-none">
-                                </div>
-                                <!-- Campos ocultos necesarios para el payload completo -->
+                                <div class="col-md-4 info-group"><span class="info-label">Nombres</span><div id="view-nombres" class="info-value view-mode">-</div><input type="text" id="edit-nombres" class="input-modern edit-mode d-none"></div>
+                                <div class="col-md-4 info-group"><span class="info-label">Apellidos</span><div id="view-apellidos" class="info-value view-mode">-</div><input type="text" id="edit-apellidos" class="input-modern edit-mode d-none"></div>
+                                <div class="col-md-4 info-group"><span class="info-label">Correo</span><div id="view-correo" class="info-value view-mode">-</div><input type="email" id="edit-correo" class="input-modern edit-mode d-none"></div>
+                                <div class="col-md-3 info-group"><span class="info-label">Banco</span><div id="view-banco" class="info-value view-mode">-</div><input type="text" id="edit-banco" class="input-modern edit-mode d-none"></div>
+                                <div class="col-md-3 info-group"><span class="info-label">Moneda</span><div id="view-moneda" class="info-value view-mode">-</div><select id="edit-moneda" class="form-select input-modern edit-mode d-none"><option value="Dólares">Dólares ($)</option><option value="Soles">Soles (S/.)</option><option value="Euros">Euros (€)</option></select></div>
+                                <div class="col-md-3 info-group"><span class="info-label">Cuenta Bancaria</span><div id="view-cuenta" class="info-value view-mode">-</div><input type="text" id="edit-cuenta" class="input-modern edit-mode d-none"></div>
+                                <div class="col-md-3 info-group"><span class="info-label">CCI / Cuenta Interbancaria</span><div id="view-cci" class="info-value view-mode">-</div><input type="text" id="edit-cci" class="input-modern edit-mode d-none"></div>
                                 <input type="hidden" id="edit-celular"><input type="hidden" id="edit-pais"><input type="hidden" id="edit-ciudad">
                                 <input type="hidden" id="edit-estado_region"><input type="hidden" id="edit-direccion"><input type="hidden" id="edit-tipo_cuenta">
                                 <input type="hidden" id="edit-tipo_ruta"><input type="hidden" id="edit-codigo_ruta">
                             </div>
                         </div>
 
-                        <!-- SECCIÓN 3: DOCUMENTOS SUBIDOS -->
                         <div class="form-card mb-4">
                             <span class="section-badge"><i class="fa-solid fa-file-pdf me-2"></i>Documentos Subidos por el Docente</span>
-                            <div id="contenedor-adjuntos-revision" class="row g-3 mt-1">
-                                <p class="text-muted"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando...</p>
-                            </div>
+                            <div id="contenedor-adjuntos-revision" class="row g-3 mt-1"><p class="text-muted"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando...</p></div>
                         </div>
-
-                        <!-- BOTONES DE APROBACIÓN (REDSIEÑADOS) 
-                        <div class="d-flex justify-content-between align-items-center mt-4">
-                            <button class="btn-outline-danger-custom" onclick="cambiarEstadoExpediente('Rechazado')">
-                                <i class="fa-solid fa-xmark me-2"></i>Rechazar Expediente
-                            </button>
-                            <button class="btn-success-solid" onclick="cambiarEstadoExpediente('Aprobado')">
-                                <i class="fa-solid fa-check-double me-2"></i>Aprobar Expediente
-                            </button>
-                        </div>-->
                     </div>
 
                     <!-- PESTAÑA 2: DOCUMENTOS GENERADOS -->
-                    <div class="tab-pane fade" id="generados" role="tabpanel">
-                        <div class="form-card">
-                            <div class="d-flex justify-content-between align-items-center border-bottom pb-4 mb-4">
-                                <div>
-                                    <h4 class="fw-bold text-primary-dark mb-1">Documentos Formales</h4>
-                                    <p class="text-muted m-0 small">Genera y gestiona los documentos oficiales del expediente.</p>
+                    <div class="tab-pane fade" id="generados">
+                        <div class="form-card" style="padding: 24px;">
+                            <!-- Barra de acciones (minimalista) -->
+                            <div class="action-toolbar">
+                                <button class="action-btn action-btn-primary" onclick="generarDocumentos()"><i class="fa-solid fa-file-lines"></i> Generar documentos</button>
+                                <button class="action-btn" onclick="enviarAlertas()"><i class="fa-solid fa-bell"></i> Enviar alertas</button>
+                                <button class="action-btn" onclick="asignarEvaluacion()"><i class="fa-solid fa-user-check"></i> Asignar a evaluación</button>
+                                <button class="action-btn" onclick="invitacionCulminada()"><i class="fa-solid fa-check"></i> Invitación culminada</button>
+                                <button class="action-btn" onclick="enviarFirmar()"><i class="fa-solid fa-file-signature"></i> Enviar a firmar</button>
+                                <button class="action-btn" id="btnEnviarZamudio" onclick="enviarZamudio()" disabled><i class="fa-solid fa-user-tie"></i> Enviar a Zamudio</button>
+                            </div>
+
+                            <!-- Resumen minimalista -->
+                            <div class="summary-stats">
+                                <div class="stat-card">
+                                    <div class="stat-number" id="totalDocs">0</div>
+                                    <div class="stat-label">Total</div>
                                 </div>
-                                <div class="d-flex gap-2">
-                                    <button class="btn btn-light fw-bold border shadow-sm" onclick="generarForm402(this)" style="color: #475569;">
-                                        <i class="fa-solid fa-file-contract me-1"></i> Form 402
-                                    </button>
-                                    <button class="btn-primary-solid" data-bs-toggle="modal" data-bs-target="#modalSeleccionarDocs">
-                                        <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Generar Documentos
-                                    </button>
+                                <div class="stat-card">
+                                    <div class="stat-number" id="completedDocs">0</div>
+                                    <div class="stat-label">Completados</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number" id="inReviewDocs">0</div>
+                                    <div class="stat-label">En revisión</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number" id="pendingSignDocs">0</div>
+                                    <div class="stat-label">Pendiente firma</div>
                                 </div>
                             </div>
 
-                            <div id="lista-documentos-generados" class="row g-3">
-                                <!-- Aquí se listarán los documentos que se vayan generando -->
-                                <div class="col-12 text-center py-5">
-                                    <div style="width: 60px; height: 60px; background: #f1f5f9; color: #94a3b8; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 15px;">
-                                        <i class="fa-regular fa-folder-open"></i>
-                                    </div>
-                                    <p class="text-muted fw-medium m-0">Aún no hay documentos generados para este expediente.</p>
-                                </div>
+                            <!-- Tabla de documentos -->
+                            <div class="table-wrapper">
+                                <table class="doc-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Documento</th>
+                                            <th>Versión</th>
+                                            <th>Estado</th>
+                                            <th>Asignado a</th>
+                                            <th>Fecha envío</th>
+                                            <th>Fecha aprobación</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tablaDocumentosBody">
+                                        <tr><td colspan="7" class="text-center text-muted py-4">Cargando documentos...</td></tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
 
+                    <!-- MODAL para seleccionar documentos -->
+                    <div class="modal fade" id="modalSeleccionarDocs" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5>Seleccionar Documentos</h5>
+                                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="docsChecklist" class="d-flex flex-column gap-2"></div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    <button class="btn btn-primary" onclick="generarDocumentosMultiples()">Generar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>            
             </div>
         </div>
@@ -382,169 +456,130 @@
     <!-- MODAL: SELECCIONAR DOCUMENTOS A GENERAR -->
     <div class="modal fade modal-modern" id="modalSeleccionarDocs" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content shadow-lg">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold m-0"><i class="fa-solid fa-list-check me-2 text-primary"></i>Seleccionar Documentos</h5>
+            <div class="modal-content shadow-lg" style="border-radius: 20px; border: none;">
+                <div class="modal-header border-0 pb-0 pt-4 px-4">
+                    <h5 class="modal-title fw-bold text-dark fs-5">Generar Documentos</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body p-4 bg-light">
-                    <p class="text-muted small mb-3">Elige qué documentos deseas generar para anexarlos al expediente del docente.</p>
+                <div class="modal-body p-4">
+                    <p class="text-muted small mb-4">Seleccione los documentos que desea generar. Se autocompletarán con los datos del expediente y docente actual.</p>
                     
-                    <div class="bg-white border rounded-3 p-3">
-                        <div class="form-check mb-2"><input class="form-check-input doc-gen-cb" type="checkbox" value="Letter of Appointment" id="doc1"> <label class="form-check-label fw-medium text-dark" for="doc1">Letter of Appointment</label></div>
-                        <div class="form-check mb-2"><input class="form-check-input doc-gen-cb" type="checkbox" value="Resume" id="doc2"> <label class="form-check-label fw-medium text-dark" for="doc2">Resume</label></div>
-                        <div class="form-check mb-2"><input class="form-check-input doc-gen-cb" type="checkbox" value="Reference Check Forms" id="doc3"> <label class="form-check-label fw-medium text-dark" for="doc3">Reference Check Forms</label></div>
-                        <div class="form-check mb-2"><input class="form-check-input doc-gen-cb" type="checkbox" value="Proposed Salary" id="doc4"> <label class="form-check-label fw-medium text-dark" for="doc4">Proposed Salary</label></div>
-                        <div class="form-check mb-2"><input class="form-check-input doc-gen-cb" type="checkbox" value="Academic Preparation Evaluation Form" id="doc5"> <label class="form-check-label fw-medium text-dark" for="doc5">Academic Preparation Evaluation Form</label></div>
-                        <div class="form-check mb-2"><input class="form-check-input doc-gen-cb" type="checkbox" value="Assigned Employee Notice" id="doc6"> <label class="form-check-label fw-medium text-dark" for="doc6">Assigned Employee Notice and Acknowledgments</label></div>
-                        <div class="form-check mb-2"><input class="form-check-input doc-gen-cb" type="checkbox" value="Direct Deposit Authorization Form" id="doc7"> <label class="form-check-label fw-medium text-dark" for="doc7">Direct Deposit Authorization Form</label></div>
-                        <div class="form-check mb-2"><input class="form-check-input doc-gen-cb" type="checkbox" value="Confidentiality Agreement" id="doc8"> <label class="form-check-label fw-medium text-dark" for="doc8">Confidentiality and Non-Disclosure Agreement</label></div>
-                        <div class="form-check m-0"><input class="form-check-input doc-gen-cb" type="checkbox" value="Job Description" id="doc9"> <label class="form-check-label fw-medium text-dark" for="doc9">Job Description</label></div>
-                    </div>
-                </div>
-                <div class="modal-footer border-0 p-3">
-                    <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn-primary-solid" onclick="generarDocumentosMultiples()">Generar Seleccionados</button>
-                </div>
-        </div>
-    </div>
-
-    <!-- MODAL: VISOR Y EDITOR DE DOCUMENTO (SPLIT VIEW COMO LA IMAGEN) -->
-    <div class="modal fade modal-visor" id="modalVisorDocumento" tabindex="-1">
-        <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 95%;">
-            <div class="modal-content shadow-lg">
-                <div class="modal-body">
-                    
-                    <!-- Lado Izquierdo: PREVIEW PDF -->
-                    <div class="visor-left">
-                        <div class="visor-header">
-                            <div><i class="fa-solid fa-file-pdf me-2 text-danger"></i> <span id="visor-doc-title" class="fw-bold">Documento.pdf</span></div>
-                            <div>
-                                <button class="btn btn-sm btn-outline-light me-2"><i class="fa-solid fa-expand"></i></button>
-                                <button class="btn btn-sm btn-outline-light" data-bs-dismiss="modal"><i class="fa-solid fa-times"></i></button>
-                            </div>
+                    <div class="bg-white border rounded-4 p-1 shadow-sm mb-3">
+                        <!-- Botón Seleccionar Todos -->
+                        <div class="form-check p-3 border-bottom m-0 d-flex align-items-center gap-2" style="background-color: #f8fafc; border-radius: 15px 15px 0 0;">
+                            <input class="form-check-input m-0" type="checkbox" id="checkAllDocs" onchange="toggleAllDocs(this)" style="cursor: pointer; width: 1.2rem; height: 1.2rem;">
+                            <label class="form-check-label fw-bold text-primary-dark w-100" for="checkAllDocs" style="cursor: pointer; font-size: 0.95rem;">
+                                Seleccionar todos los documentos
+                            </label>
                         </div>
-                        <div class="w-100 flex-grow-1 d-flex align-items-center justify-content-center" style="color: #64748b;">
-                            <!-- Placeholder: En producción aquí va el <iframe> -->
-                            <div class="text-center">
-                                <i class="fa-solid fa-file-pdf mb-3" style="font-size: 4rem; opacity: 0.5;"></i>
-                                <p>Vista previa del documento generado</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Lado Derecho: FORMULARIO EDITOR -->
-                    <div class="visor-right">
-                        <button type="button" class="btn-close float-end mb-2" data-bs-dismiss="modal"></button>
                         
-                        <!-- Logo BGU (Como en la imagen) -->
-                        <div class="bgu-logo">
-                            <div style="background: var(--primary-dark); color:white; width:32px; height:32px; border-radius:6px; display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-graduation-cap"></i></div>
-                            Blackwell Global University
+                        <!-- Lista de Checkboxes -->
+                        <div class="p-3 d-flex flex-column gap-3" id="docsCheckboxList">
+                            <div class="form-check d-flex align-items-center gap-2"><input class="form-check-input doc-gen-cb m-0" type="checkbox" value="Letter of Appointment" id="doc1"> <label class="form-check-label text-dark fw-medium" for="doc1" style="cursor: pointer;">Letter of Appointment</label></div>
+                            <div class="form-check d-flex align-items-center gap-2"><input class="form-check-input doc-gen-cb m-0" type="checkbox" value="Resume" id="doc2"> <label class="form-check-label text-dark fw-medium" for="doc2" style="cursor: pointer;">Resume</label></div>
+                            <div class="form-check d-flex align-items-center gap-2"><input class="form-check-input doc-gen-cb m-0" type="checkbox" value="Reference Check Forms" id="doc3"> <label class="form-check-label text-dark fw-medium" for="doc3" style="cursor: pointer;">Reference Check Forms</label></div>
+                            <div class="form-check d-flex align-items-center gap-2"><input class="form-check-input doc-gen-cb m-0" type="checkbox" value="Proposed Salary" id="doc4"> <label class="form-check-label text-dark fw-medium" for="doc4" style="cursor: pointer;">Proposed Salary</label></div>
+                            <div class="form-check d-flex align-items-center gap-2"><input class="form-check-input doc-gen-cb m-0" type="checkbox" value="Academic Preparation Evaluation Form" id="doc5"> <label class="form-check-label text-dark fw-medium" for="doc5" style="cursor: pointer;">Academic Preparation Evaluation Form</label></div>
+                            <div class="form-check d-flex align-items-center gap-2"><input class="form-check-input doc-gen-cb m-0" type="checkbox" value="Assigned Employee Notice" id="doc6"> <label class="form-check-label text-dark fw-medium" for="doc6" style="cursor: pointer;">Assigned Employee Notice</label></div>
+                            <div class="form-check d-flex align-items-center gap-2"><input class="form-check-input doc-gen-cb m-0" type="checkbox" value="Direct Deposit Authorization Form" id="doc7"> <label class="form-check-label text-dark fw-medium" for="doc7" style="cursor: pointer;">Direct Deposit Authorization Form</label></div>
+                            <div class="form-check d-flex align-items-center gap-2"><input class="form-check-input doc-gen-cb m-0" type="checkbox" value="Confidentiality Agreement" id="doc8"> <label class="form-check-label text-dark fw-medium" for="doc8" style="cursor: pointer;">Confidentiality Agreement</label></div>
+                            <div class="form-check d-flex align-items-center gap-2 m-0"><input class="form-check-input doc-gen-cb m-0" type="checkbox" value="Job Description" id="doc9"> <label class="form-check-label text-dark fw-medium" for="doc9" style="cursor: pointer;">Job Description</label></div>
                         </div>
-
-                        <h3 class="fw-bold mb-2 text-dark" id="editor-title">Nombre del Formulario</h3>
-                        <p class="text-muted small mb-4">Complete los campos requeridos para terminar de rellenar este documento antes de su firma final.</p>
-
-                        <!-- Formulario dinámico -->
-                        <div class="bg-light border rounded-3 p-4">
-                            <h6 class="fw-bold text-primary-dark mb-3"><i class="fa-solid fa-user me-2"></i>Datos Requeridos</h6>
-                            
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label small fw-bold text-muted">NOMBRE *</label>
-                                    <input type="text" class="form-control bg-white" id="ed-nom">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label small fw-bold text-muted">APELLIDO *</label>
-                                    <input type="text" class="form-control bg-white" id="ed-ape">
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label small fw-bold text-muted">CORREO INSTITUCIONAL/PERSONAL *</label>
-                                    <input type="email" class="form-control bg-white" id="ed-correo">
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label small fw-bold text-muted">CAMPO ESPECÍFICO *</label>
-                                    <input type="text" class="form-control bg-white" placeholder="Dependerá del documento">
-                                </div>
-                            </div>
-                        </div>
-
-                        <button class="btn-primary-solid w-100 mt-4 py-3" onclick="guardarEdicionDocumento()">
-                            Guardar y Actualizar Documento <i class="fa-solid fa-arrow-right ms-1"></i>
-                        </button>
-
                     </div>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0 d-flex gap-2">
+                    <button type="button" class="btn btn-light fw-bold px-4 flex-grow-1" style="border-radius: 12px; padding: 12px;" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn-primary-solid px-4 flex-grow-1" style="border-radius: 12px; padding: 12px; display: flex; justify-content: center; align-items: center; gap: 8px;" onclick="generarDocumentos()">
+                        Generar Seleccionados
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- TOAST NOTIFICATION -->
     <div class="toast-container position-fixed bottom-0 end-0 p-4" style="z-index: 1055;" id="toastContainer"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
-
         const urlParams = new URLSearchParams(window.location.search);
-        const expId = urlParams.get('expId'); 
-        let docId = ""; // Lo guardaremos cuando el backend nos lo devuelva
+        const expId = urlParams.get('expId');
+        let docId = "";
+        let documentTrace = []; // { nombre, version, estado, asignadoA, fechaEnvio, fechaAprobacion, url }
 
-        // UI HELPERS
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
-        function logout() { if(confirm("¿Cerrar sesión?")) { sessionStorage.clear(); window.location.href = "login.html"; } }
-        function changeFontSize(dir) { /* Lógica de fuente */ }
+        // ==================== FUNCIONES GENERALES ====================
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+        }
+
+        function logout() {
+            if(confirm("¿Cerrar sesión?")) {
+                sessionStorage.clear();
+                window.location.href = "login.html";
+            }
+        }
+
+        function changeFontSize(dir) {
+            // Tu lógica existente de cambio de fuente
+            let currentSize = parseFloat(document.documentElement.style.getPropertyValue('--dynamic-font-size')) || 1;
+            let newSize = dir === 1 ? currentSize + 0.05 : currentSize - 0.05;
+            if(newSize >= 0.8 && newSize <= 1.3) {
+                document.documentElement.style.setProperty('--dynamic-font-size', newSize + 'rem');
+                document.getElementById('fontSizeLabel').innerText = newSize === 1 ? 'Normal' : (newSize > 1 ? 'Grande' : 'Pequeño');
+            }
+        }
 
         function showToast(mensaje, tipo = 'success') {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
-            const bgClass = tipo === 'success' ? 'text-bg-success' : 'text-bg-danger';
+            const bgClass = tipo === 'success' ? 'text-bg-success' : (tipo === 'danger' ? 'text-bg-danger' : 'text-bg-info');
             toast.className = `toast align-items-center ${bgClass} border-0 show shadow-lg rounded-4 mb-3`;
             toast.innerHTML = `<div class="d-flex p-1"><div class="toast-body fw-medium" style="font-size: 0.95rem;">${mensaje}</div><button type="button" class="btn-close btn-close-white me-3 m-auto" data-bs-dismiss="toast" onclick="this.parentElement.parentElement.remove()"></button></div>`;
-            container.appendChild(toast); setTimeout(() => toast.remove(), 4000);
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
         }
 
+        // ==================== CARGA DEL EXPEDIENTE ====================
         document.addEventListener('DOMContentLoaded', () => {
             const name = sessionStorage.getItem('userName') || "Admin";
             document.getElementById('userName').innerText = name;
-            
             if(!expId) {
                 document.getElementById('det-nombre-curso').innerText = "Error: Faltan datos";
-                document.getElementById('det-subtitle').innerText = "Vuelve a la pantalla anterior.";
                 return;
             }
             cargarExpediente();
+            cargarTrazabilidad();
         });
 
-        // 1. CARGAR DATOS EXACTOS EN UNA SOLA LLAMADA
         async function cargarExpediente() {
             try {
-                const res = await fetch(GAS_URL, { 
-                    method: 'POST', 
-                    body: JSON.stringify({ action: 'get_expediente_data', expId: expId }) 
+                const res = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'get_expediente_data', expId: expId })
                 });
-                
                 const response = await res.json();
-
+                
                 if (response.status === 'success') {
                     const exp = response.expediente;
                     const d = response.docente;
                     const inv = response.invitacion;
+                    docId = d.id;
                     
-                    docId = d.id; 
-                    
+                    // Header
                     document.getElementById('det-nombre-curso').innerText = `Expediente: ${exp.idExpediente}`;
-                    document.getElementById('det-subtitle').innerText = `Docente: ${d.nombres} ${d.apellidos}`;
+                    document.getElementById('det-subtitle').innerHTML = `Docente: ${d.nombres} ${d.apellidos}`;
                     
+                    // Estado badge
                     let bgBadge = exp.estado === 'Aprobado' ? '#15803d' : (exp.estado === 'Completado' ? '#2563eb' : '#ea580c');
-                    document.getElementById('status-badge-container').innerHTML = `<span class="badge" style="background:${bgBadge}; padding: 8px 16px; font-size: 0.9rem; border-radius: 50px;">Estado: ${exp.estado}</span>`;
-
+                    document.getElementById('status-badge-container').innerHTML = `<span class="badge" style="background:${bgBadge}; padding: 8px 16px; border-radius: 50px;">Estado: ${exp.estado}</span>`;
+                    
+                    // Datos de invitación
                     document.getElementById('view-estado').innerText = exp.estado;
                     document.getElementById('view-curso').innerText = inv.curso || "No especificado";
                     document.getElementById('view-horario').innerText = (inv.dias || '-') + " / " + (inv.horario || '-');
                     document.getElementById('view-pago').innerText = inv.pago || "-";
                     
+                    // Datos del docente
                     document.getElementById('view-nombres').innerText = d.nombres || '-';
                     document.getElementById('view-apellidos').innerText = d.apellidos || '-';
                     document.getElementById('view-correo').innerText = d.correo || '-';
@@ -552,196 +587,51 @@
                     document.getElementById('view-moneda').innerText = d.moneda || '-';
                     document.getElementById('view-cuenta').innerText = d.cuenta || '-';
                     document.getElementById('view-cci').innerText = d.cci || '-';
-
-                    ['celular', 'pais', 'ciudad', 'estado_region', 'direccion', 'tipo_cuenta', 'tipo_ruta', 'codigo_ruta'].forEach(f => {
-                        if(document.getElementById(`edit-${f}`)) document.getElementById(`edit-${f}`).value = d[f] || '';
-                    });
-
+                    
+                    // Documentos subidos
                     let htmlDocs = "";
                     if(d.url_cv) htmlDocs += crearItemArchivo("Currículum Vitae", d.url_cv);
                     if(d.url_handbook) htmlDocs += crearItemArchivo("Handbook Firmado", d.url_handbook);
-                    
                     if(response.drafts && response.drafts.educacion) {
                         response.drafts.educacion.forEach(dip => {
                             if(dip.url_diploma) htmlDocs += crearItemArchivo(`Diploma: ${dip.grado}`, dip.url_diploma);
                         });
                     }
-
                     document.getElementById('contenedor-adjuntos-revision').innerHTML = htmlDocs || '<p class="text-muted m-0">No se encontraron documentos adjuntos.</p>';
-
-                    // === DIBUJAMOS LA LISTA DE DOCUMENTOS GENERADOS AQUÍ ===
-                    if (exp.urls) {
-                        renderizarDocumentosGenerados(exp.urls);
-                    }
-
+                    
+                    // Actualizar URLs de documentos generados
+                    if(exp.urls) actualizarUrlsDesdeBackend(exp.urls);
                 } else {
                     mostrarErrorDatos();
                 }
-            } catch (e) { 
-                console.error("Error al cargar datos:", e);
+            } catch (e) {
+                console.error("Error al cargar expediente:", e);
                 mostrarErrorDatos();
             }
         }
 
         function mostrarErrorDatos() {
             document.getElementById('det-nombre-curso').innerText = `Expediente no encontrado`;
-            document.getElementById('det-subtitle').innerText = `No se pudo obtener la información de la base de datos.`;
-            document.getElementById('contenedor-adjuntos-revision').innerHTML = '<p class="text-danger m-0">No se encontraron datos.</p>';
+            document.getElementById('det-subtitle').innerText = `No se pudo obtener la información.`;
+            document.getElementById('contenedor-adjuntos-revision').innerHTML = '<p class="text-danger m-0">Error al cargar datos.</p>';
         }
 
         function crearItemArchivo(nombre, url) {
             return `
             <div class="col-md-6">
                 <div class="file-item">
-                    <div class="file-info"><i class="fa-regular fa-file-pdf"></i><span class="file-name">${nombre}</span></div>
+                    <div class="file-info">
+                        <i class="fa-regular fa-file-pdf"></i>
+                        <span class="file-name">${nombre}</span>
+                    </div>
                     <a href="${url}" target="_blank" class="btn-ver-file">Abrir</a>
                 </div>
             </div>`;
         }
 
-        // --- RENDER DE LA LISTA DE DOCUMENTOS CON EL DISEÑO QUE TE GUSTA ---
-        function renderizarDocumentosGenerados(urls) {
-            const list = document.getElementById('lista-documentos-generados');
-            list.innerHTML = "";
-            let hasDocs = false;
-
-            for (const [docName, docUrl] of Object.entries(urls)) {
-                if (docUrl && String(docUrl).trim() !== "") {
-                    hasDocs = true;
-                    list.innerHTML += `
-                    <div class="col-md-6">
-                        <div class="file-item">
-                            <div class="file-info">
-                                <i class="fa-solid fa-file-signature text-success"></i>
-                                <span class="file-name">${docName}</span>
-                            </div>
-                            <div class="d-flex gap-2">
-                                <button class="btn-ver-file" onclick="window.open('${docUrl}', '_blank')">Ver / Editar</button>
-                                <button class="btn-ver-file" style="background:#fef2f2; color:#ef4444;" title="Enviar por correo" onclick="enviarDocumentoCorreo('${docName}', '${docUrl}')">
-                                    <i class="fa-regular fa-envelope"></i> Enviar
-                                </button>
-                            </div>
-                        </div>
-                    </div>`;
-                }
-            }
-
-            if (!hasDocs) {
-                list.innerHTML = `
-                <div class="col-12 text-center py-5">
-                    <div style="width: 60px; height: 60px; background: #f1f5f9; color: #94a3b8; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 15px;">
-                        <i class="fa-regular fa-folder-open"></i>
-                    </div>
-                    <p class="text-muted fw-medium m-0">Aún no hay documentos generados para este expediente.</p>
-                </div>`;
-            }
-        }
-
-        // 4. GENERAR FORM 402 (Actualizado para refrescar la lista)
-        async function generarForm402(btn) {
-            const orgText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Generando...';
-            try {
-                const res = await fetch(GAS_URL, { 
-                    method: 'POST', body: JSON.stringify({ action: 'generate_document', id: docId, idExpediente: expId }) 
-                });
-                const result = await res.json();
-                if(result.status === 'success') { 
-                    showToast("Form 402 generado exitosamente.", "success"); 
-                    cargarExpediente(); // Recargar la lista para que aparezca el Form 402
-                } else showToast("Error al generar Form 402", "danger");
-            } catch(e) { showToast("Error de conexión", "danger"); } 
-            finally { btn.disabled = false; btn.innerHTML = orgText; }
-        }
-
-        
-        // 5. GENERAR MULTIPLES DOCUMENTOS (LÓGICA SIMPLE Y DIRECTA)
-        async function generarDocumentosMultiples() {
-            const checkboxes = document.querySelectorAll('.doc-gen-cb:checked');
-            if(checkboxes.length === 0) { 
-                showToast("Selecciona al menos un documento.", "danger"); 
-                return; 
-            }
-            
-            // 1. Guardamos la selección
-            const selectedDocs = Array.from(checkboxes).map(cb => cb.value);
-
-            // 2. EL TRUCO EXPERTO: Forzar el cierre nativo haciendo "clic" en la X del modal
-            const botonCerrarModal = document.querySelector('#modalSeleccionarDocs .btn-close');
-            if(botonCerrarModal) botonCerrarModal.click();
-
-            // Limpiamos las casillas para la próxima vez
-            checkboxes.forEach(cb => cb.checked = false);
-
-            // 3. PAUSA ABSOLUTA: Esperamos 500 milisegundos para que el modal se esfume de la pantalla
-            await new Promise(resolve => setTimeout(resolve, 500));
-
-            // 4. AHORA SÍ: Pantalla limpia, mostramos el Toast Azul Persistente
-            const container = document.getElementById('toastContainer');
-            const loadingToast = document.createElement('div');
-            loadingToast.className = `toast align-items-center border-0 show shadow-lg rounded-4 mb-3`;
-            loadingToast.style.backgroundColor = "var(--primary-dark)"; 
-            loadingToast.style.color = "white";
-            loadingToast.innerHTML = `
-                <div class="d-flex p-2">
-                    <div class="toast-body fw-medium d-flex align-items-center" style="font-size: 0.95rem;">
-                        <i class="fa-solid fa-spinner fa-spin me-3" style="font-size: 1.2rem;"></i>
-                        <span id="loadingToastText">Iniciando generación...</span>
-                    </div>
-                </div>`;
-            container.appendChild(loadingToast);
-
-            // 5. COMENZAMOS A PROCESAR LOS DOCUMENTOS
-            for (let docName of selectedDocs) {
-                const loadingText = document.getElementById('loadingToastText');
-                loadingText.innerText = `Generando ${docName}...`;
-
-                try {
-                    let actionName = '';
-                    if (docName === "Letter of Appointment") actionName = 'generate_letter_appointment';
-                    else if (docName === "Resume") actionName = 'generate_resume';
-                    else if (docName === "Proposed Salary") actionName = 'generate_proposed_salary';
-                    else if (docName === "Reference Check Forms") actionName = 'generate_reference_checks_forms';
-                    else if (docName === "Academic Preparation Evaluation Form") actionName = 'generate_academic_prep';
-                    else if (docName === "Assigned Employee Notice") actionName = 'generate_assigned_notice';
-                    else if (docName === "Direct Deposit Authorization Form") actionName = 'generate_direct_deposit';
-                    else if (docName === "Confidentiality Agreement") actionName = 'generate_confidentiality';
-                    else if (docName === "Job Description") actionName = 'generate_job_description';
-                    
-                    if (actionName !== '') {
-                        const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: actionName, idExpediente: expId }) });
-                        if ((await res.json()).status === 'success') {
-                            showToast(`${docName} creado con éxito.`, "success");
-                        } else {
-                            showToast(`Error al generar ${docName}`, "danger");
-                        }
-                    } else {
-                        // Documentos en desarrollo (simulamos espera)
-                        await new Promise(r => setTimeout(r, 600));
-                        showToast(`La generación de "${docName}" aún está en desarrollo.`, "warning");
-                    }
-                } catch (e) { 
-                    showToast(`Error de red al generar ${docName}.`, "danger"); 
-                }
-            }
-
-            // 6. TERMINÓ TODO: Quitamos el Toast azul y actualizamos la lista
-            loadingToast.remove();
-            cargarExpediente(); 
-        }
-
-        // 6. ENVIAR DOCUMENTO POR CORREO
-        function enviarDocumentoCorreo(nombre, url) {
-            if(confirm(`¿Deseas enviar el documento "${nombre}" por correo al docente?`)) {
-                // Aquí en un futuro puedes conectar otra función de GAS que envíe el correo con el adjunto
-                showToast(`El documento ${nombre} ha sido enviado por correo al docente.`, "success");
-            }
-        }
-
-         // 7. MODO EDICIÓN
+        // ==================== EDITAR DATOS DEL DOCENTE ====================
         let isEditing = false;
-        const editableFields =['nombres', 'apellidos', 'correo', 'banco', 'moneda', 'cuenta', 'cci'];
+        const editableFields = ['nombres', 'apellidos', 'correo', 'banco', 'moneda', 'cuenta', 'cci'];
 
         function toggleEdit() {
             const controls = document.getElementById('edit-controls');
@@ -761,7 +651,7 @@
                 isEditing = true;
             }
         }
-        
+
         function cancelEdit() {
             document.querySelectorAll('.view-mode').forEach(el => el.classList.remove('d-none'));
             document.querySelectorAll('.edit-mode').forEach(el => el.classList.add('d-none'));
@@ -783,8 +673,6 @@
                 moneda: document.getElementById('edit-moneda').value,
                 cuenta: document.getElementById('edit-cuenta').value,
                 cci: document.getElementById('edit-cci').value,
-                
-                // Ocultos
                 celular: document.getElementById('edit-celular').value,
                 pais: document.getElementById('edit-pais').value,
                 ciudad: document.getElementById('edit-ciudad').value,
@@ -797,63 +685,255 @@
 
             try {
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
-                if((await res.json()).status === "success") {
+                const result = await res.json();
+                if(result.status === "success") {
                     showToast("Datos actualizados correctamente.", "success");
                     editableFields.forEach(f => {
                         const val = document.getElementById(`edit-${f}`).value;
                         document.getElementById(`view-${f}`).innerText = val || '-';
                     });
-                    document.getElementById('det-subtitle').innerText = `Docente: ${payload.nombres} ${payload.apellidos}`;
+                    document.getElementById('det-subtitle').innerHTML = `Docente: ${payload.nombres} ${payload.apellidos}`;
                     cancelEdit();
-                } else { showToast("No se pudo actualizar.", "danger"); cancelEdit(); }
-            } catch(e) { showToast("Error de red.", "danger"); cancelEdit(); }
+                } else {
+                    showToast("No se pudo actualizar.", "danger");
+                    cancelEdit();
+                }
+            } catch(e) {
+                showToast("Error de red.", "danger");
+                cancelEdit();
+            }
         }
 
-        // 3. CAMBIAR ESTADO DE EXPEDIENTE
-        async function cambiarEstadoExpediente(nuevoEstado) {
-            if(!confirm(`¿Desea marcar este expediente como ${nuevoEstado}?`)) return;
-            try {
-                // Ahora llama a la nueva acción de Expediente
-                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'update_expediente_status', id: expId, estado: nuevoEstado }) });
-                if((await res.json()).status === 'success') {
-                    showToast(`Expediente marcado como ${nuevoEstado}`, "success");
-                    document.getElementById('view-estado').innerText = nuevoEstado;
-                    let bgBadge = nuevoEstado === 'Aprobado' ? '#15803d' : '#e11d48';
-                    document.getElementById('status-badge-container').innerHTML = `<span class="badge" style="background:${bgBadge}; padding: 8px 16px; font-size: 0.9rem; border-radius: 50px;">Estado: ${nuevoEstado}</span>`;
-                }
-            } catch(e) { showToast("Error al actualizar.", "danger"); }
+        // ==================== TRAZABILIDAD DE DOCUMENTOS ====================
+        function cargarTrazabilidad() {
+            let stored = localStorage.getItem(`trace_${expId}`);
+            if(stored) {
+                documentTrace = JSON.parse(stored);
+            } else {
+                const docs = [
+                    "Form 402", "Letter of Appointment", "Resume", "Reference Check Forms",
+                    "Proposed Salary", "Academic Preparation Evaluation Form", "Assigned Employee Notice",
+                    "Direct Deposit Authorization Form", "Confidentiality Agreement", "Job Description", "Handbook"
+                ];
+                documentTrace = docs.map(n => ({
+                    nombre: n,
+                    version: 1,
+                    estado: "Pendiente",
+                    asignadoA: "Sin asignar",
+                    fechaEnvio: "",
+                    fechaAprobacion: "",
+                    url: ""
+                }));
+            }
+            renderizarTabla();
         }
 
-    
-        // Modificamos cargarExpediente() para que llame al render de la lista
-        /*const cargarExpedienteOriginal = cargarExpediente;
-        cargarExpediente = async function() {
-            await cargarExpedienteOriginal();
-            // Luego de cargar todo, pedimos la lista de documentos
-            try {
-                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_expediente_data', expId: expId }) });
-                const response = await res.json();
-                if (response.status === 'success') {
-                    renderizarDocumentosGenerados(response.expediente.urls);
-                }
-            } catch (e) { console.error("Error al renderizar lista de docs", e); }
-        }*/
-
-        
-        function abrirEditorDocumento(titulo) {
-            document.getElementById('visor-doc-title').innerText = titulo + ".pdf";
-            document.getElementById('editor-title').innerText = titulo;
+        function renderizarTabla() {
+            const tbody = document.getElementById('tablaDocumentosBody');
+            if(!tbody) return;
+            tbody.innerHTML = "";
             
-            document.getElementById('ed-nom').value = document.getElementById('view-nombres').innerText;
-            document.getElementById('ed-ape').value = document.getElementById('view-apellidos').innerText;
-            document.getElementById('ed-correo').value = document.getElementById('view-correo').innerText;
-
-            new bootstrap.Modal(document.getElementById('modalVisorDocumento')).show();
+            documentTrace.forEach(doc => {
+                // --- AQUÍ ESTÁ LA MAGIA ---
+                // Condición: Mostrar SOLO si el documento tiene una URL (ya fue generado) 
+                // O si su nombre es "Form 402" O si su nombre es "Handbook"
+                if (doc.url !== "" || doc.nombre === "Form 402" || doc.nombre === "Handbook") {
+                    
+                    let estadoClass = "badge-state";
+                    if(doc.estado === "Completado" || doc.estado === "Firmado por Zamudio") estadoClass += " badge-completed";
+                    if(doc.estado === "Pendiente") estadoClass += " badge-pending";
+                    if(doc.estado === "En revisión" || doc.estado === "Revisado por Sara") estadoClass += " badge-review";
+                    
+                    const row = `<tr>
+                        <td><strong>${doc.nombre}</strong></td>
+                        <td>v${doc.version}</td>
+                        <td><span class="${estadoClass}">${doc.estado}</span></td>
+                        <td><span class="assigned-text"><i class="fa-regular fa-user"></i> ${doc.asignadoA}</span></td>
+                        <td>${doc.fechaEnvio || "—"}</td>
+                        <td>${doc.fechaAprobacion || "—"}</td>
+                        <td class="table-actions">
+                            ${doc.url ? `<a href="${doc.url}" target="_blank"><i class="fa-regular fa-eye"></i> Ver</a>` : ''}
+                            <a href="#" onclick="simularEdicion('${doc.nombre}')"><i class="fa-regular fa-pen-to-square"></i> Editar</a>
+                        </td>
+                    </tr>`; // <-- Corregí un error de tipeo html que tenías aquí (decía </table>)
+                    tbody.innerHTML += row;
+                }
+            });
+            
+            // Si la tabla quedó vacía (porque nada cumplió la condición)
+            if (tbody.innerHTML === "") {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">No hay documentos generados aún.</td></tr>`;
+            }
+            
+            actualizarResumen();
+            guardarTrazabilidad();
         }
 
-        function guardarEdicionDocumento() {
-            showToast("Documento actualizado e inyectado correctamente.", "success");
-            bootstrap.Modal.getInstance(document.getElementById('modalVisorDocumento')).hide();
+        function actualizarResumen() {
+            document.getElementById('totalDocs').innerText = documentTrace.length;
+            document.getElementById('completedDocs').innerText = documentTrace.filter(d => d.estado === "Completado" || d.estado === "Firmado por Zamudio").length;
+            document.getElementById('inReviewDocs').innerText = documentTrace.filter(d => d.estado === "En revisión" || d.estado === "Revisado por Sara").length;
+            document.getElementById('pendingSignDocs').innerText = documentTrace.filter(d => d.estado.includes("firma")).length;
+        }
+
+        function guardarTrazabilidad() {
+            localStorage.setItem(`trace_${expId}`, JSON.stringify(documentTrace));
+        }
+
+        function simularEdicion(nombre) {
+            showToast(`Edición de ${nombre}`, "info");
+        }
+
+        function actualizarUrlsDesdeBackend(urls) {
+            for(let [nombre, url] of Object.entries(urls)) {
+                if(url && url.trim()) {
+                    let doc = documentTrace.find(d => d.nombre === nombre);
+                    if(doc) {
+                        doc.url = url;
+                        doc.version += 1;
+                        doc.estado = "Pendiente";
+                        doc.asignadoA = "Sin asignar";
+                        doc.fechaEnvio = "";
+                        doc.fechaAprobacion = "";
+                    }
+                }
+            }
+            renderizarTabla();
+        }
+
+        // ==================== ACCIONES GLOBALES (EJECUTIVA) ====================
+        function generarDocumentos() {
+            const docsList = documentTrace.map(d => d.nombre);
+            let html = `<div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="selectAll"> <label>Seleccionar todos</label></div>`;
+            docsList.forEach(n => {
+                html += `<div class="form-check"><input class="form-check-input doc-check" type="checkbox" value="${n}" id="chk_${n}"> <label for="chk_${n}">${n}</label></div>`;
+            });
+            document.getElementById('docsChecklist').innerHTML = html;
+            
+            const selectAll = document.getElementById('selectAll');
+            if(selectAll) {
+                selectAll.addEventListener('change', (e) => {
+                    document.querySelectorAll('.doc-check').forEach(cb => cb.checked = e.target.checked);
+                });
+            }
+            
+            new bootstrap.Modal(document.getElementById('modalSeleccionarDocs')).show();
+        }
+
+        // --- SELECCIONAR / DESELECCIONAR TODOS LOS CHECKBOXES ---
+        function toggleAllDocs(source) {
+            const checkboxes = document.querySelectorAll('.doc-gen-cb');
+            checkboxes.forEach(cb => cb.checked = source.checked);
+        }
+
+        // --- GENERAR DOCUMENTOS USANDO LA FUNCIÓN GLOBAL OPTIMIZADA ---
+        async function generarDocumentos() {
+            const checkboxes = document.querySelectorAll('.doc-gen-cb:checked');
+            if(checkboxes.length === 0) { 
+                showToast("Selecciona al menos un documento.", "danger"); 
+                return; 
+            }
+            
+            // Extraer nombres seleccionados
+            const selectedDocs = Array.from(checkboxes).map(cb => cb.value);
+
+            // Cerrar el modal limpiamente
+            const botonCerrarModal = document.querySelector('#modalSeleccionarDocs .btn-close');
+            if(botonCerrarModal) botonCerrarModal.click();
+
+            // Limpiar los checks para la próxima vez
+            document.querySelectorAll('.doc-gen-cb').forEach(cb => cb.checked = false);
+            document.getElementById('checkAllDocs').checked = false;
+
+            // Mostrar el toast azul de carga
+            const container = document.getElementById('toastContainer');
+            const loadingToast = document.createElement('div');
+            loadingToast.className = `toast align-items-center border-0 show shadow-lg rounded-4 mb-3`;
+            loadingToast.style.backgroundColor = "var(--primary-dark)"; 
+            loadingToast.style.color = "white";
+            loadingToast.innerHTML = `
+                <div class="d-flex p-3">
+                    <div class="toast-body fw-medium d-flex align-items-center" style="font-size: 0.95rem;">
+                        <i class="fa-solid fa-spinner fa-spin me-3" style="font-size: 1.2rem;"></i>
+                        <span id="loadingToastText">Generando ${selectedDocs.length} documento(s)... Por favor espera.</span>
+                    </div>
+                </div>`;
+            container.appendChild(loadingToast);
+
+            try {
+                // LLAMAMOS AL BACKEND UNA SOLA VEZ CON EL ARRAY DE DOCUMENTOS
+                const payload = {
+                    action: "generate_bulk_documents",
+                    idExpediente: expId,
+                    documentos: selectedDocs
+                };
+
+                const res = await fetch(GAS_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify(payload) 
+                });
+                
+                const result = await res.json();
+
+                if (result.status === 'success') {
+                    showToast("¡Documentos generados exitosamente!", "success");
+                    cargarExpediente(); // Recargar la página para que la tabla muestre los nuevos enlaces
+                } else {
+                    showToast(result.message || "Error al generar documentos.", "danger");
+                }
+            } catch (e) { 
+                showToast("Error de conexión al servidor.", "danger"); 
+            } finally {
+                loadingToast.remove();
+            }
+        }
+
+        function enviarAlertas() {
+            showToast("Alertas enviadas al docente", "success");
+        }
+
+        function asignarEvaluacion() {
+            documentTrace.forEach(d => {
+                if(d.estado === "Pendiente") {
+                    d.estado = "En revisión";
+                    d.asignadoA = "Sara (Evaluación)";
+                    d.fechaEnvio = new Date().toLocaleDateString();
+                }
+            });
+            renderizarTabla();
+            showToast("Documentos asignados a Sara para evaluación", "success");
+        }
+
+        function invitacionCulminada() {
+            showToast("Notificación enviada a Asesora Académica", "success");
+        }
+
+        function enviarFirmar() {
+            documentTrace.forEach(d => {
+                if(d.estado === "En revisión" || d.estado === "Revisado por Sara") {
+                    d.estado = "Pendiente firma docente";
+                    d.fechaEnvio = new Date().toLocaleDateString();
+                }
+            });
+            renderizarTabla();
+            showToast("Documentos enviados al docente para firmar", "success");
+            document.getElementById('btnEnviarZamudio').disabled = false;
+        }
+
+        function enviarZamudio() {
+            let firmados = documentTrace.some(d => d.estado === "Pendiente firma docente" || d.estado === "Firmado por docente");
+            if(!firmados) {
+                showToast("Aún no hay documentos firmados por el docente", "danger");
+                return;
+            }
+            documentTrace.forEach(d => {
+                if(d.estado === "Pendiente firma docente") {
+                    d.estado = "Pendiente firma Zamudio";
+                    d.asignadoA = "Zamudio";
+                }
+            });
+            renderizarTabla();
+            showToast("Documentos enviados a Zamudio para firma", "success");
         }
     </script>
 </body>

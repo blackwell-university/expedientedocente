@@ -168,18 +168,26 @@
                 if (response.status === "success") {
                     let rolAsignado = response.role ? response.role.toUpperCase() : "";
 
-                    // GUARDADO INTELIGENTE
-                    sessionStorage.setItem('isLoggedIn', 'true');
-                    sessionStorage.setItem('userId', response.userId);   // Guardamos el ID para procesos internos
-                    sessionStorage.setItem('userName', response.userName); // Guardamos el Nombre para la UI Aesthetic
+                    // GUARDADO INTELIGENTE Y PERSISTENTE
+                    localStorage.setItem('isLoggedIn', 'true');
+                    localStorage.setItem('userId', response.userId);   
+                    localStorage.setItem('userName', response.userName); 
 
                     if (rolAsignado === 'DOCENTE') {
-                        sessionStorage.setItem('userRole', 'Docente');
+                        localStorage.setItem('userRole', 'Docente');
                         window.location.href = "dashboard-docente.html";
-                    } else if (rolAsignado === 'ADMINISTRATIVO' || rolAsignado === 'ADMINISTRADOR') {
-                        sessionStorage.setItem('userRole', 'Administrativo');
+                    } else if (
+                        rolAsignado === 'ADMINISTRATIVO' || 
+                        rolAsignado === 'ADMINISTRADOR' ||
+                        rolAsignado === 'EJECUTIVO LICENCIAMIENTO' ||
+                        rolAsignado === 'ASESORA ACADEMICA' ||
+                        rolAsignado === 'EJECUTIVA CREDENCIALES'
+                    ) {
+                        // Guardamos el rol exacto para futuros permisos, pero todos van al mismo panel
+                        localStorage.setItem('userRole', response.role);
                         window.location.href = "administrativo.html";
-                    } else {
+                    }
+                    else {
                         alert("Error: Tu usuario no tiene un rol válido asignado en el sistema.");
                         btn.disabled = false;
                         btn.innerHTML = 'Iniciar Sesión <i class="fa-solid fa-arrow-right"></i>';

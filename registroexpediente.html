@@ -2,8 +2,8 @@
 <html lang="es">
 <head>
     <script>
-        // Protección de ruta
-        if (sessionStorage.getItem('isLoggedIn') !== 'true' || sessionStorage.getItem('userRole') !== 'Docente') {
+        // Protección de ruta: Solo para docentes
+        if (localStorage.getItem('isLoggedIn') !== 'true' || localStorage.getItem('userRole') !== 'Docente') {
             window.location.href = "login.html";
         }
     </script>
@@ -742,7 +742,7 @@
         
         let pasoActual = 1; const totalPasos = 6;
         let idExpedienteUrl = new URLSearchParams(window.location.search).get('exp');
-        let userId = sessionStorage.getItem('userId');
+        let userId = localStorage.getItem('userId');
         let selectedInvitationId = null;
         
         let urlCVGlobal = ""; 
@@ -829,7 +829,7 @@
         document.addEventListener('DOMContentLoaded', () => {
 
             // 1. Traemos los datos que ya están guardados en el navegador
-            const fullName = sessionStorage.getItem('userName') || "Docente";
+            const fullName = localStorage.getItem('userName') || "Docente";
             
             // 2. Extraemos solo el primer nombre para que se vea aesthetic y no descuadre
             const firstName = fullName.split(' ')[0];
@@ -1185,7 +1185,8 @@
         }
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
-        function logout() { sessionStorage.clear(); window.location.href = "login.html"; }
+        function logout() { localStorage.clear(); window.location.href = "login.html"; }
+
         function mostrarNombre(input, id) { if(input.files.length > 0) document.getElementById(id).innerText = "✅ " + input.files[0].name; }
         const getBase64 = (file) => new Promise((resolve) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result.split(',')[1]); });
 

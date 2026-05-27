@@ -3,7 +3,7 @@
 <head>
     <script>
         // Protección de ruta
-        if (sessionStorage.getItem('isLoggedIn') !== 'true' || sessionStorage.getItem('userRole') !== 'Docente') {
+        if (localStorage.getItem('isLoggedIn') !== 'true' || localStorage.getItem('userRole') !== 'Docente') {
             window.location.href = "login.html";
         }
     </script>
@@ -17,13 +17,14 @@
 
     <style>
         :root {
-            --primary: #1e3a8a; /* Azul más oscuro y corporativo */
+            --primary: #1e40af; 
             --primary-light: #eff6ff;
             --bg-body: #f8fafc;
             --text-main: #0f172a;
             --text-muted: #64748b;
             --border-color: #e2e8f0;
             --card-radius: 20px;
+            --primary-dark: #1e3a8a;
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             --dynamic-font-size: 1rem;
         }
@@ -170,6 +171,33 @@
         </div>
     </main>
 
+    <!-- MODAL DE CURSO PENDIENTE -->
+    <div class="modal fade" id="modalPendiente" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0" style="border-radius: 24px;">
+                <div class="modal-body text-center p-5">
+                    <div style="width: 80px; height: 80px; background: #fff7ed; color: #ea580c; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 20px;">
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
+                    <h3 class="fw-bold mb-3" style="color: #0f172a; font-size: 1.5rem;">Acceso Restringido</h3>
+                    <p class="text-muted mb-4" style="font-size: 0.95rem;">
+                        Para ingresar al panel de este curso, primero debes confirmar el horario y enviar tus documentos en la sección de expedientes.
+                    </p>
+                    
+                    <div class="d-flex gap-3 mt-2">
+                        <button type="button" class="btn btn-light fw-bold w-100 py-3" data-bs-dismiss="modal" style="border-radius: 14px;">Cancelar</button>
+                        <a href="misexpedientes.html" class="btn fw-bold w-100 py-3" style="border-radius: 14px; background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(30, 58, 138, 0.2);">
+                            Ir a Expedientes
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
         let cursosGlobales = [];
@@ -182,7 +210,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const fullName = sessionStorage.getItem('userName') || "Docente";
+            const fullName = localStorage.getItem('userName') || "Docente";
             const firstName = fullName.split(' ')[0]; 
             const initial = fullName.substring(0, 2).toUpperCase(); 
             const nameEl = document.getElementById('userNameNav');
@@ -190,11 +218,17 @@
             if(nameEl) nameEl.innerText = firstName;
             if(initialEl) initialEl.innerText = initial;
 
-            const idDocente = sessionStorage.getItem('userId') || sessionStorage.getItem('userName');
+            const idDocente = localStorage.getItem('userId') || localStorage.getItem('userName');
             cargarCursos(idDocente);
         });
 
-        function logout() { if(confirm("¿Seguro que deseas salir?")) { sessionStorage.clear(); window.location.href = "login.html"; } }
+        function logout() { 
+            (confirm("¿Seguro que deseas salir?")) 
+            { 
+                localStorage.clear(); 
+                window.location.href = "login.html"; 
+            } 
+        }
 
         async function cargarCursos(idDocente) {
             const container = document.getElementById('cards-container');
@@ -232,19 +266,21 @@
             let html = "";
             cursosArray.forEach(curso => {
                 
-                let isConfirmed = (curso.estado.toLowerCase() === 'respondido' || curso.estado.toLowerCase() === 'completado');
+                let isConfirmed = (curso.estado.toLowerCase() === 'respondido' || curso.estado.toLowerCase() === 'completado' || curso.estado.toLowerCase() === 'aprobado');
                 
                 // Indicador de estado minimalista
                 let dotClass = isConfirmed ? 'dot-asignado' : 'dot-pendiente';
                 let txtEstado = isConfirmed ? 'Asignado' : 'Por confirmar';
                 let txtHorario = isConfirmed ? `${curso.diaElegido}, ${curso.horaElegida}` : `Sugerido: ${curso.franjas}`;
                 
-                // Si el curso no está confirmado, la ruta de acción debería ser ir a revisar su expediente
-                let linkDestino = isConfirmed ? `curso.html?id=${curso.idInvitacion}` : `misexpedientes.html`;
+                // MAGIA UX: Si está confirmado va al curso, si no, abre el modal
+                let linkAtributos = isConfirmed 
+                    ? `href="curso.html?id=${curso.idInvitacion}"` 
+                    : `href="javascript:void(0)" onclick="abrirModalPendiente(event)"`;
 
                 html += `
                     <div class="col-md-6 col-xl-4">
-                        <a href="${linkDestino}" class="course-card">
+                        <a ${linkAtributos} class="course-card">
                             
                             <div class="card-meta">
                                 <div class="program-tags">
@@ -296,8 +332,7 @@
             else {
                 const filtrados = cursosGlobales.filter(d => {
                     let st = d.estado.toLowerCase();
-                    if(estado === 'asignado') return st === 'respondido' || st === 'completado';
-                    return st === estado;
+                if(estado === 'asignado') return st === 'respondido' || st === 'completado' || st === 'aprobado';                    return st === estado;
                 });
                 renderizarCards(filtrados);
             }
@@ -306,6 +341,14 @@
         function mostrarEmptyState() {
             document.getElementById('cards-container').innerHTML = `<div class="col-12"><div class="empty-state"><i class="fa-solid fa-folder-open"></i><h3>No hay registros</h3><p class="text-muted m-0">No se encontraron cursos asignados en este momento.</p></div></div>`;
         }
+
+        // Función para abrir el modal bloqueando la tarjeta
+        function abrirModalPendiente(e) {
+            e.preventDefault(); // Evita que la página salte
+            const modal = new bootstrap.Modal(document.getElementById('modalPendiente'));
+            modal.show();
+        }
+        
     </script>
 </body>
 </html>

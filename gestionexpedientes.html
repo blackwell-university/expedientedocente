@@ -2,9 +2,15 @@
 <html lang="es">
 <head>
     <script>
-        const isLoggedIn = sessionStorage.getItem('isLoggedIn');
-        const userRole = sessionStorage.getItem('userRole');
-        if (isLoggedIn !== 'true' || (userRole !== 'Administrativo' && userRole !== 'Administrador')) {
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        const userRole = localStorage.getItem('userRole');
+        
+        const rolesPermitidos = [
+            'Administrativo', 'Administrador', 'Ejecutivo Licenciamiento', 
+            'Asesora Academica', 'Ejecutiva Credenciales'
+        ];
+        
+        if (isLoggedIn !== 'true' || !rolesPermitidos.some(rol => userRole && userRole.toLowerCase() === rol.toLowerCase())) {
             window.location.href = "login.html";
         }
     </script>
@@ -190,11 +196,14 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
-        let todosExpedientes =[];
+        let todosExpedientes = [];
 
         // UI Helpers
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); document.getElementById('toggleIcon').classList.toggle('fa-chevron-right'); document.getElementById('toggleIcon').classList.toggle('fa-chevron-left');}
-        function logout() { if(confirm("¿Cerrar sesión?")) { sessionStorage.clear(); window.location.href = "login.html"; } }
+        
+        // CORRECCIÓN: Logout con localStorage
+        function logout() { if(confirm("¿Cerrar sesión?")) { localStorage.clear(); window.location.href = "login.html"; } }
+        
         let currentSize = 1; const sizes =["0.9rem", "1rem", "1.1rem"]; const labels =["Pequeño", "Normal", "Grande"];
         function changeFontSize(dir) { currentSize += dir; if(currentSize < 0) currentSize=0; if(currentSize > 2) currentSize=2; document.getElementById('fontSizeLabel').innerText = labels[currentSize]; document.documentElement.style.setProperty('--dynamic-font-size', sizes[currentSize]); }
 
@@ -208,28 +217,76 @@
             container.appendChild(toast); setTimeout(() => toast.remove(), 4000);
         }
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            const name = sessionStorage.getItem('userName') || "Administrador";
+        // --- FUNCIÓN MAESTRA DE CACHÉ ULTRA RÁPIDA (Optimizada para Admin) ---
+        async function cargarDatosOptimizadosAdmin(actionName, payload, callbackRenderizado) {
+            const cacheKey = `cache_${actionName}_global`;
+            
+            // 1. Mostrar Caché al instante si existe
+            const cachedData = localStorage.getItem(cacheKey);
+            if (cachedData) {
+                callbackRenderizado(JSON.parse(cachedData), false); 
+            } else {
+                callbackRenderizado(null, true); // Loading state
+            }
+
+            // 2. Consulta silenciosa en background a Google Sheets
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: actionName, ...payload })
+                });
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    // Solo si la data fresca es diferente a la caché, redibujamos para no molestar al usuario
+                    if (JSON.stringify(result.data) !== cachedData) {
+                        localStorage.setItem(cacheKey, JSON.stringify(result.data));
+                        callbackRenderizado(result.data, false);
+                    }
+                }
+            } catch (error) {
+                console.error("Error actualizando datos:", error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // CORRECCIÓN: Leer el nombre de localStorage
+            const name = localStorage.getItem('userName') || "Usuario";
+            const role = localStorage.getItem('userRole') || "Personal Blackwell";
+            
             document.getElementById('userName').innerText = name;
             document.getElementById('userInitial').innerText = name.substring(0,2).toUpperCase();
+            
+            const roleSpan = document.querySelector('.user-meta span');
+            if(roleSpan) roleSpan.innerText = role;
 
-            await cargarTodosExpedientes();
+            cargarTodosExpedientes();
             
             document.getElementById('filterText').addEventListener('input', filtrar);
             document.getElementById('filterStatus').addEventListener('change', filtrar);
         });
 
-        async function cargarTodosExpedientes() {
-            try {
-                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_all_expedientes_global' }) });
-                const result = await res.json();
-                
-                if(result.status === 'success') {
-                    todosExpedientes = result.data;
-                    filtrar();
+        function cargarTodosExpedientes() {
+            // Usamos nuestra función optimizada
+            cargarDatosOptimizadosAdmin(
+                'get_all_expedientes_global', 
+                {}, 
+                (data, isLoading) => {
+                    const spinner = document.getElementById('loading-spinner');
+                    
+                    if (isLoading) {
+                        spinner.style.display = 'block';
+                        return;
+                    }
+                    
+                    // Ocultamos spinner y pintamos
+                    spinner.style.display = 'none';
+                    if (data) {
+                        todosExpedientes = data;
+                        filtrar();
+                    }
                 }
-            } catch(e) { showToast("Error al cargar datos", "danger"); }
-            document.getElementById('loading-spinner').style.display = 'none';
+            );
         }
 
         function filtrar() {

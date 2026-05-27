@@ -2,9 +2,15 @@
 <html lang="es">
 <head>
     <script>
-        const isLoggedIn = sessionStorage.getItem('isLoggedIn');
-        const userRole = sessionStorage.getItem('userRole');
-        if (isLoggedIn !== 'true' || (userRole !== 'Administrativo' && userRole !== 'Administrador')) {
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        const userRole = localStorage.getItem('userRole');
+        
+        const rolesPermitidos = [
+            'Administrativo', 'Administrador', 'Ejecutivo Licenciamiento', 
+            'Asesora Academica', 'Ejecutiva Credenciales'
+        ];
+        
+        if (isLoggedIn !== 'true' || !rolesPermitidos.some(rol => userRole && userRole.toLowerCase() === rol.toLowerCase())) {
             window.location.href = "login.html";
         }
     </script>

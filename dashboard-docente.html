@@ -3,7 +3,7 @@
 <head>
     <script>
         // Protección de ruta: Solo para docentes
-        if (sessionStorage.getItem('isLoggedIn') !== 'true' || sessionStorage.getItem('userRole') !== 'Docente') {
+        if (localStorage.getItem('isLoggedIn') !== 'true' || localStorage.getItem('userRole') !== 'Docente') {
             window.location.href = "login.html";
         }
     </script>
@@ -483,7 +483,7 @@
         // --- 2. CONFIGURACIÓN UI (Logout y Letra) ---
         function logout() { 
             if(confirm("¿Seguro que deseas salir?")) { 
-                sessionStorage.clear(); 
+                localStorage.clear(); 
                 window.location.href = "login.html"; 
             } 
         }
@@ -495,7 +495,7 @@
         document.addEventListener('DOMContentLoaded', () => {
 
             // A) Lógica Estética Rápida (Nombre y Avatar desde Session)
-            const fullName = sessionStorage.getItem('userName') || "Docente";
+            const fullName = localStorage.getItem('userName') || "Docente";
             const firstName = fullName.split(' ')[0]; 
             const initial = fullName.substring(0, 2).toUpperCase(); 
 
@@ -507,7 +507,7 @@
             if(initialEl) initialEl.innerText = initial;
             
             // B) ID Docente para Base de Datos
-            const idDocente = sessionStorage.getItem('userId') || sessionStorage.getItem('userName');
+            const idDocente = localStorage.getItem('userId') || localStorage.getItem('userName');
 
             if (idDocente) {
                 // Ponemos el mensaje de bienvenida
@@ -543,16 +543,19 @@
                         modalBienvenida.show();
                     } else {
                         // Si no es nuevo, actualizamos EL NAV NUEVO con sus datos reales
-                        const nombreReal = (d.nombres || "Docente").split(" ")[0];
+                        const nombreCompleto = d.nombres || "Docente";
+                        const nombreReal = nombreCompleto.split(" ")[0];
                         
                         const nameEl = document.getElementById('userNameNav');
                         const initialEl = document.getElementById('userInitialNav');
                         
                         if(nameEl) nameEl.innerText = nombreReal;
-                        if(initialEl) initialEl.innerText = nombreReal.substring(0,2).toUpperCase();
+                        if(initialEl) initialEl.innerText = nombreCompleto.substring(0,2).toUpperCase();
                         
                         const welcomeMsg = document.getElementById('welcomeMessage');
                         if(welcomeMsg) welcomeMsg.innerText = `¡Hola, ${nombreReal}!`;
+
+                        localStorage.setItem('userName', nombreCompleto);
                     }
                 }
             } catch (e) {
