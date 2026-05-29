@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script>
+        if (sessionStorage.getItem('isLoggedIn') !== 'true' || sessionStorage.getItem('userRole') !== 'Docente') {
+            window.location.href = "login.html";
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal del Docente | Blackwell University</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #2563eb; 
+            --primary-dark: #1e3a8a; 
+            --bg-body: #f8fafc;
+            --sidebar-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --card-radius: 20px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --sidebar-width: 260px;
+            --sidebar-collapsed-width: 88px;
+            --dynamic-font-size: 1rem;
+        }
+
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; letter-spacing: -0.01em; }
+
+        /* --- SIDEBAR MODERNA --- */
+        .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid rgba(0,0,0,0.05); display: flex; flex-direction: column; transition: var(--transition); position: relative; padding: 24px 16px; flex-shrink: 0; }
+        .sidebar.collapsed { width: var(--sidebar-collapsed-width); }
+        .brand-section { display: flex; align-items: center; gap: 12px; padding: 0 12px 32px; text-decoration: none; overflow: hidden; }
+        .logo-box { min-width: 42px; height: 42px; background: var(--primary-dark); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
+        .brand-text { font-weight: 800; font-size: 1.2rem; color: var(--primary-dark); }
+        .sidebar.collapsed .brand-text { opacity: 0; pointer-events: none; }
+        .user-preview { display: flex; align-items: center; gap: 12px; padding: 12px; background: #f1f5f9; border-radius: 16px; margin-bottom: 24px; overflow: hidden; }
+        .avatar { min-width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 13px; }
+        .user-meta { display: flex; flex-direction: column; line-height: 1.2; }
+        .user-meta b { font-size: 13px; white-space: nowrap; } .user-meta span { font-size: 11px; color: var(--text-muted); }
+        .sidebar.collapsed .user-meta { display: none; }
+        .nav-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+        .nav-link { display: flex; align-items: center; gap: 16px; padding: 12px 14px; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 6px; transition: var(--transition); white-space: nowrap; }
+        .nav-link i { font-size: 18px; width: 24px; text-align: center; }
+        .nav-link:hover, .nav-link.active { background: #eff6ff; color: var(--primary); } .nav-link.active { font-weight: 600; }
+        .sidebar.collapsed .link-text { display: none; }
+        .collapse-btn { position: absolute; right: -12px; top: 48px; width: 24px; height: 24px; background: white; border: 1px solid #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; font-size: 10px; color: var(--text-muted); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+        /* --- MAIN WRAPPER & HEADER --- */
+        .main-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        header { padding: 20px 48px; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 5; }
+        
+        .content-area { padding: 40px; display: flex; flex-direction: column; align-items: center; width: 100%; font-size: var(--dynamic-font-size); }
+        .centered-container { width: 100%; max-width: 1100px; text-align: left; }
+
+        .page-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px; }
+        .page-header h1 { font-weight: 800; font-size: 2.2rem; margin-bottom: 8px; letter-spacing: -0.03em; color: var(--primary-dark); }
+        .page-header p { color: var(--text-muted); font-size: 1.1rem; margin: 0; }
+
+        .btn-primary { background: var(--primary); border: none; border-radius: 12px; padding: 12px 24px; font-weight: 700; font-size: 14px; transition: var(--transition); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); color: white; display: inline-flex; align-items: center; gap: 8px;}
+        .btn-primary:hover { transform: translateY(-2px); background: var(--primary-dark); color: white; }
+        .btn-success-custom { background: #10b981; border: none; border-radius: 12px; padding: 12px 24px; font-weight: 700; color: white; transition: 0.3s; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);}
+        .btn-success-custom:hover { background: #059669; color: white; transform: translateY(-2px);}
+
+        /* --- TARJETAS E INPUTS --- */
+        .form-card { background: white; border-radius: var(--card-radius); padding: 40px; border: 1px solid rgba(0,0,0,0.04); box-shadow: 0 10px 30px rgba(0,0,0,0.02); margin-bottom: 24px;}
+        .section-badge { background: #eff6ff; color: var(--primary); padding: 6px 14px; border-radius: 8px; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; margin-bottom: 24px; }
+        
+        .info-group { margin-bottom: 20px; }
+        .info-label { font-size: 0.8rem; color: #64748b; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .info-label i { color: var(--primary); width: 16px; text-align: center;}
+        
+        .info-value { background-color: #f8fafc; border: 1px solid #f1f5f9; padding: 14px 18px; border-radius: 12px; font-size: 0.95rem; color: var(--text-main); min-height: 48px; display: flex; align-items: center; transition: 0.3s;}
+        
+        .input-modern { background-color: white; border: 1px solid #cbd5e1; border-radius: 12px; padding: 14px 18px; font-size: 0.95rem; color: #334155; width: 100%; transition: var(--transition); box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
+        .input-modern:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); outline: none; }
+        
+        .loading-skeleton { animation: pulse 1.5s infinite; background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); background-size: 200% 100%; color: transparent !important; }
+        @keyframes pulse { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        /* Adjuntos */
+        .file-item { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; transition: 0.2s; }
+        .file-item:hover { border-color: var(--primary); background: #eff6ff; }
+        .file-info { display: flex; align-items: center; gap: 12px; }
+        .file-info i { font-size: 1.4rem; color: var(--primary); }
+        .file-name { font-size: 0.9rem; font-weight: 600; color: #334155; }
+        .btn-ver-file { font-size: 0.8rem; font-weight: 700; color: var(--primary); text-decoration: none; background: #e0e7ff; padding: 6px 12px; border-radius: 8px; }
+        .disabled-link { pointer-events: none; opacity: 0.5; filter: grayscale(1); }
+
+        @media (max-width: 768px) { .sidebar { display: none; } header, .content-area { padding: 20px; } .page-header { flex-direction: column; align-items: flex-start; gap: 15px;} }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Lateral -->
+    <aside class="sidebar" id="sidebar">
+        <div class="collapse-btn" onclick="toggleSidebar()">
+            <i class="fa-solid fa-chevron-left" id="toggleIcon"></i>
+        </div>
+
+        <a href="#" class="brand-section">
+            <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div>
+            <span class="brand-text">Blackwell</span>
+        </a>
+
+        <div class="user-preview">
+            <div class="avatar" id="userInitial">DO</div>
+            <div class="user-meta">
+                <b id="userNameSidebar">Cargando...</b>
+                <span>Docente</span>
+            </div>
+        </div>
+
+        <nav class="nav-menu">
+            <a href="dashboard-docente.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a>
+            <a href="misexpedientes.html" class="nav-link"><i class="fa-solid fa-file-lines"></i> <span class="link-text">Mis Expedientes</span></a>
+            <!--<a href="carpetadocente.html" class="nav-link"><i class="fa-solid fa-folder-open"></i> <span class="link-text">Carpeta Docente</span></a>-->
+            <a href="miscursos.html" class="nav-link"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Mis Clases</span></a>
+        </nav>
+
+        <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto; margin-left: 15px; margin-right: 15px;">
+            <i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span>
+        </a>
+    </aside>
+
+    <!-- Contenido Principal -->
+    <main class="main-wrapper">
+        <header>
+            <div>
+                <h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Portal del Docente</h5>
+                <p class="text-muted small m-0">Sistema de Gestión de Expedientes</p>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-white px-3 py-2 rounded-pill shadow-sm d-flex gap-2 align-items-center">
+                    <button onclick="changeFontSize(-1)" class="btn btn-sm btn-link p-0 text-dark text-decoration-none fw-bold">A-</button>
+                    <span id="fontSizeLabel" class="small fw-bold px-1" style="min-width: 50px; text-align: center;">Normal</span>
+                    <button onclick="changeFontSize(1)" class="btn btn-sm btn-link p-0 text-dark text-decoration-none fw-bold">A+</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-area">
+            <div class="centered-container">
+                
+                <div class="page-header">
+                    <div>
+                        <h1>Información Personal</h1>
+                        <p>Visualiza y mantén actualizados tus datos de perfil y pago.</p>
+                    </div>
+                    <div class="d-flex gap-2" id="action-buttons">
+                        <button id="btnEditProfile" class="btn-primary" onclick="toggleEditProfile()" disabled>
+                            <i class="fa-solid fa-pencil"></i> <span id="edit-btn-text">Cargando datos...</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-card">
+                    <!-- SECCIÓN 1: DATOS PERSONALES -->
+                    <span class="section-badge"><i class="fa-regular fa-address-card me-2"></i>Datos Generales</span>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4 info-group">
+                            <label class="info-label"><i class="fa-solid fa-id-badge"></i> DNI / Pasaporte</label>
+                            <div class="info-value loading-skeleton" id="view-dni">Cargando...</div>
+                        </div>
+                        <div class="col-md-4 info-group">
+                            <label class="info-label"><i class="fa-solid fa-user"></i> Nombres</label>
+                            <div class="info-value view-mode loading-skeleton" id="view-nombres">Cargando...</div>
+                            <input type="text" class="input-modern edit-mode d-none" id="edit-nombres">
+                        </div>
+                        <div class="col-md-4 info-group">
+                            <label class="info-label"><i class="fa-solid fa-user-tag"></i> Apellidos</label>
+                            <div class="info-value view-mode loading-skeleton" id="view-apellidos">Cargando...</div>
+                            <input type="text" class="input-modern edit-mode d-none" id="edit-apellidos">
+                        </div>
+
+                        <div class="col-md-6 info-group">
+                            <label class="info-label"><i class="fa-solid fa-envelope"></i> Correo Electrónico</label>
+                            <div class="info-value view-mode loading-skeleton text-primary fw-medium" id="view-correo">Cargando...</div>
+                            <input type="email" class="input-modern edit-mode d-none" id="edit-correo">
+                        </div>
+                        <div class="col-md-6 info-group">
+                            <label class="info-label"><i class="fa-solid fa-phone"></i> Celular</label>
+                            <div class="info-value view-mode loading-skeleton" id="view-celular">Cargando...</div>
+                            <input type="text" class="input-modern edit-mode d-none" id="edit-celular">
+                        </div>
+
+                        <div class="col-md-4 info-group">
+                            <label class="info-label"><i class="fa-solid fa-earth-americas"></i> País</label>
+                            <div class="info-value view-mode loading-skeleton" id="view-pais">Cargando...</div>
+                            <input type="text" class="input-modern edit-mode d-none" id="edit-pais">
+                        </div>
+                        <div class="col-md-4 info-group">
+                            <label class="info-label"><i class="fa-solid fa-city"></i> Ciudad</label>
+                            <div class="info-value view-mode loading-skeleton" id="view-ciudad">Cargando...</div>
+                            <input type="text" class="input-modern edit-mode d-none" id="edit-ciudad">
+                        </div>
+                        <div class="col-md-4 info-group">
+                            <label class="info-label"><i class="fa-solid fa-map"></i> Estado / Región</label>
+                            <div class="info-value view-mode loading-skeleton" id="view-estado_region">Cargando...</div>
+                            <input type="text" class="input-modern edit-mode d-none" id="edit-estado_region">
+                        </div>
+
+                        <div class="col-md-8 info-group">
+                            <label class="info-label"><i class="fa-solid fa-location-dot"></i> Dirección Completa</label>
+                            <div class="info-value view-mode loading-skeleton" id="view-direccion">Cargando...</div>
+                            <input type="text" class="input-modern edit-mode d-none" id="edit-direccion">
+                        </div>
+                        <div class="col-md-4 info-group">
+                            <label class="info-label"><i class="fa-solid fa-map-pin"></i> Código Postal</label>
+                            <div class="info-value view-mode loading-skeleton" id="view-cp">Cargando...</div>
+                            <input type="text" class="input-modern edit-mode d-none" id="edit-cp">
+                        </div>
+                    </div>
+
+                    <!-- SECCIÓN 2: INFORMACIÓN BANCARIA -->
+                    <span class="section-badge mt-2"><i class="fa-solid fa-building-columns me-2"></i>Información Bancaria</span>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6 info-group">
+                            <label class="info-label"><i class="fa-solid fa-piggy-bank"></i> Banco Receptor</label>
+                            <div class="info-value view-mode loading-skeleton" id="view-banco">Cargando...</div>
+                            <input type="text" class="input-modern edit-mode d-none" id="edit-banco">
+                        </div>
+                        <div class="col-md-3 info-group">
+                            <label class="info-label"><i class="fa-solid fa-coins"></i> Moneda</label>
+                            <div class="info-value view-mode loading-skeleton" id="view-moneda">Cargando...</div>
+                            <select class="form-select input-modern edit-mode d-none" id="edit-moneda">
+                                <option value="Dólares">Dólares ($)</option>
+                                <option value="Soles">Soles (S/.)</option>
+                                <option value="Euros">Euros (€)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 info-group">
+                            <label class="info-label"><i class="fa-solid fa-credit-card"></i> Tipo de Cuenta</label>
+                            <div class="info-value view-mode loading-skeleton" id="view-tipo_cuenta">Cargando...</div>
+                            <input type="text" class="input-modern edit-mode d-none" id="edit-tipo_cuenta" placeholder="Ahorros / Corriente">
+                        </div>
+
+                        <div class="col-md-6 info-group">
+                            <label class="info-label"><i class="fa-solid fa-hashtag"></i> Número de Cuenta</label>
+                            <div class="info-value view-mode loading-skeleton" id="view-cuenta">Cargando...</div>
+                            <input type="text" class="input-modern edit-mode d-none" id="edit-cuenta">
+                        </div>
+                        <div class="col-md-6 info-group">
+                            <label class="info-label"><i class="fa-solid fa-money-bill-transfer"></i> Cuenta Interbancaria (CCI)</label>
+                            <div class="info-value view-mode loading-skeleton" id="view-cci">Cargando...</div>
+                            <input type="text" class="input-modern edit-mode d-none" id="edit-cci">
+                        </div>
+
+                        <div class="col-md-6 info-group">
+                            <label class="info-label"><i class="fa-solid fa-route"></i> Tipo de Ruta Bancaria</label>
+                            <div class="info-value view-mode loading-skeleton" id="view-tipo_ruta">Cargando...</div>
+                            <input type="text" class="input-modern edit-mode d-none" id="edit-tipo_ruta" placeholder="Ej: ABA, SWIFT, IBAN">
+                        </div>
+                        <div class="col-md-6 info-group">
+                            <label class="info-label"><i class="fa-solid fa-barcode"></i> Código de Ruta</label>
+                            <div class="info-value view-mode loading-skeleton" id="view-codigo_ruta">Cargando...</div>
+                            <input type="text" class="input-modern edit-mode d-none" id="edit-codigo_ruta">
+                        </div>
+                    </div>
+
+                    <!-- SECCIÓN 3: ARCHIVOS ADJUNTOS -->
+                    <span class="section-badge mt-2 bg-light text-dark border"><i class="fa-solid fa-file-pdf me-2"></i>Documentos Registrados</span>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="file-item disabled-link" id="container-cv">
+                                <div class="file-info"><i class="fa-regular fa-file-pdf"></i><span class="file-name">Currículum Vitae</span></div>
+                                <a href="#" id="link-cv" class="btn-ver-file" target="_blank">VER</a>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="file-item disabled-link" id="container-handbook">
+                                <div class="file-info"><i class="fa-solid fa-book-open text-primary"></i><span class="file-name">Faculty Handbook</span></div>
+                                <a href="#" id="link-handbook" class="btn-ver-file" target="_blank">VER</a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- TOAST NOTIFICATION -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-4" style="z-index: 1055;" id="toastContainer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
+
+        // UI Config
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); document.getElementById('toggleIcon').classList.toggle('fa-chevron-right'); document.getElementById('toggleIcon').classList.toggle('fa-chevron-left');}
+        function logout() { if(confirm("¿Seguro que deseas salir?")) { sessionStorage.clear(); window.location.href = "login.html"; } }
+        
+        let currentSize = 1; const sizes =["0.9rem", "1rem", "1.1rem"]; const labels =["Pequeño", "Normal", "Grande"];
+        function changeFontSize(dir) { currentSize += dir; if(currentSize < 0) currentSize=0; if(currentSize > 2) currentSize=2; document.getElementById('fontSizeLabel').innerText = labels[currentSize]; document.documentElement.style.setProperty('--dynamic-font-size', sizes[currentSize]); }
+
+        function showToast(mensaje, tipo = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const bgClass = tipo === 'success' ? 'text-bg-success' : 'text-bg-danger';
+            const icon = tipo === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
+            toast.className = `toast align-items-center ${bgClass} border-0 show shadow-lg rounded-4 mb-3`;
+            toast.innerHTML = `<div class="d-flex p-1"><div class="toast-body fw-medium" style="font-size: 0.95rem;"><i class="fa-solid ${icon} me-2 fs-5 align-middle"></i> ${mensaje}</div><button type="button" class="btn-close btn-close-white me-3 m-auto" data-bs-dismiss="toast" onclick="this.parentElement.parentElement.remove()"></button></div>`;
+            container.appendChild(toast); setTimeout(() => toast.remove(), 4000);
+        }
+
+        let userInternalId = ""; // Guardará el ID interno (DOC-XXXXXX)
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const userDNI = sessionStorage.getItem('userName'); // En tu login docente usas el DNI o Email como userName
+            if(userDNI) {
+                loadProfileData(userDNI); 
+            }
+        });
+
+        // CAMPOS A MAPEAR
+        const editableFields =['nombres', 'apellidos', 'correo', 'celular', 'pais', 'ciudad', 'estado_region', 'direccion', 'cp', 'banco', 'moneda', 'tipo_cuenta', 'cuenta', 'cci', 'tipo_ruta', 'codigo_ruta'];
+
+        async function loadProfileData(userId) {
+            try {
+                // userId aquí es el correo con el que se logueó
+                const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: userId }) });
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    const d = result.data;
+                    userInternalId = userId; // ID (DOC-XXXXX)
+
+                    document.getElementById('userNameSidebar').innerText = d.nombres.split(" ")[0];
+                    document.getElementById('userInitial').innerText = d.nombres.substring(0,2).toUpperCase();
+
+                    document.getElementById('view-dni').innerText = d.dni || '-';
+
+                    // Llenar campos dinámicamente
+                    editableFields.forEach(f => {
+                        const el = document.getElementById(`view-${f}`);
+                        if(el) {
+                            el.innerText = d[f] || '-';
+                            el.classList.remove('loading-skeleton');
+                        }
+                    });
+                    document.getElementById('view-dni').classList.remove('loading-skeleton');
+
+                    // Habilitar links
+                    if(d.url_cv) {
+                        const item = document.getElementById('container-cv');
+                        item.classList.remove('disabled-link');
+                        document.getElementById('link-cv').href = d.url_cv;
+                    }
+                    if(d.url_handbook) {
+                        const item = document.getElementById('container-handbook');
+                        item.classList.remove('disabled-link');
+                        document.getElementById('link-handbook').href = d.url_handbook;
+                    }
+
+                    // Habilitar Botón Edit
+                    const btnEdit = document.getElementById('btnEditProfile');
+                    btnEdit.disabled = false;
+                    document.getElementById('edit-btn-text').innerText = "Editar Perfil";
+                }
+            } catch (e) { showToast("Error al cargar datos. Comprueba tu conexión.", "danger"); }
+        }
+
+        let isEditing = false;
+
+        function toggleEditProfile() {
+            const btnEdit = document.getElementById('btnEditProfile');
+            const actionContainer = document.getElementById('action-buttons');
+
+            if (!isEditing) {
+                // Pasar datos de view a edit
+                editableFields.forEach(f => {
+                    const viewText = document.getElementById(`view-${f}`).innerText.trim();
+                    const input = document.getElementById(`edit-${f}`);
+                    if(input) input.value = viewText === '-' ? '' : viewText;
+                });
+
+                document.querySelectorAll('.view-mode').forEach(el => el.classList.add('d-none'));
+                document.querySelectorAll('.edit-mode').forEach(el => el.classList.remove('d-none'));
+                
+                btnEdit.innerHTML = '<i class="fa-solid fa-save"></i> Guardar Cambios';
+                btnEdit.classList.replace('btn-primary', 'btn-success-custom');
+                
+                if (!document.getElementById('btnCancelEdit')) {
+                    actionContainer.insertAdjacentHTML('beforeend', `<button id="btnCancelEdit" class="btn btn-light fw-bold border text-secondary shadow-sm" style="border-radius:12px" onclick="cancelEditProfile()"><i class="fa-solid fa-times me-1"></i> Cancelar</button>`);
+                }
+                isEditing = true;
+            } else { saveProfileChanges(); }
+        }
+
+        function cancelEditProfile() { revertToViewMode(); }
+
+        async function saveProfileChanges() {
+            const btnEdit = document.getElementById('btnEditProfile');
+            btnEdit.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Guardando...';
+            btnEdit.disabled = true;
+
+            const payload = { action: "update_profile", id: userInternalId };
+            
+            // Recolectar datos del formulario
+            editableFields.forEach(f => {
+                const input = document.getElementById(`edit-${f}`);
+                if(input) payload[f] = input.value;
+            });
+
+            try {
+                const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+                if ((await response.json()).status === "success") {
+                    // Reflejar cambios visualmente
+                    editableFields.forEach(f => {
+                        const val = document.getElementById(`edit-${f}`).value;
+                        document.getElementById(`view-${f}`).innerText = val || '-';
+                    });
+                    showToast("Perfil actualizado correctamente.", "success");
+                    
+                    // Actualizar nombre en el sidebar si cambió
+                    document.getElementById('userNameSidebar').innerText = document.getElementById('edit-nombres').value.split(" ")[0] || "Docente";
+                } else { showToast("Problema al guardar.", "danger"); }
+            } catch (error) { showToast("Error de conexión.", "danger"); }
+
+            btnEdit.disabled = false;
+            revertToViewMode();
+        }
+
+        function revertToViewMode() {
+            document.querySelectorAll('.view-mode').forEach(el => el.classList.remove('d-none'));
+            document.querySelectorAll('.edit-mode').forEach(el => el.classList.add('d-none'));
+            
+            const btnEdit = document.getElementById('btnEditProfile');
+            btnEdit.innerHTML = '<i class="fa-solid fa-pencil me-1"></i> Editar Perfil';
+            btnEdit.classList.replace('btn-success-custom', 'btn-primary');
+            
+            const btnCancel = document.getElementById('btnCancelEdit');
+            if (btnCancel) btnCancel.remove();
+            isEditing = false;
+        }
+
+    </script>
+</body>
+</html>

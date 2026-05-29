@@ -4,189 +4,327 @@
     <script>
         // Protección de ruta
         if (localStorage.getItem('isLoggedIn') !== 'true' || localStorage.getItem('userRole') !== 'Docente') {
-            window.location.href = "login.html";
+            // Descomentar en producción
+            // window.location.href = "login.html";
         }
     </script>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Mis Clases | Blackwell University</title>
     
+    <!-- Frameworks & Fonts -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Íconos Minimalistas y delgados (Weight 300) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,300,0,0" />
 
     <style>
         :root {
             --primary: #1e40af; 
             --primary-light: #eff6ff;
-            --bg-body: #f8fafc;
-            --text-main: #0f172a;
+            --bg-body: #f4f7fa; 
+            --text-main: #1e293b;
             --text-muted: #64748b;
             --border-color: #e2e8f0;
-            --card-radius: 20px;
             --primary-dark: #1e3a8a;
+            --card-radius: 24px; 
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --dynamic-font-size: 1rem;
         }
 
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding-top: 70px; }
+        /* --- AJUSTES DEL BODY --- */
+        html { font-size: 16px; transition: font-size 0.3s ease; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-body); 
+            color: var(--text-main); 
+            margin: 0; 
+            padding-top: 70px; 
+            padding-bottom: 90px; /* Espacio para el nav inferior */
+            overflow-x: hidden;
+        }
 
-        /* --- NAVEGACIÓN --- */
-        .top-nav { position: fixed; top: 0; left: 0; right: 0; height: 70px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; z-index: 1000; }
+        /* --- TOP NAVIGATION (Escritorio) --- */
+        .top-nav {
+            position: fixed; top: 0; left: 0; right: 0; height: 70px;
+            background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 40px; z-index: 1000;
+        }
         .nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
         .logo-box { width: 38px; height: 38px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; }
         .brand-text { font-weight: 800; font-size: 1.2rem; color: var(--primary); letter-spacing: -0.5px; }
+
         .nav-links-desktop { display: flex; gap: 8px; position: absolute; left: 50%; transform: translateX(-50%); }
         .nav-item { text-decoration: none; color: var(--text-muted); font-weight: 600; font-size: 0.9rem; padding: 10px 20px; border-radius: 12px; transition: var(--transition); display: flex; align-items: center; gap: 8px; }
-        .nav-item:hover, .nav-item.active { background: var(--primary-light); color: var(--primary); }
+        .nav-item:hover, .nav-item.active { background: #eff6ff; color: var(--primary); }
+
         .nav-user { position: relative; cursor: pointer; }
-        .user-trigger { display: flex; align-items: center; gap: 12px; padding: 6px 6px 6px 15px; background: #fff; border: 1px solid var(--border-color); border-radius: 50px; transition: 0.2s; }
-        .user-trigger:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .user-trigger span { font-weight: 700; font-size: 0.85rem; color: var(--text-main); }
+        .user-trigger { display: flex; align-items: center; gap: 12px; padding: 6px 6px 6px 15px; background: #fff; border: 1px solid var(--border-color); border-radius: 50px; }
+        .user-trigger span { font-weight: 700; font-size: 0.85rem; }
         .user-avatar { width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem; }
         .user-dropdown { position: absolute; top: calc(100% + 10px); right: 0; width: 220px; background: white; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 8px; opacity: 0; visibility: hidden; transform: translateY(10px); transition: var(--transition); }
         .user-dropdown.show { opacity: 1; visibility: visible; transform: translateY(0); }
         .dropdown-link { display: flex; align-items: center; gap: 12px; padding: 12px 15px; text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 0.85rem; border-radius: 10px; transition: 0.2s; }
-        .dropdown-link:hover { background: var(--primary-light); color: var(--primary); }
-        .dropdown-link.logout { color: #ef4444; } .dropdown-link.logout:hover { background: #fef2f2; color: #ef4444; }
+        .dropdown-link:hover { background: #eff6ff; color: var(--primary); }
+        .dropdown-link.logout { color: #ef4444; } 
+        .dropdown-link.logout:hover { background: #fef2f2; color: #ef4444; }
 
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-top: 1px solid var(--border-color); display: none; justify-content: space-around; align-items: center; padding-bottom: env(safe-area-inset-bottom); z-index: 1000; }
-        .bottom-item { display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: var(--text-muted); transition: 0.2s; }
-        .bottom-item i { font-size: 1.4rem; } .bottom-item span { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
-        .bottom-item.active { color: var(--primary); }
+        /* --- BOTTOM NAVIGATION (Móvil) --- */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 80px;
+            background: #ffffff;
+            border-radius: 30px 30px 0 0; /* Bordes superiores redondeados */
+            box-shadow: 0 -4px 25px rgba(0,0,0,0.06); /* Sombra suave hacia arriba */
+            display: none; justify-content: space-between; align-items: center;
+            padding: 0 25px; padding-bottom: env(safe-area-inset-bottom); z-index: 1000;
+        }
+        .bottom-item {
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            text-decoration: none; color: #94a3b8; /* Iconos plomos por defecto */
+            transition: 0.3s ease; flex: 1; position: relative;
+        }
+        .bottom-item i { font-size: 1.4rem; transition: transform 0.2s; }
+        .bottom-item span { font-size: 0.65rem; font-weight: 550; }
+        
+        .bottom-item.active { color: var(--primary); /* Azul cuando está activo */ }
+        .bottom-item.active i { transform: translateY(-2px); }
+        .bottom-item.active::after {
+            content: ''; position: absolute; bottom: -10px; width: 5px; height: 5px;
+            background: var(--primary); border-radius: 50%;
+        }
 
-        /* --- CONTENIDO --- */
-        .main-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; }
-        .content-area { padding: 40px; display: flex; flex-direction: column; align-items: center; width: 100%; font-size: var(--dynamic-font-size); }
-        .centered-container { width: 100%; max-width: 1100px; text-align: left; }
+        /* --- EFECTO MÁGICO PARA ÍCONOS (Se rellenan al estar activos) --- */
+        .bottom-item .material-symbols-rounded {
+            font-size: 1.5rem; /* Íconos mucho más grandes y visibles */
+            transition: transform 0.2s;
+            font-variation-settings: 'FILL' 1, 'wght' 400;
+        }
 
-        .page-header { margin-bottom: 35px; }
-        .page-header h1 { font-weight: 800; font-size: 2.2rem; margin-bottom: 8px; letter-spacing: -0.03em; color: var(--primary); }
+        /* --- TÍTULOS MÁS GRUESOS --- */
+        .page-header { margin-bottom: 25px; }
+        .page-header h1 { 
+            font-weight: 800 !important; /* Letra ultra gruesa */
+            font-size: 2.2rem; 
+            margin-bottom: 8px; 
+            letter-spacing: -0.03em; /* Letras más juntas (estilo moderno) */
+            color: var(--primary-dark); 
+        }
         .page-header p { color: var(--text-muted); font-size: 1.05rem; margin: 0; }
 
-        /* --- FILTROS --- */
+        /* --- CONTROLES DE LETRA INDEPENDIENTES (A- / A+) --- */
+        .font-controls {
+            display: flex; align-items: center; background: white;
+            border: 1px solid var(--border-color); border-radius: 20px;
+            height: 40px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+        .btn-font-action {
+            background: transparent; border: none; height: 100%; padding: 0 14px;
+            color: var(--text-main); font-weight: 800; cursor: pointer; transition: 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn-font-action:hover { background: #eff6ff; color: var(--primary); }
+        .btn-font-action.a-minus { font-size: 0.9rem; }
+        .btn-font-action.a-plus { font-size: 1.25rem; }
+        .font-separator { width: 1px; height: 20px; background: var(--border-color); }
+
+        /* --- HEADER MÓVIL (Estilo App) --- */
+        .mobile-header { display: none; margin-bottom: 25px; align-items: center; justify-content: space-between; }
+        .mh-profile { display: flex; align-items: center; gap: 14px; }
+        .mh-avatar { width: 50px; height: 50px; background-color: var(--border-color); border-radius: 50%; display: flex; justify-content: center; align-items: center; overflow: hidden; font-weight: 700; color: var(--primary-dark); font-size: 1.2rem; }
+        .mh-text h1 { font-size: 1.3rem; font-weight: 800; letter-spacing: -1px; color: var(--primary-dark); margin: 0; }
+        .mh-text p { font-size: 0.85rem; color: var(--text-muted); margin: 0; margin-top: 2px; }
+        .mh-actions { display: flex; gap: 10px; }
+        .btn-circle { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border-color); background: white; display: flex; align-items: center; justify-content: center; color: var(--text-main); cursor: pointer; transition: 0.2s; }
+
+        /* --- CONTENIDO Y FILTROS --- */
+        .main-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        .content-area { padding: 40px; display: flex; flex-direction: column; align-items: center; width: 100%; }
+        .centered-container { width: 100%; max-width: 1200px; text-align: left; }
+
         .filter-pills { display: flex; gap: 10px; margin-bottom: 30px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none;}
         .filter-pills::-webkit-scrollbar { display: none; }
-        .filter-pill { background: transparent; border: 1px solid #cbd5e1; color: var(--text-muted); padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: var(--transition); white-space: nowrap; }
+        .filter-pill { 
+            background: white; border: 1px solid var(--border-color); color: var(--text-muted); 
+            padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; 
+            cursor: pointer; transition: var(--transition); white-space: nowrap; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
         .filter-pill:hover { border-color: var(--primary); color: var(--primary); }
-        .filter-pill.active { background: var(--text-main); border-color: var(--text-main); color: white; }
+        .filter-pill.active { background: var(--primary); border-color: var(--primary); color: white; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.25);}
 
         /* --- CARD MINIMALISTA Y PROFESIONAL --- */
         .course-card { 
-            background: rgba(255, 255, 255, 0.6); 
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            background: white; 
             border-radius: var(--card-radius); 
-            border: 1px solid rgba(255, 255, 255, 0.8); 
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); 
-            padding: 28px; display: flex; flex-direction: column; height: 100%;
+            border: 1px solid rgba(0,0,0,0.04); 
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.02); 
+            padding: 24px; display: flex; flex-direction: column; height: 100%;
             transition: var(--transition); text-decoration: none; position: relative;
         }
         .course-card:hover { 
-            transform: translateY(-5px); 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.06); 
-            border-color: #cbd5e1; background: white;
+            transform: translateY(-4px); 
+            box-shadow: 0 15px 30px rgba(0,0,0,0.06); 
+            border-color: #cbd5e1; 
         }
 
-        /* Cabecera de la Tarjeta */
         .card-meta { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; }
         
         .program-tags { display: flex; gap: 8px; align-items: center; }
-        .tag-tipo { background: #f1f5f9; color: #475569; font-size: 0.7rem; font-weight: 800; padding: 4px 10px; border-radius: 6px; letter-spacing: 0.5px; text-transform: uppercase;}
-        .tag-id { color: #94a3b8; font-weight: 700; font-size: 0.75rem; letter-spacing: 0.5px;}
+        .tag-tipo { background: #f1f5f9; color: #475569; font-size: 0.7rem; font-weight: 800; padding: 4px 10px; border-radius: 8px; letter-spacing: 0.5px; text-transform: uppercase;}
 
-        /* Estado Minimalista (Puntito) */
         .status-minimal { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b;}
         .status-dot { width: 8px; height: 8px; border-radius: 50%; }
         .dot-asignado { background: #10b981; box-shadow: 0 0 0 3px #d1fae5; }
         .dot-pendiente { background: #f59e0b; box-shadow: 0 0 0 3px #fef3c7; }
 
-        /* Títulos */
-        .course-name { font-size: 1.4rem; font-weight: 800; color: #0f172a; margin: 0 0 4px 0; letter-spacing: -0.02em; line-height: 1.2;}
-        .program-name { font-size: 0.9rem; color: #64748b; margin: 0 0 24px 0; font-weight: 500; line-height: 1.4;}
+        .course-name { font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin: 0 0 6px 0; letter-spacing: -0.5px; line-height: 1.2;}
+        .program-name { font-size: 0.9rem; color: var(--text-muted); margin: 0 0 20px 0; font-weight: 500; line-height: 1.4;}
 
-        /* Grid de Información Interna */
-        .course-info-grid { display: flex; flex-direction: column; gap: 14px; background: #f8fafc; padding: 18px; border-radius: 14px; border: 1px solid #f1f5f9; flex-grow: 1;}
+        .course-info-grid { display: flex; flex-direction: column; gap: 14px; background: #f8fafc; padding: 16px; border-radius: 16px; border: 1px solid #f1f5f9; flex-grow: 1;}
         .info-row { display: flex; align-items: flex-start; gap: 12px; font-size: 0.9rem; color: #334155; }
-        .info-icon { color: var(--primary); width: 18px; text-align: center; font-size: 1rem; margin-top: 2px;}
-        .info-text strong { color: #0f172a; display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;}
+        .info-icon { color: var(--primary); width: 18px; text-align: center; margin-top: 2px;}
+        .info-icon .material-symbols-rounded { font-size: 1.2rem; }
+        .info-text strong { color: var(--primary-dark); display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;}
 
-        /* Footer del Enlace */
         .card-footer-link { margin-top: 20px; padding-top: 15px; border-top: 1px solid #f1f5f9; font-size: 0.85rem; font-weight: 700; color: var(--primary); text-align: right; display: flex; align-items: center; justify-content: flex-end; gap: 6px; transition: 0.2s;}
-        .course-card:hover .card-footer-link { color: #0f172a; gap: 10px; }
+        .course-card:hover .card-footer-link { color: var(--primary-dark); gap: 10px; }
 
-        .empty-state { text-align: center; padding: 80px 20px; background: transparent; border-radius: var(--card-radius); border: 1px dashed #cbd5e1; }
-        .empty-state i { font-size: 3rem; color: #cbd5e1; margin-bottom: 20px; }
+        .empty-state { text-align: center; padding: 60px 20px; background: white; border-radius: var(--card-radius); border: 1px dashed #cbd5e1; }
+        .empty-state .material-symbols-rounded { font-size: 4rem; color: #cbd5e1; margin-bottom: 20px; }
         .empty-state h3 { font-weight: 800; color: var(--text-main); margin-bottom: 10px; }
         .loader-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 0; color: var(--primary); }
 
-        @media (max-width: 992px) { .nav-links-desktop { display: none; } .top-nav { padding: 0 20px; } }
-        @media (max-width: 768px) { body { padding-top: 60px; padding-bottom: 75px; } .top-nav { height: 60px; } .bottom-nav { display: flex; } .content-area { padding: 20px 15px; } .page-header h1 { font-size: 1.8rem; } }
+        @media (max-width: 992px) { 
+            .nav-links-desktop { display: none; }
+            .top-nav { padding: 0 20px; }
+            .brand-text { font-size: 1rem; }
+        }
+        @media (max-width: 768px) { 
+            .top-nav, .page-header.desktop-header { display: none; }
+            body { padding-top: 20px; }
+            .bottom-nav { display: flex; }
+            .content-area { padding: 20px; }
+            .mobile-header { display: flex; }
+            .filter-pills { padding-bottom: 10px; }
+        }
     </style>
 </head>
 <body>
 
-    <nav class="top-nav">
-        <a href="#" class="nav-brand"><div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div><span class="brand-text">Blackwell</span></a>
+    <!-- NAVEGACIÓN SUPERIOR (ESCRITORIO) -->
+    <nav class="top-nav d-none d-md-flex">
+        <a href="#" class="nav-brand">
+            <div class="logo-box"><span class="material-symbols-rounded">school</span></div>
+            <span class="brand-text">Blackwell</span>
+        </a>
         <div class="nav-links-desktop">
-            <a href="dashboard-docente.html" class="nav-item"><i class="fa-solid fa-house"></i> Dashboard</a>
-            <a href="misexpedientes.html" class="nav-item"><i class="fa-solid fa-folder-open"></i> Mis Expedientes</a>
-            <a href="miscursos.html" class="nav-item active"><i class="fa-solid fa-chalkboard-user"></i> Mis Clases</a>
+            <a href="dashboard-docente.html" class="nav-item"><span class="material-symbols-rounded">home</span> Dashboard</a>
+            <a href="misexpedientes.html" class="nav-item"><span class="material-symbols-rounded">folder_open</span> Expedientes</a>
+            <a href="miscursos.html" class="nav-item active"><span class="material-symbols-rounded">co_present</span> Mis Clases</a>
         </div>
-        <div class="nav-user" id="userDropdownTrigger">
-            <div class="user-trigger">
+        <div class="nav-user d-flex gap-3 align-items-center">
+            <!-- Controles de Accesibilidad Escritorio -->
+            <div class="font-controls">
+                <button class="btn-font-action a-minus" onclick="changeFontSize(-1)" title="Reducir letra">A-</button>
+                <div class="font-separator"></div>
+                <button class="btn-font-action a-plus" onclick="changeFontSize(1)" title="Aumentar letra">A+</button>
+            </div>
+            <div class="user-trigger" id="userDropdownTrigger">
                 <span id="userNameNav">Cargando...</span>
-                <div class="user-avatar" id="userInitialNav">--</div>
+                <div class="user-avatar" id="userInitialNav">DC</div>
             </div>
             <div class="user-dropdown" id="userDropdownMenu">
-                <a href="#" class="dropdown-link"><i class="fa-solid fa-circle-user"></i> Ver mi Perfil</a>
-                <a href="#" class="dropdown-link"><i class="fa-solid fa-gear"></i> Configuración</a>
+                <a href="#" class="dropdown-link"><span class="material-symbols-rounded">person</span> Ver mi Perfil</a>
+                <a href="#" class="dropdown-link"><span class="material-symbols-rounded">settings</span> Configuración</a>
                 <div style="border-top: 1px solid var(--border-color); margin: 5px 0;"></div>
-                <a href="#" onclick="logout()" class="dropdown-link logout"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</a>
+                <a href="#" onclick="logout()" class="dropdown-link logout"><span class="material-symbols-rounded">logout</span> Cerrar Sesión</a>
             </div>
         </div>
     </nav>
 
+    <!-- NAVEGACIÓN INFERIOR (MÓVIL) -->
     <nav class="bottom-nav">
-        <a href="dashboard-docente.html" class="bottom-item"><i class="fa-solid fa-house"></i><span>Inicio</span></a>
-        <a href="misexpedientes.html" class="bottom-item"><i class="fa-solid fa-folder-open"></i><span>Expedientes</span></a>
-        <a href="miscursos.html" class="bottom-item active"><i class="fa-solid fa-chalkboard-user"></i><span>Mis Clases</span></a>
+        <a href="dashboard-docente.html" class="bottom-item">
+            <span class="material-symbols-rounded">home</span>
+            <span>Inicio</span>
+        </a>
+        <a href="misexpedientes.html" class="bottom-item">
+            <span class="material-symbols-rounded">folder_open</span>
+            <span>Expedientes</span>
+        </a>
+        <a href="miscursos.html" class="bottom-item active">
+            <span class="material-symbols-rounded">co_present</span>
+            <span>Mis Clases</span>
+        </a>
+        <a href="perfil.html" class="bottom-item"> 
+            <span class="material-symbols-rounded">person</span>
+            <span>Perfil</span>
+        </a>
     </nav>
 
     <main class="main-wrapper">
         <div class="content-area">
             <div class="centered-container">
-                <div class="page-header">
+                
+                <!-- HEADER DESKTOP (Se oculta en móvil) -->
+                <div class="page-header desktop-header d-none d-md-block">
                     <h1>Mis Cursos Asignados</h1>
                     <p>Accede a los detalles y cronograma de las clases a tu cargo.</p>
                 </div>
 
+                <!-- HEADER MÓVIL (Estilo App) -->
+                <div class="mobile-header">
+                    <div class="mh-profile">
+                        <div class="mh-avatar" id="userInitialMobile">DC</div>
+                        <div class="mh-text">
+                            <h1>Mis Clases</h1>
+                            <p>Cronograma y detalles</p>
+                        </div>
+                    </div>
+                    <div class="mh-actions">
+                        <!-- Controles de Accesibilidad Móvil -->
+                        <div class="font-controls">
+                            <button class="btn-font-action a-minus" onclick="changeFontSize(-1)">A-</button>
+                            <div class="font-separator"></div>
+                            <button class="btn-font-action a-plus" onclick="changeFontSize(1)">A+</button>
+                        </div>
+                        <button class="btn-circle">
+                            <span class="material-symbols-rounded">notifications</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- FILTROS ESTILO APP -->
                 <div class="filter-pills" id="filterContainer">
                     <div class="filter-pill active" onclick="filtrarCursos('todos', this)">Todos los cursos</div>
                     <div class="filter-pill" onclick="filtrarCursos('asignado', this)">Asignados</div>
                     <div class="filter-pill" onclick="filtrarCursos('enviado', this)">Por confirmar</div>
                 </div>
 
+                <!-- CONTENEDOR DE TARJETAS -->
                 <div class="row g-4" id="cards-container"></div>
             </div>
         </div>
     </main>
 
-    <!-- MODAL DE CURSO PENDIENTE -->
+    <!-- MODAL DE CURSO PENDIENTE (DISEÑO ACTUALIZADO) -->
     <div class="modal fade" id="modalPendiente" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content shadow-lg border-0" style="border-radius: 24px;">
                 <div class="modal-body text-center p-5">
-                    <div style="width: 80px; height: 80px; background: #fff7ed; color: #ea580c; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 20px;">
-                        <i class="fa-solid fa-lock"></i>
+                    <div style="width: 80px; height: 80px; background: #fff7ed; color: #ea580c; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                        <span class="material-symbols-rounded" style="font-size: 2.5rem;">lock</span>
                     </div>
-                    <h3 class="fw-bold mb-3" style="color: #0f172a; font-size: 1.5rem;">Acceso Restringido</h3>
+                    <h3 class="fw-bold mb-3" style="color: var(--primary-dark); font-size: 1.5rem;">Acceso Restringido</h3>
                     <p class="text-muted mb-4" style="font-size: 0.95rem;">
                         Para ingresar al panel de este curso, primero debes confirmar el horario y enviar tus documentos en la sección de expedientes.
                     </p>
                     
                     <div class="d-flex gap-3 mt-2">
                         <button type="button" class="btn btn-light fw-bold w-100 py-3" data-bs-dismiss="modal" style="border-radius: 14px;">Cancelar</button>
-                        <a href="misexpedientes.html" class="btn fw-bold w-100 py-3" style="border-radius: 14px; background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(30, 58, 138, 0.2);">
+                        <a href="misexpedientes.html" class="btn fw-bold w-100 py-3" style="border-radius: 14px; background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.25);">
                             Ir a Expedientes
                         </a>
                     </div>
@@ -197,34 +335,42 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
         let cursosGlobales = [];
 
-        const dropdownTrigger = document.getElementById('userDropdownTrigger');
-        const dropdownMenu = document.getElementById('userDropdownMenu');
-        if(dropdownTrigger && dropdownMenu) {
-            dropdownTrigger.addEventListener('click', e => { e.stopPropagation(); dropdownMenu.classList.toggle('show'); });
-            document.addEventListener('click', () => dropdownMenu.classList.remove('show'));
+        // --- 1. LÓGICA DE TAMAÑO DE LETRA ACCESIBLE ---
+        let currentSizeLevel = 0;
+        const fontSizes = ["16px", "18px", "20px", "22px"];
+        
+        function changeFontSize(step) {
+            currentSizeLevel += step;
+            if (currentSizeLevel < 0) currentSizeLevel = 0;
+            else if (currentSizeLevel >= fontSizes.length) currentSizeLevel = fontSizes.length - 1;
+            document.documentElement.style.fontSize = fontSizes[currentSizeLevel];
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             const fullName = localStorage.getItem('userName') || "Docente";
             const firstName = fullName.split(' ')[0]; 
             const initial = fullName.substring(0, 2).toUpperCase(); 
+            
+            // Aplicar a cabecera Desktop
             const nameEl = document.getElementById('userNameNav');
             const initialEl = document.getElementById('userInitialNav');
             if(nameEl) nameEl.innerText = firstName;
             if(initialEl) initialEl.innerText = initial;
+
+            // Aplicar a cabecera Móvil
+            const initialMobile = document.getElementById('userInitialMobile');
+            if(initialMobile) initialMobile.innerText = initial;
 
             const idDocente = localStorage.getItem('userId') || localStorage.getItem('userName');
             cargarCursos(idDocente);
         });
 
         function logout() { 
-            (confirm("¿Seguro que deseas salir?")) 
-            { 
+            if(confirm("¿Seguro que deseas salir?")) { 
                 localStorage.clear(); 
                 window.location.href = "login.html"; 
             } 
@@ -232,7 +378,7 @@
 
         async function cargarCursos(idDocente) {
             const container = document.getElementById('cards-container');
-            container.innerHTML = `<div class="col-12 loader-container"><i class="fa-solid fa-circle-notch fa-spin fs-1 mb-3"></i><h5 class="fw-bold text-dark">Buscando información...</h5></div>`;
+            container.innerHTML = `<div class="col-12 loader-container"><span class="material-symbols-rounded" style="font-size: 3rem; animation: spin 1s linear infinite;">autorenew</span><h5 class="fw-bold text-dark mt-3">Buscando información...</h5></div><style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>`;
 
             try {
                 const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_mis_cursos', docenteId: idDocente }) });
@@ -245,11 +391,10 @@
                     mostrarEmptyState();
                 }
             } catch (e) {
-                container.innerHTML = `<div class="col-12 text-center text-danger py-5"><i class="fa-solid fa-triangle-exclamation fs-1 mb-3"></i><h5>Error al conectar con el servidor</h5></div>`;
+                container.innerHTML = `<div class="col-12 text-center text-danger py-5"><span class="material-symbols-rounded" style="font-size: 3rem;">warning</span><h5 class="mt-2">Error al conectar con el servidor</h5></div>`;
             }
         }
 
-        // Formato limpio de fecha usando UTC para no restar días
         function formatDate(dateString) {
             if(!dateString) return "Por definir";
             const date = new Date(dateString);
@@ -268,12 +413,10 @@
                 
                 let isConfirmed = (curso.estado.toLowerCase() === 'respondido' || curso.estado.toLowerCase() === 'completado' || curso.estado.toLowerCase() === 'aprobado');
                 
-                // Indicador de estado minimalista
                 let dotClass = isConfirmed ? 'dot-asignado' : 'dot-pendiente';
                 let txtEstado = isConfirmed ? 'Asignado' : 'Por confirmar';
                 let txtHorario = isConfirmed ? `${curso.diaElegido}, ${curso.horaElegida}` : `Sugerido: ${curso.franjas}`;
                 
-                // MAGIA UX: Si está confirmado va al curso, si no, abre el modal
                 let linkAtributos = isConfirmed 
                     ? `href="curso.html?id=${curso.idInvitacion}"` 
                     : `href="javascript:void(0)" onclick="abrirModalPendiente(event)"`;
@@ -285,7 +428,6 @@
                             <div class="card-meta">
                                 <div class="program-tags">
                                     <span class="tag-tipo">${curso.programaTipo || 'PROGRAMA'}</span>
-                                    <span class="tag-id">${curso.programaId || 'PG-00'}</span>
                                 </div>
                                 <div class="status-minimal">
                                     <div class="status-dot ${dotClass}"></div>
@@ -298,14 +440,14 @@
                             
                             <div class="course-info-grid">
                                 <div class="info-row">
-                                    <div class="info-icon"><i class="fa-regular fa-calendar"></i></div>
+                                    <div class="info-icon"><span class="material-symbols-rounded">calendar_month</span></div>
                                     <div class="info-text">
                                         <strong>Duración Académica</strong>
                                         ${formatDate(curso.fechaInicio)} — ${formatDate(curso.fechaFin)}
                                     </div>
                                 </div>
                                 <div class="info-row">
-                                    <div class="info-icon"><i class="fa-regular fa-clock"></i></div>
+                                    <div class="info-icon"><span class="material-symbols-rounded">schedule</span></div>
                                     <div class="info-text">
                                         <strong>Horario de Clases</strong>
                                         ${txtHorario}
@@ -314,7 +456,7 @@
                             </div>
 
                             <div class="card-footer-link">
-                                Ver panel del curso <i class="fa-solid fa-arrow-right-long"></i>
+                                Ver panel del curso <span class="material-symbols-rounded" style="font-size: 1.2rem;">arrow_forward</span>
                             </div>
 
                         </a>
@@ -332,21 +474,42 @@
             else {
                 const filtrados = cursosGlobales.filter(d => {
                     let st = d.estado.toLowerCase();
-                if(estado === 'asignado') return st === 'respondido' || st === 'completado' || st === 'aprobado';                    return st === estado;
+                    if(estado === 'asignado') return st === 'respondido' || st === 'completado' || st === 'aprobado';
+                    return st === estado;
                 });
                 renderizarCards(filtrados);
             }
         }
 
         function mostrarEmptyState() {
-            document.getElementById('cards-container').innerHTML = `<div class="col-12"><div class="empty-state"><i class="fa-solid fa-folder-open"></i><h3>No hay registros</h3><p class="text-muted m-0">No se encontraron cursos asignados en este momento.</p></div></div>`;
+            document.getElementById('cards-container').innerHTML = `
+                <div class="col-12">
+                    <div class="empty-state">
+                        <span class="material-symbols-rounded">menu_book</span>
+                        <h3>No hay registros</h3>
+                        <p class="text-muted m-0">No se encontraron cursos asignados en este momento.</p>
+                    </div>
+                </div>`;
         }
 
-        // Función para abrir el modal bloqueando la tarjeta
         function abrirModalPendiente(e) {
-            e.preventDefault(); // Evita que la página salte
+            e.preventDefault(); 
             const modal = new bootstrap.Modal(document.getElementById('modalPendiente'));
             modal.show();
+        }
+
+        // --- LÓGICA DEL DROPDOWN DE USUARIO ---
+        const dropdownTrigger = document.getElementById('userDropdownTrigger');
+        const dropdownMenu = document.getElementById('userDropdownMenu');
+
+        if(dropdownTrigger && dropdownMenu) {
+            dropdownTrigger.addEventListener('click', function(e) {
+                e.stopPropagation();
+                dropdownMenu.classList.toggle('show');
+            });
+            document.addEventListener('click', function() {
+                dropdownMenu.classList.remove('show');
+            });
         }
         
     </script>
