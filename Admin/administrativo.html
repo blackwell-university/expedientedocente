@@ -2,7 +2,6 @@
 <html lang="es">
 <head>
     <script>
-        // Protección de ruta: Solo para personal administrativo de Blackwell
         const isLoggedIn = localStorage.getItem('isLoggedIn');
         const userRole = localStorage.getItem('userRole');
         
@@ -13,7 +12,7 @@
         
         // Verifica si NO está logueado, o si el rol NO está en la lista permitida
         if (isLoggedIn !== 'true' || !rolesPermitidos.some(rol => userRole && userRole.toLowerCase() === rol.toLowerCase())) {
-            window.location.href = "login.html";
+            window.location.href = "../login.html";
         }
     </script>
     <meta charset="UTF-8">
@@ -145,14 +144,38 @@
         .activity-details span { display: block; color: var(--text-muted); font-size: 0.85rem; margin-top: 2px;}
         .activity-details small { display: block; color: #94a3b8; font-size: 0.75rem; font-weight: 600; margin-top: 6px; }
 
+        /* --- ESTILOS RESPONSIVE MENÚ MÓVIL --- */
+        .sidebar-overlay {
+            display: none; position: fixed; top: 0; left: 0; 
+            width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.4); 
+            z-index: 999; backdrop-filter: blur(3px); opacity: 0; transition: opacity 0.3s ease;
+        }
+
         @media (max-width: 768px) {
-            .sidebar { display: none; }
-            header, .content-area { padding: 20px; }
+            /* Menú Lateral Flotante (Off-canvas) */
+            .sidebar { 
+                position: fixed; left: -280px; top: 0; 
+                height: 100vh; z-index: 1000; width: 260px !important; 
+                box-shadow: 10px 0 30px rgba(0,0,0,0.15);
+            }
+            .sidebar.show-mobile { left: 0; }
+            .sidebar.collapsed { width: 260px !important; }
+            .collapse-btn { display: none; }
+            
+            /* Activa el overlay oscuro */
+            .sidebar-overlay.active { display: block; opacity: 1; }
+
+            /* Ajustes UX de la Página */
+            header, .content-area { padding: 16px; }
+            .page-header { flex-direction: column; align-items: flex-start; gap: 16px; margin-bottom: 24px; }
             .stat-card { margin-bottom: 10px; }
         }
     </style>
 </head>
 <body>
+
+    <!-- NUEVO: Overlay oscuro para móvil -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
 
     <!-- Sidebar Blackwell Azul -->
     <aside class="sidebar" id="sidebar">
@@ -176,9 +199,9 @@
         <ul class="nav-list">
             <li><a href="administrativo.html" class="nav-link active"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
             <li><a href="gestion-docentes.html" class="nav-link"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
-            <li><a href="gestionexpedientes.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
-            <!--<li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-upload"></i> <span class="link-text">Gestión de Cursos</span></a></li>
-            <li><a href="#" class="nav-link"><i class="fa-solid fa-chart-pie"></i> <span class="link-text">Reportes</span></a></li>-->
+            <li><a href="gestion-expedientes.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
+            <li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Gestión Cursos</span></a></li>
+
         </ul>
 
         <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;">
@@ -188,9 +211,15 @@
 
     <div class="main-wrapper">
         <header>
-            <div>
-                <h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Gestión de Personal</h5>
-                <p class="text-muted small m-0">Portal Administrativo</p>
+            <div class="d-flex align-items-center gap-3">
+                <!-- NUEVO: Botón Hamburguesa (Solo visible en móviles) -->
+                <button class="btn border-0 p-0 d-md-none text-dark fs-4" onclick="toggleMobileSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div>
+                    <h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Gestión de Personal</h5>
+                    <p class="text-muted small m-0">Portal Administrativo</p>
+                </div>
             </div>
             
             <div class="d-flex align-items-center gap-3">
@@ -322,7 +351,7 @@
                                 <div class="time-badge">5 días</div>
                             </div>
 
-                            <a href="gestionexpedientes.html" class="view-all-link">Revisar todos los expedientes</a>
+                            <a href="gestion-expedientes.html" class="view-all-link">Revisar todos los expedientes</a>
                         </div>
                     </div>-->
 
@@ -415,6 +444,14 @@
             if (currentSize > 2) currentSize = 2;
             document.getElementById('fontSizeLabel').innerText = labels[currentSize];
             document.documentElement.style.setProperty('--dynamic-font-size', sizes[currentSize]);
+        }
+
+        // FUNCIÓN UX/UI: Abre y cierra el menú lateral en dispositivos móviles
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('show-mobile');
+            overlay.classList.toggle('active');
         }
     </script>
 </body>

@@ -11,7 +11,7 @@
         ];
         
         if (isLoggedIn !== 'true' || !rolesPermitidos.some(rol => userRole && userRole.toLowerCase() === rol.toLowerCase())) {
-            window.location.href = "login.html";
+            window.location.href = "../login.html";
         }
     </script>
     <meta charset="UTF-8">
@@ -144,8 +144,8 @@
 
         .centered-container {
             width: 100%;
-            max-width: 850px; /* Ancho ideal para formularios */
-            text-align: left; /* El texto dentro sigue alineado a la izquierda */
+            max-width: 1150px;
+            text-align: left;
         }
 
         .breadcrumb-nav { 
@@ -218,16 +218,40 @@
             padding: 14px 32px; font-weight: 600; color: #475569;
         }
 
+        /* --- ESTILOS RESPONSIVE MENÚ MÓVIL --- */
+        .sidebar-overlay {
+            display: none; position: fixed; top: 0; left: 0; 
+            width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.4); 
+            z-index: 999; backdrop-filter: blur(3px); opacity: 0; transition: opacity 0.3s ease;
+        }
+
         @media (max-width: 768px) {
-            .sidebar { display: none; }
+            /* Menú Lateral Flotante (Off-canvas) */
+            .sidebar { 
+                position: fixed; left: -280px; top: 0; 
+                height: 100vh; z-index: 1000; width: 260px !important; 
+                box-shadow: 10px 0 30px rgba(0,0,0,0.15);
+            }
+            .sidebar.show-mobile { left: 0; }
+            .sidebar.collapsed { width: 260px !important; }
+            .collapse-btn { display: none; }
+            
+            /* Activa el overlay oscuro */
+            .sidebar-overlay.active { display: block; opacity: 1; }
+
+            /* Ajustes UX de la Página */
             header, .content-area { padding: 20px; }
+            .page-header { flex-direction: column; align-items: flex-start; gap: 16px; margin-bottom: 24px; }
             .form-card { padding: 30px 20px; }
         }
+
     </style>
 </head>
 <body>
 
-    <!-- Sidebar Blackwell Azul -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
+
+    <!-- Sidebar Blackwell -->
     <aside class="sidebar" id="sidebar">
         <div class="collapse-btn" onclick="toggleSidebar()">
             <i class="fa-solid fa-chevron-left" id="toggleIcon"></i>
@@ -247,23 +271,28 @@
         </div>
 
         <ul class="nav-list">
-            <li><a href="administrativo.html" class="nav-link "><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
-            <li><a href="gestion-docentes.html" class="nav-link"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
-            <li><a href="gestionexpedientes.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
-            <!--<li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-upload"></i> <span class="link-text">Gestión de Cursos</span></a></li>
-            <li><a href="#" class="nav-link"><i class="fa-solid fa-chart-pie"></i> <span class="link-text">Reportes</span></a></li>-->
+            <li><a href="administrativo.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
+            <li><a href="gestion-docentes.html" class="nav-link active"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
+            <li><a href="gestion-expedientes.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
+            <li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Gestión Cursos</span></a></li>
         </ul>
 
-        <a href="login.html" class="nav-link" style="color: #f43f5e; margin-top: auto;">
+        <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;">
             <i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span>
         </a>
     </aside>
 
     <div class="main-wrapper">
         <header>
-            <div>
-                <h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Gestión de Personal</h5>
-                <p class="text-muted small m-0">Portal Administrativo</p>
+            <div class="d-flex align-items-center gap-3">
+                <!-- NUEVO: Botón Hamburguesa (Solo visible en móviles) -->
+                <button class="btn border-0 p-0 d-md-none text-dark fs-4" onclick="toggleMobileSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div>
+                    <h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Gestión de Personal</h5>
+                    <p class="text-muted small m-0">Portal Administrativo</p>
+                </div>
             </div>
             
             <div class="d-flex align-items-center gap-3">
@@ -302,9 +331,18 @@
                                 <label class="form-label">Apellidos Completos</label>
                                 <input type="text" class="form-control" id="apellidosDocente" placeholder="Ej: Pérez García" required>
                             </div>
-                            <div class="col-12">
+                            <div class="col-md-6">
                                 <label class="form-label">Correo Electrónico Institucional</label>
                                 <input type="email" class="form-control" id="correoDocente" placeholder="juan.perez@blackwell.edu" required>
+                            </div>
+                            <!-- NUEVO CAMPO UX/UI -->
+                            <div class="col-md-6">
+                                <label class="form-label">Número de Celular</label>
+                                <input type="tel" class="form-control" id="celularDocente" placeholder="Ej: 1 234 567 8900" required>
+                                <div class="mt-2 d-flex align-items-start gap-2 text-muted" style="font-size: 12.5px; line-height: 1.4;">
+                                    <i class="fa-solid fa-circle-info mt-1" style="color: var(--primary);"></i>
+                                    <span>Este número será utilizado como la <b>contraseña temporal</b> de acceso para el docente.</span>
+                                </div>
                             </div>
                         </div>
 
@@ -356,6 +394,7 @@
                 nombres: document.getElementById('nombresDocente').value,
                 apellidos: document.getElementById('apellidosDocente').value,
                 correo: document.getElementById('correoDocente').value,
+                celular: document.getElementById('celularDocente').value,
                 rol: "DOCENTE",
                 estado: "Activo",
                 acceso: "0"
@@ -391,9 +430,6 @@
             document.getElementById('userInitial').innerText = name.substring(0,2).toUpperCase();
         });
 
-        
-
-        
 
         function toggleSidebar() {
             const sb = document.getElementById('sidebar');
@@ -403,6 +439,13 @@
             icon.classList.toggle('fa-chevron-right');
         }
 
+        // FUNCIÓN UX/UI: Abre y cierra el menú lateral en dispositivos móviles
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('show-mobile');
+            overlay.classList.toggle('active');
+        }
         
     </script>
 </body>

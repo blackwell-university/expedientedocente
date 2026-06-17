@@ -11,132 +11,196 @@
         ];
         
         if (isLoggedIn !== 'true' || !rolesPermitidos.some(rol => userRole && userRole.toLowerCase() === rol.toLowerCase())) {
-            window.location.href = "login.html";
+            window.location.href = "../login.html";
         }
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Revisión de Expedientes | Blackwell University</title>
+    <title>Catálogo de Cursos | Blackwell University</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
 
     <style>
         :root {
-            --primary: #2563eb; 
-            --primary-dark: #1e3a8a; 
-            --bg-body: #f8fafc;
-            --sidebar-bg: #ffffff;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --card-radius: 20px;
+            --primary: #2563eb; --primary-dark: #1e3a8a; --bg-body: #f8fafc;
+            --sidebar-bg: #ffffff; --text-main: #1e293b; --text-muted: #64748b;
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --sidebar-width: 260px;
-            --sidebar-collapsed-width: 88px;
-            --dynamic-font-size: 1rem;
+            --sidebar-width: 260px; --dynamic-font-size: 1rem;
         }
 
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; letter-spacing: -0.01em; }
 
-        /* --- SIDEBAR MODERNA --- */
-        .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid rgba(0,0,0,0.05); display: flex; flex-direction: column; transition: var(--transition); position: relative; padding: 24px 16px; flex-shrink: 0; }
-        .sidebar.collapsed { width: var(--sidebar-collapsed-width); }
+        /* --- SIDEBAR CORPORATIVA --- */
+        .sidebar {
+            width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid rgba(0,0,0,0.05);
+            display: flex; flex-direction: column; transition: var(--transition); position: relative; padding: 24px 16px; flex-shrink: 0; z-index: 1000;
+        }
+        .sidebar.collapsed { width: 88px; }
         .brand-section { display: flex; align-items: center; gap: 12px; padding: 0 12px 32px; text-decoration: none; overflow: hidden; }
         .logo-box { min-width: 42px; height: 42px; background: var(--primary-dark); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
         .brand-text { font-weight: 800; font-size: 1.2rem; color: var(--primary-dark); }
         .sidebar.collapsed .brand-text { opacity: 0; pointer-events: none; }
+
         .user-preview { display: flex; align-items: center; gap: 12px; padding: 12px; background: #f1f5f9; border-radius: 16px; margin-bottom: 24px; overflow: hidden; }
         .avatar { min-width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 13px; }
         .user-meta { display: flex; flex-direction: column; line-height: 1.2; }
-        .user-meta b { font-size: 13px; white-space: nowrap; } .user-meta span { font-size: 11px; color: var(--text-muted); }
+        .user-meta b { font-size: 13px; white-space: nowrap; color: var(--text-main); }
+        .user-meta span { font-size: 11px; color: var(--text-muted); }
         .sidebar.collapsed .user-meta { display: none; }
+
         .nav-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
-        .nav-link { display: flex; align-items: center; gap: 16px; padding: 12px 14px; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 6px; transition: var(--transition); white-space: nowrap; }
+        .nav-link { display: flex; align-items: center; gap: 16px; padding: 12px 14px; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 6px; transition: var(--transition); font-weight: 500; white-space: nowrap;}
         .nav-link i { font-size: 18px; width: 24px; text-align: center; }
-        .nav-link:hover, .nav-link.active { background: #eff6ff; color: var(--primary); } .nav-link.active { font-weight: 600; }
+        .nav-link:hover, .nav-link.active { background: #eff6ff; color: var(--primary); font-weight: 600;}
         .sidebar.collapsed .link-text { display: none; }
+        
         .collapse-btn { position: absolute; right: -12px; top: 48px; width: 24px; height: 24px; background: white; border: 1px solid #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; font-size: 10px; color: var(--text-muted); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
-        /* --- MAIN WRAPPER & HEADER --- */
-        .main-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; }
-        header { padding: 20px 48px; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 5; }
+        /* --- LAYOUT PRINCIPAL --- */
+        .main-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; background: var(--bg-body); }
+        header { padding: 20px 48px; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 5; border-bottom: 1px solid rgba(0,0,0,0.03);}
+        .content-area { padding: 40px 48px; display: flex; flex-direction: column; align-items: center; width: 100%; font-size: var(--dynamic-font-size); }
+        .centered-container { width: 100%; max-width: 1300px; text-align: left; }
         
-        .content-area { padding: 40px; display: flex; flex-direction: column; align-items: center; width: 100%; font-size: var(--dynamic-font-size); }
-        .centered-container { width: 100%; max-width: 1200px; text-align: left; }
+        .page-header h1 { font-weight: 800; font-size: 2rem; margin-bottom: 6px; color: var(--primary-dark); letter-spacing: -0.02em;}
+        .page-header p { color: var(--text-muted); font-size: 1rem; }
 
-        .page-header h1 { font-weight: 800; font-size: 2.2rem; margin-bottom: 8px; letter-spacing: -0.03em; color: var(--primary-dark); }
-        .page-header p { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 30px;}
-
-        /* --- FILTROS INTELIGENTES --- */
-        .filter-section { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); margin-bottom: 24px; border: 1px solid rgba(0,0,0,0.04); }
-        .form-label-sm { font-size: 0.8rem; font-weight: 600; color: #64748b; margin-bottom: 8px; display: block; }
-        .input-filter { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 16px; font-size: 0.95rem; color: var(--text-main); transition: var(--transition); }
-        .input-filter:focus { background-color: white; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); outline: none; }
+        /* --- COMPONENTES CORPORATIVOS (Minimalistas) --- */
+        .card-modern { background: #ffffff; border-radius: 20px; border: 1px solid rgba(0,0,0,0.04); box-shadow: 0 10px 40px rgba(0,0,0,0.03); overflow: hidden; padding: 10px; }
         
-        /* --- TABLA MODERNA --- */
-        .table-card { background: white; border-radius: var(--card-radius); border: 1px solid rgba(0,0,0,0.04); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.02); }
-        .table thead th { background-color: #f8fafc; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; padding: 18px 24px; border-bottom: 1px solid #e2e8f0; border-top: none; }
-        .table tbody td { padding: 16px 24px; color: var(--text-main); border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-        .table tbody tr:hover { background-color: #fcfdfe; }
-
-        /* Estados */
-        .badge-status { padding: 6px 14px; border-radius: 50px; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 6px;}
-        .status-Enviado { background: #eff6ff; color: #1d4ed8; }
-        .status-Respondido { background: #fffbeb; color: #b45309; }
-        .status-Aprobado { background: #f0fdf4; color: #15803d; }
-        .status-Rechazado { background: #fef2f2; color: #b91c1c; }
-
-        /* --- MODAL REVISIÓN --- */
-        .modal-modern .modal-content { border: none; border-radius: 24px; overflow: hidden; }
-        .modal-modern .modal-header { background: #f8fafc; color: var(--primary-dark); border-bottom: 1px solid #e2e8f0; padding: 24px 30px; }
-        .section-review { background: #f8fafc; border-radius: 16px; padding: 24px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
-        .info-label { font-size: 0.8rem; color: #64748b; font-weight: 600; margin-bottom: 4px; display: block;}
-        .info-value { font-size: 0.95rem; color: #0f172a; font-weight: 500; margin-bottom: 15px;}
+        .input-modern { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 18px; font-size: 0.95rem; color: #1e293b; transition: 0.2s; box-shadow: none; }
+        .input-modern:focus { background-color: #ffffff; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); outline: none; }
         
-        .file-item { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; transition: 0.2s; }
-        .file-item:hover { border-color: var(--primary); background: #eff6ff; }
-        .file-info { display: flex; align-items: center; gap: 12px; overflow: hidden;}
-        .file-info i { font-size: 1.4rem; color: var(--primary); }
-        .file-name { font-size: 0.9rem; font-weight: 600; color: #334155; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;}
-        .btn-ver-file { font-size: 0.8rem; font-weight: 700; color: var(--primary); text-decoration: none; background: #e0e7ff; padding: 6px 12px; border-radius: 8px; flex-shrink: 0;}
+        /* Tabla Limpia y Elegante */
+        .table-corporate { margin-bottom: 0; width: 100%; border-collapse: separate; border-spacing: 0; }
+        .table-corporate thead th { background-color: white; color: #64748b; font-weight: 700; text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.08em; padding: 20px 24px; border-bottom: 2px solid #f1f5f9; border-top: none; white-space: nowrap;}
+        .table-corporate tbody td { padding: 18px 24px; color: #334155; border-bottom: 1px solid #f1f5f9; vertical-align: middle; font-size: 0.9rem;}
+        .table-corporate tbody tr { transition: background-color 0.2s; }
+        .table-corporate tbody tr:hover { background-color: #f8fafc; }
+        .table-corporate tbody tr:last-child td { border-bottom: none; }
 
-        @media (max-width: 768px) { .sidebar { display: none; } header, .content-area { padding: 20px; } }
+        .badge-programa { background: #f1f5f9; color: #475569; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; border: 1px solid #e2e8f0;}
+
+        /* Botones de acción minimalistas en tabla */
+        .btn-action-table { background: transparent; border: none; color: #64748b; font-weight: 600; font-size: 0.85rem; padding: 8px 12px; border-radius: 8px; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-action-table:hover { background: #f1f5f9; color: var(--text-main); }
+        .btn-action-table.edit:hover { background: #eff6ff; color: var(--primary); }
+        .btn-action-table.folder { color: var(--primary); background: #eff6ff; }
+        .btn-action-table.folder:hover { background: var(--primary); color: white; }
+
+        /* --- PAGINACIÓN MODERNA --- */
+        .pagination-container { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-top: 1px solid #f1f5f9; background: white; border-radius: 0 0 20px 20px;}
+        .pagination-info { font-size: 0.85rem; color: #64748b; font-weight: 500; }
+        .pagination-buttons { display: flex; gap: 8px; }
+        .btn-page { background: white; border: 1px solid #e2e8f0; color: #475569; width: 36px; height: 36px; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; padding: 0; }
+        .btn-page:hover:not(:disabled) { background: #f8fafc; border-color: #cbd5e1; color: var(--text-main); }
+        .btn-page.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .btn-page:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* --- MODAL EDICIÓN Y SÍLABO --- */
+        .modal-aesthetic .modal-content { border: 1px solid rgba(0,0,0,0.05); border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.1); overflow: hidden; }
+        .modal-aesthetic .modal-header { background: #ffffff; border-bottom: 1px solid #f1f5f9; padding: 24px 30px; }
+        .modal-aesthetic .modal-body { padding: 30px; }
+        .modal-aesthetic .modal-footer { background: #f8fafc; border-top: 1px solid #f1f5f9; padding: 20px 30px; }
+        .label-aesthetic { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: block; }
+        
+        /* Input Group Sílabo (Funcionalidad Copiar/Abrir) */
+        .silabo-group { display: flex; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; transition: 0.2s; }
+        .silabo-group:focus-within { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); background: white; }
+        .silabo-group input { border: none; background: transparent; padding: 12px 16px; font-size: 0.9rem; flex-grow: 1; outline: none; color: #1e293b; }
+        .silabo-btn { background: transparent; border: none; border-left: 1px solid #e2e8f0; padding: 0 16px; height: 100%; color: #64748b; transition: 0.2s; display: flex; align-items: center; justify-content: center; cursor: pointer;}
+        .silabo-btn:hover { background: #f1f5f9; color: var(--primary); }
+
+        /* --- OFFCANVAS (PANEL LATERAL PARA MATERIALES) --- */
+        .offcanvas { border-left: none; box-shadow: -10px 0 50px rgba(0,0,0,0.1); width: 420px; }
+        .offcanvas-header { background: #ffffff; border-bottom: 1px solid #f1f5f9; padding: 24px; }
+        .docente-card { border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; margin-bottom: 16px; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.02); transition: 0.2s;}
+        .docente-card:hover { border-color: #cbd5e1; box-shadow: 0 6px 16px rgba(0,0,0,0.04); }
+        .file-pill { display: inline-flex; align-items: center; gap: 8px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 14px; border-radius: 10px; font-size: 0.8rem; font-weight: 600; color: #334155; text-decoration: none; transition: 0.2s; margin-right: 8px; margin-bottom: 8px; white-space: nowrap; max-width: 100%; overflow: hidden;}
+        .file-pill:hover { background: #eff6ff; color: var(--primary); border-color: #bfdbfe; }
+        .file-pill span { text-overflow: ellipsis; overflow: hidden; }
+
+        /* --- ESTILOS RESPONSIVE MENÚ MÓVIL (Sincronizado con administrativo.html) --- */
+        .sidebar-overlay {
+            display: none; position: fixed; top: 0; left: 0; 
+            width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.4); 
+            z-index: 999; backdrop-filter: blur(3px); opacity: 0; transition: opacity 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { 
+                position: fixed; left: -280px; top: 0; 
+                height: 100vh; z-index: 1000; width: 260px !important; 
+                box-shadow: 10px 0 30px rgba(0,0,0,0.15); padding: 24px 16px;
+            }
+            .sidebar.show-mobile { left: 0; }
+            .sidebar.collapsed { width: 260px !important; }
+            .collapse-btn { display: none; }
+            
+            .sidebar-overlay.active { display: block; opacity: 1; }
+
+            header { padding: 16px 20px; }
+            .content-area { padding: 24px 16px; }
+            
+            .page-header { flex-direction: column; align-items: flex-start; gap: 12px; margin-bottom: 24px !important; }
+            #searchInput { width: 100% !important; margin-top: 10px; }
+            
+            .table-responsive { border-radius: 12px; }
+            .offcanvas { width: 90vw; }
+        }
     </style>
 </head>
 <body>
 
+    <!-- Overlay oscuro para móvil -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
+
+    <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
         <div class="collapse-btn" onclick="toggleSidebar()"><i class="fa-solid fa-chevron-left" id="toggleIcon"></i></div>
+
         <a href="#" class="brand-section">
             <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div>
             <span class="brand-text">Blackwell</span>
         </a>
+
         <div class="user-preview">
             <div class="avatar" id="userInitial">AD</div>
-            <div class="user-meta"><b id="userName">Admin User</b><span>Administrador</span></div>
+            <div class="user-meta">
+                <b id="userName">Admin User</b>
+                <span>Administrador</span>
+            </div>
         </div>
+
         <ul class="nav-list">
-            <li><a href="administrativo.html" class="nav-link "><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
+            <li><a href="administrativo.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
             <li><a href="gestion-docentes.html" class="nav-link"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
-            <li><a href="gestionexpedientes.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
-            <!--<li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-upload"></i> <span class="link-text">Gestión de Cursos</span></a></li>
-            <li><a href="#" class="nav-link"><i class="fa-solid fa-chart-pie"></i> <span class="link-text">Reportes</span></a></li>-->
-            
+            <li><a href="gestion-expedientes.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
+            <li><a href="gestion-cursos.html" class="nav-link active"><i class="fa-solid fa-book-open"></i> <span class="link-text">Catálogo Cursos</span></a></li>
         </ul>
+
         <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;">
             <i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span>
         </a>
     </aside>
 
-    <main class="main-wrapper">
-         <header>
-            <div>
-                <h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Gestión de Personal</h5>
-                <p class="text-muted small m-0">Portal Administrativo</p>
-            </div>
+    <div class="main-wrapper">
+        <header>
             <div class="d-flex align-items-center gap-3">
-                <div class="bg-white px-3 py-2 rounded-pill shadow-sm d-flex gap-2 align-items-center">
+                <button class="btn border-0 p-0 d-md-none text-dark fs-4" onclick="toggleMobileSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div>
+                    <h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Catálogo Académico</h5>
+                    <p class="text-muted small m-0 d-none d-sm-block">Portal Administrativo</p>
+                </div>
+            </div>
+            
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-white px-3 py-2 rounded-pill shadow-sm d-flex gap-2 align-items-center border" style="border-color: rgba(0,0,0,0.05) !important;">
                     <button onclick="changeFontSize(-1)" class="btn btn-sm btn-link p-0 text-dark text-decoration-none fw-bold">A-</button>
                     <span id="fontSizeLabel" class="small fw-bold px-1" style="min-width: 50px; text-align: center;">Normal</span>
                     <button onclick="changeFontSize(1)" class="btn btn-sm btn-link p-0 text-dark text-decoration-none fw-bold">A+</button>
@@ -147,61 +211,57 @@
         <div class="content-area">
             <div class="centered-container">
                 
-                <div class="page-header">
-                    <h1>Gestión de cursos</h1> 
-                    <p>Filtra, revisa y aprueba las invitaciones y documentos de la plana docente.</p>
+                <div class="page-header mb-4">
+                    <h1>Gestión de Cursos y Sílabos</h1> 
+                    <p class="mb-0">Administra la base de datos, tarifas y revisa los materiales de los docentes.</p>
                 </div>
 
-                <!-- FILTROS AVANZADOS -->
-                <div class="filter-section">
-                    <div class="row g-3 align-items-end">
-                        <div class="col-md-4">
-                            <label class="form-label-sm">Buscar Docente o Curso</label>
-                            <input type="text" id="filterText" class="form-control input-filter" placeholder="Ej: Juan Pérez o Programación...">
+                <!-- FILTROS INTELIGENTES -->
+                <div class="row g-3 mb-4 align-items-center">
+                    <div class="col-md-5">
+                        <div class="position-relative">
+                            <span class="position-absolute top-50 translate-middle-y ms-3 text-muted"><i class="fa-solid fa-magnifying-glass"></i></span>
+                            <input type="text" id="searchInput" class="form-control input-modern ps-5" placeholder="Buscar curso o código..." oninput="filtrarCursos()">
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label-sm">Estado de Expediente</label>
-                            <select id="filterStatus" class="form-select input-filter" style="cursor: pointer;">
-                                <option value="Todos">Todos los estados</option>
-                                <option value="Enviado">Enviado</option>
-                                <option value="Respondido">Respondido (Para revisar)</option>
-                                <option value="Aprobado">Aprobado</option>
-                                <option value="Rechazado">Rechazado</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label-sm">Fecha de Invitación</label>
-                            <input type="date" id="filterDate" class="form-control input-filter" style="cursor: pointer;">
-                        </div>
-                        <div class="col-md-2">
-                            <button class="btn w-100" style="height: 48px; background: #f1f5f9; border-radius: 12px; font-weight: 600; color: #475569;" onclick="resetFilters()">
-                                Limpiar Filtros
-                            </button>
-                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <select id="filterPrograma" class="form-select input-modern" onchange="filtrarCursos()">
+                            <option value="Todos">Todos los Programas</option>
+                            <!-- El JS llenará las opciones automáticamente -->
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn w-100 fw-semibold text-secondary" style="border-radius: 12px; height: 46px; border: 1px solid #e2e8f0; background: #f8fafc; transition: 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f8fafc'" onclick="resetFiltros()">
+                            <i class="fa-solid fa-eraser me-1"></i> Limpiar
+                        </button>
                     </div>
                 </div>
 
-                <!-- TABLA DE RESULTADOS -->
-                <div class="table-card">
+                <!-- TABLA DE CURSOS -->
+                <div class="card-modern">
                     <div class="table-responsive">
-                        <table class="table mb-0 align-middle">
+                        <table class="table-corporate w-100">
                             <thead>
                                 <tr>
-                                    <th>Docente</th>
-                                    <th>Curso / Programa</th>
-                                    <th>Fecha</th>
-                                    <th>Estado</th>
-                                    <th class="text-center">Acción</th>
+                                    <th style="width: 12%;">Código</th>
+                                    <th style="width: 38%;">Curso / Asignatura</th>
+                                    <th style="width: 25%;">Programa Académico</th>
+                                    <th style="width: 10%;">Tarifa base</th>
+                                    <th class="text-end" style="width: 15%;">Gestión</th>
                                 </tr>
                             </thead>
-                            <tbody id="lista-invitaciones">
-                                <!-- JS cargarán aquí -->
+                            <tbody id="tabla-cursos">
+                                <tr><td colspan="5" class="text-center py-5"><i class="fa-solid fa-spinner fa-spin text-primary fs-3"></i></td></tr>
                             </tbody>
                         </table>
                     </div>
-                    <div id="loading-spinner" class="text-center py-5">
-                        <i class="fa-solid fa-circle-notch fa-spin fs-2" style="color: var(--primary);"></i>
-                        <p class="mt-3 text-muted fw-medium">Obteniendo cursos asignados del sistema...</p>
+                    
+                    <!-- Paginación -->
+                    <div class="pagination-container" id="paginationControls" style="display: none;">
+                        <div class="pagination-info" id="pageInfo">Mostrando 1-10 de 0 cursos</div>
+                        <div class="pagination-buttons" id="pageButtons">
+                            <!-- JS inyecta botones -->
+                        </div>
                     </div>
                 </div>
 
@@ -209,227 +269,396 @@
         </div>
     </main>
 
-    <!-- MODAL REVISIÓN (Idéntico a detallesdocente) -->
-    <div class="modal fade modal-modern" id="modalRevision" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content shadow-lg border-0">
-                <div class="modal-header">
-                    <h4 class="modal-title fw-bold"><i class="fa-solid fa-folder-open me-2 text-primary"></i>Revisión de Expediente</h4>
+    <!-- OFFCANVAS: DOCENTES Y MATERIALES -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="panelMateriales">
+        <div class="offcanvas-header d-flex justify-content-between align-items-start">
+            <div class="pe-3">
+                <h5 class="fw-bold m-0 text-dark" id="oc-curso-nombre" style="line-height: 1.3;">Cargando...</h5>
+                <p class="text-muted small m-0 mt-2"><i class="fa-solid fa-users text-primary me-1"></i> Docentes asignados y entregables</p>
+            </div>
+            <button type="button" class="btn border-0 text-muted fs-5" data-bs-dismiss="offcanvas" style="background: none;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="offcanvas-body" id="oc-body" style="background: #f8fafc; padding: 24px;">
+            <div class="text-center py-5"><i class="fa-solid fa-spinner fa-spin text-primary fs-2"></i></div>
+        </div>
+    </div>
+
+    <!-- MODAL EDICIÓN CURSO -->
+    <div class="modal fade modal-aesthetic" id="modalEdicionCurso" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header d-flex justify-content-between align-items-start">
+                    <div>
+                        <h4 class="fw-bold m-0" style="color: var(--primary-dark);"><i class="fa-solid fa-sliders me-2 text-primary"></i>Configuración de Curso</h4>
+                        <p class="text-muted small m-0 mt-1" id="mod-curso-nombre">-</p>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body p-4">
-                    
-                    <div class="section-review">
-                        <h6 class="fw-bold mb-3"><i class="fa-solid fa-circle-info me-2 text-primary"></i>Información de la Invitación</h6>
-                        <div class="row g-3">
-                            <div class="col-md-3"><span class="info-label">Estado</span><div id="rev-estado" class="info-value fw-bold text-primary">-</div></div>
-                            <div class="col-md-3"><span class="info-label">Curso Propuesto</span><div id="rev-curso" class="info-value">-</div></div>
-                            <div class="col-md-3"><span class="info-label">Día / Horario Elegido</span><div id="rev-horario" class="info-value">-</div></div>
-                            <div class="col-md-3"><span class="info-label">Pago Acordado</span><div id="rev-pago" class="info-value text-success fw-bold">-</div></div>
+                <div class="modal-body">
+                    <form id="formCurso">
+                        <input type="hidden" id="mod-id">
+                        <div class="row g-4">
+                            <div class="col-md-5">
+                                <label class="label-aesthetic">Moneda Oficial</label>
+                                <select id="mod-moneda" class="form-select input-modern">
+                                    <option value="$">Dólares ($ USD)</option>
+                                    <option value="S/.">Soles (S/. PEN)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-7">
+                                <label class="label-aesthetic">Tarifa Referencial (Por ciclo)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0 border-secondary-subtle px-3 text-muted"><i class="fa-solid fa-money-bill-wave"></i></span>
+                                    <input type="number" id="mod-monto" class="form-control input-modern border-start-0 ps-0" placeholder="0.00">
+                                </div>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label class="label-aesthetic">Enlace del Sílabo Oficial</label>
+                                <div class="silabo-group">
+                                    <span class="ps-3 text-muted"><i class="fa-solid fa-link"></i></span>
+                                    <input type="url" id="mod-silabo" placeholder="Pegue la URL de Google Docs/Drive aquí...">
+                                    <button type="button" class="silabo-btn" onclick="copiarSilabo()" title="Copiar URL"><i class="fa-regular fa-copy"></i></button>
+                                    <button type="button" class="silabo-btn border-start" onclick="abrirSilabo()" title="Abrir en pestaña nueva"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="label-aesthetic">Requisitos Académicos (Interno)</label>
+                                <textarea id="mod-req" class="form-control input-modern" rows="2" placeholder="Ej: Especialización en ciencias de la computación..."></textarea>
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="section-review">
-                        <h6 class="fw-bold mb-3"><i class="fa-solid fa-user me-2 text-primary"></i>Datos del Docente (Financieros)</h6>
-                        <div class="row g-3">
-                            <div class="col-md-4"><span class="info-label">Docente</span><div id="rev-nombre" class="info-value">-</div></div>
-                            <div class="col-md-4"><span class="info-label">Correo</span><div id="rev-correo" class="info-value">-</div></div>
-                            <div class="col-md-4"><span class="info-label">Banco y Cuentas</span><div id="rev-cuentas" class="info-value">-</div></div>
-                        </div>
-                    </div>
-
-                    <div class="section-review border-0 bg-white p-0 mt-4">
-                        <h6 class="fw-bold mb-3"><i class="fa-solid fa-file-pdf me-2 text-primary"></i>Documentos Subidos</h6>
-                        <div id="contenedor-adjuntos-revision" class="row g-3"></div>
-                    </div>
-
+                    </form>
                 </div>
-                <div class="modal-footer bg-light p-4 d-flex justify-content-between">
-                    <button type="button" class="btn btn-light text-danger border-danger px-4 fw-bold" onclick="cambiarEstadoExpediente('Rechazado')"><i class="fa-solid fa-xmark me-2"></i>Rechazar</button>
-                    <button type="button" class="btn btn-success px-5 fw-bold" onclick="cambiarEstadoExpediente('Aprobado')" style="background: #16a34a; border: none; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);"><i class="fa-solid fa-check-double me-2"></i>Aprobar Expediente</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light border px-4 fw-semibold text-secondary" style="border-radius: 10px;" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary px-4 fw-semibold shadow-sm" style="border-radius: 10px;" id="btnGuardarCurso" onclick="guardarEdicionCurso()">
+                        Guardar Cambios
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- TOAST NOTIFICATION -->
-    <div class="toast-container position-fixed bottom-0 end-0 p-4" style="z-index: 1055;" id="toastContainer"></div>
+    <!-- Integración SweetAlert Global CSS -->
+    <style>
+        div:where(.swal2-container) div:where(.swal2-popup) { border-radius: 20px !important; font-family: 'Inter', sans-serif !important; border: 1px solid rgba(0,0,0,0.05) !important; padding: 24px !important; box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;}
+        div:where(.swal2-container) button:where(.swal2-styled) { border-radius: 10px !important; font-weight: 600 !important; padding: 10px 24px !important;}
+        div:where(.swal2-container) h2:where(.swal2-title) { font-size: 1.3rem !important; color: var(--primary-dark) !important; }
+    </style>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
-        let todasInvitaciones =[];
-        let currentInvId = null;
-        let currentDocenteId = null;
+        
+        let listaCursosGlobal = [];
+        let cursosFiltrados = [];
+        
+        // Paginación
+        let currentPage = 1;
+        const rowsPerPage = 10;
+        
+        // Determinar permisos
+        const userRoleApp = localStorage.getItem('userRole') || "";
+        const esSoporte = userRoleApp.toLowerCase().includes("asesora") || userRoleApp.toLowerCase().includes("soporte");
 
-        // UI Helpers
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); document.getElementById('toggleIcon').classList.toggle('fa-chevron-right'); document.getElementById('toggleIcon').classList.toggle('fa-chevron-left');}
-        function logout() { if(confirm("¿Cerrar sesión?")) { sessionStorage.clear(); window.location.href = "login.html"; } }
-        let currentSize = 1; const sizes =["0.9rem", "1rem", "1.1rem"]; const labels =["Pequeño", "Normal", "Grande"];
-        function changeFontSize(dir) { currentSize += dir; if(currentSize < 0) currentSize=0; if(currentSize > 2) currentSize=2; document.getElementById('fontSizeLabel').innerText = labels[currentSize]; document.documentElement.style.setProperty('--dynamic-font-size', sizes[currentSize]); }
+        function logout() { if(confirm("¿Cerrar sesión?")) { sessionStorage.clear(); localStorage.clear(); window.location.href = "login.html"; } }
 
-        function showToast(mensaje, tipo = 'success') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            const bgClass = tipo === 'success' ? 'text-bg-success' : 'text-bg-danger';
-            const icon = tipo === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation';
-            toast.className = `toast align-items-center ${bgClass} border-0 show shadow-lg rounded-4 mb-3`;
-            toast.innerHTML = `<div class="d-flex p-1"><div class="toast-body fw-medium" style="font-size: 0.95rem;"><i class="fa-solid ${icon} me-2 fs-5 align-middle"></i> ${mensaje}</div><button type="button" class="btn-close btn-close-white me-3 m-auto" data-bs-dismiss="toast" onclick="this.parentElement.parentElement.remove()"></button></div>`;
-            container.appendChild(toast); setTimeout(() => toast.remove(), 4000);
-        }
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            const name = sessionStorage.getItem('userName') || "Administrador";
+        document.addEventListener('DOMContentLoaded', () => {
+            const name = localStorage.getItem('userName') || "Administrador";
             document.getElementById('userName').innerText = name;
             document.getElementById('userInitial').innerText = name.substring(0,2).toUpperCase();
-
-            await cargarTodasInvitaciones();
             
-            document.getElementById('filterText').addEventListener('input', filtrar);
-            document.getElementById('filterStatus').addEventListener('change', filtrar);
-            document.getElementById('filterDate').addEventListener('change', filtrar);
+            cargarCursos();
         });
 
-        async function cargarTodasInvitaciones() {
+        /* --- LÓGICA DE PAGINACIÓN Y RENDERIZADO --- */
+        async function cargarCursos() {
             try {
-                const responseInv = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_all_invitations_global' }) });
-                const result = await responseInv.json();
-                
-                if(result.status === 'success') {
-                    todasInvitaciones = result.data;
-                    filtrar();
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_all_cursos' }) });
+                const json = await res.json();
+                if(json.status === 'success') {
+                    listaCursosGlobal = json.data;
+                    cursosFiltrados = [...listaCursosGlobal];
+                    poblarFiltroProgramas();
+                    renderTablaPaginada();
                 }
-            } catch(e) { showToast("Error al cargar datos", "danger"); }
-            document.getElementById('loading-spinner').style.display = 'none';
+            } catch(e) {
+                document.getElementById('tabla-cursos').innerHTML = '<tr><td colspan="5" class="text-center text-danger py-5"><i class="fa-solid fa-triangle-exclamation fs-3 mb-2"></i><br>Error de conexión.</td></tr>';
+            }
         }
 
-        function filtrar() {
-            const text = document.getElementById('filterText').value.toLowerCase();
-            const status = document.getElementById('filterStatus').value;
-            const date = document.getElementById('filterDate').value;
+        
 
-            const filtradas = todasInvitaciones.filter(inv => {
-                const matchText = inv.nombreDocente.toLowerCase().includes(text) || inv.curso.toLowerCase().includes(text);
-                const matchStatus = status === "Todos" || inv.estado === status;
-                const matchDate = !date || inv.fecha.split('T')[0] === date;
-                return matchText && matchStatus && matchDate;
+        function poblarFiltroProgramas() {
+            const select = document.getElementById('filterPrograma');
+            // Extrae los programas únicos de la base de datos (evita duplicados)
+            const programasUnicos = [...new Set(listaCursosGlobal.map(c => c.programa))].filter(p => p);
+            
+            let html = '<option value="Todos">Todos los Programas</option>';
+            programasUnicos.sort().forEach(prog => {
+                html += `<option value="${prog}">${prog}</option>`;
             });
-            renderTabla(filtradas);
+            select.innerHTML = html;
         }
 
-        function getIconForStatus(status) {
-            if(status === 'Enviado') return '<i class="fa-solid fa-paper-plane"></i>';
-            if(status === 'Respondido') return '<i class="fa-solid fa-clock"></i>';
-            if(status === 'Aprobado') return '<i class="fa-solid fa-check"></i>';
-            if(status === 'Rechazado') return '<i class="fa-solid fa-xmark"></i>';
-            return '';
+        function filtrarCursos() {
+            const txt = document.getElementById('searchInput').value.toLowerCase();
+            const prog = document.getElementById('filterPrograma').value;
+
+            cursosFiltrados = listaCursosGlobal.filter(c => {
+                const matchText = c.nombre.toLowerCase().includes(txt) || c.codigo.toLowerCase().includes(txt);
+                const matchProg = (prog === "Todos") || (c.programa === prog);
+                return matchText && matchProg; // Tienen que cumplirse ambas condiciones
+            });
+            
+            currentPage = 1; // Volver a la página 1 al filtrar
+            renderTablaPaginada();
         }
 
-        function renderTabla(datos) {
-            const tbody = document.getElementById('lista-invitaciones');
-            if(datos.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted"><i class="fa-regular fa-folder-open fs-2 mb-2 opacity-50"></i><br>No se encontraron expedientes.</td></tr>';
+        function resetFiltros() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('filterPrograma').value = 'Todos';
+            filtrarCursos(); // Vuelve a cargar la tabla completa
+        }
+
+        function renderTablaPaginada() {
+            const tbody = document.getElementById('tabla-cursos');
+            const paginationCtr = document.getElementById('paginationControls');
+            
+            if(cursosFiltrados.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted"><i class="fa-solid fa-book fs-2 mb-3 opacity-25"></i><br>No se encontraron cursos con ese criterio.</td></tr>';
+                paginationCtr.style.display = 'none';
                 return;
             }
 
-            tbody.innerHTML = datos.map(inv => {
-                const fecha = new Date(inv.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
-                return `
+            // Lógica de partición de datos
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = startIndex + rowsPerPage;
+            const cursosPagina = cursosFiltrados.slice(startIndex, endIndex);
+
+            let html = '';
+            cursosPagina.forEach(c => {
+                let btnEditar = !esSoporte 
+                    ? `<button class="btn-action-table edit" onclick="abrirModalEdicion('${c.id}')" title="Configurar Curso"><i class="fa-solid fa-pen"></i></button>` 
+                    : ``;
+
+                html += `
                 <tr>
-                    <td>
-                        <div class="fw-bold" style="color: var(--primary-dark)">${inv.nombreDocente}</div>
-                        <div class="text-muted" style="font-size: 0.75rem;">ID: ${inv.docenteId}</div>
-                    </td>
-                    <td>
-                        <div class="fw-medium text-dark">${inv.curso}</div>
-                        <div class="text-primary fw-medium" style="font-size: 0.75rem;">${inv.programa}</div>
-                    </td>
-                    <td><div class="text-muted"><i class="fa-regular fa-calendar me-2"></i>${fecha}</div></td>
-                    <td><span class="badge-status status-${inv.estado}">${getIconForStatus(inv.estado)} ${inv.estado}</span></td>
-                    <td class="text-center">
-                        <a href="expediente.html?invId=${inv.id}&docId=${inv.docenteId}" class="btn btn-sm btn-light border fw-bold text-secondary" style="border-radius: 8px; padding: 6px 12px; text-decoration: none;">
-                            <i class="fa-regular fa-folder-open me-1" style="color: var(--primary)"></i> Revisar
-                        </a>
+                    <td><b style="color: #64748b; font-size: 0.85rem; letter-spacing: 0.5px;">${c.codigo}</b></td>
+                    <td class="fw-bold" style="color: #1e293b;">${c.nombre}</td>
+                    <td><span class="badge-programa">${c.programa}</span></td>
+                    <td><b style="color: #15803d; font-size: 0.95rem;">${c.moneda} ${c.monto || '0'}</b></td>
+                    <td class="text-end" style="white-space: nowrap;">
+                        ${btnEditar}
+                        <button class="btn-action-table folder" onclick="abrirPanelMateriales('${c.id}', '${c.nombre.replace(/'/g, "\\'")}')">
+                            <i class="fa-solid fa-folder-open"></i> Materiales
+                        </button>
                     </td>
                 </tr>`;
-            }).join('');
+            });
+            tbody.innerHTML = html;
+
+            renderBotonesPaginacion();
         }
 
-        async function abrirRevision(invId, docId) {
-            currentInvId = invId;
-            currentDocenteId = docId;
-            new bootstrap.Modal(document.getElementById('modalRevision')).show();
+        function renderBotonesPaginacion() {
+            const totalPages = Math.ceil(cursosFiltrados.length / rowsPerPage);
+            const btnContainer = document.getElementById('pageButtons');
+            const infoText = document.getElementById('pageInfo');
+            const paginationCtr = document.getElementById('paginationControls');
 
-            document.getElementById('contenedor-adjuntos-revision').innerHTML = '<div class="col-12 text-center p-4 text-muted"><i class="fa-solid fa-spinner fa-spin fs-4 mb-2"></i><br>Extrayendo documentos...</div>';
+            if(totalPages <= 1) {
+                paginationCtr.style.display = 'none';
+                return;
+            }
+            
+            paginationCtr.style.display = 'flex';
+            
+            // Texto descriptivo
+            const start = ((currentPage - 1) * rowsPerPage) + 1;
+            const end = Math.min(currentPage * rowsPerPage, cursosFiltrados.length);
+            infoText.innerHTML = `Mostrando <b>${start}-${end}</b> de <b>${cursosFiltrados.length}</b> cursos`;
+
+            // Botones
+            let btns = `<button class="btn-page" onclick="irPagina(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-left"></i></button>`;
+            
+            // Lógica para mostrar máximo 5 botones numéricos (Simplificado)
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, startPage + 4);
+            if(endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
+
+            for(let i = startPage; i <= endPage; i++) {
+                btns += `<button class="btn-page ${i === currentPage ? 'active' : ''}" onclick="irPagina(${i})">${i}</button>`;
+            }
+
+            btns += `<button class="btn-page" onclick="irPagina(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}><i class="fa-solid fa-chevron-right"></i></button>`;
+            
+            btnContainer.innerHTML = btns;
+        }
+
+        function irPagina(page) {
+            const totalPages = Math.ceil(cursosFiltrados.length / rowsPerPage);
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            renderTablaPaginada();
+        }
+
+
+        /* --- LÓGICA DE EDICIÓN Y SÍLABO --- */
+        function abrirModalEdicion(idCurso) {
+            const curso = listaCursosGlobal.find(c => c.id === idCurso);
+            if(!curso) return;
+
+            document.getElementById('mod-id').value = curso.id;
+            document.getElementById('mod-curso-nombre').innerText = curso.nombre;
+            document.getElementById('mod-moneda').value = curso.moneda || "$";
+            document.getElementById('mod-monto').value = curso.monto || "";
+            document.getElementById('mod-silabo').value = curso.silabo || "";
+            document.getElementById('mod-req').value = curso.requisito || "";
+
+            new bootstrap.Modal(document.getElementById('modalEdicionCurso')).show();
+        }
+
+        function copiarSilabo() {
+            const input = document.getElementById('mod-silabo');
+            if(!input.value) return;
+            input.select();
+            document.execCommand("copy");
+            
+            Swal.fire({
+                title: 'Copiado', text: 'El enlace se ha copiado al portapapeles.', icon: 'success', 
+                toast: true, position: 'top-end', showConfirmButton: false, timer: 2000
+            });
+        }
+
+        function abrirSilabo() {
+            const url = document.getElementById('mod-silabo').value;
+            if(url && (url.startsWith('http://') || url.startsWith('https://'))) {
+                window.open(url, '_blank');
+            } else {
+                Swal.fire({title: 'Error', text: 'La URL no es válida o está vacía.', icon: 'warning', confirmButtonColor: '#2563eb'});
+            }
+        }
+
+        async function guardarEdicionCurso() {
+            const btn = document.getElementById('btnGuardarCurso');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Guardando...';
+            btn.disabled = true;
+
+            const payload = {
+                action: 'update_curso',
+                id: document.getElementById('mod-id').value,
+                moneda: document.getElementById('mod-moneda').value,
+                monto: document.getElementById('mod-monto').value,
+                silabo: document.getElementById('mod-silabo').value,
+                requisito: document.getElementById('mod-req').value
+            };
 
             try {
-                // Se reutiliza la funcion de perfil de backend para traer los datos del docente
-                const resProfile = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: docId }) });
-                const profile = await resProfile.json();
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const json = await res.json();
+                if(json.status === 'success') {
+                    Swal.fire({ title: '¡Guardado!', text: 'El catálogo ha sido actualizado correctamente.', icon: 'success', confirmButtonColor: '#10b981' });
+                    bootstrap.Modal.getInstance(document.getElementById('modalEdicionCurso')).hide();
+                    cargarCursos(); 
+                }
+            } catch(e) {
+                Swal.fire('Error', 'Problema de conexión.', 'error');
+            }
+            btn.innerHTML = 'Guardar Cambios';
+            btn.disabled = false;
+        }
+
+        /* --- LÓGICA DEL PANEL DE MATERIALES (OFFCANVAS) --- */
+        async function abrirPanelMateriales(idCurso, nombreCurso) {
+            document.getElementById('oc-curso-nombre').innerText = nombreCurso;
+            const bodyPanel = document.getElementById('oc-body');
+            bodyPanel.innerHTML = '<div class="text-center py-5"><i class="fa-solid fa-spinner fa-spin text-primary fs-1 mb-3"></i><p class="text-muted fw-medium">Consultando entregables...</p></div>';
+            
+            const offcanvas = new bootstrap.Offcanvas(document.getElementById('panelMateriales'));
+            offcanvas.show();
+
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_materiales_curso', idCurso: idCurso }) });
+                const json = await res.json();
                 
-                const inv = todasInvitaciones.find(i => i.id === invId);
-
-                if (profile.status === 'success' && inv) {
-                    const d = profile.data;
-                    document.getElementById('rev-estado').innerText = inv.estado;
-                    document.getElementById('rev-curso').innerText = inv.curso;
-                    document.getElementById('rev-horario').innerText = `${inv.dias || '-'} / ${inv.horario || '-'}`;
-                    document.getElementById('rev-pago').innerText = inv.pago;
-                    
-                    document.getElementById('rev-nombre').innerText = `${d.nombres} ${d.apellidos}`;
-                    document.getElementById('rev-correo').innerText = d.correo;
-                    document.getElementById('rev-cuentas').innerText = `${d.banco || '-'} | C: ${d.cuenta || '-'} | CCI: ${d.cci || '-'}`;
-
-                    let htmlDocs = "";
-                    if(d.url_cv) htmlDocs += crearItemArchivo("Currículum Vitae", d.url_cv);
-                    if(d.url_handbook) htmlDocs += crearItemArchivo("Handbook Firmado", d.url_handbook);
-                    
-                    const resDocs = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_documents', id: docId }) });
-                    const docs = await resDocs.json();
-                    if(docs.status === 'success') {
-                        docs.diplomas.forEach(dip => htmlDocs += crearItemArchivo(`Diploma: ${dip.grado}`, dip.url));
+                if(json.status === 'success') {
+                    if(json.data.length === 0) {
+                        bodyPanel.innerHTML = '<div class="text-center py-5 text-muted"><div class="mb-3" style="width: 60px; height: 60px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: auto;"><i class="fa-solid fa-folder-open fs-3 text-secondary"></i></div><p class="fw-medium">Sin asignaciones</p><small>Aún no hay docentes asignados ni materiales para este curso.</small></div>';
+                        return;
                     }
-                    document.getElementById('contenedor-adjuntos-revision').innerHTML = htmlDocs || '<p class="text-muted m-0">No se encontraron documentos.</p>';
+
+                    let html = '';
+                    json.data.forEach(doc => {
+                        let colorEstado = doc.estado.toLowerCase() === 'enviado' ? 'text-primary' : 'text-success';
+                        
+                        let htmlArchivos = '';
+                        if(doc.archivos && doc.archivos.length > 0) {
+                            doc.archivos.forEach(file => {
+                                let icono = file.nombre.toLowerCase().includes('pdf') ? 'fa-file-pdf text-danger' : 'fa-file-word text-primary';
+                                htmlArchivos += `<a href="${file.url}" target="_blank" class="file-pill"><i class="fa-regular ${icono}"></i> <span>${file.nombre}</span></a>`;
+                            });
+                        } else {
+                            htmlArchivos = '<p class="text-muted small m-0 fst-italic">El docente no ha subido materiales aún.</p>';
+                        }
+
+                        html += `
+                        <div class="docente-card">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <span class="badge bg-light text-secondary border border-secondary-subtle mb-1 fw-bold">Docente Titular</span>
+                                    <h6 class="fw-bold m-0" style="color: var(--primary-dark); font-size: 1.05rem;">${doc.docente}</h6>
+                                </div>
+                                <span class="badge bg-light ${colorEstado} border fw-bold px-2 py-1"><i class="fa-solid fa-circle text-xs me-1" style="font-size: 8px;"></i> ${doc.estado}</span>
+                            </div>
+                            
+                            <div class="bg-light rounded-4 p-3 mb-3 border border-secondary-subtle">
+                                <div class="row g-2">
+                                    <div class="col-6"><span class="text-muted d-block fw-bold" style="font-size:0.65rem; letter-spacing: 0.5px;">INICIO</span> <b style="color: #334155; font-size: 0.9rem;">${doc.fechaInicio}</b></div>
+                                    <div class="col-6"><span class="text-muted d-block fw-bold" style="font-size:0.65rem; letter-spacing: 0.5px;">TARIFA CERRADA</span> <b class="text-success" style="font-size: 0.9rem;">${doc.pago}</b></div>
+                                    <div class="col-12 mt-2"><span class="text-muted d-block fw-bold" style="font-size:0.65rem; letter-spacing: 0.5px;">HORARIO</span> <b style="color: #334155; font-size: 0.85rem;"><i class="fa-regular fa-clock text-primary me-1"></i>${doc.horario}</b></div>
+                                </div>
+                            </div>
+
+                            <h6 class="fw-bold text-dark mb-2" style="font-size: 0.8rem; text-transform: uppercase; color: #64748b !important;"><i class="fa-solid fa-cloud-arrow-up me-2 opacity-50"></i>Materiales / Entregables</h6>
+                            <div>
+                                ${htmlArchivos}
+                            </div>
+                        </div>`;
+                    });
+                    bodyPanel.innerHTML = html;
                 }
-            } catch (e) { showToast("Error al abrir expediente", "danger"); }
+            } catch(e) {
+                bodyPanel.innerHTML = '<div class="text-center py-5 text-danger"><i class="fa-solid fa-wifi fs-2 mb-2"></i><br>Error de conexión.</div>';
+            }
         }
 
-        function crearItemArchivo(nombre, url) {
-            return `
-            <div class="col-md-6">
-                <div class="file-item">
-                    <div class="file-info">
-                        <i class="fa-regular fa-file-pdf"></i>
-                        <span class="file-name">${nombre}</span>
-                    </div>
-                    <a href="${url}" target="_blank" class="btn-ver-file">Abrir</a>
-                </div>
-            </div>`;
+        /* --- CONTROLADORES DE INTERFAZ --- */
+        function toggleSidebar() {
+            const sb = document.getElementById('sidebar');
+            const icon = document.getElementById('toggleIcon');
+            sb.classList.toggle('collapsed');
+            icon.classList.toggle('fa-chevron-left');
+            icon.classList.toggle('fa-chevron-right');
         }
 
-        async function cambiarEstadoExpediente(nuevoEstado) {
-            if(!confirm(`¿Desea marcar este expediente como ${nuevoEstado}?`)) return;
-            try {
-                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'update_invitation_status', id: currentInvId, estado: nuevoEstado }) });
-                if((await res.json()).status === 'success') {
-                    showToast(`Expediente marcado como ${nuevoEstado}`, "success");
-                    bootstrap.Modal.getInstance(document.getElementById('modalRevision')).hide();
-                    
-                    // Recargar tabla disimuladamente en lugar de recargar toda la pagina
-                    document.getElementById('loading-spinner').style.display = 'block';
-                    document.getElementById('lista-invitaciones').innerHTML = '';
-                    await cargarTodasInvitaciones();
-                } else {
-                    showToast("No se pudo actualizar el estado", "danger");
-                }
-            } catch(e) { showToast("Error de conexión", "danger"); }
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('show-mobile');
+            overlay.classList.toggle('active');
         }
 
-        function resetFilters() {
-            document.getElementById('filterText').value = '';
-            document.getElementById('filterStatus').value = 'Todos';
-            document.getElementById('filterDate').value = '';
-            filtrar();
+        let currentSize = 1; 
+        const sizes =["0.9rem", "1rem", "1.1rem"]; 
+        const labels =["Pequeño", "Normal", "Grande"];
+        function changeFontSize(dir) { 
+            currentSize += dir; 
+            if(currentSize < 0) currentSize=0; 
+            if(currentSize > 2) currentSize=2; 
+            document.getElementById('fontSizeLabel').innerText = labels[currentSize]; 
+            document.documentElement.style.setProperty('--dynamic-font-size', sizes[currentSize]); 
         }
     </script>
 </body>

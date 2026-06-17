@@ -11,7 +11,7 @@
         ];
         
         if (isLoggedIn !== 'true' || !rolesPermitidos.some(rol => userRole && userRole.toLowerCase() === rol.toLowerCase())) {
-            window.location.href = "login.html";
+            window.location.href = "../login.html";
         }
     </script>
     <meta charset="UTF-8">
@@ -287,7 +287,8 @@
         <ul class="nav-list">
             <li><a href="administrativo.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
             <li><a href="gestion-docentes.html" class="nav-link"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
-            <li><a href="gestionexpedientes.html" class="nav-link active"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
+            <li><a href="gestion-expedientes.html" class="nav-link active"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
+            <li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Gestión Cursos</span></a></li>
         </ul>
         <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;">
             <i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span>
@@ -312,7 +313,7 @@
         <div class="content-area">
             <div class="centered-container">
                 <div class="breadcrumb-nav">
-                    <a href="gestionexpedientes.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Volver a Revisión de Expedientes</a>
+                    <a href="gestion-expedientes.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Volver a Revisión de Expedientes</a>
                 </div>
 
                 <div class="page-header">

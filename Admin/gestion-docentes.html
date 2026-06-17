@@ -11,7 +11,7 @@
         ];
         
         if (isLoggedIn !== 'true' || !rolesPermitidos.some(rol => userRole && userRole.toLowerCase() === rol.toLowerCase())) {
-            window.location.href = "login.html";
+            window.location.href = "../login.html";
         }
     </script>
     <meta charset="UTF-8">
@@ -228,14 +228,40 @@
         .page-num:hover:not(.active) { background: #f1f5f9; }
         .page-num.active { background: var(--primary); color: white; }
 
+        /* --- ESTILOS RESPONSIVE MENÚ MÓVIL --- */
+        .sidebar-overlay {
+            display: none; position: fixed; top: 0; left: 0; 
+            width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.4); 
+            z-index: 999; backdrop-filter: blur(3px); opacity: 0; transition: opacity 0.3s ease;
+        }
+
         @media (max-width: 768px) {
-            .sidebar { display: none; }
-            header, .content-area { padding: 20px; }
-            .page-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+            /* Menú Lateral Flotante (Off-canvas) */
+            .sidebar { 
+                position: fixed; left: -280px; top: 0; 
+                height: 100vh; z-index: 1000; width: 260px !important; 
+                box-shadow: 10px 0 30px rgba(0,0,0,0.15);
+            }
+            .sidebar.show-mobile { left: 0; } /* Clase que lo hace aparecer */
+            .sidebar.collapsed { width: 260px !important; } /* Desactiva el mini-menú en celular */
+            .collapse-btn { display: none; } /* Oculta el botón < de la PC */
+            
+            /* Activa el overlay oscuro */
+            .sidebar-overlay.active { display: block; opacity: 1; }
+
+            /* Ajustes UX de la Página */
+            header, .content-area { padding: 16px; }
+            .page-header { flex-direction: column; align-items: flex-start; gap: 16px; margin-bottom: 24px; }
+            .btn-primary { width: 100%; justify-content: center; } /* Botones anchos para pulgares */
+            
+            /* Paginación apilada para móviles */
+            .pagination-container { flex-direction: column; gap: 16px; }
         }
     </style>
 </head>
 <body>
+    <!-- NUEVO: Overlay oscuro para móvil -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
 
     <!-- Sidebar Blackwell -->
     <aside class="sidebar" id="sidebar">
@@ -259,9 +285,8 @@
         <ul class="nav-list">
             <li><a href="administrativo.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
             <li><a href="gestion-docentes.html" class="nav-link active"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
-            <li><a href="gestionexpedientes.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
-            <!--<li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-upload"></i> <span class="link-text">Gestión de Cursos</span></a></li>
-            <li><a href="#" class="nav-link"><i class="fa-solid fa-chart-pie"></i> <span class="link-text">Reportes</span></a></li>-->
+            <li><a href="gestion-expedientes.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
+            <li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Gestión Cursos</span></a></li>
         </ul>
 
         <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;">
@@ -271,9 +296,15 @@
 
     <div class="main-wrapper">
         <header>
-            <div>
-                <h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Gestión de Personal</h5>
-                <p class="text-muted small m-0">Portal Administrativo</p>
+            <div class="d-flex align-items-center gap-3">
+                <!-- NUEVO: Botón Hamburguesa (Solo visible en móviles) -->
+                <button class="btn border-0 p-0 d-md-none text-dark fs-4" onclick="toggleMobileSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div>
+                    <h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Gestión de Personal</h5>
+                    <p class="text-muted small m-0">Portal Administrativo</p>
+                </div>
             </div>
             
             <div class="d-flex align-items-center gap-3">
@@ -533,6 +564,14 @@
 
             cargarDocentes();
         });
+
+        // FUNCIÓN UX/UI: Abre y cierra el menú lateral en dispositivos móviles
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('show-mobile');
+            overlay.classList.toggle('active');
+        }
     </script>
 </body>
 </html>
