@@ -270,6 +270,60 @@
             .btn-action { width: 100%; text-align: center; }
             .documents-table th, .documents-table td { padding: 10px 8px; font-size: 0.7rem; }
         }
+
+        /* --- PIPELINE STAGES (ESTILO ACME INC) --- */
+        .pipeline-wrapper {
+            margin-bottom: 25px;
+            background: white;
+            border: 1px solid var(--gray-border);
+            border-radius: 12px;
+            padding: 16px 20px;
+        }
+        .pipeline-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 12px;
+        }
+        .pipeline-stages {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .stage-step {
+            flex: 1;
+            text-align: center;
+            padding: 10px 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%, 12px 50%);
+            margin-left: -6px;
+            transition: all 0.3s ease;
+        }
+        .stage-step:first-child {
+            clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%);
+            margin-left: 0;
+            border-top-left-radius: 20px;
+            border-bottom-left-radius: 20px;
+        }
+        .stage-step:last-child {
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 12px 50%);
+            border-top-right-radius: 20px;
+            border-bottom-right-radius: 20px;
+        }
+
+        /* Colores del diseño de referencia */
+        .step-green { background: #bbf7d0; color: #166534; }  /* Completado / Actual Fase 1 */
+        .step-yellow { background: #fef08a; color: #854d0e; } /* Actual Fase 2 */
+        .step-red { background: #fecdd3; color: #9f1239; }    /* Actual Fase 3 */
+        .step-gray { background: #f1f5f9; color: #64748b; }   /* Pendiente */
     </style>
 </head>
 <body>
@@ -321,7 +375,46 @@
                         <h1 id="det-nombre-curso">Cargando Expediente...</h1>
                         <p id="det-subtitle">Obteniendo datos...</p>
                     </div>
-                    <div id="status-badge-container"></div>
+                    <!-- Dropdown para cambiar el estado manualmente -->
+                    <div id="status-badge-container" class="d-flex align-items-center gap-2">
+                        <span id="badge-estado-actual" class="badge text-white px-3 py-2 shadow-sm" style="border-radius: 20px; font-size: 0.85rem; background: #64748b;">Estado: Cargando...</span>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle bg-white" style="border-radius: 20px; font-weight: 600;" type="button" data-bs-toggle="dropdown">
+                                Mover Etapa
+                            </button>
+                            <ul class="dropdown-menu shadow-sm border-0" style="border-radius: 12px; font-size: 0.85rem;">
+                                <li><h6 class="dropdown-header text-primary fw-bold">1. Recopilación</h6></li>
+                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('En proceso')">En proceso</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('Recibido')">Recibido</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><h6 class="dropdown-header text-primary fw-bold">2. Revisión</h6></li>
+                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('En revisión')">En revisión</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('Verificado')">Verificado</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><h6 class="dropdown-header text-primary fw-bold">3. Evaluación</h6></li>
+                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('Por evaluar')">Por evaluar</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('En evaluación')">En evaluación</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('Evaluado')">Evaluado (Check)</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><h6 class="dropdown-header text-primary fw-bold">4. Contratación</h6></li>
+                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('Por contratar')">Por contratar</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('Firmado')">Firmado</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('Contrato enviado')">Contrato enviado</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('Contratado')">Contratado</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PIPELINE DE ETAPAS UX -->
+                <div class="pipeline-wrapper">
+                    <div class="pipeline-title">Progreso del Expediente</div>
+                    <div class="pipeline-stages" id="pipeline-container">
+                        <div class="stage-step step-gray" id="stage-1">1. Recopilación</div>
+                        <div class="stage-step step-gray" id="stage-2">2. Revisión</div>
+                        <div class="stage-step step-gray" id="stage-3">3. Evaluación</div>
+                        <div class="stage-step step-gray" id="stage-4">4. Contratación</div>
+                    </div>
                 </div>
 
                 <ul class="nav nav-tabs" id="expedienteTabs" role="tablist">
@@ -329,7 +422,7 @@
                         <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#datos">Datos del Expediente</button>
                     </li>
                     <li class="nav-item">
-                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#generados">Documentos Generados</button>
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#generados">Documentos de Expediente</button>
                     </li>
                 </ul>
 
@@ -380,13 +473,8 @@
                     <div class="tab-pane fade" id="generados">
                         <div class="form-card" style="padding: 24px;">
                             <!-- Barra de acciones (minimalista) -->
-                            <div class="action-toolbar">
-                                <button class="action-btn action-btn-primary" onclick="generarDocumentos()"><i class="fa-solid fa-file-lines"></i> Generar documentos</button>
-                                <button class="action-btn" onclick="enviarAlertas()"><i class="fa-solid fa-bell"></i> Enviar alertas</button>
-                                <button class="action-btn" onclick="asignarEvaluacion()"><i class="fa-solid fa-user-check"></i> Asignar a evaluación</button>
-                                <button class="action-btn" onclick="invitacionCulminada()"><i class="fa-solid fa-check"></i> Invitación culminada</button>
-                                <button class="action-btn" onclick="enviarFirmar()"><i class="fa-solid fa-file-signature"></i> Enviar a firmar</button>
-                                <button class="action-btn" id="btnEnviarZamudio" onclick="enviarZamudio()" disabled><i class="fa-solid fa-user-tie"></i> Enviar a Zamudio</button>
+                            <div class="action-toolbar" id="dynamic-action-toolbar">
+                                <!-- Los botones se inyectarán aquí mediante JS según la etapa del expediente -->
                             </div>
 
                             <!-- Resumen minimalista -->
@@ -430,74 +518,45 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- MODAL para seleccionar documentos -->
-                    <div class="modal fade" id="modalSeleccionarDocs" tabindex="-1">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5>Seleccionar Documentos</h5>
-                                    <button class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div id="docsChecklist" class="d-flex flex-column gap-2"></div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                    <button class="btn btn-primary" onclick="generarDocumentosMultiples()">Generar</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>            
             </div>
         </div>
     </main>
 
-    <!-- MODAL: SELECCIONAR DOCUMENTOS A GENERAR -->
-    <div class="modal fade modal-modern" id="modalSeleccionarDocs" tabindex="-1">
+    <!-- MODAL ÚNICO: GENERAR DOCUMENTOS -->
+    <div class="modal fade" id="modalSeleccionarDocs" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content shadow-lg" style="border-radius: 20px; border: none;">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
                 <div class="modal-header border-0 pb-0 pt-4 px-4">
-                    <h5 class="modal-title fw-bold text-dark fs-5">Generar Documentos</h5>
+                    <h5 class="fw-bold text-dark fs-5"><i class="fa-solid fa-file-lines text-primary me-2"></i>Generar Documentos</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
-                    <p class="text-muted small mb-4">Seleccione los documentos que desea generar. Se autocompletarán con los datos del expediente y docente actual.</p>
+                    <p class="text-muted small mb-4">Seleccione los documentos a generar. Se autocompletarán automáticamente con los datos del docente y el curso.</p>
                     
-                    <div class="bg-white border rounded-4 p-1 shadow-sm mb-3">
-                        <!-- Botón Seleccionar Todos -->
-                        <div class="form-check p-3 border-bottom m-0 d-flex align-items-center gap-2" style="background-color: #f8fafc; border-radius: 15px 15px 0 0;">
+                    <div class="bg-light border rounded-4 p-1">
+                        <div class="form-check p-3 border-bottom m-0 d-flex align-items-center gap-2">
                             <input class="form-check-input m-0" type="checkbox" id="checkAllDocs" onchange="toggleAllDocs(this)" style="cursor: pointer; width: 1.2rem; height: 1.2rem;">
-                            <label class="form-check-label fw-bold text-primary-dark w-100" for="checkAllDocs" style="cursor: pointer; font-size: 0.95rem;">
-                                Seleccionar todos los documentos
+                            <label class="form-check-label fw-bold text-primary-dark w-100" for="checkAllDocs" style="cursor: pointer;">
+                                Seleccionar todos
                             </label>
                         </div>
                         
-                        <!-- Lista de Checkboxes -->
-                        <div class="p-3 d-flex flex-column gap-3" id="docsCheckboxList">
-                            <div class="form-check d-flex align-items-center gap-2"><input class="form-check-input doc-gen-cb m-0" type="checkbox" value="Letter of Appointment" id="doc1"> <label class="form-check-label text-dark fw-medium" for="doc1" style="cursor: pointer;">Letter of Appointment</label></div>
-                            <div class="form-check d-flex align-items-center gap-2"><input class="form-check-input doc-gen-cb m-0" type="checkbox" value="Resume" id="doc2"> <label class="form-check-label text-dark fw-medium" for="doc2" style="cursor: pointer;">Resume</label></div>
-                            <div class="form-check d-flex align-items-center gap-2"><input class="form-check-input doc-gen-cb m-0" type="checkbox" value="Reference Check Forms" id="doc3"> <label class="form-check-label text-dark fw-medium" for="doc3" style="cursor: pointer;">Reference Check Forms</label></div>
-                            <div class="form-check d-flex align-items-center gap-2"><input class="form-check-input doc-gen-cb m-0" type="checkbox" value="Proposed Salary" id="doc4"> <label class="form-check-label text-dark fw-medium" for="doc4" style="cursor: pointer;">Proposed Salary</label></div>
-                            <div class="form-check d-flex align-items-center gap-2"><input class="form-check-input doc-gen-cb m-0" type="checkbox" value="Academic Preparation Evaluation Form" id="doc5"> <label class="form-check-label text-dark fw-medium" for="doc5" style="cursor: pointer;">Academic Preparation Evaluation Form</label></div>
-                            <div class="form-check d-flex align-items-center gap-2"><input class="form-check-input doc-gen-cb m-0" type="checkbox" value="Assigned Employee Notice" id="doc6"> <label class="form-check-label text-dark fw-medium" for="doc6" style="cursor: pointer;">Assigned Employee Notice</label></div>
-                            <div class="form-check d-flex align-items-center gap-2"><input class="form-check-input doc-gen-cb m-0" type="checkbox" value="Direct Deposit Authorization Form" id="doc7"> <label class="form-check-label text-dark fw-medium" for="doc7" style="cursor: pointer;">Direct Deposit Authorization Form</label></div>
-                            <div class="form-check d-flex align-items-center gap-2"><input class="form-check-input doc-gen-cb m-0" type="checkbox" value="Confidentiality Agreement" id="doc8"> <label class="form-check-label text-dark fw-medium" for="doc8" style="cursor: pointer;">Confidentiality Agreement</label></div>
-                            <div class="form-check d-flex align-items-center gap-2 m-0"><input class="form-check-input doc-gen-cb m-0" type="checkbox" value="Job Description" id="doc9"> <label class="form-check-label text-dark fw-medium" for="doc9" style="cursor: pointer;">Job Description</label></div>
-                        </div>
+                        <!-- La lista se inyectará aquí dinámicamente -->
+                        <div class="p-3 d-flex flex-column gap-2" id="docsCheckboxList"></div>
                     </div>
                 </div>
                 <div class="modal-footer border-0 p-4 pt-0 d-flex gap-2">
-                    <button type="button" class="btn btn-light fw-bold px-4 flex-grow-1" style="border-radius: 12px; padding: 12px;" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn-primary-solid px-4 flex-grow-1" style="border-radius: 12px; padding: 12px; display: flex; justify-content: center; align-items: center; gap: 8px;" onclick="generarDocumentos()">
-                        Generar Seleccionados
+                    <button type="button" class="btn btn-white border fw-bold px-4 flex-grow-1" style="border-radius: 12px; padding: 12px; color: var(--text-muted);" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary fw-bold px-4 flex-grow-1" style="border-radius: 12px; padding: 12px;" onclick="ejecutarGeneracionDocs()">
+                        <i class="fa-solid fa-wand-magic-sparkles me-2"></i>Generar
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
+  
     <div class="toast-container position-fixed bottom-0 end-0 p-4" style="z-index: 1055;" id="toastContainer"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -571,9 +630,48 @@
                     document.getElementById('det-subtitle').innerHTML = `Docente: ${d.nombres} ${d.apellidos}`;
                     
                     // Estado badge
-                    let bgBadge = exp.estado === 'Aprobado' ? '#15803d' : (exp.estado === 'Completado' ? '#2563eb' : '#ea580c');
-                    document.getElementById('status-badge-container').innerHTML = `<span class="badge" style="background:${bgBadge}; padding: 8px 16px; border-radius: 50px;">Estado: ${exp.estado}</span>`;
+                    // --- LÓGICA DE ESTADOS, COLORES Y PIPELINE ---
+                    const estadoExp = (exp.estado || '').trim();
                     
+                    // 1. Actualizar Badge Principal
+                    let bgBadge = '#ea580c'; // Naranja por defecto
+                    if(['Recibido', 'Verificado', 'Evaluado', 'Contratado', 'Firmado', 'Contrato enviado'].includes(estadoExp)) bgBadge = '#15803d'; // Verde
+                    if(['En proceso', 'En revisión', 'En evaluación'].includes(estadoExp)) bgBadge = '#2563eb'; // Azul
+                    
+                    const badgeElement = document.getElementById('badge-estado-actual');
+                    if(badgeElement) {
+                        badgeElement.style.background = bgBadge;
+                        badgeElement.innerText = `Estado: ${estadoExp}`;
+                    }
+
+                    // 2. Colorear el Pipeline (Estilo Acme)
+                    const stages = [
+                        document.getElementById('stage-1'),
+                        document.getElementById('stage-2'),
+                        document.getElementById('stage-3'),
+                        document.getElementById('stage-4')
+                    ];
+                    stages.forEach(s => s.className = 'stage-step step-gray'); // Limpiar todos
+                    
+                    if (['Por enviar', 'Enviado', 'En proceso', 'Recibido'].includes(estadoExp)) {
+                        stages[0].classList.replace('step-gray', 'step-green'); // Etapa 1 activa
+                    } else if (['En revisión', 'Verificado'].includes(estadoExp)) {
+                        stages[0].classList.replace('step-gray', 'step-green');
+                        stages[1].classList.replace('step-gray', 'step-yellow'); // Etapa 2 activa
+                    } else if (['Por evaluar', 'En evaluación', 'Evaluado'].includes(estadoExp)) {
+                        stages[0].classList.replace('step-gray', 'step-green');
+                        stages[1].classList.replace('step-gray', 'step-green');
+                        stages[2].classList.replace('step-gray', 'step-red'); // Etapa 3 activa
+                    } else if (['Por contratar', 'Firmado', 'Contrato enviado', 'Contratado'].includes(estadoExp)) {
+                        stages[0].classList.replace('step-gray', 'step-green');
+                        stages[1].classList.replace('step-gray', 'step-green');
+                        stages[2].classList.replace('step-gray', 'step-green');
+                        stages[3].classList.replace('step-gray', estadoExp === 'Contratado' ? 'step-green' : 'step-yellow'); 
+                    }
+
+                    // 3. Renderizar Botones Dinámicos
+                    renderBotonesDinamicos(estadoExp);
+
                     // Datos de invitación
                     document.getElementById('view-estado').innerText = exp.estado;
                     document.getElementById('view-curso').innerText = inv.curso || "No especificado";
@@ -608,6 +706,30 @@
             } catch (e) {
                 console.error("Error al cargar expediente:", e);
                 mostrarErrorDatos();
+            }
+        }
+
+        // ==================== CAMBIAR ESTADO MANUALMENTE ====================
+        async function cambiarEstadoExpediente(nuevoEstado) {
+            if(!confirm(`¿Seguro que deseas cambiar el estado del expediente a "${nuevoEstado}"?`)) return;
+            
+            showToast(`Cambiando estado a ${nuevoEstado}...`, 'info');
+            
+            try {
+                const res = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'update_expediente_status', id: expId, estado: nuevoEstado })
+                });
+                const data = await res.json();
+                
+                if(data.status === 'success') {
+                    showToast(`Estado actualizado exitosamente`, 'success');
+                    cargarExpediente(); // Recarga toda la UI y repinta el Pipeline
+                } else {
+                    showToast("Error al cambiar estado", "danger");
+                }
+            } catch(e) {
+                showToast("Error de conexión", "danger");
             }
         }
 
@@ -738,7 +860,7 @@
                 // --- AQUÍ ESTÁ LA MAGIA ---
                 // Condición: Mostrar SOLO si el documento tiene una URL (ya fue generado) 
                 // O si su nombre es "Form 402" O si su nombre es "Handbook"
-                if (doc.url !== "" || doc.nombre === "Form 402" || doc.nombre === "Handbook") {
+                if (doc.url && doc.url.trim() !== "") {
                     
                     let estadoClass = "badge-state";
                     if(doc.estado === "Completado" || doc.estado === "Firmado por Zamudio") estadoClass += " badge-completed";
@@ -802,51 +924,50 @@
             renderizarTabla();
         }
 
-        // ==================== ACCIONES GLOBALES (EJECUTIVA) ====================
+        // ==================== GENERACIÓN DE DOCUMENTOS ====================
+        
+        // Esta es la lista oficial de documentos que el sistema puede autogenerar (El Handbook no va aquí porque lo sube el docente)
+        const DOCS_GENERABLES = [
+            "Form 402", "Letter of Appointment", "Resume", "Reference Check Forms",
+            "Proposed Salary", "Academic Preparation Evaluation Form", "Assigned Employee Notice",
+            "Direct Deposit Authorization Form", "Confidentiality Agreement", "Job Description"
+        ];
+
+        // 1. Abre el modal y dibuja los checkboxes dinámicamente
         function generarDocumentos() {
-            const docsList = documentTrace.map(d => d.nombre);
-            let html = `<div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="selectAll"> <label>Seleccionar todos</label></div>`;
-            docsList.forEach(n => {
-                html += `<div class="form-check"><input class="form-check-input doc-check" type="checkbox" value="${n}" id="chk_${n}"> <label for="chk_${n}">${n}</label></div>`;
+            let html = '';
+            DOCS_GENERABLES.forEach((docName, index) => {
+                html += `
+                <div class="form-check d-flex align-items-center gap-2 mb-1">
+                    <input class="form-check-input doc-gen-cb m-0" type="checkbox" value="${docName}" id="doc_gen_${index}" style="cursor: pointer; width: 1.1rem; height: 1.1rem;"> 
+                    <label class="form-check-label text-dark fw-medium" for="doc_gen_${index}" style="cursor: pointer; font-size: 0.9rem;">${docName}</label>
+                </div>`;
             });
-            document.getElementById('docsChecklist').innerHTML = html;
-            
-            const selectAll = document.getElementById('selectAll');
-            if(selectAll) {
-                selectAll.addEventListener('change', (e) => {
-                    document.querySelectorAll('.doc-check').forEach(cb => cb.checked = e.target.checked);
-                });
-            }
+            document.getElementById('docsCheckboxList').innerHTML = html;
+            document.getElementById('checkAllDocs').checked = false; // Desmarcar el principal por defecto
             
             new bootstrap.Modal(document.getElementById('modalSeleccionarDocs')).show();
         }
 
-        // --- SELECCIONAR / DESELECCIONAR TODOS LOS CHECKBOXES ---
+        // 2. Marcar/Desmarcar todos
         function toggleAllDocs(source) {
-            const checkboxes = document.querySelectorAll('.doc-gen-cb');
-            checkboxes.forEach(cb => cb.checked = source.checked);
+            document.querySelectorAll('.doc-gen-cb').forEach(cb => cb.checked = source.checked);
         }
 
-        // --- GENERAR DOCUMENTOS USANDO LA FUNCIÓN GLOBAL OPTIMIZADA ---
-        async function generarDocumentos() {
+        // 3. Ejecutar la generación (Llamada al backend con Toast de carga)
+        async function ejecutarGeneracionDocs() {
             const checkboxes = document.querySelectorAll('.doc-gen-cb:checked');
             if(checkboxes.length === 0) { 
-                showToast("Selecciona al menos un documento.", "danger"); 
+                showToast("Selecciona al menos un documento para generar.", "danger"); 
                 return; 
             }
             
-            // Extraer nombres seleccionados
             const selectedDocs = Array.from(checkboxes).map(cb => cb.value);
 
             // Cerrar el modal limpiamente
-            const botonCerrarModal = document.querySelector('#modalSeleccionarDocs .btn-close');
-            if(botonCerrarModal) botonCerrarModal.click();
+            bootstrap.Modal.getInstance(document.getElementById('modalSeleccionarDocs')).hide();
 
-            // Limpiar los checks para la próxima vez
-            document.querySelectorAll('.doc-gen-cb').forEach(cb => cb.checked = false);
-            document.getElementById('checkAllDocs').checked = false;
-
-            // Mostrar el toast azul de carga
+            // Mostrar el toast azul oscuro animado de "Generando..."
             const container = document.getElementById('toastContainer');
             const loadingToast = document.createElement('div');
             loadingToast.className = `toast align-items-center border-0 show shadow-lg rounded-4 mb-3`;
@@ -856,39 +977,37 @@
                 <div class="d-flex p-3">
                     <div class="toast-body fw-medium d-flex align-items-center" style="font-size: 0.95rem;">
                         <i class="fa-solid fa-spinner fa-spin me-3" style="font-size: 1.2rem;"></i>
-                        <span id="loadingToastText">Generando ${selectedDocs.length} documento(s)... Por favor espera.</span>
+                        <span>Generando ${selectedDocs.length} documento(s)... Por favor espera.</span>
                     </div>
                 </div>`;
             container.appendChild(loadingToast);
 
             try {
-                // LLAMAMOS AL BACKEND UNA SOLA VEZ CON EL ARRAY DE DOCUMENTOS
+                // Enviar la orden al backend (Usa la función generate_bulk_documents que ya tienes lista)
                 const payload = {
                     action: "generate_bulk_documents",
                     idExpediente: expId,
                     documentos: selectedDocs
                 };
 
-                const res = await fetch(GAS_URL, { 
-                    method: 'POST', 
-                    body: JSON.stringify(payload) 
-                });
-                
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const result = await res.json();
 
                 if (result.status === 'success') {
                     showToast("¡Documentos generados exitosamente!", "success");
-                    cargarExpediente(); // Recargar la página para que la tabla muestre los nuevos enlaces
+                    cargarExpediente(); // Recarga la UI para que aparezcan en la tabla instantáneamente
                 } else {
                     showToast(result.message || "Error al generar documentos.", "danger");
                 }
             } catch (e) { 
-                showToast("Error de conexión al servidor.", "danger"); 
+                showToast("Error de conexión con el servidor.", "danger"); 
             } finally {
-                loadingToast.remove();
+                loadingToast.remove(); // Quita el aviso de carga termine bien o mal
             }
         }
 
+        // ==================== ACCIONES GLOBALES (EJECUTIVA) ====================
+        
         function enviarAlertas() {
             showToast("Alertas enviadas al docente", "success");
         }
@@ -935,6 +1054,78 @@
             });
             renderizarTabla();
             showToast("Documentos enviados a Zamudio para firma", "success");
+        }
+
+        // ==================== RENDERIZADO DINÁMICO DE BOTONES ====================
+        function renderBotonesDinamicos(estadoExp) {
+            const toolbar = document.getElementById('dynamic-action-toolbar');
+            if(!toolbar) return;
+            let html = '';
+
+            // Botón GLOBAL (Siempre presente)
+            html += `<button class="action-btn" onclick="enviarNotificacionGlobal()"><i class="fa-solid fa-bell"></i> Enviar notificación</button>`;
+
+            // ETAPAS 1 y 2 (Recopilación y Revisión)
+            const etapa1y2 = ['Por enviar', 'Enviado', 'En proceso', 'Recibido', 'En revisión', 'Verificado'];
+            if (etapa1y2.includes(estadoExp) || estadoExp === '') {
+                
+                // Lógica de bloqueo para Generar Documentos
+                const deshabilitado = ['Por enviar', 'Enviado'].includes(estadoExp) || estadoExp === '';
+                const opacidad = deshabilitado ? '0.5' : '1';
+                const cursor = deshabilitado ? 'not-allowed' : 'pointer';
+                const mensaje = deshabilitado ? "El docente aún no empieza a rellenar sus datos (Debe estar 'En proceso')." : "";
+
+                html += `<button class="action-btn action-btn-primary" 
+                            onclick="${deshabilitado ? 'return false;' : 'generarDocumentos()'}" 
+                            style="opacity: ${opacidad}; cursor: ${cursor};" 
+                            title="${mensaje}">
+                            <i class="fa-solid fa-file-lines"></i> Generar documentos
+                         </button>`;
+            }
+
+            // ETAPA 2 (Revisión exclusiva)
+            if (['En revisión', 'Verificado'].includes(estadoExp)) {
+                html += `<button class="action-btn" style="background:#f59e0b; color:white; border-color:#f59e0b;" onclick="cambiarEstadoExpediente('Por evaluar')"><i class="fa-solid fa-share-from-square"></i> Enviar a Evaluaciones</button>`;
+            }
+
+            // ETAPA 3 (Evaluación)
+            if (['Por evaluar', 'En evaluación', 'Evaluado'].includes(estadoExp)) {
+                html += `<button class="action-btn action-btn-primary" onclick="subirInformeEvaluacion()"><i class="fa-solid fa-upload"></i> Subir informe</button>`;
+                
+                if (estadoExp === 'Evaluado') {
+                    html += `<button class="action-btn" style="background:#10b981; color:white; border-color:#10b981;" onclick="cambiarEstadoExpediente('Por contratar')"><i class="fa-solid fa-check-double"></i> Confirmar Evaluación (Aprobar)</button>`;
+                }
+            }
+
+            // ETAPA 4 (Contratación)
+            if (['Por contratar', 'Firmado', 'Contrato enviado', 'Contratado'].includes(estadoExp)) {
+                html += `<button class="action-btn" onclick="enviarADirectivos()"><i class="fa-solid fa-user-tie"></i> Enviar a Directivos</button>`;
+                html += `<button class="action-btn" style="background:#0284c7; color:white; border-color:#0284c7;" onclick="cambiarEstadoExpediente('Firmado')"><i class="fa-solid fa-signature"></i> Enviar a firmar a docente</button>`;
+                
+                if (['Firmado', 'Contrato enviado', 'Contratado'].includes(estadoExp)) {
+                    html += `<button class="action-btn" style="background:#8b5cf6; color:white; border-color:#8b5cf6;" onclick="cambiarEstadoExpediente('Contrato enviado')"><i class="fa-solid fa-paper-plane"></i> Derivar a Contratación</button>`;
+                }
+            }
+
+            toolbar.innerHTML = html;
+        }
+
+        // ==================== NUEVAS ACCIONES (STUBS) ====================
+        function enviarNotificacionGlobal() {
+            showToast("Notificación enviada exitosamente.", "success");
+        }
+
+        function subirInformeEvaluacion() {
+            // Aquí puedes abrir un modal de carga o llamar a una función.
+            // Para el ejemplo, simulamos la subida y cambiamos el estado
+            showToast("Simulando subida de informe...", "info");
+            setTimeout(() => {
+                cambiarEstadoExpediente('Evaluado');
+            }, 1000);
+        }
+
+        function enviarADirectivos() {
+            showToast("Documentos enviados a directivos.", "success");
         }
     </script>
 </body>

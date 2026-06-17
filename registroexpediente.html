@@ -1002,8 +1002,8 @@
 
                 if (result.status === 'success') {
                     const d = result.data;
+                    window.docsSolicitadosGlobal = result.documentosSolicitados || "";
 
-                    // ... (rellenado de campos nombre, apellidos, etc)
                     if(d.nombres) document.getElementById('reg-nombres').value = d.nombres;
                     if(d.apellidos) document.getElementById('reg-apellidos').value = d.apellidos;
                     if(d.dni) document.getElementById('reg-dni').value = d.dni;
@@ -1047,7 +1047,7 @@
                     if (d.url_cv) {
                         urlCVGlobal = d.url_cv;
                         isEditingCV = false;
-                        document.getElementById('view-link-cv').href = urlCVGlobal;
+                        document.getElementById('view-link-cv').href = getDriveViewUrl(urlCVGlobal);
                         
                         const statusContainer = document.getElementById('cv-status-container');
                         if (statusContainer) {
@@ -1064,7 +1064,7 @@
                     if (d.url_handbook) {
                         urlHbGlobal = d.url_handbook;
                         isEditingHb = false;
-                        document.getElementById('view-link-hb').href = urlHbGlobal;
+                        document.getElementById('view-link-hb').href = getDriveViewUrl(urlHbGlobal);
                     } else { isEditingHb = true; }
 
                     actualizarVistaPaso1(); // Dibuja la pantalla según lo que falte
@@ -1119,7 +1119,7 @@
 
                     if(d.url_id) {
                         urlIdGlobal = d.url_id;
-                        document.getElementById('view-link-id').href = urlIdGlobal;
+                        document.getElementById('view-link-id').href = getDriveViewUrl(urlIdGlobal);
                         document.getElementById('step3-view-mode').classList.remove('d-none');
                         document.getElementById('step3-upload-mode').classList.add('d-none');
                         isEditingId = false;
@@ -1154,6 +1154,18 @@
             }
         }
 
+        // --- FUNCIÓN PARA CONVERTIR URL DE DESCARGA A URL DE VISTA (Solo para la Interfaz) ---
+        function getDriveViewUrl(downloadUrl) {
+            if (!downloadUrl) return "#";
+            // Extrae el ID del archivo de la URL de descarga
+            const match = downloadUrl.match(/id=([a-zA-Z0-9_-]+)/);
+            if (match && match[1]) {
+                // Devuelve el formato de vista nativa de Drive
+                return `https://drive.google.com/file/d/${match[1]}/view`;
+            }
+            return downloadUrl; // Retorna la original si no es de Drive
+        }
+
         // --- LÓGICA VISUAL DE DIPLOMAS (Paso 2) ---
         function renderDiplomaReadonly(data) {
             const container = document.getElementById('diplomas-container');
@@ -1182,8 +1194,8 @@
                     <b>Institución:</b> ${data.instituto || 'Pendiente de procesar...'}
                 </p>
                 <div class="d-flex gap-2">
-                    <a href="${data.url_diploma}" target="_blank" class="btn btn-sm btn-light border fw-bold text-primary"><i class="fa-solid fa-eye"></i> Diploma</a>
-                    ${data.url_transcript ? `<a href="${data.url_transcript}" target="_blank" class="btn btn-sm btn-light border fw-bold text-primary"><i class="fa-solid fa-eye"></i> Transcript</a>` : ''}
+                    <a href="${getDriveViewUrl(data.url_diploma)}" target="_blank" class="btn btn-sm btn-light border fw-bold text-primary"><i class="fa-solid fa-eye"></i> Diploma</a>
+                    ${data.url_transcript ? `<a href="${getDriveViewUrl(data.url_transcript)}" target="_blank" class="btn btn-sm btn-light border fw-bold text-primary"><i class="fa-solid fa-eye"></i> Transcript</a>` : ''}
                     <button type="button" class="btn btn-sm btn-outline-danger fw-bold ms-auto" onclick="confirmarEdicionDiploma(this)"><i class="fa-solid fa-pen"></i> Editar</button>
                 </div>
             `;
@@ -1473,8 +1485,8 @@
                     // Forzamos a modo lectura y refrescamos la pantalla
                     isEditingCV = false;
                     isEditingHb = false;
-                    document.getElementById('view-link-cv').href = urlCVGlobal;
-                    document.getElementById('view-link-hb').href = urlHbGlobal;
+                    document.getElementById('view-link-cv').href = getDriveViewUrl(urlCVGlobal);
+                    document.getElementById('view-link-hb').href = getDriveViewUrl(urlHbGlobal);
                     actualizarVistaPaso1(); 
 
                     cambiarUI(1); 
@@ -1486,8 +1498,39 @@
                     const diplomaItems = document.querySelectorAll('.diploma-item');
                     if (diplomaItems.length === 0) { alert("Sube al menos un Diploma."); btnNext.disabled=false; btnNext.innerHTML=originalHTML; return; }
 
+                    // --- NUEVA LÓGICA DE VALIDACIÓN OBLIGATORIA (MAESTRÍA / DOCTORADO) ---
+                    let hasMaster = false;
+                    let hasDoctorate = false;
+
+                    for (let item of diplomaItems) {
+                        let gradoStr = "";
+                        if (item.classList.contains('edit-mode-dip')) {
+                            gradoStr = item.querySelector('.dip-grado').value.toLowerCase();
+                        } else {
+                            gradoStr = (item.dataset.grado || "").toLowerCase();
+                        }
+                        if (gradoStr.includes('master') || gradoStr.includes('maestría') || gradoStr.includes('magister') || gradoStr.includes('magíster')) hasMaster = true;
+                        if (gradoStr.includes('doctor') || gradoStr.includes('phd')) hasDoctorate = true;
+                    }
+
+                    const reqDocs = window.docsSolicitadosGlobal || "";
+                    const pideDoctorado = reqDocs.includes("Especialmente Doctorado");
+
+                    if (pideDoctorado) {
+                        if (!hasDoctorate) {
+                            Swal.fire({ title: 'Grado Requerido', html: 'Para este expediente es obligatorio adjuntar al menos un diploma de <b>Doctorado</b>.', icon: 'warning', confirmButtonColor: '#2563eb' });
+                            btnNext.disabled = false; btnNext.innerHTML = originalHTML; return;
+                        }
+                    } else {
+                        if (!hasMaster) {
+                            Swal.fire({ title: 'Grado Requerido', html: 'Para este expediente es obligatorio adjuntar al menos un diploma de <b>Maestría / Master</b>.', icon: 'warning', confirmButtonColor: '#2563eb' });
+                            btnNext.disabled = false; btnNext.innerHTML = originalHTML; return;
+                        }
+                    }
+                    // --- FIN NUEVA LÓGICA ---
+
                     let diplomasParaGuardar =[];
-                    let hayNuevosOEditados = false; // Control para saber si usamos Google Sheets
+                    let hayNuevosOEditados = false;  // Control para saber si usamos Google Sheets
 
                     for (let item of diplomaItems) {
                         if (item.classList.contains('edit-mode-dip')) { // Archivos nuevos o en edición
@@ -1579,7 +1622,7 @@
                             
                             // NUEVO: Cambiar la interfaz inmediatamente a "Guardado" sin necesidad de presionar F5
                             isEditingId = false;
-                            document.getElementById('view-link-id').href = urlIdGlobal;
+                            document.getElementById('view-link-id').href = getDriveViewUrl(urlIdGlobal);
                             document.getElementById('step3-view-mode').classList.remove('d-none');
                             document.getElementById('step3-upload-mode').classList.add('d-none');
                         }
@@ -2088,13 +2131,29 @@
             // 2. Validar Educación (Grados)
             const eduCards = document.querySelectorAll('.ai-edu-record');
             if (eduCards.length === 0) esValido = false;
+            
+            let hasMaster = false;
+            let hasDoctorate = false;
+
             eduCards.forEach(card => {
                 checkField(card.querySelector('.ai-rama'));
                 checkField(card.querySelector('.ai-institucion'));
                 checkField(card.querySelector('.ai-ubicacion'));
                 checkField(card.querySelector('.ai-inicio'));
                 checkField(card.querySelector('.ai-fin'));
+                
+                // Mapear los grados subidos en la validación final
+                let gradoStr = (card.dataset.grado || "").toLowerCase();
+                if (gradoStr.includes('master') || gradoStr.includes('maestría') || gradoStr.includes('magister') || gradoStr.includes('magíster')) hasMaster = true;
+                if (gradoStr.includes('doctor') || gradoStr.includes('phd')) hasDoctorate = true;
             });
+
+            // Validación estricta final en el Paso 6
+            const reqDocs = window.docsSolicitadosGlobal || "";
+            const pideDoctorado = reqDocs.includes("Especialmente Doctorado");
+
+            if (pideDoctorado && !hasDoctorate) esValido = false;
+            if (!pideDoctorado && !hasMaster) esValido = false;
 
             // 3. Validar Experiencia Laboral
             const expCards = document.querySelectorAll('.exp-item');
