@@ -662,30 +662,62 @@
                                 <div class="col-md-4"><label class="form-label">Número de Documento *</label><input type="text" class="form-control" id="reg-dni"></div>
                                 <div class="col-md-4"><label class="form-label">Fecha de Nacimiento *</label><input type="date" class="form-control" id="reg-fecha-nac"></div>
                                 
+                                <!-- ID y FOTO LADO A LADO -->
                                 <div class="col-12 mt-3">
-                                    <div id="step3-upload-mode">
-                                        <label class="form-label">Copia de Documento de Identidad (PDF) *</label>
-                                        <div class="file-upload-box py-4" onclick="document.getElementById('idFile').click()">
-                                            <i class="fa-regular fa-id-card"></i>
-                                            <h6 class="fw-bold text-dark m-0" id="idTextLabel">Subir archivo escaneado</h6>
-                                            <p class="text-muted small mt-1 mb-0">Debe ser legible y por ambos lados (si aplica).</p>
-                                            <input type="file" id="idFile" class="d-none" accept=".pdf" onchange="mostrarNombre(this, 'idTextLabel')">
-                                        </div>
-                                    </div>
-                                    <!-- Modo Lectura -->
-                                    <div id="step3-view-mode" class="d-none mt-2">
-                                        <!-- ID step3-view-card (O el que uses en tu JS) -->
-                                        <div class="minimal-doc-card m-0" id="step3-minimal-card"> 
-                                            <div class="minimal-doc-info">
-                                                <div class="minimal-doc-icon id"><i class="fa-regular fa-id-card"></i></div>
-                                                <div class="minimal-doc-text">
-                                                    <h6>Identificación Oficial</h6>
-                                                    <div><span class="badge bg-light text-dark border">Validado</span></div>
+                                    <div class="row g-4">
+                                        <!-- Caja: ID Oficial -->
+                                        <div class="col-md-6">
+                                            <div id="step3-upload-mode">
+                                                <label class="form-label">Documento de Identidad (PDF) *</label>
+                                                <div class="file-upload-box py-4" onclick="document.getElementById('idFile').click()">
+                                                    <i class="fa-regular fa-id-card"></i>
+                                                    <h6 class="fw-bold text-dark m-0" id="idTextLabel">Subir archivo escaneado</h6>
+                                                    <p class="text-muted small mt-1 mb-0">Legible y ambos lados.</p>
+                                                    <input type="file" id="idFile" class="d-none" accept=".pdf" onchange="mostrarNombre(this, 'idTextLabel')">
                                                 </div>
                                             </div>
-                                            <div class="minimal-doc-actions">
-                                                <a href="#" id="view-link-id" target="_blank" class="btn-minimal"><i class="fa-regular fa-eye"></i> Ver</a>
-                                                <button type="button" class="btn-minimal" onclick="habilitarEdicionPaso3()"><i class="fa-solid fa-rotate-right"></i> Cambiar</button>
+                                            <div id="step3-view-mode" class="d-none mt-2">
+                                                <div class="minimal-doc-card m-0" id="step3-minimal-card"> 
+                                                    <div class="minimal-doc-info">
+                                                        <div class="minimal-doc-icon id"><i class="fa-regular fa-id-card"></i></div>
+                                                        <div class="minimal-doc-text">
+                                                            <h6>Identidad Oficial</h6>
+                                                            <div><span class="badge bg-light text-dark border">Validado</span></div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="minimal-doc-actions">
+                                                        <a href="#" id="view-link-id" target="_blank" class="btn-minimal"><i class="fa-regular fa-eye"></i> Ver</a>
+                                                        <button type="button" class="btn-minimal" onclick="habilitarEdicionPaso3()"><i class="fa-solid fa-rotate-right"></i> Cambiar</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Caja: Foto de Perfil -->
+                                        <div class="col-md-6">
+                                            <div id="step3-foto-upload-mode">
+                                                <label class="form-label">Foto de Perfil Profesional (JPG/PNG) *</label>
+                                                <div class="file-upload-box py-4" onclick="document.getElementById('fotoFile').click()" id="fotoDropZone">
+                                                    <i class="fa-regular fa-image"></i>
+                                                    <h6 class="fw-bold text-dark m-0" id="fotoTextLabel">Subir foto de perfil</h6>
+                                                    <p class="text-muted small mt-1 mb-0">Haga clic o arrastre aquí.</p>
+                                                    <input type="file" id="fotoFile" class="d-none" accept=".jpg,.jpeg,.png" onchange="mostrarNombre(this, 'fotoTextLabel')">
+                                                </div>
+                                            </div>
+                                            <div id="step3-foto-view-mode" class="d-none mt-2">
+                                                <div class="minimal-doc-card m-0" id="step3-foto-minimal-card"> 
+                                                    <div class="minimal-doc-info">
+                                                        <div class="minimal-doc-icon" style="background:#fef3c7; color:#d97706;"><i class="fa-regular fa-image"></i></div>
+                                                        <div class="minimal-doc-text">
+                                                            <h6>Foto de Perfil</h6>
+                                                            <div><span class="badge bg-light text-dark border">Subida</span></div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="minimal-doc-actions">
+                                                        <a href="#" id="view-link-foto" target="_blank" class="btn-minimal"><i class="fa-regular fa-eye"></i> Ver</a>
+                                                        <button type="button" class="btn-minimal" onclick="habilitarEdicionFoto()"><i class="fa-solid fa-rotate-right"></i> Cambiar</button>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -865,9 +897,17 @@
         let urlHbGlobal = "";
         let isEditingCV = true;
         let isEditingHb = true;
+        let urlFotoGlobal = "";      // NUEVO
+        let isEditingFoto = true;    // NUEVO
         let urlIdGlobal = "";
         let isEditingId = true;
         let itiCelular;
+
+        function habilitarEdicionFoto() {
+            isEditingFoto = true;
+            document.getElementById('step3-foto-view-mode').classList.add('d-none');
+            document.getElementById('step3-foto-upload-mode').classList.remove('d-none');
+        }
 
         // --- LÓGICA DEL DROPDOWN DE USUARIO ---
         document.getElementById('userDropdownTrigger').addEventListener('click', function(e) {
@@ -906,18 +946,25 @@
             try {
                 const res = await fetch('https://restcountries.com/v3.1/all?fields=name,translations');
                 const paises = await res.json();
-                paises.sort((a, b) => a.translations.spa.common.localeCompare(b.translations.spa.common));
+                
+                // Ordenamiento seguro a prueba de países sin traducción
+                paises.sort((a, b) => {
+                    const nameA = (a.translations && a.translations.spa && a.translations.spa.common) ? a.translations.spa.common : a.name.common;
+                    const nameB = (b.translations && b.translations.spa && b.translations.spa.common) ? b.translations.spa.common : b.name.common;
+                    return nameA.localeCompare(nameB);
+                });
                 
                 const selectPais = document.getElementById('reg-pais');
                 selectPais.innerHTML = '<option value="">Seleccionar país...</option>';
                 paises.forEach(p => {
-                    const nombreEsp = p.translations.spa.common;
+                    const nombreEsp = (p.translations && p.translations.spa && p.translations.spa.common) ? p.translations.spa.common : p.name.common;
                     const option = document.createElement('option');
                     option.value = nombreEsp;
                     option.textContent = nombreEsp;
                     selectPais.appendChild(option);
                 });
             } catch (e) {
+                console.error(e);
                 document.getElementById('reg-pais').innerHTML = '<option value="">Error cargando países</option>';
             }
         }
@@ -943,6 +990,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            
             // 1. Traemos los datos que ya están guardados en el navegador
             const fullName = localStorage.getItem('userName') || "Docente";
             const firstName = fullName.split(' ')[0];
@@ -959,6 +1007,21 @@
             if(initialMobile) initialMobile.innerText = initial;
 
             cargarPaises();
+
+            // Inicializar arrastrar y soltar para foto
+            const dropZone = document.getElementById('fotoDropZone');
+            if(dropZone) {
+                dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.borderColor = "var(--primary)"; dropZone.style.background = "var(--primary-light)"; });
+                dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); dropZone.style.borderColor = "#cbd5e1"; dropZone.style.background = "#ffffff"; });
+                dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropZone.style.borderColor = "#cbd5e1"; dropZone.style.background = "#ffffff";
+                    if(e.dataTransfer.files.length > 0) {
+                        document.getElementById('fotoFile').files = e.dataTransfer.files;
+                        mostrarNombre(document.getElementById('fotoFile'), 'fotoTextLabel');
+                    }
+                });
+            }
 
             // Inicializar el selector de código de país
             const inputCelular = document.querySelector("#reg-celular");
@@ -1123,6 +1186,14 @@
                         document.getElementById('step3-view-mode').classList.remove('d-none');
                         document.getElementById('step3-upload-mode').classList.add('d-none');
                         isEditingId = false;
+                    }
+
+                    if(d.url_foto) {
+                        urlFotoGlobal = d.url_foto;
+                        document.getElementById('view-link-foto').href = getDriveViewUrl(urlFotoGlobal);
+                        document.getElementById('step3-foto-view-mode').classList.remove('d-none');
+                        document.getElementById('step3-foto-upload-mode').classList.add('d-none');
+                        isEditingFoto = false;
                     }
 
                     if (validarPaso3Completo()) { marcarTabComoCompletada(3); }
@@ -1608,19 +1679,14 @@
                     return;
                 }
                 
-                // PASO 3: DATOS PERSONALES Y DOCUMENTO DE IDENTIDAD
+                // PASO 3: DATOS PERSONALES Y DOCUMENTO DE IDENTIDAD Y FOTO
                 else if (pasoActual === 3) {
                     if (isEditingId) {
                         const idFile = document.getElementById('idFile').files[0];
-                                                
                         if (idFile) {
                             const b64Id = await getBase64(idFile);
-                            
-                            // NUEVO: Guardar en la carpeta del DOCENTE usando "uploadTo: 'docente'"
                             const resId = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Id, name: idFile.name, type: idFile.type, uploadTo: 'docente', idDocente: userId }) }).then(r=>r.json());
                             urlIdGlobal = resId.url;
-                            
-                            // NUEVO: Cambiar la interfaz inmediatamente a "Guardado" sin necesidad de presionar F5
                             isEditingId = false;
                             document.getElementById('view-link-id').href = getDriveViewUrl(urlIdGlobal);
                             document.getElementById('step3-view-mode').classList.remove('d-none');
@@ -1628,7 +1694,21 @@
                         }
                     }
 
+                    if (isEditingFoto) {
+                        const fotoFile = document.getElementById('fotoFile').files[0];
+                        if (fotoFile) {
+                            const b64Foto = await getBase64(fotoFile);
+                            const resFoto = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Foto, name: fotoFile.name, type: fotoFile.type, uploadTo: 'docente', idDocente: userId }) }).then(r=>r.json());
+                            urlFotoGlobal = resFoto.url;
+                            isEditingFoto = false;
+                            document.getElementById('view-link-foto').href = getDriveViewUrl(urlFotoGlobal);
+                            document.getElementById('step3-foto-view-mode').classList.remove('d-none');
+                            document.getElementById('step3-foto-upload-mode').classList.add('d-none');
+                        }
+                    }
+
                     payload.url_id = urlIdGlobal;
+                    payload.url_foto = urlFotoGlobal;
                     payload.correo = document.getElementById('reg-correo').value;
                     payload.celular = itiCelular.getNumber();
                     payload.nombres = document.getElementById('reg-nombres').value;
