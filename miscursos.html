@@ -411,7 +411,7 @@
             let html = "";
             cursosArray.forEach(curso => {
                 
-                let isConfirmed = (curso.estado.toLowerCase() === 'respondido' || curso.estado.toLowerCase() === 'completado' || curso.estado.toLowerCase() === 'aprobado');
+                let isConfirmed = (curso.estado.toLowerCase() === 'respondido' || curso.estado.toLowerCase() === 'completado' || curso.estado.toLowerCase() === 'aprobado' || curso.estado.toLowerCase() === 'aceptado');
                 
                 let dotClass = isConfirmed ? 'dot-asignado' : 'dot-pendiente';
                 let txtEstado = isConfirmed ? 'Asignado' : 'Por confirmar';
@@ -474,7 +474,7 @@
             else {
                 const filtrados = cursosGlobales.filter(d => {
                     let st = d.estado.toLowerCase();
-                    if(estado === 'asignado') return st === 'respondido' || st === 'completado' || st === 'aprobado';
+                if(estado === 'asignado') return st === 'respondido' || st === 'completado' || st === 'aprobado' || st === 'aceptado';
                     return st === estado;
                 });
                 renderizarCards(filtrados);

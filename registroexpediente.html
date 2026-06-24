@@ -739,32 +739,32 @@
                             </div>
                         </div>
 
+                        
                         <!-- PASO 4: ASIGNACIÓN -->
                         <div class="step-content" id="step-4">
-                            <h2 class="step-title">Detalles del Curso</h2>
-                            <p class="step-subtitle">Revise la invitación académica y seleccione la disponibilidad de horario para impartir sus clases.</p>
+                            <h2 class="step-title">Asignación de Curso</h2>
+                            <p class="step-subtitle">Revise el curso propuesto y defina la disponibilidad de días y horarios para impartir sus clases.</p>
                             
-                            <div class="section-label">Invitaciones Pendientes</div>
+                            <div class="section-label">Curso Propuesto</div>
                             <div id="lista-invitaciones" class="mb-4"></div>
                             
                             <div id="horario-container" style="display: none;">
-                                <div class="section-label mt-4">Disponibilidad Docente</div>
-                                <div class="row g-4 p-4 rounded-4" style="background-color: var(--primary-light); border: 1px dashed #bfdbfe;">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Día Preferido de Dictado *</label>
-                                        <select class="form-select border-0 shadow-sm" id="reg-dia">
-                                            <option value="">Seleccione un día</option>
-                                            <option value="Lunes">Lunes</option><option value="Martes">Martes</option><option value="Miércoles">Miércoles</option><option value="Jueves">Jueves</option><option value="Viernes">Viernes</option>
-                                        </select>
+                                <div class="section-label mt-2">Definir Disponibilidad</div>
+                                <div class="p-4 rounded-4" style="background-color: var(--primary-light); border: 1px solid #bfdbfe;">
+                                    <div class="d-flex align-items-start gap-2 mb-4 pb-3 border-bottom" style="border-color: #93c5fd !important;">
+                                        <i class="fa-solid fa-circle-info text-primary mt-1"></i>
+                                        <p class="small text-muted m-0" style="line-height: 1.5;">
+                                            <strong class="text-primary-dark">Indique su disponibilidad:</strong> Seleccione el día y la franja horaria para dictar su clase. Si el curso contempla dos sesiones o requiere dictarse en dos momentos diferentes de la semana, haga clic en <b>"Añadir segundo día"</b>.
+                                        </p>
                                     </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Franja Horaria (Hora de Orlando GMT-5) *</label>
-                                        <select class="form-select border-0 shadow-sm" id="reg-hora">
-                                            <option value="">Seleccione una franja</option>
-                                            <option value="19:00 a 20:30">19:00 a 20:30 (GMT-5)</option>
-                                            <option value="20:30 a 22:00">20:30 a 22:00 (GMT-5)</option>
-                                        </select>
+                                    
+                                    <div id="schedule-rows">
+                                        <!-- Las filas se inyectan por JS -->
                                     </div>
+                                    
+                                    <button type="button" class="btn btn-sm btn-outline-primary fw-bold mt-2 bg-white" id="btnAddSchedule" onclick="agregarDiaHorario()" style="border-radius: 8px; border-color: #bfdbfe;">
+                                        <i class="fa-solid fa-plus me-1"></i> Añadir segundo día (Opcional)
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -838,28 +838,13 @@
                             <!-- SECCIÓN: COMPETENCIAS -->
                             <div class="mb-2 pt-3 border-top">
                                 <div class="section-label mt-4 d-flex align-items-center gap-2"><i class="fa-solid fa-star text-primary fs-5"></i> Competencias y Habilidades</div>
-                                <div class="dynamic-card bg-light border-0">
-                                    <div class="row g-4">
-                                        <div class="col-md-4">
-                                            <label class="form-label">Nivel Tecnológico *</label>
-                                            <select class="form-select shadow-sm" id="skill-tech">
-                                                <option value="">Seleccione...</option><option value="Basic">Básico</option><option value="Intermediate">Intermedio</option><option value="Advanced">Avanzado</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label">Nivel Lingüístico (Inglés) *</label>
-                                            <select class="form-select shadow-sm" id="skill-lang">
-                                                <option value="">Seleccione...</option><option value="Basic">Básico</option><option value="Intermediate">Intermedio</option><option value="Advanced">Avanzado</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label">Habilidades Blandas *</label>
-                                            <select class="form-select shadow-sm" id="skill-social">
-                                                <option value="">Seleccione...</option><option value="Low">En desarrollo</option><option value="Average">Promedio</option><option value="High">Alto / Líder</option>
-                                            </select>
-                                        </div>
-                                    </div>
+                                <div class="alert-aesthetic mb-3 py-3 px-4" style="background-color: #f8fafc; border-color: #e2e8f0;">
+                                    <p class="m-0 small text-muted"><i class="fa-solid fa-circle-info text-primary me-2"></i><strong>Requisito:</strong> Debe registrar al menos <b>una competencia de cada tipo</b> (Tecnológica, Lingüística y Habilidades Blandas).</p>
                                 </div>
+                                <div id="ai-skills-container"></div>
+                                <button type="button" class="btn-add-dynamic mt-3" onclick="addSkillField()">
+                                    <i class="fa-solid fa-circle-plus fs-5"></i> Añadir Competencia
+                                </button>
                             </div>
                         </div>
 
@@ -909,6 +894,45 @@
             document.getElementById('step3-foto-upload-mode').classList.remove('d-none');
         }
 
+        // --- FUNCIONES DINÁMICAS PARA EL PASO 4 ---
+        function getScheduleRowHTML(num) {
+            return `
+            <div class="row g-3 align-items-center mb-3 schedule-row pb-3 ${num === 1 ? 'border-bottom border-primary-subtle' : ''}" id="row-horario-${num}">
+                <div class="col-md-5">
+                    <label class="form-label text-primary-dark" style="font-size: 0.8rem;">Día de dictado ${num} *</label>
+                    <select class="form-select border-0 shadow-sm reg-dia-input" id="reg-dia-${num}">
+                        <option value="">Seleccione un día</option>
+                        <option value="Lunes">Lunes</option><option value="Martes">Martes</option><option value="Miércoles">Miércoles</option><option value="Jueves">Jueves</option><option value="Viernes">Viernes</option><option value="Sábado">Sábado</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-primary-dark" style="font-size: 0.8rem;">Franja Horaria (GMT-5) *</label>
+                    <select class="form-select border-0 shadow-sm reg-hora-input" id="reg-hora-${num}">
+                        <option value="">Seleccione una franja</option>
+                        <option value="19:00 a 20:30">19:00 a 20:30</option>
+                        <option value="20:30 a 22:00">20:30 a 22:00</option>
+                    </select>
+                </div>
+                <div class="col-md-1 d-flex align-items-end justify-content-center" style="margin-top: 32px;">
+                    ${num > 1 ? `<button type="button" class="btn btn-sm btn-outline-danger border-0" onclick="removerDiaHorario(${num})" title="Eliminar fila"><i class="fa-solid fa-trash fs-6"></i></button>` : ''}
+                </div>
+            </div>`;
+        }
+
+        function agregarDiaHorario() {
+            const container = document.getElementById('schedule-rows');
+            const rowCount = container.querySelectorAll('.schedule-row').length;
+            if (rowCount >= 2) return; 
+            container.insertAdjacentHTML('beforeend', getScheduleRowHTML(2));
+            document.getElementById('btnAddSchedule').style.display = 'none'; 
+        }
+
+        function removerDiaHorario(num) {
+            const row = document.getElementById(`row-horario-${num}`);
+            if (row) row.remove();
+            document.getElementById('btnAddSchedule').style.display = 'inline-block'; 
+        }
+
         // --- LÓGICA DEL DROPDOWN DE USUARIO ---
         document.getElementById('userDropdownTrigger').addEventListener('click', function(e) {
             e.stopPropagation();
@@ -944,30 +968,153 @@
         // --- FUNCIONES PARA EL PASO 3 ---
         async function cargarPaises() {
             try {
-                const res = await fetch('https://restcountries.com/v3.1/all?fields=name,translations');
+                // Quitamos el filtro ?fields= para evitar posibles errores de estructura en la API
+                const res = await fetch('https://restcountries.com/v3.1/all');
+                
+                // Si la API falla (ej. límite de peticiones), lanzamos error para usar el plan de respaldo
+                if (!res.ok) throw new Error("La API de países no respondió correctamente.");
+                
                 const paises = await res.json();
                 
-                // Ordenamiento seguro a prueba de países sin traducción
+                // Verificamos que realmente sea una lista válida
+                if (!Array.isArray(paises)) throw new Error("La API no devolvió un arreglo válido.");
+                
+                // Ordenamiento súper seguro usando Optional Chaining (?.)
                 paises.sort((a, b) => {
-                    const nameA = (a.translations && a.translations.spa && a.translations.spa.common) ? a.translations.spa.common : a.name.common;
-                    const nameB = (b.translations && b.translations.spa && b.translations.spa.common) ? b.translations.spa.common : b.name.common;
+                    const nameA = a.translations?.spa?.common || a.name?.common || "";
+                    const nameB = b.translations?.spa?.common || b.name?.common || "";
                     return nameA.localeCompare(nameB);
                 });
                 
                 const selectPais = document.getElementById('reg-pais');
                 selectPais.innerHTML = '<option value="">Seleccionar país...</option>';
                 paises.forEach(p => {
-                    const nombreEsp = (p.translations && p.translations.spa && p.translations.spa.common) ? p.translations.spa.common : p.name.common;
-                    const option = document.createElement('option');
-                    option.value = nombreEsp;
-                    option.textContent = nombreEsp;
-                    selectPais.appendChild(option);
+                    const nombreEsp = p.translations?.spa?.common || p.name?.common || "";
+                    if (nombreEsp) {
+                        const option = document.createElement('option');
+                        option.value = nombreEsp;
+                        option.textContent = nombreEsp;
+                        selectPais.appendChild(option);
+                    }
                 });
             } catch (e) {
-                console.error(e);
-                document.getElementById('reg-pais').innerHTML = '<option value="">Error cargando países</option>';
+                console.error("Detalle del error de países:", e);
+                // PLAN DE RESPALDO: Si la API falla o está bloqueada por la red, cargamos países por defecto
+                const selectPais = document.getElementById('reg-pais');
+                selectPais.innerHTML = `
+                    <option value="">Seleccionar país...</option>
+                    <option value="Estados Unidos">Estados Unidos</option>
+                    <option value="Perú">Perú</option>
+                    <option value="Colombia">Colombia</option>
+                    <option value="México">México</option>
+                    <option value="España">España</option>
+                    <option value="Argentina">Argentina</option>
+                    <option value="Chile">Chile</option>
+                    <option value="Ecuador">Ecuador</option>
+                    <option value="Venezuela">Venezuela</option>
+                    <option value="Bolivia">Bolivia</option>
+                    <option value="República Dominicana">República Dominicana</option>
+                    <option value="Panamá">Panamá</option>
+                    <option value="Costa Rica">Costa Rica</option>
+                    <option value="Otro">Otro país...</option>
+                `;
             }
         }
+
+        function addSkillField(data = {}) {
+            const container = document.getElementById('ai-skills-container');
+            const div = document.createElement('div'); 
+            div.className = 'dynamic-card skill-item mb-3';
+            div.style.background = "#ffffff";
+            div.style.border = "1px solid #e2e8f0";
+            div.style.padding = "20px";
+
+            div.dataset.id = data.id_experiencia || ("EXPV-" + Date.now().toString().slice(-6) + Math.floor(Math.random() * 1000));
+
+            div.innerHTML = `
+                <button type="button" class="btn-remove" onclick="this.parentElement.remove()"><i class="fa-solid fa-trash"></i></button>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold">Tipo de Competencia *</label>
+                        <!-- Agregamos un evento onchange para que detecte cuando el usuario elige algo -->
+                        <select class="form-select skill-tipo" onchange="actualizarNiveles(this)">
+                            <option value="">Seleccione...</option>
+                            <option value="CTecnologica" ${data.tipo === 'CTecnologica' ? 'selected' : ''}>Tecnológica</option>
+                            <option value="CLinguistica" ${data.tipo === 'CLinguistica' ? 'selected' : ''}>Lingüística</option>
+                            <option value="CHBlandas" ${data.tipo === 'CHBlandas' ? 'selected' : ''}>Habilidades Blandas</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold">Nombre / Descripción *</label>
+                        <input type="text" class="form-control skill-nombre" placeholder="Ej: Ofimática, Español, Liderazgo" value="${data.empresa || data.nombre || ''}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold">Nivel *</label>
+                        <!-- Guardamos temporalmente el valor que viene de la BD para seleccionarlo automáticamente -->
+                        <select class="form-select skill-nivel" data-saved-value="${data.cargo || ''}">
+                            <option value="">Primero seleccione tipo...</option>
+                        </select>
+                    </div>
+                </div>`;
+            container.appendChild(div);
+
+            // Magia UX: Si la tarjeta se carga con datos previos, forzamos a que se dibujen los niveles de inmediato
+            const selectTipo = div.querySelector('.skill-tipo');
+            if (selectTipo.value !== "") {
+                actualizarNiveles(selectTipo, false); // "false" significa que NO estamos reseteando, sino cargando
+            }
+        }
+
+        // --- NUEVA FUNCIÓN: ACTUALIZA LOS NIVELES DEPENDIENDO DEL TIPO ---
+        function actualizarNiveles(selectTipo, esCambioManual = true) {
+            // Buscamos la caja de nivel que está en la misma fila
+            const row = selectTipo.closest('.skill-item');
+            const selectNivel = row.querySelector('.skill-nivel');
+            const tipo = selectTipo.value;
+            const savedValue = selectNivel.getAttribute('data-saved-value');
+
+            // 1. Limpiamos la caja de nivel
+            selectNivel.innerHTML = '<option value="">Seleccione nivel...</option>';
+
+            // 2. Definimos las opciones según el tipo elegido
+            let opciones = [];
+            
+            if (tipo === 'CTecnologica' || tipo === 'CLinguistica') {
+                opciones = [
+                    { val: 'Basic', text: 'Básico' },
+                    { val: 'Intermediate', text: 'Intermedio' },
+                    { val: 'Advanced', text: 'Avanzado' }
+                ];
+            } else if (tipo === 'CHBlandas') {
+                opciones = [
+                    { val: 'Low', text: 'En desarrollo' },
+                    { val: 'Average', text: 'Promedio' },
+                    { val: 'High', text: 'Alto / Líder' }
+                ];
+            }
+
+            // 3. Dibujamos las opciones (Y si hay un dato guardado, lo seleccionamos)
+            opciones.forEach(opt => {
+                // Compatibilidad por si el usuario guardó datos con la versión anterior (Básico en lugar de Basic)
+                const isLegacySaved = (savedValue === "Basico" && opt.val === "Basic") || 
+                                      (savedValue === "Intermedio" && opt.val === "Intermediate") || 
+                                      (savedValue === "Avanzado" && opt.val === "Advanced") ||
+                                      (savedValue === "En desarrollo" && opt.val === "Low") ||
+                                      (savedValue === "Promedio" && opt.val === "Average") ||
+                                      (savedValue === "Alto" && opt.val === "High");
+
+                const selected = (!esCambioManual && (savedValue === opt.val || isLegacySaved)) ? 'selected' : '';
+                selectNivel.innerHTML += `<option value="${opt.val}" ${selected}>${opt.text}</option>`;
+            });
+
+            // 4. Si el docente cambió el tipo manualmente, borramos la memoria interna y alertamos a la validación
+            if (esCambioManual) {
+                selectNivel.setAttribute('data-saved-value', '');
+                // Forzamos a que el sistema note que se borró el nivel para que vuelva a bloquear el botón Finalizar
+                selectNivel.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        }
+
 
         function verificarEstadoEEUU() {
             const pais = document.getElementById('reg-pais').value.toLowerCase();
@@ -1203,10 +1350,18 @@
                     if (result.drafts) {
                         const eduCont = document.getElementById('ai-education-container');
                         const expCont = document.getElementById('ai-experience-container');
+                        const skillCont = document.getElementById('ai-skills-container');
                         if (eduCont) eduCont.innerHTML = '';
                         if (expCont) expCont.innerHTML = '';
+                        if (skillCont) skillCont.innerHTML = '';
+                        
                         if (result.drafts.educacion && result.drafts.educacion.length > 0) { result.drafts.educacion.forEach(edu => addEduReviewField(edu)); }
-                        if (result.drafts.experiencia && result.drafts.experiencia.length > 0) { result.drafts.experiencia.forEach(exp => addExpField(exp)); }
+                        if (result.drafts.experiencia && result.drafts.experiencia.length > 0) { 
+                            result.drafts.experiencia.forEach(exp => {
+                                if (exp.tipo && exp.tipo.startsWith('C')) addSkillField(exp);
+                                else addExpField(exp);
+                            });
+                        }
                     }
                      // NUEVO: Verificamos si el paso 6 califica para pintarse de verde
                     setTimeout(() => {
@@ -1410,7 +1565,7 @@
                 let html = "";
                 pendientes.forEach(inv => { 
                     const est = (inv.estado || "").toString().trim().toLowerCase();
-                    const isRespondido = est === 'respondido' || est === 'completado' || est === 'procesado';
+                    const isRespondido = est === 'respondido' || est === 'completado' || est === 'procesado' || est === 'aceptado';
                     
                     const badge = isRespondido 
                         ? `<span class="badge bg-success bg-opacity-10 text-success border border-success fw-bold px-2 py-1">Respondido</span>` 
@@ -1445,7 +1600,7 @@
                     // Desplegar automáticamente los inputs si se autoseleccionó
                     if (isAutoSelected) {
                         selectedInvitationId = inv.id;
-                        setTimeout(() => document.getElementById('horario-container').style.display = 'flex', 50);
+                        setTimeout(() => document.getElementById('horario-container').style.display = 'block', 50);
                     }
                 });
                 lista.innerHTML = html;
@@ -1453,7 +1608,7 @@
                 // Validamos si ya fue respondida para precargar memoria y ocultar combo
                 const respondido = pendientes.find(i => {
                     const est = (i.estado || "").toString().trim().toLowerCase();
-                    return est === 'respondido' || est === 'completado' || est === 'procesado';
+                    return est === 'respondido' || est === 'completado' || est === 'procesado' || est === 'aceptado';
                 });
                 
                 if (respondido) {
@@ -1470,32 +1625,52 @@
             el.classList.add('selected'); 
             el.querySelector('input').checked = true; 
             
-            // Si es nuevo (pendiente), mostramos el selector. Si ya fue respondido, lo mantenemos oculto hasta que le de a "Editar".
             if (!isRespondido) {
-                document.getElementById('horario-container').style.display = 'flex'; 
+                document.getElementById('horario-container').style.display = 'block'; 
+                // Aseguramos que exista al menos la primera fila
+                if (document.querySelectorAll('.schedule-row').length === 0) {
+                    document.getElementById('schedule-rows').innerHTML = getScheduleRowHTML(1);
+                }
             } else {
                 document.getElementById('horario-container').style.display = 'none'; 
             }
         }
 
-        function editarHorario(event, invId, dia, hora) {
-            event.stopPropagation(); // Evita que el clic se cruce con el click de la tarjeta padre
-            
-            // 1. Simulamos la selección de la tarjeta, forzando a que se despliegue el contenedor (pasando isRespondido = false)
+        function editarHorario(event, invId, diaStr, horaStr) {
+            event.stopPropagation(); 
             const tarjeta = event.target.closest('.course-radio-card');
             seleccionarCurso(invId, tarjeta, false);
             
-            // 2. Precargamos los selects con los datos guardados
-            document.getElementById('reg-dia').value = dia || "";
-            
-            const selectHora = document.getElementById('reg-hora');
-            for (let i = 0; i < selectHora.options.length; i++) {
-                // Buscamos que coincida el texto para seleccionarlo
-                if (selectHora.options[i].value.includes(hora) || (hora && hora.includes(selectHora.options[i].value))) {
-                    selectHora.selectedIndex = i;
-                    break;
+            // Limpiamos la UI e inyectamos la fila 1
+            document.getElementById('schedule-rows').innerHTML = getScheduleRowHTML(1);
+            document.getElementById('btnAddSchedule').style.display = 'inline-block';
+
+            if (!diaStr) return;
+
+            // Separar la cadena (Ej: "Lunes y Miércoles" -> ["Lunes", "Miércoles"])
+            const dias = diaStr.split(' y ');
+            const horas = horaStr.split(' | ');
+
+            dias.forEach((dia, index) => {
+                const num = index + 1;
+                if (num > 1) agregarDiaHorario(); // Crea la segunda fila si existe
+                
+                const selectDia = document.getElementById(`reg-dia-${num}`);
+                const selectHora = document.getElementById(`reg-hora-${num}`);
+                
+                if (selectDia) selectDia.value = dia.trim();
+                
+                if (selectHora && horas[index]) {
+                    // Extraer solo la hora si viene como "Lunes: 19:00 a 20:30"
+                    const timePart = horas[index].includes(':') ? horas[index].split(/:(.*)/s)[1].trim() : horas[index].trim();
+                    for (let i = 0; i < selectHora.options.length; i++) {
+                        if (selectHora.options[i].value.includes(timePart)) {
+                            selectHora.selectedIndex = i;
+                            break;
+                        }
+                    }
                 }
-            }
+            });
         }
 
         // --- AUTOGUARDADO POR PASOS ---
@@ -1725,28 +1900,43 @@
                 // PASO 4: Confirmar Horario de Invitación
                 else if (pasoActual === 4) {
                     if (selectedInvitationId) {
-                        // Verificamos si los inputs de edición están visibles
                         const isEditing = document.getElementById('horario-container').style.display !== 'none';
                         
                         if (isEditing) {
-                            payload.idInvitacion = selectedInvitationId;
-                            payload.dia = document.getElementById('reg-dia').value;
-                            payload.hora = document.getElementById('reg-hora').value;
-                            
-                            // Validar que no envíe campos vacíos si está editando
-                            if (!payload.dia || !payload.hora) {
-                                Swal.fire({ toast: true, position: 'top-end', icon: 'warning', title: 'Selecciona tu disponibilidad de día y hora.', showConfirmButton: false, timer: 3000 });
+                            const diasInputs = document.querySelectorAll('.reg-dia-input');
+                            const horasInputs = document.querySelectorAll('.reg-hora-input');
+                            let diasArr = [];
+                            let horasArr = [];
+                            let errorValidacion = false;
+
+                            diasInputs.forEach((input, index) => {
+                                const d = input.value;
+                                const h = horasInputs[index].value;
+                                if (d || h) {
+                                    if (!d || !h) errorValidacion = true; // Si llena día pero no hora, error
+                                    else {
+                                        diasArr.push(d);
+                                        horasArr.push(`${d}: ${h}`);
+                                    }
+                                }
+                            });
+
+                            if (diasArr.length === 0 || errorValidacion) {
+                                Swal.fire({ toast: true, position: 'top-end', icon: 'warning', title: 'Selecciona correctamente la disponibilidad (Día y Franja).', showConfirmButton: false, timer: 3000 });
                                 btnNext.disabled = false; btnNext.innerHTML = originalHTML; return;
                             }
+
+                            // Unimos los datos para no romper Google Sheets
+                            payload.idInvitacion = selectedInvitationId;
+                            payload.dia = diasArr.join(' y '); 
+                            payload.hora = horasArr.join(' | ');
+
                         } else {
-                            // Ya estaba respondido y el usuario NO lo editó.
-                            // Avanza instantáneamente al Paso 5 sin hacer esperar al usuario ni llamar a Google Sheets.
                             cambiarUI(1); 
                             return; 
                         }
                     } else {
-                        // No seleccionó ni siquiera la tarjeta
-                        Swal.fire({ toast: true, position: 'top-end', icon: 'warning', title: 'Por favor selecciona un curso.', showConfirmButton: false, timer: 3000 });
+                        Swal.fire({ toast: true, position: 'top-end', icon: 'warning', title: 'Por favor selecciona un curso propuesto.', showConfirmButton: false, timer: 3000 });
                         btnNext.disabled = false; btnNext.innerHTML = originalHTML; return;
                     }
                 }
@@ -1795,7 +1985,7 @@
                         url_transcript: r.dataset.transcript 
                     }));
 
-                    payload.experiencia = Array.from(document.querySelectorAll('.exp-item')).map(i => {
+                    let experienciasG = Array.from(document.querySelectorAll('.exp-item')).map(i => {
                         const esActualidad = i.querySelector('.actualidad-check').checked;
                         return { 
                             id_experiencia: i.dataset.id, 
@@ -1808,12 +1998,18 @@
                             fin: esActualidad ? "Actualidad" : i.querySelector('.exp-fin').value 
                         };
                     });
+                    
+                    let habilidadesG = Array.from(document.querySelectorAll('.skill-item')).map(i => {
+                        return {
+                            id_experiencia: i.dataset.id,
+                            empresa: i.querySelector('.skill-nombre').value, 
+                            tipo: i.querySelector('.skill-tipo').value,    
+                            cargo: i.querySelector('.skill-nivel').value,  
+                            area: "", direccion: "", inicio: "", fin: ""
+                        };
+                    });
+                    payload.experiencia = [...experienciasG, ...habilidadesG];
 
-                    payload.habilidades = {
-                        tecnologicas: document.getElementById('skill-tech').value,
-                        linguisticas: document.getElementById('skill-lang').value,
-                        sociales: document.getElementById('skill-social').value
-                    };
                 }
 
                 if(pasoActual >= 3) {
@@ -1895,7 +2091,7 @@
             div.style.background = "#ffffff";
             div.style.border = "1px solid #e2e8f0";
 
-            div.dataset.id = data.id_experiencia || "";
+            div.dataset.id = data.id_experiencia || ("EXPV-" + Date.now().toString().slice(-6) + Math.floor(Math.random() * 1000));
 
             const isActualidad = data.fin && data.fin.toLowerCase().includes('actual');
 
@@ -2057,12 +2253,15 @@
             }
             // ASEGURAR QUE EL PASO 6 NO SE PINTE DE VERDE SI NO ESTÁ LLENO
             if (pasoActual === 6) {
-                if (validarPaso6Completo(false)) { // false para que no pinte de rojo al solo entrar
+                if (validarPaso6Completo(false)) { 
                     marcarTabComoCompletada(6);
                 } else {
                     const tab6 = document.getElementById('tab-6');
                     tab6.classList.remove('completed');
-                    tab6.innerHTML = `<i class="fa-regular fa-circle-dot"></i> 6. Verificación`;
+                    const badge = tab6.querySelector('.step-badge');
+                    if (badge) badge.innerText = "En progreso";
+                    const icon = tab6.querySelector('.default-icon');
+                    if (icon) icon.className = "fa-solid fa-file-signature default-icon";
                 }
             }
         }
@@ -2153,12 +2352,19 @@
         function validarPaso4Completo() {
             if (!selectedInvitationId) return false;
             
-            // Verificamos si las cajas de día y hora están visibles (modo edición)
             const isEditing = document.getElementById('horario-container').style.display !== 'none';
             if (isEditing) {
-                const dia = document.getElementById('reg-dia').value;
-                const hora = document.getElementById('reg-hora').value;
-                if (!dia || !hora) return false; // Faltó seleccionar el horario
+                const diasInputs = document.querySelectorAll('.reg-dia-input');
+                const horasInputs = document.querySelectorAll('.reg-hora-input');
+                let llenos = 0;
+                
+                for(let i = 0; i < diasInputs.length; i++) {
+                    const dia = diasInputs[i].value;
+                    const hora = horasInputs[i].value;
+                    if (dia && hora) llenos++;
+                    else if (dia || hora) return false; // Dejó la fila a medias
+                }
+                if (llenos === 0) return false;
             }
             return true;
         }
@@ -2203,10 +2409,23 @@
                 }
             };
 
-            // 1. Validar Competencias (Selects)
-            checkField(document.getElementById('skill-tech'));
-            checkField(document.getElementById('skill-lang'));
-            checkField(document.getElementById('skill-social'));
+            // 1. Validar Competencias (Habilidades)
+            const skillCards = document.querySelectorAll('.skill-item');
+            if (skillCards.length === 0) esValido = false;
+            
+            let hasTech = false, hasLang = false, hasSoft = false;
+            skillCards.forEach(card => {
+                const tipoSel = card.querySelector('.skill-tipo');
+                const nomInp = card.querySelector('.skill-nombre');
+                const nivSel = card.querySelector('.skill-nivel');
+                
+                checkField(tipoSel); checkField(nomInp); checkField(nivSel);
+                
+                if (tipoSel.value === 'CTecnologica') hasTech = true;
+                if (tipoSel.value === 'CLinguistica') hasLang = true;
+                if (tipoSel.value === 'CHBlandas') hasSoft = true;
+            });
+            if (!hasTech || !hasLang || !hasSoft) esValido = false;
 
             // 2. Validar Educación (Grados)
             const eduCards = document.querySelectorAll('.ai-edu-record');
