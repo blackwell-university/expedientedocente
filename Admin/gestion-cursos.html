@@ -362,7 +362,7 @@
         const userRoleApp = localStorage.getItem('userRole') || "";
         const esSoporte = userRoleApp.toLowerCase().includes("asesora") || userRoleApp.toLowerCase().includes("soporte");
 
-        function logout() { if(confirm("¿Cerrar sesión?")) { sessionStorage.clear(); localStorage.clear(); window.location.href = "login.html"; } }
+        function logout() { if(confirm("¿Cerrar sesión?")) { sessionStorage.clear(); localStorage.clear(); window.location.href = "../login.html"; } }
 
         document.addEventListener('DOMContentLoaded', () => {
             const name = localStorage.getItem('userName') || "Administrador";

@@ -22,6 +22,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
         :root {
             --primary: #2563eb;
@@ -575,7 +577,7 @@
         function logout() {
             if(confirm("¿Cerrar sesión?")) {
                 sessionStorage.clear();
-                window.location.href = "login.html";
+                window.location.href = "../login.html";
             }
         }
 
@@ -689,8 +691,10 @@
                     
                     // Documentos subidos
                     let htmlDocs = "";
-                    if(d.url_cv) htmlDocs += crearItemArchivo("Currículum Vitae", d.url_cv);
-                    if(d.url_handbook) htmlDocs += crearItemArchivo("Handbook Firmado", d.url_handbook);
+                    let pureCvUrl = extractPureUrl(d.url_cv);
+                    let pureHbUrl = extractPureUrl(d.url_handbook);
+                    if(pureCvUrl) htmlDocs += crearItemArchivo("Currículum Vitae", pureCvUrl);
+                    if(pureHbUrl) htmlDocs += crearItemArchivo("Handbook Firmado", pureHbUrl);
                     if(response.drafts && response.drafts.educacion) {
                         response.drafts.educacion.forEach(dip => {
                             if(dip.url_diploma) htmlDocs += crearItemArchivo(`Diploma: ${dip.grado}`, dip.url_diploma);
@@ -739,6 +743,15 @@
             document.getElementById('contenedor-adjuntos-revision').innerHTML = '<p class="text-danger m-0">Error al cargar datos.</p>';
         }
 
+        function getDriveViewUrl(downloadUrl) {
+            if (!downloadUrl) return "#";
+            const match = downloadUrl.match(/id=([a-zA-Z0-9_-]+)/);
+            if (match && match[1]) {
+                return `https://drive.google.com/file/d/${match[1]}/view`;
+            }
+            return downloadUrl;
+        }
+
         function crearItemArchivo(nombre, url) {
             return `
             <div class="col-md-6">
@@ -747,9 +760,56 @@
                         <i class="fa-regular fa-file-pdf"></i>
                         <span class="file-name">${nombre}</span>
                     </div>
-                    <a href="${url}" target="_blank" class="btn-ver-file">Abrir</a>
+                    <!-- Ahora usa getDriveViewUrl para abrir la vista previa -->
+                    <a href="${getDriveViewUrl(url)}" target="_blank" class="btn-ver-file">Abrir</a>
                 </div>
             </div>`;
+        }
+
+        async function iniciarFlujoEvaluacion() {
+            // Modal 1: Verificación
+            const res1 = await Swal.fire({
+                title: 'Verificación de Documentos',
+                html: '¿Confirma que ha revisado detalladamente y <b>aprueba</b> los documentos generados de este docente?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#15803d', 
+                cancelButtonColor: '#64748b',
+                confirmButtonText: '<i class="fa-solid fa-check me-2"></i> Sí, documentos verificados',
+                cancelButtonText: 'Aún estoy revisando'
+            });
+
+            if (res1.isConfirmed) {
+                // Actualizamos a Verificado
+                showToast("Marcando expediente como Verificado...", "info");
+                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'update_expediente_status', id: expId, estado: 'Verificado' }) });
+                
+                // Modal 2: Enviar a Evaluación
+                const res2 = await Swal.fire({
+                    title: 'Derivar a Evaluación',
+                    html: 'El expediente ha sido verificado. ¿Desea enviarlo ahora al área de <b>Evaluación de Credenciales</b> (Sara)?',
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonColor: '#2563eb',
+                    cancelButtonColor: '#64748b',
+                    confirmButtonText: '<i class="fa-solid fa-paper-plane me-2"></i> Sí, derivar a evaluación',
+                    cancelButtonText: 'Enviar más tarde'
+                });
+
+                if (res2.isConfirmed) {
+                    showToast("Enviando y asignando documentos...", "info");
+                    const resFinal = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'send_to_evaluation', idExpediente: expId }) });
+                    const dataFinal = await resFinal.json();
+                    if(dataFinal.status === 'success') {
+                        showToast("Enviado a Evaluación exitosamente", "success");
+                        cargarExpediente(); // Recarga la UI y repinta la tabla con las fechas y asignaciones
+                    } else {
+                        showToast("Hubo un error al derivar.", "danger");
+                    }
+                } else {
+                    cargarExpediente(); // Solo recarga para mostrar el estado "Verificado"
+                }
+            }
         }
 
         // ==================== EDITAR DATOS DEL DOCENTE ====================
@@ -854,20 +914,21 @@
         function renderizarTabla() {
             const tbody = document.getElementById('tablaDocumentosBody');
             if(!tbody) return;
-            tbody.innerHTML = "";
+            
+            let html = "";
+            let docsMostrados = 0;
             
             documentTrace.forEach(doc => {
-                // --- AQUÍ ESTÁ LA MAGIA ---
-                // Condición: Mostrar SOLO si el documento tiene una URL (ya fue generado) 
-                // O si su nombre es "Form 402" O si su nombre es "Handbook"
+                // Mostrar SOLO si el documento tiene una URL real (es decir, existe en la BD)
                 if (doc.url && doc.url.trim() !== "") {
+                    docsMostrados++;
                     
                     let estadoClass = "badge-state";
                     if(doc.estado === "Completado" || doc.estado === "Firmado por Zamudio") estadoClass += " badge-completed";
                     if(doc.estado === "Pendiente") estadoClass += " badge-pending";
                     if(doc.estado === "En revisión" || doc.estado === "Revisado por Sara") estadoClass += " badge-review";
                     
-                    const row = `<tr>
+                    html += `<tr>
                         <td><strong>${doc.nombre}</strong></td>
                         <td>v${doc.version}</td>
                         <td><span class="${estadoClass}">${doc.estado}</span></td>
@@ -875,17 +936,21 @@
                         <td>${doc.fechaEnvio || "—"}</td>
                         <td>${doc.fechaAprobacion || "—"}</td>
                         <td class="table-actions">
-                            ${doc.url ? `<a href="${doc.url}" target="_blank"><i class="fa-regular fa-eye"></i> Ver</a>` : ''}
+                            <a href="${getDriveViewUrl(doc.url)}" target="_blank"><i class="fa-regular fa-eye"></i> Ver</a>
                             <a href="#" onclick="simularEdicion('${doc.nombre}')"><i class="fa-regular fa-pen-to-square"></i> Editar</a>
                         </td>
-                    </tr>`; // <-- Corregí un error de tipeo html que tenías aquí (decía </table>)
-                    tbody.innerHTML += row;
+                    </tr>`;
                 }
             });
             
-            // Si la tabla quedó vacía (porque nada cumplió la condición)
-            if (tbody.innerHTML === "") {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">No hay documentos generados aún.</td></tr>`;
+            // Si no hay ningún documento que mostrar, inyectamos el mensaje amigable UX
+            if (docsMostrados === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-5" style="border: 1px dashed #e2e8f0; border-radius: 12px; background: #f8fafc;">
+                    <i class="fa-regular fa-folder-open mb-2" style="font-size: 2rem; color: #cbd5e1;"></i><br>
+                    No hay documentos generados del expediente para mostrar.
+                </td></tr>`;
+            } else {
+                tbody.innerHTML = html;
             }
             
             actualizarResumen();
@@ -893,10 +958,13 @@
         }
 
         function actualizarResumen() {
-            document.getElementById('totalDocs').innerText = documentTrace.length;
-            document.getElementById('completedDocs').innerText = documentTrace.filter(d => d.estado === "Completado" || d.estado === "Firmado por Zamudio").length;
-            document.getElementById('inReviewDocs').innerText = documentTrace.filter(d => d.estado === "En revisión" || d.estado === "Revisado por Sara").length;
-            document.getElementById('pendingSignDocs').innerText = documentTrace.filter(d => d.estado.includes("firma")).length;
+            // Filtrar solo los que realmente existen en pantalla (Tienen URL)
+            const docsGenerados = documentTrace.filter(d => d.url && d.url.trim() !== "");
+            
+            document.getElementById('totalDocs').innerText = docsGenerados.length;
+            document.getElementById('completedDocs').innerText = docsGenerados.filter(d => d.estado === "Completado" || d.estado === "Firmado por Zamudio").length;
+            document.getElementById('inReviewDocs').innerText = docsGenerados.filter(d => d.estado === "En revisión" || d.estado === "Revisado por Sara").length;
+            document.getElementById('pendingSignDocs').innerText = docsGenerados.filter(d => d.estado.includes("firma")).length;
         }
 
         function guardarTrazabilidad() {
@@ -907,20 +975,44 @@
             showToast(`Edición de ${nombre}`, "info");
         }
 
+        function extractPureUrl(val) {
+            if (!val) return "";
+            if (typeof val === 'object' && val.url) return val.url;
+            if (typeof val === 'string' && val.startsWith('{')) { try { return JSON.parse(val).url; } catch(e){} }
+            return val;
+        }
+
         function actualizarUrlsDesdeBackend(urls) {
-            for(let [nombre, url] of Object.entries(urls)) {
-                if(url && url.trim()) {
-                    let doc = documentTrace.find(d => d.nombre === nombre);
-                    if(doc) {
-                        doc.url = url;
-                        doc.version += 1;
-                        doc.estado = "Pendiente";
-                        doc.asignadoA = "Sin asignar";
-                        doc.fechaEnvio = "";
-                        doc.fechaAprobacion = "";
-                    }
+            documentTrace = []; // Reconstruimos desde cero usando solo Google Sheets
+            
+            const docsGenerables = [
+                "Form 402", "Letter of Appointment", "Resume", "Reference Check Forms",
+                "Proposed Salary", "Academic Preparation Evaluation Form", "Assigned Employee Notice",
+                "Direct Deposit Authorization Form", "Confidentiality Agreement", "Job Description", "Handbook"
+            ];
+
+            docsGenerables.forEach(nombre => {
+                let docData = urls[nombre];
+                // Si el backend mandó un objeto JSON (Nuestra nueva lógica)
+                if (docData && typeof docData === 'object' && docData.url) {
+                    documentTrace.push({
+                        nombre: nombre,
+                        url: docData.url,
+                        version: docData.version || 1,
+                        estado: docData.estado || "Pendiente",
+                        asignadoA: docData.asignadoA || "Sin asignar",
+                        fechaEnvio: docData.fechaEnvio || "",
+                        fechaAprobacion: docData.fechaAprobacion || ""
+                    });
+                } 
+                // Si el backend mandó una URL antigua (Compatibilidad)
+                else if (docData && typeof docData === 'string' && docData.trim() !== "") {
+                    documentTrace.push({
+                        nombre: nombre, url: docData, version: 1, estado: "Pendiente",
+                        asignadoA: "Sin asignar", fechaEnvio: "", fechaAprobacion: ""
+                    });
                 }
-            }
+            });
             renderizarTabla();
         }
 
@@ -1085,15 +1177,14 @@
 
             // ETAPA 2 (Revisión exclusiva)
             if (['En revisión', 'Verificado'].includes(estadoExp)) {
-                html += `<button class="action-btn" style="background:#f59e0b; color:white; border-color:#f59e0b;" onclick="cambiarEstadoExpediente('Por evaluar')"><i class="fa-solid fa-share-from-square"></i> Enviar a Evaluaciones</button>`;
+                html += `<button class="action-btn" style="background:#f59e0b; color:white; border-color:#f59e0b;" onclick="iniciarFlujoEvaluacion()"><i class="fa-solid fa-share-from-square"></i> Enviar a Evaluaciones</button>`;
             }
 
             // ETAPA 3 (Evaluación)
             if (['Por evaluar', 'En evaluación', 'Evaluado'].includes(estadoExp)) {
-                html += `<button class="action-btn action-btn-primary" onclick="subirInformeEvaluacion()"><i class="fa-solid fa-upload"></i> Subir informe</button>`;
-                
+                // Eliminado el botón de subir informe de la ejecutiva por requerimiento del sistema
                 if (estadoExp === 'Evaluado') {
-                    html += `<button class="action-btn" style="background:#10b981; color:white; border-color:#10b981;" onclick="cambiarEstadoExpediente('Por contratar')"><i class="fa-solid fa-check-double"></i> Confirmar Evaluación (Aprobar)</button>`;
+                    html += `<button class="action-btn" style="background:#10b981; color:white; border-color:#10b981;" onclick="confirmarEvaluacionAprobacion()"><i class="fa-solid fa-check-double"></i> Confirmar Evaluación (Aprobar)</button>`;
                 }
             }
 
@@ -1108,6 +1199,38 @@
             }
 
             toolbar.innerHTML = html;
+        }
+
+        async function confirmarEvaluacionAprobacion() {
+            const confirm = await Swal.fire({
+                title: '¿Confirmar Evaluación Académica?',
+                text: "Al confirmar, el expediente pasará a la fase de Contratación y se enviará un correo automático a los directores para su firma digital.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, confirmar y derivar',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (confirm.isConfirmed) {
+                showToast("Procesando aprobación y notificando a directivos...", "info");
+                try {
+                    const res = await fetch(GAS_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'confirm_evaluation_approval', idExpediente: expId })
+                    });
+                    const result = await res.json();
+                    if(result.status === 'success') {
+                        showToast("Expediente derivado a Contratación exitosamente", "success");
+                        cargarExpediente();
+                    } else {
+                        showToast("Error al derivar el expediente.", "danger");
+                    }
+                } catch(e) {
+                    showToast("Error de conexión.", "danger");
+                }
+            }
         }
 
         // ==================== NUEVAS ACCIONES (STUBS) ====================

@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script>
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        const userRole = localStorage.getItem('userRole');
+        if (isLoggedIn !== 'true' || (userRole !== 'Ejecutiva Credenciales' && userRole !== 'Administrador')) {
+            window.location.href = "login.html";
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inspección de Credenciales | Blackwell University</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #eff6ff;
+            --primary-dark: #1e3a8a; 
+            --bg-body: #f8fafc;
+            --sidebar-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --gray-border: #e2e8f0;
+            --card-radius: 20px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --sidebar-width: 260px;
+        }
+
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; letter-spacing: -0.01em; }
+
+        /* --- SIDEBAR --- */
+        .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid rgba(0,0,0,0.05); display: flex; flex-direction: column; padding: 24px 16px; flex-shrink: 0; }
+        .brand-section { display: flex; align-items: center; gap: 12px; padding: 0 12px 32px; text-decoration: none; }
+        .logo-box { min-width: 42px; height: 42px; background: var(--primary-dark); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
+        .brand-text { font-weight: 800; font-size: 1.2rem; color: var(--primary-dark); }
+        .user-preview { display: flex; align-items: center; gap: 12px; padding: 12px; background: #f1f5f9; border-radius: 16px; margin-bottom: 24px; }
+        .avatar { min-width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 13px; }
+        .user-meta { display: flex; flex-direction: column; line-height: 1.2; }
+        .user-meta b { font-size: 13px; } .user-meta span { font-size: 11px; color: var(--text-muted); }
+        .nav-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+        .nav-link { display: flex; align-items: center; gap: 16px; padding: 12px 14px; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 6px; transition: var(--transition); }
+        .nav-link:hover, .nav-link.active { background: #eff6ff; color: var(--primary); font-weight: 600; }
+
+        /* --- CONTENT AREA --- */
+        .main-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        header { padding: 20px 48px; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 5; border-bottom: 1px solid var(--gray-border); }
+        .content-area { padding: 40px; display: flex; flex-direction: column; align-items: center; width: 100%; }
+        .centered-container { width: 100%; max-width: 1300px; text-align: left; }
+
+        .breadcrumb-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; color: var(--text-muted); font-size: 14px; }
+        .back-link { text-decoration: none; color: var(--text-muted); display: flex; align-items: center; gap: 6px; transition: 0.2s; font-weight: 500;}
+        .back-link:hover { color: var(--primary); }
+
+        .page-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px; }
+        .page-header h1 { font-weight: 800; font-size: 2.2rem; color: var(--primary-dark); letter-spacing: -0.03em; margin: 0; }
+        .page-header p { color: var(--text-muted); font-size: 1.1rem; margin: 4px 0 0 0; }
+
+        /* --- PIPELINE --- */
+        .pipeline-wrapper { margin-bottom: 25px; background: white; border: 1px solid var(--gray-border); border-radius: 12px; padding: 16px 20px; }
+        .pipeline-title { font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 12px; }
+        .pipeline-stages { display: flex; align-items: center; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+        .stage-step { flex: 1; text-align: center; padding: 10px 20px; font-size: 0.75rem; font-weight: 700; min-height: 36px; display: flex; align-items: center; justify-content: center; white-space: nowrap; clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%, 12px 50%); margin-left: -6px; }
+        .stage-step:first-child { clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%); margin-left: 0; border-top-left-radius: 20px; border-bottom-left-radius: 20px; }
+        .stage-step:last-child { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 12px 50%); border-top-right-radius: 20px; border-bottom-right-radius: 20px; }
+        .step-green { background: #bbf7d0; color: #166534; }
+        .step-red { background: #fecdd3; color: #9f1239; }
+        .step-gray { background: #f1f5f9; color: #64748b; }
+
+        /* --- CARDS & PANELS --- */
+        .form-card { background: white; border-radius: var(--card-radius); padding: 32px; border: 1px solid rgba(0,0,0,0.04); box-shadow: 0 10px 30px rgba(0,0,0,0.01); height: auto; margin-bottom: 24px; }
+        .section-badge { background: #eff6ff; color: var(--primary); padding: 6px 14px; border-radius: 8px; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; display: inline-flex; align-items: center; margin-bottom: 20px; }
+        
+        .info-label { display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 6px; font-weight: 600; }
+        .info-value { font-size: 0.95rem; color: #0f172a; font-weight: 500; min-height: 36px; padding: 6px 0; border-bottom: 1px solid #f1f5f9; }
+
+        /* --- SLA COUNTDOWN CARD --- */
+        .sla-card { border-left: 5px solid var(--primary); transition: 0.3s; }
+        .sla-card.warn { border-left-color: #f59e0b; background: #fffbeb; }
+        .sla-card.danger { border-left-color: #ef4444; background: #fef2f2; animation: pulseSLA 2s infinite; }
+        @keyframes pulseSLA { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.2); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+
+        /* --- DOCUMENT VIEWER (SAFE LINKS) --- */
+        .doc-item { background: #f8fafc; border: 1px solid var(--gray-border); border-radius: 12px; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .doc-info { display: flex; align-items: center; gap: 14px; }
+        .doc-info i { font-size: 1.5rem; color: var(--primary); }
+        .doc-name { font-weight: 600; font-size: 0.9rem; color: var(--text-main); }
+        .btn-view { background: white; border: 1px solid var(--gray-border); font-size: 0.78rem; font-weight: 700; color: var(--primary-dark); padding: 6px 14px; border-radius: 8px; cursor: pointer; text-decoration: none; transition: 0.2s; }
+        .btn-view:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* --- DRAG & DROP UPLOAD BOX --- */
+        .upload-dashed-box { border: 2px dashed #cbd5e1; border-radius: 16px; padding: 40px 20px; text-align: center; background: #fafafb; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .upload-dashed-box:hover { border-color: var(--primary); background: var(--primary-light); }
+        .upload-dashed-box i { font-size: 2.5rem; color: #94a3b8; margin-bottom: 12px; }
+        
+        .badge-doc-status { font-size: 0.7rem; font-weight: 700; padding: 4px 10px; border-radius: 30px; text-transform: uppercase; }
+        .badge-pendiente { background: #fef3c7; color: #b45309; }
+        .badge-revision { background: #e0e7ff; color: #3730a3; }
+        .badge-completado { background: #d1fae5; color: #065f46; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <a href="#" class="brand-section">
+            <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div>
+            <span class="brand-text">Blackwell</span>
+        </a>
+        <div class="user-preview">
+            <div class="avatar">SB</div>
+            <div class="user-meta"><b>Sara Blackwell</b><span>Evaluadora</span></div>
+        </div>
+        <ul class="nav-list">
+            <li><a href="evaluacion-dashboard.html" class="nav-link active"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Evaluación Académica</span></a></li>
+        </ul>
+        <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;">
+            <i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span>
+        </a>
+    </aside>
+
+    <main class="main-wrapper">
+        <header>
+            <div>
+                <h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Área de Credenciales</h5>
+                <p class="text-muted small m-0">Revisión Profesional</p>
+            </div>
+        </header>
+
+        <div class="content-area">
+            <div class="centered-container">
+                <div class="breadcrumb-nav">
+                    <a href="evaluacion-dashboard.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Volver a Evaluación Académica</a>
+                </div>
+
+                <div class="page-header">
+                    <div>
+                        <h1 id="txtExpId">Expediente: Cargando...</h1>
+                        <p id="txtDocenteNombre">Obteniendo datos de la plana docente...</p>
+                    </div>
+                </div>
+
+                <!-- PIPELINE DE ETAPAS -->
+                <div class="pipeline-wrapper">
+                    <div class="pipeline-title">Progreso del Expediente</div>
+                    <div class="pipeline-stages">
+                        <div class="stage-step step-green">1. Recopilación</div>
+                        <div class="stage-step step-green">2. Revisión</div>
+                        <div class="stage-step step-red">3. Evaluación</div>
+                        <div class="stage-step step-gray">4. Contratación</div>
+                    </div>
+                </div>
+
+                <!-- TARJETA SLA COUNTDOWN -->
+                <div class="form-card sla-card" id="slaCard">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="fw-bold m-0" id="slaTitle"><i class="fa-solid fa-hourglass-half me-2 text-primary"></i>Plazo de Evaluación de Credenciales</h5>
+                            <p class="text-muted small m-0 mt-1">Este expediente tiene asignado un SLA máximo de 7 días naturales para emitir el dictamen.</p>
+                        </div>
+                        <div class="text-end">
+                            <span class="fs-4 fw-800 text-dark d-block" id="slaCountdown">Cargando...</span>
+                            <span class="text-muted small font-monospace" id="slaDateEnvio">Fecha de Asignación: —</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <!-- SECCIÓN IZQUIERDA: DATOS GENERALES -->
+                    <div class="col-lg-5">
+                        <div class="form-card">
+                            <span class="section-badge"><i class="fa-solid fa-user me-2"></i>Datos del Docente</span>
+                            <div class="row g-3">
+                                <div class="col-md-6"><span class="info-label">DNI / ID Oficial</span><div class="info-value" id="valDni">—</div></div>
+                                <div class="col-md-6"><span class="info-label">Nombres</span><div class="info-value" id="valNombres">—</div></div>
+                                <div class="col-md-6"><span class="info-label">Apellidos</span><div class="info-value" id="valApellidos">—</div></div>
+                                <div class="col-md-6"><span class="info-label">País de Origen</span><div class="info-value" id="valPais">—</div></div>
+                                <div class="col-md-12"><span class="info-label">Correo Institucional</span><div class="info-value" id="valCorreo">—</div></div>
+                            </div>
+                        </div>
+
+                        <!-- SUBIR INFORME (SLA ACTION) -->
+                        <div class="form-card mt-4" id="uploadReportSection">
+                            <span class="section-badge"><i class="fa-solid fa-cloud-arrow-up me-2"></i>Emitir Dictamen Final</span>
+                            <p class="text-muted small">Cargue su informe final de Evaluación de Credenciales (en formato PDF firmado) para completar esta etapa de validación.</p>
+                            
+                            <div class="upload-dashed-box" id="dropZone" onclick="document.getElementById('reportFile').click()">
+                                <i class="fa-regular fa-file-pdf"></i>
+                                <h6 class="fw-bold text-dark m-0" id="uploadLabel">Haga clic o arrastre aquí su Informe</h6>
+                                <p class="text-muted small mt-1 mb-0">Solo se admiten archivos PDF de hasta 5MB</p>
+                                <input type="file" id="reportFile" class="d-none" accept=".pdf" onchange="seleccionarArchivo(this)">
+                            </div>
+
+                            <button class="btn btn-primary w-100 mt-3 py-10 fw-bold border-0" id="btnSubmitReport" style="border-radius: 10px; background: var(--primary-dark); display: none;" onclick="subirYFinalizarEvaluacion()">
+                                <i class="fa-solid fa-paper-plane me-2"></i>Registrar Dictamen Académico
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- SECCIÓN DERECHA: DOCUMENTOS EXCLUSIVOS EN SOLO VISTA -->
+                    <div class="col-lg-7">
+                        <!-- CREDENCIALES CORE -->
+                        <div class="form-card">
+                            <span class="section-badge" style="background:#fef3c7; color:#b45309;"><i class="fa-solid fa-shield-check me-2"></i>Credenciales de Solo Vista (Evidencias)</span>
+                            <p class="text-muted small mb-4">Inspeccione de manera segura los documentos originales cargados por el docente para verificar la veracidad de su perfil profesional.</p>
+                            
+                            <div class="d-flex flex-column gap-2" id="contenedorEvidenciasCore">
+                                <!-- ID, CV y Diplomas dinámicos -->
+                                <div class="text-center text-muted py-3"><i class="fa-solid fa-spinner fa-spin me-2"></i>Inspeccionando evidencias...</div>
+                            </div>
+                        </div>
+
+                        <!-- DOCUMENTOS GENERADOS DEL EXPEDIENTE -->
+                        <div class="form-card mt-4">
+                            <span class="section-badge"><i class="fa-solid fa-file-invoice me-2"></i>Documentos del Expediente</span>
+                            <p class="text-muted small mb-4">Lista de documentos institucionales vinculados al expediente generados en etapas anteriores.</p>
+                            
+                            <div class="d-flex flex-column gap-2" id="contenedorDocsGenerados">
+                                <div class="text-center text-muted py-3"><i class="fa-solid fa-spinner fa-spin me-2"></i>Obteniendo expediente...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
+        const urlParams = new URLSearchParams(window.location.search);
+        const expId = urlParams.get('expId');
+        let selectedFileBase64 = null;
+        let selectedFileObject = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if(!expId) {
+                Swal.fire('Error', 'Faltan parámetros de expediente en la URL.', 'error');
+                return;
+            }
+            cargarDetalleEvaluacion();
+        });
+
+        async function cargarDetalleEvaluacion() {
+            try {
+                const res = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'get_expediente_data', expId: expId })
+                });
+                const response = await res.json();
+                
+                if (response.status === 'success') {
+                    const exp = response.expediente;
+                    const doc = response.docente;
+                    const drafts = response.drafts;
+
+                    // Llenado de encabezado
+                    document.getElementById('txtExpId').innerText = `Expediente: ${exp.idExpediente}`;
+                    document.getElementById('txtDocenteNombre').innerText = `Docente: ${doc.nombres} ${doc.apellidos}`;
+
+                    // Llenado de Datos Personales (Solo lectura)
+                    document.getElementById('valDni').innerText = doc.dni || '—';
+                    document.getElementById('valNombres').innerText = doc.nombres || '—';
+                    document.getElementById('valApellidos').innerText = doc.apellidos || '—';
+                    document.getElementById('valPais').innerText = doc.pais || '—';
+                    document.getElementById('valCorreo').innerText = doc.correo || '—';
+
+                    // 1. RENDERIZAR CREDENCIALES CORE (Solo Vista)
+                    let htmlEvidencias = '';
+                    if (doc.url_id) htmlEvidencias += crearEvidenciaCore("Documento de Identidad Oficial (DNI/Pasaporte)", doc.url_id, "id-card");
+                    if (doc.url_cv) htmlEvidencias += crearEvidenciaCore("Currículum Vitae (CV Orginal)", doc.url_cv, "file-pdf");
+                    
+                    // Diplomas dinámicos de drafts.educacion
+                    if (drafts && drafts.educacion && drafts.educacion.length > 0) {
+                        drafts.educacion.forEach((edu, idx) => {
+                            if (edu.url_diploma) {
+                                htmlEvidencias += crearEvidenciaCore(`Diploma Académico: ${edu.grado}`, edu.url_diploma, "graduation-cap");
+                            }
+                        });
+                    }
+                    document.getElementById('contenedorEvidenciasCore').innerHTML = htmlEvidencias || '<p class="text-muted m-0">No se encontraron evidencias registradas.</p>';
+
+                    // 2. RENDERIZAR DOCUMENTOS GENERADOS
+                    let htmlDocs = '';
+                    let fechaAsignacionRaw = ""; 
+                    
+                    for (const [key, value] of Object.entries(exp.urls)) {
+                        if (value && value.url) {
+                            htmlDocs += crearDocumentoGenerado(key, value);
+                            if (value.fechaEnvio && !fechaAsignacionRaw) {
+                                fechaAsignacionRaw = value.fechaEnvio; // Tomamos la fecha de envío del primer documento asignado
+                            }
+                        }
+                    }
+                    document.getElementById('contenedorDocsGenerados').innerHTML = htmlDocs || '<p class="text-muted m-0">No hay documentos de expediente generados.</p>';
+
+                    // 3. CALCULAR SLA (7 DÍAS DESDE EL ENVÍO)
+                    calcularSLA(fechaAsignacionRaw || exp.fechaCreacion);
+
+                    // Si ya está en estado "Evaluado", ocultamos la carga para evitar duplicados
+                    if (exp.estado.toLowerCase() === "evaluado") {
+                        document.getElementById('uploadReportSection').innerHTML = `
+                            <div class="text-center py-4 bg-light border border-success rounded-4" style="color: #15803d;">
+                                <i class="fa-solid fa-circle-check fa-3x mb-2"></i>
+                                <h6 class="fw-bold m-0">Dictamen Registrado exitosamente</h6>
+                                <p class="small text-muted m-0 mt-1">El expediente ya ha sido evaluado y enviado a Contratación.</p>
+                            </div>`;
+                    }
+
+                } else {
+                    Swal.fire('Error', 'No se pudo obtener la información de este expediente.', 'error');
+                }
+            } catch (e) {
+                console.error(e);
+                Swal.fire('Error', 'Fallo en la comunicación con el servidor.', 'error');
+            }
+        }
+
+        // --- CONVERTIDOR INTELIGENTE DE DRIVE VIEW URL (SOLO VISTA) ---
+        function getSafeDriveViewUrl(downloadUrl) {
+            if (!downloadUrl) return "#";
+            const match = downloadUrl.match(/id=([a-zA-Z0-9_-]+)/);
+            if (match && match[1]) {
+                // Reescribe para forzar el visor nativo de Google sin opción directa de edición
+                return `https://drive.google.com/file/d/${match[1]}/view?usp=sharing`;
+            }
+            return downloadUrl;
+        }
+
+        function crearEvidenciaCore(nombre, url, icon) {
+            return `
+            <div class="doc-item">
+                <div class="doc-info">
+                    <i class="fa-solid fa-${icon}"></i>
+                    <span class="doc-name">${nombre}</span>
+                </div>
+                <a href="${getSafeDriveViewUrl(url)}" target="_blank" class="btn-view"><i class="fa-regular fa-eye me-1"></i> Ver</a>
+            </div>`;
+        }
+
+        function crearDocumentoGenerado(nombre, obj) {
+            let statusBadge = `<span class="badge-doc-status badge-pendiente">${obj.estado}</span>`;
+            if (obj.estado.toLowerCase() === "en revisión") statusBadge = `<span class="badge-doc-status badge-revision">Evaluando</span>`;
+            if (obj.estado.toLowerCase() === "completado" || obj.estado.toLowerCase() === "aprobado") statusBadge = `<span class="badge-doc-status badge-completado">Aprobado</span>`;
+
+            return `
+            <div class="doc-item">
+                <div class="doc-info">
+                    <i class="fa-regular fa-file"></i>
+                    <div>
+                        <div class="doc-name m-0">${nombre}</div>
+                        <div class="text-muted small">Versión ${obj.version} • ${statusBadge}</div>
+                    </div>
+                </div>
+                <a href="${getSafeDriveViewUrl(obj.url)}" target="_blank" class="btn-view"><i class="fa-regular fa-eye me-1"></i> Ver</a>
+            </div>`;
+        }
+
+        // --- CALCULO SLA DE 7 DIAS ---
+        function calcularSLA(fechaAsignacionStr) {
+            if (!fechaAsignacionStr) {
+                document.getElementById('slaCountdown').innerText = "SLA sin iniciar";
+                document.getElementById('slaDateEnvio').innerText = "Asignación pendiente";
+                return;
+            }
+
+            try {
+                // Parsea formato DD/MM/YYYY o ISO
+                let parts = fechaAsignacionStr.split('/');
+                let dateAsignacion;
+                if (parts.length === 3) {
+                    dateAsignacion = new Date(parts[2], parts[1] - 1, parts[0]);
+                } else {
+                    dateAsignacion = new Date(fechaAsignacionStr);
+                }
+
+                if (isNaN(dateAsignacion.getTime())) {
+                    document.getElementById('slaCountdown').innerText = "SLA no calculable";
+                    return;
+                }
+
+                // Sumamos 7 días de plazo
+                const dateLimite = new Date(dateAsignacion.getTime());
+                dateLimite.setDate(dateLimite.getDate() + 7);
+
+                const hoy = new Date();
+                const diferenciaMs = dateLimite - hoy;
+                const diasRestantes = Math.ceil(diferenciaMs / (1000 * 60 * 60 * 24));
+
+                document.getElementById('slaDateEnvio').innerText = `Asignado el: ${dateAsignacion.toLocaleDateString('es-ES')}`;
+
+                const card = document.getElementById('slaCard');
+                const title = document.getElementById('slaTitle');
+                const countdown = document.getElementById('slaCountdown');
+
+                if (diferenciaMs < 0) {
+                    // RETRASO
+                    card.className = "form-card sla-card danger";
+                    title.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-danger me-2"></i>¡Dictamen Fuera de Plazo!`;
+                    const diasRetraso = Math.abs(diasRestantes);
+                    countdown.innerText = `Retrasada por ${diasRetraso} día(s)`;
+                    countdown.style.color = "#ef4444";
+                } else if (diasRestantes <= 2) {
+                    // CRÍTICO (menos de 2 días)
+                    card.className = "form-card sla-card warn";
+                    title.innerHTML = `<i class="fa-solid fa-clock-twotone text-warning me-2"></i>Tiempo crítico de dictamen`;
+                    countdown.innerText = `Quedan ${diasRestantes} días`;
+                    countdown.style.color = "#f59e0b";
+                } else {
+                    // EN PLAZO NORMAL
+                    card.className = "form-card sla-card";
+                    countdown.innerText = `Quedan ${diasRestantes} días`;
+                    countdown.style.color = "#15803d";
+                }
+
+            } catch(e) {
+                console.error(e);
+                document.getElementById('slaCountdown').innerText = "Plazo de 7 días";
+            }
+        }
+
+        // --- SUBIR INFORME DE EVALUACIÓN ---
+        function seleccionarArchivo(input) {
+            if(input.files.length > 0) {
+                const file = input.files[0];
+                if(file.type !== "application/pdf") {
+                    Swal.fire('Formato no admitido', 'El informe debe cargarse exclusivamente en formato PDF.', 'error');
+                    input.value = '';
+                    return;
+                }
+                selectedFileObject = file;
+                document.getElementById('uploadLabel').innerText = `✅ Seleccionado: ${file.name}`;
+                document.getElementById('btnSubmitReport').style.display = 'block';
+            }
+        }
+
+        async function subirYFinalizarEvaluacion() {
+            if(!selectedFileObject) return;
+
+            const resConfirm = await Swal.fire({
+                title: '¿Confirmar Envío de Dictamen?',
+                html: 'Al enviar este informe, confirmas que has validado los documentos y el estado de este expediente cambiará a <b>Evaluado</b>.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#1e3a8a',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, enviar evaluación',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (!resConfirm.isConfirmed) return;
+
+            const btn = document.getElementById('btnSubmitReport');
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i>Procesando y Subiendo Informe...`;
+
+            try {
+                // 1. Convertir archivo PDF a Base64
+                const reader = new FileReader();
+                reader.readAsDataURL(selectedFileObject);
+                
+                reader.onload = async () => {
+                    const base64Data = reader.result.split(',')[1];
+                    
+                    // 2. Subir a Google Drive mediante la acción nativa "get_url"
+                    const resUpload = await fetch(GAS_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: "get_url",
+                            file: base64Data,
+                            name: `Informe Evaluación Credenciales - ${expId}.pdf`,
+                            type: "application/pdf",
+                            idExpediente: expId
+                        })
+                    });
+                    const dataUpload = await resUpload.json();
+
+                    if(dataUpload.status === 'success') {
+                        const fileUrl = dataUpload.url;
+
+                        // 3. Registrar el reporte en el Expediente y cambiar el estado a "Evaluado"
+                        const resFinal = await fetch(GAS_URL, {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                action: "submit_evaluation_report",
+                                idExpediente: expId,
+                                urlInforme: fileUrl
+                            })
+                        });
+                        const dataFinal = await resFinal.json();
+
+                        if (dataFinal.status === 'success') {
+                            Swal.fire({
+                                title: '¡Evaluado!',
+                                text: 'El informe de credenciales ha sido enviado y el expediente ha sido aprobado con éxito.',
+                                icon: 'success',
+                                confirmButtonColor: '#1e3a8a'
+                            }).then(() => {
+                                window.location.href = "evaluacion-dashboard.html";
+                            });
+                        } else {
+                            throw new Error("No se pudo registrar la evaluación en la base de datos.");
+                        }
+
+                    } else {
+                        throw new Error("Fallo al almacenar el informe PDF en Google Drive.");
+                    }
+                };
+
+            } catch (error) {
+                console.error(error);
+                Swal.fire('Error', 'Ocurrió un error inesperado al subir el reporte: ' + error.message, 'error');
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = "../login.html";
+        }
+    </script>
+</body>
+</html>
