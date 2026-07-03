@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script>
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        const userRole = localStorage.getItem('userRole');
+        if (isLoggedIn !== 'true' || (userRole !== 'Asesora Academica' && userRole !== 'Administrador')) {
+            window.location.href = "../login.html";
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Clase | Blackwell University</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root { --primary: #2563eb; --primary-light: #eff6ff; --primary-dark: #1e3a8a; --bg-body: #f8fafc; --sidebar-bg: #ffffff; --text-main: #1e293b; --text-muted: #64748b; --gray-border: #e2e8f0; --card-radius: 20px; --sidebar-width: 260px; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid var(--gray-border); display: flex; flex-direction: column; padding: 24px 16px; flex-shrink: 0; }
+        .brand-section { display: flex; align-items: center; gap: 12px; padding: 0 12px 32px; text-decoration: none; }
+        .logo-box { min-width: 42px; height: 42px; background: var(--primary-dark); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
+        .brand-text { font-weight: 800; font-size: 1.2rem; color: var(--primary-dark); }
+        .nav-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+        .nav-link { display: flex; align-items: center; gap: 16px; padding: 12px 14px; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 6px; transition: 0.2s; }
+        .nav-link:hover, .nav-link.active { background: #eff6ff; color: var(--primary); font-weight: 600; }
+        .main-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        header { padding: 20px 48px; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 5; border-bottom: 1px solid var(--gray-border); }
+        .content-area { padding: 40px; display: flex; flex-direction: column; align-items: center; width: 100%; }
+        .centered-container { width: 100%; max-width: 1300px; text-align: left; }
+        
+        .breadcrumb-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; font-size: 14px; }
+        .back-link { text-decoration: none; color: var(--text-muted); display: flex; align-items: center; gap: 6px; font-weight: 500;}
+        .back-link:hover { color: var(--primary); }
+
+        .page-header h1 { font-weight: 800; font-size: 2rem; color: var(--primary-dark); letter-spacing: -0.03em; margin: 0; }
+        .page-header p { color: var(--text-muted); font-size: 1rem; margin: 4px 0 0 0; }
+
+        .form-card { background: white; border-radius: var(--card-radius); padding: 28px; border: 1px solid rgba(0,0,0,0.04); box-shadow: 0 10px 30px rgba(0,0,0,0.01); margin-bottom: 24px; }
+        .section-badge { background: #eff6ff; color: var(--primary); padding: 6px 14px; border-radius: 8px; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; display: inline-flex; align-items: center; margin-bottom: 20px; }
+        
+        .profile-header { display: flex; align-items: center; gap: 20px; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid var(--gray-border); }
+        .profile-avatar { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; border: 2px solid var(--gray-border); overflow: hidden; }
+        .info-label { display: block; font-size: 0.75rem; color: #64748b; margin-bottom: 6px; font-weight: 600; text-transform: uppercase;}
+        .info-value { font-size: 0.95rem; color: #0f172a; font-weight: 600; margin-bottom: 15px;}
+
+        /* Agenda Original */
+        .agenda-list { display: flex; flex-direction: column; gap: 10px; background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid var(--gray-border); }
+        .agenda-item { display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; padding-bottom: 8px; border-bottom: 1px dashed var(--gray-border); }
+        .agenda-item:last-child { padding-bottom: 0; border-bottom: none; }
+        .agenda-badge { background: var(--primary-light); color: var(--primary); font-weight: 800; font-size: 0.7rem; padding: 3px 8px; border-radius: 6px; }
+
+        /* Sesiones dinámicas */
+        .session-card { background: #f8fafc; border: 1px solid var(--gray-border); border-radius: 12px; padding: 20px; margin-bottom: 15px; transition: 0.3s;}
+        .session-card.realizada { border-left: 4px solid #10b981; }
+        .session-card.reprogramada { border-left: 4px solid #f59e0b; }
+        .session-card.pendiente { border-left: 4px solid var(--text-muted); }
+        
+        .form-control, .form-select { border-radius: 8px; border-color: #cbd5e1; font-size: 0.9rem; }
+        .form-control:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        
+        .btn-add { background: transparent; border: 2px dashed #cbd5e1; color: var(--text-muted); font-weight: 700; font-size: 0.9rem; border-radius: 12px; padding: 12px; width: 100%; transition: 0.2s; }
+        .btn-add:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+        
+        .btn-delete { background: #fee2e2; color: #ef4444; border: none; border-radius: 8px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .btn-delete:hover { background: #ef4444; color: white; }
+
+        /* Botones de guardado locales */
+        .btn-save-local { background: var(--primary-dark); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; transition: 0.2s; }
+        .btn-save-local:hover { background: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <a href="#" class="brand-section">
+            <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div><span class="brand-text">Blackwell</span>
+        </a>
+        <ul class="nav-list mt-4">
+            <li><a href="asesora-dashboard.html" class="nav-link active"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Gestión de Clases</span></a></li>
+        </ul>
+        <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</a>
+    </aside>
+
+    <main class="main-wrapper">
+        <header>
+            <div><h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Área Académica</h5><p class="text-muted small m-0">Portal de Asesoría</p></div>
+        </header>
+
+        <div class="content-area">
+            <div class="centered-container">
+                <div class="breadcrumb-nav">
+                    <a href="asesora-dashboard.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Volver al listado de clases</a>
+                </div>
+
+                <div class="page-header mb-4">
+                    <h1 id="txtCursoNombre">Cargando Curso...</h1>
+                    <p id="txtPrograma">Obteniendo programa...</p>
+                </div>
+
+                <div class="row g-4">
+                    <!-- COLUMNA IZQUIERDA: PERFIL DOCENTE Y AGENDA ORIGINAL REDISEÑADA -->
+                    <div class="col-lg-4">
+                        <div class="form-card">
+                            <span class="section-badge"><i class="fa-solid fa-user-tie me-2"></i>Docente a Cargo</span>
+                            
+                            <div class="profile-header">
+                                <div id="avatarContainer" class="profile-avatar">...</div>
+                                <div>
+                                    <h6 class="fw-bold text-dark m-0" id="txtNombresDocente">Cargando...</h6>
+                                    <div class="small text-muted mt-1" id="txtCorreoDocente">—</div>
+                                </div>
+                            </div>
+                            
+                            <span class="info-label">Teléfono / Celular</span>
+                            <div class="info-value mb-4" id="txtCelularDocente">—</div>
+
+                            <span class="info-label mb-2 d-block">Agenda Original del Docente</span>
+                            <div class="agenda-list" id="contenedorAgendaOriginal">
+                                <!-- Reemplazo UX: Listado de Clases Compacto y Limpio -->
+                                <div class="text-center text-muted py-2"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando agenda...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- COLUMNA DERECHA: GESTIÓN DE ENLACES Y SESIONES CON GUARDADO CONTEXTUAL -->
+                    <div class="col-lg-8">
+                        
+                        <!-- ENLACES DE CLASE (GUARDADO CONTEXTUAL) -->
+                        <div class="form-card">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="section-badge m-0" style="background:#fef3c7; color:#b45309;"><i class="fa-solid fa-link me-2"></i>Enlaces Virtuales de la Clase</span>
+                                <button type="button" class="btn-save-local" id="btnSaveLinks" onclick="guardarEnlaces()">
+                                    <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Enlaces
+                                </button>
+                            </div>
+                            <p class="text-muted small mb-4">Añada los enlaces de videoconferencia para que estén disponibles en el portal del profesor.</p>
+                            
+                            <div id="contenedorEnlaces" class="d-flex flex-column gap-3 mb-3">
+                                <!-- Enlaces dinámicos -->
+                            </div>
+                            <button class="btn-add" onclick="agregarEnlaceUI()"><i class="fa-solid fa-plus me-1"></i> Añadir Nuevo Enlace</button>
+                        </div>
+
+                        <!-- CONTROL DE SESIONES (GUARDADO CONTEXTUAL) -->
+                        <div class="form-card">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="section-badge m-0" style="background:#e0e7ff; color:#3730a3;"><i class="fa-solid fa-calendar-check me-2"></i>Asistencias y Reprogramaciones</span>
+                                <button type="button" class="btn-save-local" id="btnSaveSessions" onclick="guardarSesiones()">
+                                    <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Asistencias
+                                </button>
+                            </div>
+                            <p class="text-muted small mb-4">Actualice el dictado de cada sesión o configure una fecha y horario alternativo si se solicita una reprogramación.</p>
+                            
+                            <div id="contenedorSesiones">
+                                <!-- Sesiones dinámicas -->
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
+        const urlParams = new URLSearchParams(window.location.search);
+        const invId = urlParams.get('invId');
+        
+        let arrayEnlaces = [];
+        let arraySesiones = [];
+        let availableSlots = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if(!invId) { Swal.fire('Error', 'Faltan parámetros de clase.', 'error'); return; }
+            cargarDetalleClase();
+        });
+
+        // Convertidor inteligente para mostrar PNG y JPG de Google Drive
+        function getSafeImgUrl(url) {
+            if (!url) return "";
+            const match = url.match(/[-\w]{25,}/);
+            if (match && (url.includes('drive.google.com') || url.includes('docs.google.com'))) {
+                return `https://docs.google.com/uc?export=view&id=${match[0]}`;
+            }
+            return url;
+        }
+        // Función para extraer horarios legibles desde GSheets (Añadir esta función)
+        function extractTimeSlots(franjasStr) {
+            if (!franjasStr) return ["19:00 a 20:30", "20:30 a 22:00"];
+            const regex = /(\d{2}:\d{2}\s*(?:a|to|-)\s*\d{2}:\d{2})/gi;
+            const matches = franjasStr.match(regex);
+            if (matches && matches.length > 0) {
+                return matches.map(m => m.trim().replace(/\s*to\s*/i, ' a '));
+            }
+            return ["19:00 a 20:30", "20:30 a 22:00"];
+        }
+
+        async function cargarDetalleClase() {
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_asesora_course_detail', idInvitacion: invId }) });
+                const response = await res.json();
+
+                if (response.status === 'success') {
+                    const inv = response.invitacion;
+                    const doc = response.docente;
+
+                    // Datos Cabecera y Perfil
+                    document.getElementById('txtCursoNombre').innerText = inv.cursoNombre;
+                    document.getElementById('txtPrograma').innerText = inv.programa;
+                    
+                    document.getElementById('txtNombresDocente').innerText = `${doc.nombres} ${doc.apellidos}`;
+                    document.getElementById('txtCorreoDocente').innerText = doc.correo || '—';
+                    document.getElementById('txtCelularDocente').innerText = doc.celular || '—';
+
+                    // Cargar imagen con soporte .PNG y .JPG de Google Drive
+                    if (doc.url_foto) {
+                        const safeFotoUrl = getSafeImgUrl(doc.url_foto);
+                        document.getElementById('avatarContainer').innerHTML = `<img src="${safeFotoUrl}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" onerror="this.parentElement.innerText='${doc.nombres.substring(0,2).toUpperCase()}'">`;
+                    } else {
+                        document.getElementById('avatarContainer').innerText = doc.nombres ? doc.nombres.substring(0,2).toUpperCase() : 'DOC';
+                    }
+
+                    // Parsear franjas horarias originales para alimentar los selectores
+                    availableSlots = extractTimeSlots(inv.franjas);
+
+                    // Rediseño estético: Construir Agenda Compacta
+                    const diasArr = inv.diasElegidos ? inv.diasElegidos.split(',').map(s=>s.trim()) : [];
+                    const horasArr = inv.horasElegidas ? inv.horasElegidas.split('|').map(s=>s.trim()) : [];
+                    
+                    let htmlAgenda = '<div class="agenda-list">';
+                    diasArr.forEach((dia, idx) => {
+                        let horaStr = horasArr[idx] || "";
+                        if(horaStr.includes(': ')) horaStr = horaStr.split(/:\s*(.*)/s)[1].trim();
+                        htmlAgenda += `
+                        <div class="agenda-item">
+                            <span class="agenda-badge">Sesión ${idx + 1}</span>
+                            <span class="fw-bold text-dark">${dia}</span>
+                            <span class="text-muted font-monospace">${horaStr}</span>
+                        </div>`;
+                    });
+                    htmlAgenda += '</div>';
+                    document.getElementById('contenedorAgendaOriginal').innerHTML = htmlAgenda || '<p class="text-muted m-0">No se encontraron clases agendadas.</p>';
+
+                    // Parsear Enlaces (Columna P)
+                    try { arrayEnlaces = JSON.parse(inv.enlaces); } catch(e) { arrayEnlaces = []; }
+                    if (!Array.isArray(arrayEnlaces)) arrayEnlaces = [];
+                    renderEnlacesUI();
+
+                    // Parsear Sesiones (Columna Q)
+                    try { arraySesiones = JSON.parse(inv.sesiones); } catch(e) { arraySesiones = []; }
+                    if (!Array.isArray(arraySesiones) || arraySesiones.length === 0) {
+                        // Inicialización inteligente basada en lo agendado originalmente
+                        diasArr.forEach((dia, idx) => {
+                            let horaStr = horasArr[idx] || "";
+                            if(horaStr.includes(': ')) horaStr = horaStr.split(/:\s*(.*)/s)[1].trim();
+                            
+                            arraySesiones.push({
+                                num: idx + 1,
+                                fechaBase: dia,
+                                horaBase: horaStr,
+                                estado: "Pendiente",
+                                nuevaFecha: "",
+                                nuevaHora: ""
+                            });
+                        });
+                    }
+                    renderSesionesUI();
+
+                } else {
+                    Swal.fire('Error', 'No se encontró la información de la clase.', 'error');
+                }
+            } catch (error) {
+                Swal.fire('Error', 'Problema de conexión con el servidor.', 'error');
+            }
+        }
+
+        // --- LÓGICA DE ENLACES (COL P) ---
+        function renderEnlacesUI() {
+            const container = document.getElementById('contenedorEnlaces');
+            let html = "";
+            arrayEnlaces.forEach((enlace, idx) => {
+                html += `
+                <div class="row g-2 align-items-center link-row" data-index="${idx}">
+                    <div class="col-md-4">
+                        <input type="text" class="form-control inp-titulo" placeholder="Ej. Clase 1 - Zoom" value="${enlace.titulo}">
+                    </div>
+                    <div class="col-md-7">
+                        <input type="url" class="form-control inp-url" placeholder="https://..." value="${enlace.url}">
+                    </div>
+                    <div class="col-md-1 d-flex justify-content-end">
+                        <button class="btn-delete" onclick="eliminarEnlaceUI(${idx})"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html || '<p class="text-muted m-0" id="noLinksText">No se han registrado enlaces de acceso virtual.</p>';
+        }
+
+        function agregarEnlaceUI() {
+            guardarEstadoEnlacesUI();
+            arrayEnlaces.push({ titulo: "", url: "" });
+            renderEnlacesUI();
+        }
+
+        function eliminarEnlaceUI(idx) {
+            guardarEstadoEnlacesUI();
+            arrayEnlaces.splice(idx, 1);
+            renderEnlacesUI();
+        }
+
+        function guardarEstadoEnlacesUI() {
+            arrayEnlaces = [];
+            document.querySelectorAll('.link-row').forEach(row => {
+                const t = row.querySelector('.inp-titulo').value.trim();
+                const u = row.querySelector('.inp-url').value.trim();
+                if(t || u) arrayEnlaces.push({ titulo: t, url: u });
+            });
+        }
+
+        // --- LÓGICA DE SESIONES (COL Q) ---
+        function renderSesionesUI() {
+            const container = document.getElementById('contenedorSesiones');
+            let html = "";
+            
+            if(arraySesiones.length === 0) {
+                container.innerHTML = '<p class="text-muted">No hay sesiones creadas para esta invitación.</p>';
+                return;
+            }
+
+            arraySesiones.forEach((ses, idx) => {
+                const claseClp = ses.estado === 'Realizada' ? 'realizada' : (ses.estado === 'Reprogramada' ? 'reprogramada' : 'pendiente');
+                const mostrarRepro = ses.estado === 'Reprogramada' ? 'block' : 'none';
+
+                let dateInputVal = "";
+                if (ses.nuevaFecha) {
+                    if (ses.nuevaFecha.includes('/')) {
+                        const p = ses.nuevaFecha.split('/');
+                        dateInputVal = `${p[2]}-${p[1]}-${p[0]}`;
+                    } else {
+                        dateInputVal = ses.nuevaFecha;
+                    }
+                }
+
+                // Generar selectores dinámicos con las horas configuradas
+                let selectOptionsHtml = `<option value="" ${!ses.nuevaHora ? 'selected' : ''}>Seleccione...</option>`;
+                availableSlots.forEach(slot => {
+                    const isSelected = slot === ses.nuevaHora ? 'selected' : '';
+                    selectOptionsHtml += `<option value="${slot}" ${isSelected}>${slot}</option>`;
+                });
+
+                html += `
+                <div class="session-card ${claseClp} ses-row" data-index="${idx}">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold m-0"><span class="badge bg-secondary me-2">Sesión ${ses.num}</span> Programación Original</h6>
+                        <select class="form-select form-select-sm fw-bold w-auto sel-estado" onchange="cambiarEstadoSesion(${idx}, this)" style="background-color: transparent; border-color: var(--gray-border);">
+                            <option value="Pendiente" ${ses.estado === 'Pendiente' ? 'selected' : ''}>Pendiente ⏳</option>
+                            <option value="Realizada" ${ses.estado === 'Realizada' ? 'selected' : ''}>Realizada ✅</option>
+                            <option value="Reprogramada" ${ses.estado === 'Reprogramada' ? 'selected' : ''}>Reprogramada 🔄</option>
+                        </select>
+                    </div>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="small text-muted fw-bold">Fecha Original</div>
+                            <div class="fw-medium">${ses.fechaBase || '—'}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="small text-muted fw-bold">Horario Original</div>
+                            <div class="fw-medium">${ses.horaBase || '—'}</div>
+                        </div>
+                    </div>
+
+                    <!-- Campos de Reprogramación (Con Selector de Hora) -->
+                    <div class="reprogramacion-box mt-3 pt-3 border-top" style="display: ${mostrarRepro};">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-primary">Nueva Fecha *</label>
+                                <input type="date" class="form-control inp-nfecha" value="${dateInputVal}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-primary">Nuevo Horario *</label>
+                                <select class="form-select inp-nhora">
+                                    ${selectOptionsHtml}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function cambiarEstadoSesion(idx, selectEl) {
+            arraySesiones[idx].estado = selectEl.value;
+            const card = document.querySelector(`.ses-row[data-index="${idx}"]`);
+            
+            card.classList.remove('pendiente', 'realizada', 'reprogramada');
+            card.classList.add(selectEl.value.toLowerCase());
+
+            const box = card.querySelector('.reprogramacion-box');
+            if (selectEl.value === 'Reprogramada') {
+                box.style.display = 'block';
+            } else {
+                box.style.display = 'none';
+                card.querySelector('.inp-nfecha').value = "";
+                card.querySelector('.inp-nhora').selectedIndex = 0;
+            }
+        }
+
+        function guardarEstadoSesionesUI() {
+            document.querySelectorAll('.ses-row').forEach(row => {
+                const idx = parseInt(row.getAttribute('data-index'));
+                const sel = row.querySelector('.sel-estado').value;
+                arraySesiones[idx].estado = sel;
+                
+                if (sel === 'Reprogramada') {
+                    const rawDate = row.querySelector('.inp-nfecha').value;
+                    if (rawDate) {
+                        const dp = rawDate.split('-');
+                        arraySesiones[idx].nuevaFecha = `${dp[2]}/${dp[1]}/${dp[0]}`;
+                    } else {
+                        arraySesiones[idx].nuevaFecha = "";
+                    }
+                    arraySesiones[idx].nuevaHora = row.querySelector('.inp-nhora').value;
+                } else {
+                    arraySesiones[idx].nuevaFecha = "";
+                    arraySesiones[idx].nuevaHora = "";
+                }
+            });
+        }
+
+        // --- ENVIAR DATOS INTEGRADOS A GSHEETS (BOTONES LOCALES) ---
+        async function ejecutarGuardadoLocal(btn, actionText) {
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i>Guardando...`;
+
+            try {
+                const payload = {
+                    action: "save_asesora_course_data",
+                    idInvitacion: invId,
+                    enlaces: arrayEnlaces,
+                    sesiones: arraySesiones
+                };
+
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const result = await res.json();
+
+                if (result.status === 'success') {
+                    showToast(`Se han guardado los ${actionText} exitosamente.`, 'success');
+                    cargarDetalleClase(); // Recargamos para repintar limpiamente
+                } else {
+                    Swal.fire('Error', 'No se pudieron guardar los datos.', 'error');
+                }
+            } catch (e) {
+                Swal.fire('Error', 'Fallo de red.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+        }
+
+        function guardarEnlaces() {
+            guardarEstadoEnlacesUI();
+            const btn = document.getElementById('btnSaveLinks');
+            ejecutarGuardadoLocal(btn, "enlaces de acceso");
+        }
+
+        function guardarSesiones() {
+            guardarEstadoSesionesUI();
+            const btn = document.getElementById('btnSaveSessions');
+            ejecutarGuardadoLocal(btn, "estados de asistencia");
+        }
+
+        function showToast(mensaje, tipo = 'success') {
+            const container = document.getElementById('toastContainer');
+            if(!container) return;
+            const toast = document.createElement('div');
+            const bgClass = tipo === 'success' ? 'text-bg-success' : 'text-bg-danger';
+            toast.className = `toast align-items-center ${bgClass} border-0 show shadow-lg rounded-4 mb-3`;
+            toast.innerHTML = `<div class="d-flex p-1"><div class="toast-body fw-medium" style="font-size: 0.95rem;">${mensaje}</div><button type="button" class="btn-close btn-close-white me-3 m-auto" data-bs-dismiss="toast" onclick="this.parentElement.parentElement.remove()"></button></div>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        function logout() { localStorage.clear(); window.location.href = "../login.html"; }
+    </script>
+</body>
+</html>

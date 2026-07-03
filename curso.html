@@ -74,45 +74,43 @@
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0; height: 80px;
             background: #ffffff;
-            border-radius: 30px 30px 0 0; /* Bordes superiores redondeados */
-            box-shadow: 0 -4px 25px rgba(0,0,0,0.06); /* Sombra suave hacia arriba */
+            border-radius: 30px 30px 0 0; 
+            box-shadow: 0 -4px 25px rgba(0,0,0,0.06); 
             display: none; justify-content: space-between; align-items: center;
             padding: 0 25px; padding-bottom: env(safe-area-inset-bottom); z-index: 1000;
         }
         .bottom-item {
             display: flex; flex-direction: column; align-items: center; gap: 6px;
-            text-decoration: none; color: #94a3b8; /* Iconos plomos por defecto */
+            text-decoration: none; color: #94a3b8; 
             transition: 0.3s ease; flex: 1; position: relative;
         }
         .bottom-item i { font-size: 1.4rem; transition: transform 0.2s; }
         .bottom-item span { font-size: 0.65rem; font-weight: 550; }
         
-        .bottom-item.active { color: var(--primary); /* Azul cuando está activo */ }
+        .bottom-item.active { color: var(--primary); }
         .bottom-item.active i { transform: translateY(-2px); }
         .bottom-item.active::after {
             content: ''; position: absolute; bottom: -10px; width: 5px; height: 5px;
             background: var(--primary); border-radius: 50%;
         }
 
-        /* --- EFECTO MÁGICO PARA ÍCONOS (Se rellenan al estar activos) --- */
         .bottom-item .material-symbols-rounded {
-            font-size: 1.5rem; /* Íconos mucho más grandes y visibles */
+            font-size: 1.5rem; 
             transition: transform 0.2s;
             font-variation-settings: 'FILL' 1, 'wght' 400;
         }
 
-        /* --- TÍTULOS MÁS GRUESOS --- */
+        /* --- TÍTULOS --- */
         .page-header { margin-bottom: 25px; }
         .page-header h1 { 
-            font-weight: 800 !important; /* Letra ultra gruesa */
+            font-weight: 800 !important; 
             font-size: 2.2rem; 
             margin-bottom: 8px; 
-            letter-spacing: -0.03em; /* Letras más juntas (estilo moderno) */
+            letter-spacing: -0.03em; 
             color: var(--primary-dark); 
         }
         .page-header p { color: var(--text-muted); font-size: 1.05rem; margin: 0; }
        
-       /* --- CONTROLES DE LETRA INDEPENDIENTES (A- / A+) --- */
         .font-controls {
             display: flex; align-items: center; background: white;
             border: 1px solid var(--border-color); border-radius: 20px;
@@ -128,29 +126,27 @@
         .btn-font-action.a-plus { font-size: 1.25rem; }
         .font-separator { width: 1px; height: 20px; background: var(--border-color); }
 
-        /* --- HEADER MÓVIL (Estilo App) --- */
+        /* --- HEADER MÓVIL --- */
         .mobile-header { display: none; margin-bottom: 25px; align-items: center; justify-content: space-between; }
         .mh-profile { display: flex; align-items: center; gap: 14px; }
         .mh-avatar { width: 50px; height: 50px; background-color: var(--border-color); border-radius: 50%; display: flex; justify-content: center; align-items: center; overflow: hidden; font-weight: 700; color: var(--primary-dark); font-size: 1.2rem; }
         .mh-text h1 { font-size: 1.3rem; font-weight: 800; letter-spacing: -1px; color: var(--primary-dark); margin: 0; }
         .mh-text p { font-size: 0.85rem; color: var(--text-muted); margin: 0; margin-top: 2px; }
         .mh-actions { display: flex; gap: 10px; }
-
         .btn-circle { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border-color); background: white; display: flex; align-items: center; justify-content: center; color: var(--text-main); cursor: pointer; transition: 0.2s; }
-
 
         /* --- LAYOUT PRINCIPAL --- */
         .main-wrapper { flex-grow: 1; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; }
         .content-area { padding: 40px 30px; display: flex; flex-direction: column; align-items: center; width: 100%; }
         .centered-container { width: 100%; max-width: 1250px; text-align: left; }
 
-        /* Tarjetas principales */
         .card-modern {
             background: #ffffff;
             border: 1px solid var(--border-color);
             border-radius: var(--card-radius);
             box-shadow: 0 10px 20px rgba(0,0,0,0.02);
             transition: all 0.2s ease;
+            margin-bottom: 24px;
         }
         
         .card-header-custom {
@@ -171,13 +167,37 @@
         }
         .stat-value { font-size: 1.1rem; font-weight: 800; color: #0f172a; }
         .stat-value small { font-size: 0.8rem; font-weight: 500; color: #64748b; }
+
+        /* Rediseño de Agenda */
+        .agenda-list { display: flex; flex-direction: column; gap: 10px; background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid var(--border-color); }
+        .agenda-item { display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color); }
+        .agenda-item:last-child { padding-bottom: 0; border-bottom: none; }
+        .agenda-badge { background: var(--primary-light); color: var(--primary); font-weight: 800; font-size: 0.7rem; padding: 3px 8px; border-radius: 6px; }
+        .agenda-text { font-weight: 700; color: var(--text-main); }
+        .agenda-time { font-family: monospace; color: var(--text-muted); }
         
+        /* Rediseño de Nota de Reprogramación */
+        .alert-repro-warning {
+            background-color: #fffbeb;
+            border: 1px solid #fef3c7;
+            color: #b45309;
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-top: 15px;
+        }
+        .alert-repro-warning i { font-size: 1.3rem; margin-top: 2px; }
+        .alert-repro-warning p { margin: 0; font-size: 0.82rem; line-height: 1.4; }
+
         /* Elementos de biblioteca y archivos */
         .resource-item {
             display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem;
             border-radius: 16px; background: #ffffff; border: 1px solid var(--border-color);
             text-decoration: none; transition: all 0.2s; margin-bottom: 0.75rem;
             box-shadow: 0 4px 10px rgba(0,0,0,0.01);
+            width: 100%;
         }
         .resource-item:hover {
             border-color: var(--primary); background: #f8fafc;
@@ -192,7 +212,7 @@
         .resource-icon.material { background: #ecfdf5; color: #059669; }
         .resource-icon.extra { background: #fefce8; color: #eab308; }
         
-        .resource-info { flex: 1; }
+        .resource-info { flex: 1; overflow: hidden; }
         .resource-title { font-weight: 800; font-size: 0.95rem; color: var(--text-main); margin: 0 0 4px 0; }
         .resource-sub { font-size: 0.75rem; font-weight: 500; color: var(--text-muted); }
         
@@ -201,18 +221,17 @@
             border-radius: 20px; background: #f1f5f9; color: #475569; letter-spacing: 0.5px; text-transform: uppercase;
         }
         
-        /* Estado vacío mejorado */
+        /* Estado vacío */
         .empty-state { text-align: center; padding: 4rem 2rem; background: transparent; border-radius: 20px; border: 1px dashed #cbd5e1; }
         .empty-icon {
             width: 72px; height: 72px; background: #f1f5f9; border-radius: 50%;
             display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto;
         }
         
-        /* Upload zone mejorada */
+        /* Upload zone */
         .upload-zone { border: 2px dashed #cbd5e1; border-radius: 20px; padding: 2rem 1.5rem; text-align: center; background: #fafcff; cursor: pointer; transition: all 0.2s; }
         .upload-zone:hover { border-color: var(--primary); background: var(--primary-light); }
         
-       /* Corrección del botón principal */
         .btn-primary-custom {
             background: var(--primary) !important; border: none !important; border-radius: 40px !important;
             padding: 0.6rem 1.5rem !important; font-weight: 700 !important; font-size: 0.9rem !important;
@@ -225,10 +244,9 @@
         .modal-footer .btn-primary:disabled { background: #94a3b8 !important; cursor: not-allowed; }
         .modal-footer .btn-light { border-radius: 14px; font-weight: 700;}
 
-        /* Animación para el spinner de JS */
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-       .course-main-title {
+        .course-main-title {
             font-size: 2.5rem;
             font-weight: 800 !important;
             color: var(--primary-dark);
@@ -238,11 +256,11 @@
         .program-badge {
             border-radius: 8px;
             font-size: 0.8rem;
-            white-space: normal; /* Permite que el texto baje a otra línea */
-            line-height: 1.4; /* Le da un respiro visual si hay 2 líneas */
-            text-align: left; /* Mantiene la lectura ordenada */
-            display: inline-block; /* Evita que el fondo se deforme */
-           }
+            white-space: normal; 
+            line-height: 1.4; 
+            text-align: left; 
+            display: inline-block; 
+        }
 
         /* RESPONSIVE */
         @media (max-width: 992px) {
@@ -262,7 +280,7 @@
 </head>
 <body>
 
-    <!-- NAVEGACIÓN SUPERIOR (ESCRITORIO) -->
+    <!-- NAVEGACIÓN SUPERIOR -->
     <nav class="top-nav d-none d-md-flex">
         <a href="#" class="nav-brand">
             <div class="logo-box"><span class="material-symbols-rounded">school</span></div>
@@ -274,7 +292,6 @@
             <a href="miscursos.html" class="nav-item active"><span class="material-symbols-rounded">co_present</span> Mis Clases</a>
         </div>
         <div class="nav-user d-flex gap-3 align-items-center">
-            <!-- Controles de Accesibilidad Escritorio -->
             <div class="font-controls">
                 <button class="btn-font-action a-minus" onclick="changeFontSize(-1)" title="Reducir letra">A-</button>
                 <div class="font-separator"></div>
@@ -327,7 +344,6 @@
                         </div>
                     </div>
                     <div class="mh-actions">
-                        <!-- Controles de Accesibilidad Móvil -->
                         <div class="font-controls">
                             <button class="btn-font-action a-minus" onclick="changeFontSize(-1)">A-</button>
                             <div class="font-separator"></div>
@@ -339,41 +355,32 @@
                     </div>
                 </div>
 
-               <!-- Header de la página (Desktop & Top Level Info) -->
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
                     <div>
-                        <!-- d-none d-md-inline-flex Oculta "Volver al menú" en celulares -->
                         <a href="miscursos.html" class="text-decoration-none text-muted mb-2 d-none d-md-inline-flex align-items-center fw-semibold small" style="font-size: 0.75rem;">
                             <span class="material-symbols-rounded me-1" style="font-size: 1.2rem;">arrow_back</span> Volver al menú
                         </a>
-                        
-                        <!-- Usamos la clase course-main-title para que el CSS controle el tamaño -->
                         <h1 class="course-main-title mb-1" id="ui-titulo">Cargando...</h1>
-                        
                         <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-1 fw-bold program-badge" id="ui-programa">...</span>
                     </div>
                     <div id="ui-estado-badge"></div>
                 </div>
 
                 <!-- MAIN LAYOUT -->
-                <div class="row g-4 align-items-start">
+                <div class="row g-4 align-items-stretch">
                     
                     <!-- LEFT COLUMN -->
                     <div class="col-lg-4 d-flex flex-column gap-4">
                         
-                        <!-- TARJETA: INFO GENERAL (estilo estadísticas) -->
+                        <!-- TARJETA: INFO GENERAL (Compacta) -->
                         <div class="card-modern">
                             <div class="card-header-custom">
-                                <h5 class="fw-bold mb-0 d-flex align-items-center" style="font-size: 1rem; letter-spacing: -0.2px;">
+                                <h5 class="fw-bold mb-0 d-flex align-items-center" style="font-size: 1rem;">
                                     <span class="material-symbols-rounded text-primary me-2">calendar_month</span> Información del curso
                                 </h5>
                             </div>
                             <div class="p-3 pt-3">
                                 <div class="stat-grid">
-                                    <div class="stat-item">
-                                        <span class="stat-label"><span class="material-symbols-rounded" style="font-size: 1rem;">schedule</span> Horario confirmado</span>
-                                        <span class="stat-value" id="ui-horario">Cargando...</span>
-                                    </div>
                                     <div class="stat-item">
                                         <span class="stat-label"><span class="material-symbols-rounded" style="font-size: 1rem;">videocam</span> Cantidad de sesiones</span>
                                         <span class="stat-value"><span id="ui-clases">...</span> <small>clases (1h 30m c/u)</small></span>
@@ -381,6 +388,29 @@
                                     <div class="stat-item">
                                         <span class="stat-label"><span class="material-symbols-rounded" style="font-size: 1rem;">event_available</span> Vigencia asignada</span>
                                         <span class="stat-value" id="ui-fechas" style="font-size: 0.95rem;">--/--/-- al --/--/--</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- REDISEÑO: CRONOGRAMA DE SESIONES REALES -->
+                        <div class="card-modern">
+                            <div class="card-header-custom">
+                                <h5 class="fw-bold mb-0 d-flex align-items-center" style="font-size: 1rem;">
+                                    <span class="material-symbols-rounded text-primary me-2">history_edu</span> Agenda de Sesiones
+                                </h5>
+                            </div>
+                            <div class="p-3">
+                                <div id="ui-agenda-container">
+                                    <div class="text-center text-muted py-2"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando agenda...</div>
+                                </div>
+
+                                <!-- NOTA DE REPROGRAMACIÓN UX WRITING -->
+                                <div class="alert-repro-warning">
+                                    <i class="fa-solid fa-circle-exclamation"></i>
+                                    <div>
+                                        <p class="fw-bold text-dark m-0">¿Necesita reprogramar una fecha?</p>
+                                        <p class="text-muted m-0 mt-1">Por favor, comuníquese directamente con su asesora académica para que coordine y programe la reprogramación oficial de su clase.</p>
                                     </div>
                                 </div>
                             </div>
@@ -415,10 +445,25 @@
                         </div>
                     </div>
 
-                    <!-- RIGHT COLUMN: REPOSITORIO DEL DOCENTE -->
-                    <div class="col-lg-8">
-                        <div class="card-modern h-100 d-flex flex-column">
-                            
+                    <!-- RIGHT COLUMN -->
+                    <div class="col-lg-8 d-flex flex-column gap-4">
+                        
+                        <!-- NUEVA TARJETA: ENLACES VIRTUALES DE ACCESO (DAILY TOOL) -->
+                        <div class="card-modern">
+                            <div class="card-header-custom">
+                                <h5 class="fw-bold mb-0 d-flex align-items-center">
+                                    <span class="material-symbols-rounded text-primary me-2">video_camera_front</span> Enlaces de Acceso a Clases
+                                </h5>
+                                <p class="text-muted small mb-0 mt-1 fw-semibold">Utiliza estos links para conectarte directamente a tu videoconferencia en cada clase.</p>
+                            </div>
+                            <div class="p-4" id="ui-enlaces-container">
+                                <!-- Enlaces de zoom/meet dinámicos -->
+                                <div class="text-center text-muted py-2"><i class="fa-solid fa-spinner fa-spin me-2"></i>Verificando enlaces...</div>
+                            </div>
+                        </div>
+
+                        <!-- REPOSITORIO DEL DOCENTE -->
+                        <div class="card-modern flex-grow-1 d-flex flex-column">
                             <div class="card-header-custom d-flex justify-content-between align-items-center flex-wrap gap-2">
                                 <div>
                                     <h5 class="fw-bold mb-0 d-flex align-items-center"><span class="material-symbols-rounded text-primary me-2">folder_open</span> Archivos para clase</h5>
@@ -430,14 +475,10 @@
                             </div>
 
                             <div class="p-4 flex-grow-1" style="min-height: 400px;">
-                                
-                                <!-- Loader de JS -->
                                 <div id="archivos-loader" class="text-center py-5">
                                     <span class="material-symbols-rounded text-primary" style="font-size: 3rem; animation: spin 1s linear infinite;">autorenew</span>
                                     <p class="mt-3 text-muted fw-bold">Cargando documentos...</p>
                                 </div>
-                                
-                                <!-- Estado vacío -->
                                 <div id="archivos-empty" class="empty-state" style="display:none;">
                                     <div class="empty-icon">
                                         <span class="material-symbols-rounded text-muted" style="font-size: 3rem;">folder_off</span>
@@ -445,11 +486,10 @@
                                     <h5 class="fw-bold mb-1 text-dark">Repositorio vacío</h5>
                                     <p class="text-muted small mb-0 fw-semibold">Sube tus primeras diapositivas o materiales desde el botón superior</p>
                                 </div>
-                                
-                                <!-- Lista inyectada por JS -->
                                 <div id="lista-archivos" class="row g-3"></div>
                             </div>
                         </div>
+
                     </div>
 
                 </div>
@@ -484,7 +524,7 @@
           
           <div class="modal-footer border-top-0 px-4 pb-4 pt-0">
             <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancelar</button>
-            <button type="button" class="btn btn-primary px-4 shadow-sm" id="btnUploadSubmit" onclick="subirArchivoCourse()" disabled>Subir ahora</button>
+            <button type="button" class="btn btn-primary px-4 shadow-sm" id="btnUploadSubmit" onclick="subirArchivoCourse()">Subir ahora</button>
           </div>
         </div>
       </div>
@@ -501,18 +541,16 @@
         let selectedFileBlob = null;
         let selectedFileDetails = null;
 
-        // --- 1. LÓGICA DE TAMAÑO DE LETRA ACCESIBLE ---
         let currentSizeLevel = 0;
-        const fontSizes = ["16px", "18px", "20px", "22px"]; // 4 niveles de tamaño
+        const fontSizes = ["16px", "18px", "20px", "22px"]; 
         
         function changeFontSize(step) {
             currentSizeLevel += step;
             if (currentSizeLevel < 0) currentSizeLevel = 0;
             else if (currentSizeLevel >= fontSizes.length) currentSizeLevel = fontSizes.length - 1;
-            document.documentElement.style.fontSize = fontSizes[currentSizeLevel];
+            document.documentElement.style.setProperty('--dynamic-font-size', fontSizes[currentSizeLevel]);
         }
 
-        // --- LÓGICA DEL DROPDOWN DE USUARIO ---
         const dropdownTrigger = document.getElementById('userDropdownTrigger');
         const dropdownMenu = document.getElementById('userDropdownMenu');
 
@@ -526,29 +564,74 @@
             });
         }
 
+        // --- NUEVA FUNCIÓN: ELIMINAR ARCHIVO CON CONFIRMACIÓN MODAL ---
+        async function confirmarEliminarArchivo(fileUrl, nombre) {
+            const confirm = await Swal.fire({
+                title: '¿Eliminar este archivo?',
+                html: `¿Está seguro de que desea eliminar el archivo <br><b>"${nombre}"</b> del repositorio de la clase?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                customClass: {
+                    popup: 'rounded-4'
+                }
+            });
+
+            if (confirm.isConfirmed) {
+                // Loader de espera discreto
+                Swal.fire({
+                    title: 'Eliminando...',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    didOpen: () => { Swal.showLoading() }
+                });
+
+                try {
+                    const res = await fetch(GAS_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: "delete_course_file",
+                            idInvitacion: invIdGlobal,
+                            fileUrl: fileUrl
+                        })
+                    }).then(r => r.json());
+
+                    Swal.close(); // Cerrar loader
+
+                    if (res.status === 'success') {
+                        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Archivo eliminado', showConfirmButton: false, timer: 3000 });
+                        fetchDetalle(); // Recargar el repositorio de forma fluida
+                    } else {
+                        Swal.fire('Error', res.message || 'No se pudo eliminar el archivo.', 'error');
+                    }
+                } catch(e) {
+                    Swal.close();
+                    Swal.fire('Error', 'Fallo de conexión al eliminar el archivo.', 'error');
+                }
+            }
+        }
+
         function logout() { 
             localStorage.clear(); 
             window.location.href = "login.html"; 
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-
-            // --- LÓGICA ESTÉTICA (UX/UI): Avatar y Nombre con LOCALSTORAGE ---
             const fullName = localStorage.getItem('userName') || "Docente";
             const firstName = fullName.split(' ')[0]; 
             const initial = fullName.substring(0, 2).toUpperCase(); 
 
-            // Aplicar a Desktop
             const nameEl = document.getElementById('userNameNav');
             const initialEl = document.getElementById('userInitialNav');
             if(nameEl) nameEl.innerText = firstName;
             if(initialEl) initialEl.innerText = initial;
 
-            // Aplicar a Móvil
             const initialMobile = document.getElementById('userInitialMobile');
             if(initialMobile) initialMobile.innerText = initial;
 
-            // --- LÓGICA FUNCIONAL (Back-End) con LOCALSTORAGE ---
             if (!invIdGlobal || !docenteIdGlobal) {
                 alert("Parámetros no encontrados."); 
                 window.location.href="miscursos.html";
@@ -569,7 +652,6 @@
 
                     document.getElementById('ui-titulo').innerText = data.nombreCurso;
                     document.getElementById('ui-programa').innerText = data.programa;
-                    document.getElementById('ui-horario').innerText = data.horario;
                     document.getElementById('ui-clases').innerText = data.totalClases;
 
                     const sd = new Date(data.fechaInicio); const ed = new Date(data.fechaFin);
@@ -581,15 +663,66 @@
                     let estadoVal = String(data.estado).trim().toLowerCase();
                     let eCol = 'bg-secondary';
                     if (estadoVal.includes('respondido')) eCol = 'bg-primary';
-                    else if (estadoVal.includes('completado') || estadoVal.includes('aprobado')) eCol = 'bg-success';
+                    else if (estadoVal.includes('completado') || estadoVal.includes('aprobado') || estadoVal.includes('aceptado')) eCol = 'bg-success';
                     
-                    // Diseño del badge alineado con el nuevo estilo (border-radius)
                     document.getElementById('ui-estado-badge').innerHTML = `<span class="badge ${eCol} px-3 py-2 fw-bold" style="border-radius: 10px; font-size: 0.8rem; letter-spacing: 0.5px;">${data.estado.toUpperCase()}</span>`;
 
                     if(data.silabo) {
                         const silaboDOM = document.getElementById('link-silabo');
                         silaboDOM.style.display = 'flex';
                         silaboDOM.href = data.silabo;
+                    }
+
+                    // 🚀 REDISEÑO DE AGENDA COMPACTA (PASO 1)
+                    if (data.horario) {
+                        const parts = data.horario.split(' de ');
+                        if (parts.length === 2) {
+                            const diasArr = parts[0].split(',').map(s => s.trim());
+                            const horasArr = parts[1].split('|').map(s => s.trim());
+
+                            let htmlAgenda = '<div class="agenda-list">';
+                            diasArr.forEach((dia, idx) => {
+                                let horaStr = horasArr[idx] || "";
+                                if(horaStr.includes(': ')) horaStr = horaStr.split(/:\s*(.*)/s)[1].trim();
+                                htmlAgenda += `
+                                <div class="agenda-item">
+                                    <span class="agenda-badge">Sesión ${idx + 1}</span>
+                                    <span class="agenda-text">${dia}</span>
+                                    <span class="agenda-time">${horaStr}</span>
+                                </div>`;
+                            });
+                            htmlAgenda += '</div>';
+                            document.getElementById('ui-agenda-container').innerHTML = htmlAgenda;
+                        } else {
+                            document.getElementById('ui-agenda-container').innerHTML = `<p class="text-muted small m-0">${data.horario}</p>`;
+                        }
+                    }
+
+                    // 🚀 RENDERIZADO DE ENLACES VIRTUALES (PASO 3)
+                    let enlacesArr = [];
+                    try { enlacesArr = JSON.parse(data.enlaces || "[]"); } catch(e) {}
+                    const enlacesContainer = document.getElementById('ui-enlaces-container');
+
+                    if (enlacesArr && enlacesArr.length > 0) {
+                        let htmlEnlaces = "";
+                        enlacesArr.forEach(link => {
+                            htmlEnlaces += `
+                            <a href="${link.url}" target="_blank" class="resource-item m-0 mb-2">
+                                <div class="resource-icon oficial" style="background:#eff6ff; color:#2563eb;"><span class="material-symbols-rounded">video_camera_front</span></div>
+                                <div class="resource-info">
+                                    <p class="resource-title">${link.titulo}</p>
+                                    <span class="resource-sub">Enlace de acceso a la videoconferencia</span>
+                                </div>
+                                <span class="material-symbols-rounded text-muted" style="font-size: 1.2rem;">open_in_new</span>
+                            </a>`;
+                        });
+                        enlacesContainer.innerHTML = htmlEnlaces;
+                    } else {
+                        enlacesContainer.innerHTML = `
+                        <div class="text-center text-muted py-3">
+                            <span class="material-symbols-rounded" style="font-size: 2rem; color: #cbd5e1;">link_off</span>
+                            <p class="small m-0 mt-1">Los enlaces de acceso serán cargados por tu asesora antes de iniciar.</p>
+                        </div>`;
                     }
 
                     dibujarRepositorio(data.archivos);
@@ -616,22 +749,28 @@
             archivosArr.forEach(arch => {
                 let tipoIcon = arch.categoria.includes("Extra") ? "extra" : "material";
                 
-                // Diseño actualizado inyectado desde JS con Material Symbols
+                // Rediseño estético: Contenedor con enlace de descarga y botón de borrado independiente
                 ht += `
                 <div class="col-md-6">
-                    <a href="${arch.url}" target="_blank" class="resource-item m-0">
-                        <div class="resource-icon ${tipoIcon}">
-                            <span class="material-symbols-rounded">description</span>
-                        </div>
-                        <div class="resource-info">
-                            <p class="resource-title">${arch.nombre}</p>
-                            <div class="d-flex gap-2 align-items-center flex-wrap mt-1">
-                                <span class="resource-badge">${arch.categoria}</span>
-                                <span class="resource-sub">${arch.fecha || ''}</span>
+                    <div class="resource-item m-0 d-flex align-items-center justify-content-between p-3" style="border: 1px solid var(--border-color); border-radius: 16px; background: white; transition: 0.2s; width: 100%;">
+                        <a href="${arch.url}" target="_blank" class="d-flex align-items-center gap-3 text-decoration-none" style="flex: 1; overflow: hidden; margin-right: 10px;">
+                            <div class="resource-icon ${tipoIcon}">
+                                <span class="material-symbols-rounded">description</span>
                             </div>
-                        </div>
-                        <span class="material-symbols-rounded text-muted" style="font-size: 1.2rem;">open_in_new</span>
-                    </a>
+                            <div class="resource-info" style="overflow: hidden;">
+                                <p class="resource-title text-truncate m-0" style="max-width: 180px; font-weight: 800; font-size: 0.95rem; color: var(--text-main);">${arch.nombre}</p>
+                                <div class="d-flex gap-2 align-items-center flex-wrap mt-1">
+                                    <span class="resource-badge" style="font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 20px; background: #f1f5f9; color: #475569; letter-spacing: 0.5px; text-transform: uppercase;">${arch.categoria}</span>
+                                    <span class="resource-sub" style="font-size: 0.75rem; font-weight: 500; color: var(--text-muted);">${arch.fecha || ''}</span>
+                                </div>
+                            </div>
+                        </a>
+                        
+                        <!-- Botón estético de borrado de archivos -->
+                        <button type="button" class="btn btn-sm btn-outline-danger border-0 p-1 ms-2" onclick="confirmarEliminarArchivo('${arch.url}', '${arch.nombre.replace(/'/g, "\\'")}')" title="Eliminar archivo" style="border-radius: 8px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; background: #fef2f2; color: #ef4444; flex-shrink: 0;">
+                            <span class="material-symbols-rounded" style="font-size: 1.25rem;">delete</span>
+                        </button>
+                    </div>
                 </div>
                 `;
             });
@@ -665,7 +804,6 @@
             const categ = document.getElementById('modal-cat').value;
 
             const ogHtml = btn.innerHTML;
-            // Spinner alineado con los nuevos iconos
             btn.innerHTML = `<span class="material-symbols-rounded me-2" style="animation: spin 1s linear infinite; vertical-align: middle;">autorenew</span> Subiendo...`;
             btn.disabled = true;
 

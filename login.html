@@ -108,6 +108,8 @@
             margin-top: 25px; text-align: center; font-size: 0.75rem; color: #94a3b8;
             background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px dashed #cbd5e1;
         }
+
+        
     </style>
 </head>
 <body>
@@ -179,14 +181,15 @@
                     } else if (rolAsignado.startsWith('DIRECTOR_')) {
                         localStorage.setItem('userRole', response.role);
                         window.location.href = "Admin/director-dashboard.html";
-                    } else if (rolAsignado === 'EJECUTIVA CREDENCIALES') {
-                        localStorage.setItem('userRole', 'Ejecutiva Credenciales');
+                    } else if (rolAsignado === 'EJECUTIVA CREDENCIALES' || rolAsignado === 'EJECUTIVO LICENCIAMIENTO') {
+                        localStorage.setItem('userRole', response.role);
                         window.location.href = "Admin/evaluacion-dashboard.html"; // Su panel exclusivo
+                    } else if (rolAsignado === 'ASESORA ACADEMICA') {
+                        localStorage.setItem('userRole', 'Asesora Academica');
+                        window.location.href = "Admin/asesora-dashboard.html";
                     } else if (
                         rolAsignado === 'ADMINISTRATIVO' || 
-                        rolAsignado === 'ADMINISTRADOR' ||
-                        rolAsignado === 'EJECUTIVO LICENCIAMIENTO' ||
-                        rolAsignado === 'ASESORA ACADEMICA'
+                        rolAsignado === 'ADMINISTRADOR'
                     ) {
                         // Guardamos el rol exacto para futuros permisos, pero todos van al mismo panel
                         localStorage.setItem('userRole', response.role);

@@ -4,8 +4,10 @@
     <script>
         const isLoggedIn = localStorage.getItem('isLoggedIn');
         const userRole = localStorage.getItem('userRole');
-        if (isLoggedIn !== 'true' || (userRole !== 'Ejecutiva Credenciales' && userRole !== 'Administrador')) {
-            window.location.href = "login.html";
+        const rolesPermitidos = ['Ejecutiva Credenciales', 'Ejecutivo Licenciamiento', 'Administrador'];
+        
+        if (isLoggedIn !== 'true' || !rolesPermitidos.some(rol => userRole && userRole.toLowerCase() === rol.toLowerCase())) {
+            window.location.href = "../login.html";
         }
     </script>
     <meta charset="UTF-8">
@@ -26,8 +28,6 @@
             --text-main: #1e293b;
             --text-muted: #64748b;
             --gray-border: #e2e8f0;
-            --card-radius: 20px;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             --sidebar-width: 260px;
         }
 
@@ -87,8 +87,8 @@
             <span class="brand-text">Blackwell</span>
         </a>
         <div class="user-preview">
-            <div class="avatar">SB</div>
-            <div class="user-meta"><b>Sara Blackwell</b><span>Evaluadora</span></div>
+            <div class="avatar" id="avatarIcon">SB</div>
+            <div class="user-meta"><b id="userName">Sara Blackwell</b><span id="userRoleTxt">Evaluadora</span></div>
         </div>
         <ul class="nav-list">
             <li><a href="#" class="nav-link active"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Evaluación Académica</span></a></li>
@@ -101,8 +101,8 @@
     <main class="main-wrapper">
         <header>
             <div>
-                <h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Área de Credenciales</h5>
-                <p class="text-muted small m-0">Portal de Evaluación Curricular</p>
+                <h5 class="fw-bold mb-0" id="headerTitle">Área de Credenciales</h5>
+                <p class="text-muted small m-0" id="headerSubtitle">Portal de Evaluación Curricular</p>
             </div>
         </header>
 
@@ -159,7 +159,20 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
         let expedientesGlobal = [];
 
-        document.addEventListener('DOMContentLoaded', cargarExpedientes);
+        document.addEventListener('DOMContentLoaded', () => {
+            // Personalización dinámica según rol (Sara vs María)
+            const role = localStorage.getItem('userRole');
+            const isMaria = role === 'Ejecutivo Licenciamiento';
+            
+            if (isMaria) {
+                document.getElementById('avatarIcon').innerText = "MB";
+                document.getElementById('userName').innerText = "María Blackwell";
+                document.getElementById('userRoleTxt').innerText = "Licenciamiento";
+                document.getElementById('headerTitle').innerText = "Área de Licenciamiento";
+                document.getElementById('headerSubtitle').innerText = "Fase de Firma y Contratos";
+            }
+            cargarExpedientes();
+        });
 
         async function cargarExpedientes() {
             try {
@@ -170,12 +183,12 @@
                 const response = await res.json();
                 
                 if (response.status === 'success') {
-                    // Sara sólo debe evaluar los expedientes que estén en fase de Evaluación o ya Evaluados
-                    const estadosPermitidos = ["por evaluar", "en evaluación", "evaluado"];
-                    expedientesGlobal = response.data.filter(exp => 
-                        estadosPermitidos.includes(exp.estado.toLowerCase())
-                    );
-                    renderTabla(expedientesGlobal);
+                // Ampliamos el filtro para incluir todos los estados posteriores a la evaluación
+                const estadosPermitidos = ["por evaluar", "en evaluación", "evaluado", "por contratar", "firmado", "contrato enviado", "contratado"];
+                expedientesGlobal = response.data.filter(exp => 
+                    estadosPermitidos.includes(exp.estado.toLowerCase())
+                );
+                renderTabla(expedientesGlobal);
                 } else {
                     mostrarMensajeVacio("Ocurrió un error al cargar los datos.");
                 }
@@ -196,9 +209,13 @@
             lista.forEach(exp => {
                 let badgeClass = "status-por-evaluar";
                 if(exp.estado.toLowerCase() === "en evaluación") badgeClass = "status-en-evaluacion";
-                if(exp.estado.toLowerCase() === "evaluado") badgeClass = "status-evaluado";
+                
+                // Agrupamos todos los estados concluidos bajo la etiqueta verde (Evaluado)
+                const estadosConcluidos = ["evaluado", "por contratar", "firmado", "contrato enviado", "contratado"];
+                if(estadosConcluidos.includes(exp.estado.toLowerCase())) badgeClass = "status-evaluado";
 
                 // Formateo de fechas bonitas
+
                 const fInicio = exp.fechaInicio ? formatearFecha(exp.fechaInicio) : "Por definir";
                 const fFin = exp.fechaFin ? formatearFecha(exp.fechaFin) : "Por definir";
                 const fCreacion = exp.fechaCreacion ? formatearFecha(exp.fechaCreacion) : "—";
@@ -237,7 +254,17 @@
 
             rows.forEach(row => {
                 const cumpleBusqueda = row.getAttribute('data-search').includes(busqueda);
-                const cumpleEstado = (estado === 'TODOS') || row.getAttribute('data-estado') === estado;
+                const rowEstado = row.getAttribute('data-estado').toUpperCase();
+                
+                let cumpleEstado = false;
+                if (estado === 'TODOS') {
+                    cumpleEstado = true;
+                } else if (estado === 'EVALUADO') {
+                    // Si se selecciona "Evaluado", muestra todos los que ya pasaron por las manos de Sara
+                    cumpleEstado = ["EVALUADO", "POR CONTRATAR", "FIRMADO", "CONTRATO ENVIADO", "CONTRATADO"].includes(rowEstado);
+                } else {
+                    cumpleEstado = rowEstado === estado;
+                }
 
                 if (cumpleBusqueda && cumpleEstado) {
                     row.style.display = '';

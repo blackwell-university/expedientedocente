@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script>
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        const userRole = localStorage.getItem('userRole');
+        if (isLoggedIn !== 'true' || (userRole !== 'Asesora Academica' && userRole !== 'Administrador')) {
+            window.location.href = "../login.html";
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Asesoría | Blackwell University</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #2563eb; --primary-light: #eff6ff; --primary-dark: #1e3a8a; --bg-body: #f8fafc; --sidebar-bg: #ffffff; --text-main: #1e293b; --text-muted: #64748b; --gray-border: #e2e8f0; --sidebar-width: 260px; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid var(--gray-border); display: flex; flex-direction: column; padding: 24px 16px; flex-shrink: 0; }
+        .brand-section { display: flex; align-items: center; gap: 12px; padding: 0 12px 32px; text-decoration: none; }
+        .logo-box { min-width: 42px; height: 42px; background: var(--primary-dark); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
+        .brand-text { font-weight: 800; font-size: 1.2rem; color: var(--primary-dark); }
+        .user-preview { display: flex; align-items: center; gap: 12px; padding: 12px; background: #f1f5f9; border-radius: 16px; margin-bottom: 24px; }
+        .avatar { min-width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 13px; }
+        .user-meta { display: flex; flex-direction: column; line-height: 1.2; }
+        .user-meta b { font-size: 13px; } .user-meta span { font-size: 11px; color: var(--text-muted); }
+        .nav-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+        .nav-link { display: flex; align-items: center; gap: 16px; padding: 12px 14px; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 6px; transition: 0.2s; }
+        .nav-link:hover, .nav-link.active { background: #eff6ff; color: var(--primary); font-weight: 600; }
+        .main-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        header { padding: 20px 48px; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 5; border-bottom: 1px solid var(--gray-border); }
+        .content-area { padding: 40px; display: flex; flex-direction: column; align-items: center; width: 100%; }
+        .centered-container { width: 100%; max-width: 1200px; text-align: left; }
+        .page-header h1 { font-weight: 800; font-size: 2.2rem; color: var(--primary-dark); letter-spacing: -0.03em; margin-bottom: 8px; }
+        .page-header p { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 32px; }
+        .filter-card { background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--gray-border); margin-bottom: 24px; }
+        .table-wrapper { background: white; border-radius: 16px; border: 1px solid var(--gray-border); overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.01); }
+        .custom-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        .custom-table th { padding: 16px 24px; background: #f8fafc; font-weight: 600; text-align: left; border-bottom: 1px solid var(--gray-border); }
+        .custom-table td { padding: 18px 24px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+        .btn-gestionar { background: #eff6ff; color: var(--primary); font-weight: 700; font-size: 0.8rem; border: none; padding: 8px 16px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: 0.2s; }
+        .btn-gestionar:hover { background: var(--primary); color: white; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <a href="#" class="brand-section">
+            <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div><span class="brand-text">Blackwell</span>
+        </a>
+        <div class="user-preview">
+            <div class="avatar">AA</div><div class="user-meta"><b>Asesora Académica</b><span>Gestión de Cursos</span></div>
+        </div>
+        <ul class="nav-list">
+            <li><a href="#" class="nav-link active"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Gestión de Clases</span></a></li>
+        </ul>
+        <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;"><i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span></a>
+    </aside>
+
+    <main class="main-wrapper">
+        <header>
+            <div><h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Área Académica</h5><p class="text-muted small m-0">Portal de Asesoría</p></div>
+        </header>
+        <div class="content-area">
+            <div class="centered-container">
+                <div class="page-header">
+                    <h1>Gestión de Clases y Sesiones</h1>
+                    <p>Monitorea los horarios, proporciona los enlaces de acceso y registra la asistencia de las sesiones.</p>
+                </div>
+
+                <div class="filter-card">
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label class="form-label fw-600 text-muted small">Buscar por Docente o Curso</label>
+                            <input type="text" id="searchInput" class="form-control" placeholder="Ej: Sharon Sosa o Contabilidad..." oninput="filtrarTabla()">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>DOCENTE</th>
+                                <th>CURSO / PROGRAMA</th>
+                                <th>ESTADO</th>
+                                <th>ACCIÓN</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaClasesBody">
+                            <tr><td colspan="4" class="text-center text-muted py-5"><i class="fa-solid fa-spinner fa-spin fa-2x mb-3 text-primary"></i><br>Cargando clases programadas...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
+        let clasesGlobal = [];
+
+        document.addEventListener('DOMContentLoaded', cargarClases);
+
+        async function cargarClases() {
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_all_invitations_global' }) });
+                const response = await res.json();
+                if (response.status === 'success') {
+                    // Filtramos los que no estén vacíos ni en borrador "Guardado"
+                    clasesGlobal = response.data.filter(inv => {
+                        const est = inv.estado.toLowerCase();
+                        return est !== 'guardado' && est !== 'cancelado';
+                    });
+                    renderTabla(clasesGlobal);
+                }
+            } catch (e) { document.getElementById('tablaClasesBody').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error al cargar datos.</td></tr>'; }
+        }
+
+        function renderTabla(lista) {
+            const tbody = document.getElementById('tablaClasesBody');
+            if (lista.length === 0) { tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">No hay clases programadas.</td></tr>`; return; }
+
+            let html = "";
+            lista.forEach(inv => {
+                html += `<tr class="inv-row" data-search="${inv.nombreDocente.toLowerCase()} ${inv.curso.toLowerCase()}">
+                    <td><div class="fw-bold text-dark">${inv.nombreDocente}</div></td>
+                    <td><div class="fw-bold text-primary-dark">${inv.curso}</div><div class="small text-muted">${inv.programa}</div></td>
+                    <td><span class="badge bg-light text-dark border">${inv.estado}</span></td>
+                    <td><a href="asesora-detalle.html?invId=${inv.id}" class="btn-gestionar"><i class="fa-regular fa-calendar-check"></i> Gestionar Clase</a></td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function filtrarTabla() {
+            const busqueda = document.getElementById('searchInput').value.toLowerCase();
+            document.querySelectorAll('.inv-row').forEach(row => {
+                row.style.display = row.getAttribute('data-search').includes(busqueda) ? '' : 'none';
+            });
+        }
+        function logout() { localStorage.clear(); window.location.href = "../login.html"; }
+    </script>
+</body>
+</html>

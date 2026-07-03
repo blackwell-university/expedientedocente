@@ -445,7 +445,10 @@
                         <div class="form-card mb-4">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <span class="section-badge m-0"><i class="fa-solid fa-user me-2"></i>Datos del Docente (Financieros)</span>
-                                <div id="edit-controls">
+                                <div id="edit-controls" class="d-flex gap-2">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary fw-bold" style="border-radius: 8px;" onclick="abrirAsistenteRegistroDocente()">
+                                        <i class="fa-solid fa-user-gear me-1"></i> Completar Registro (Asistente)
+                                    </button>
                                     <button class="btn btn-sm btn-outline-primary fw-bold" id="btnEditar" onclick="toggleEdit()" style="border-radius: 8px;">
                                         <i class="fa-solid fa-pencil me-1"></i> Editar Datos
                                     </button>
@@ -1188,13 +1191,16 @@
                 }
             }
 
-            // ETAPA 4 (Contratación)
-            if (['Por contratar', 'Firmado', 'Contrato enviado', 'Contratado'].includes(estadoExp)) {
-                html += `<button class="action-btn" onclick="enviarADirectivos()"><i class="fa-solid fa-user-tie"></i> Enviar a Directivos</button>`;
-                html += `<button class="action-btn" style="background:#0284c7; color:white; border-color:#0284c7;" onclick="cambiarEstadoExpediente('Firmado')"><i class="fa-solid fa-signature"></i> Enviar a firmar a docente</button>`;
-                
-                if (['Firmado', 'Contrato enviado', 'Contratado'].includes(estadoExp)) {
-                    html += `<button class="action-btn" style="background:#8b5cf6; color:white; border-color:#8b5cf6;" onclick="cambiarEstadoExpediente('Contrato enviado')"><i class="fa-solid fa-paper-plane"></i> Derivar a Contratación</button>`;
+            // ETAPA 4 (Contratación - Pipeline Secuencial de Firma)
+            if (['Por contratar', 'Contrato enviado', 'Firmado', 'Contratado'].includes(estadoExp)) {
+                if (estadoExp === 'Por contratar') {
+                    html += `<button class="action-btn" style="background:#0284c7; color:white; border-color:#0284c7;" onclick="enviarContratoDocente()"><i class="fa-solid fa-paper-plane"></i> Enviar contrato a docente</button>`;
+                } else if (estadoExp === 'Contrato enviado') {
+                    html += `<button class="action-btn" style="background:#64748b; color:white; border-color:#64748b;" disabled><i class="fa-solid fa-hourglass-half"></i> Esperando firma del docente</button>`;
+                } else if (estadoExp === 'Firmado') {
+                    html += `<button class="action-btn" style="background:#1e3a8a; color:white; border-color:#1e3a8a;" onclick="enviarContratoDirectores()"><i class="fa-solid fa-user-tie"></i> Enviar contrato a directores</button>`;
+                } else if (estadoExp === 'Contratado') {
+                    html += `<button class="action-btn" style="background:#10b981; color:white; border-color:#10b981;" disabled><i class="fa-solid fa-check-double"></i> Proceso de Contratación Culminado</button>`;
                 }
             }
 
@@ -1204,12 +1210,12 @@
         async function confirmarEvaluacionAprobacion() {
             const confirm = await Swal.fire({
                 title: '¿Confirmar Evaluación Académica?',
-                text: "Al confirmar, el expediente pasará a la fase de Contratación y se enviará un correo automático a los directores para su firma digital.",
+                text: "Al confirmar, el expediente pasará formalmente a la fase de Contratación (Por contratar) para iniciar la formalización de sus documentos contractuales.",
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#10b981',
                 cancelButtonColor: '#64748b',
-                confirmButtonText: 'Sí, confirmar y derivar',
+                confirmButtonText: 'Sí, confirmar y avanzar',
                 cancelButtonText: 'Cancelar'
             });
 
@@ -1249,6 +1255,79 @@
 
         function enviarADirectivos() {
             showToast("Documentos enviados a directivos.", "success");
+        }
+
+        function abrirAsistenteRegistroDocente() {
+            if (!docId) {
+                showToast("Cargando datos del docente, por favor espere.", "info");
+                return;
+            }
+            // Abre el asistente en una nueva pestaña enviando el ID del expediente, el ID del docente y el modo administrador
+            window.open(`../registroexpediente.html?exp=${expId}&doc=${docId}&mode=admin`, '_blank');
+        }
+
+        async function enviarContratoDocente() {
+            const confirm = await Swal.fire({
+                title: '¿Enviar Contrato al Docente?',
+                text: "Se notificará automáticamente al docente por correo electrónico con acceso directo para que revise y estampe su firma digital.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0284c7',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, enviar contrato',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (confirm.isConfirmed) {
+                showToast("Enviando contrato y notificando al docente...", "info");
+                try {
+                    const res = await fetch(GAS_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'send_contract_to_teacher', idExpediente: expId })
+                    });
+                    const result = await res.json();
+                    if(result.status === 'success') {
+                        showToast("Contrato enviado exitosamente", "success");
+                        cargarExpediente();
+                    } else {
+                        showToast("Error al enviar el contrato.", "danger");
+                    }
+                } catch(e) {
+                    showToast("Error de conexión.", "danger");
+                }
+            }
+        }
+
+        async function enviarContratoDirectores() {
+            const confirm = await Swal.fire({
+                title: '¿Enviar Contrato a Directores?',
+                text: "Se notificará por correo a los directores para que accedan a firmar el contrato del docente.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#1e3a8a',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, enviar a directivos',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (confirm.isConfirmed) {
+                showToast("Notificando a directores para firma final...", "info");
+                try {
+                    const res = await fetch(GAS_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'send_contract_to_directors', idExpediente: expId })
+                    });
+                    const result = await res.json();
+                    if(result.status === 'success') {
+                        showToast("Contrato enviado a directores exitosamente", "success");
+                        cargarExpediente();
+                    } else {
+                        showToast("Error al enviar el contrato.", "danger");
+                    }
+                } catch(e) {
+                    showToast("Error de conexión.", "danger");
+                }
+            }
         }
     </script>
 </body>

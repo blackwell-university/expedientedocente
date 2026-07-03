@@ -2,8 +2,29 @@
 <html lang="es">
     <head>
     <script>
-        // Protección de ruta: Solo para docentes
-        if (localStorage.getItem('isLoggedIn') !== 'true' || localStorage.getItem('userRole') !== 'Docente') {
+        const urlParamsHead = new URLSearchParams(window.location.search);
+        const modeParam = urlParamsHead.get('mode');
+        const isLoggedInHead = localStorage.getItem('isLoggedIn');
+        const userRoleHead = localStorage.getItem('userRole');
+        
+        const rolesAdminAutorizados = [
+            'Administrativo', 'Administrador', 'Ejecutivo Licenciamiento', 
+            'Asesora Academica', 'Ejecutiva Credenciales'
+        ];
+
+        // Inyectamos la clase de modo administrador de forma instantánea para evitar flickering
+        if (modeParam === 'admin') {
+            document.documentElement.classList.add('admin-mode');
+        }
+
+        // Si es modo admin, permitimos el acceso a los roles administrativos autorizados
+        if (isLoggedInHead !== 'true') {
+            window.location.href = "login.html";
+        } else if (modeParam === 'admin') {
+            if (!rolesAdminAutorizados.some(rol => userRoleHead && userRoleHead.toLowerCase() === rol.toLowerCase())) {
+                window.location.href = "login.html";
+            }
+        } else if (userRoleHead !== 'Docente') {
             window.location.href = "login.html";
         }
     </script>
@@ -46,6 +67,43 @@
             padding-top: 70px; /* Espacio para el navbar fijo */
             padding-bottom: 90px;
             overflow-x: hidden; /* Evita el scroll global, solo el del main-wrapper */
+        }
+
+        /* --- VISUALIZADOR DE CONTRATOS PREMIUM PARA EL DOCENTE --- */
+        .teacher-pdf-panel {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            border-radius: var(--card-radius);
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            height: 640px;
+            display: flex;
+            flex-direction: column;
+        }
+        .teacher-pdf-header {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 0.5px;
+        }
+        .teacher-pdf-container {
+            flex: 1;
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+        }
+        .teacher-pdf-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
         }
 
         /* --- TOP NAVIGATION (Escritorio) --- */
@@ -231,6 +289,62 @@
             
             /* Checkmark blanco superpuesto en completado móvil */
             .step-tab.completed .step-circle::after { content: '✓'; color: white; font-size: 0.75rem; font-weight: 900; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100%; width: 100%;}
+            
+            /* --- WIDGET CALENDARIO: OPTIMIZACIÓN UX MÓVIL --- */
+            /* 1. Ocultamos las flechas porque en móvil se usa 'swipe' (deslizar con el dedo) */
+            .carousel-nav-btn {
+                display: none !important;
+            }
+            .carousel-wrapper {
+                gap: 0;
+            }
+            /* 2. Hacemos las píldoras de fecha más elegantes y compactas */
+            .day-carousel {
+                gap: 8px;
+                padding: 5px 2px;
+            }
+            .day-pill {
+                width: 62px; /* Más angosto */
+                padding: 10px 4px;
+                border-radius: 12px;
+            }
+            .day-pill .day-abbr {
+                font-size: 0.65rem;
+            }
+            .day-pill .day-num {
+                font-size: 1.15rem;
+                margin: 0;
+            }
+            .day-pill .day-month {
+                font-size: 0.65rem;
+            }
+            /* 3. Optimizamos las franjas horarias a 2 columnas exactas */
+            .time-slot-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                margin-top: 10px;
+            }
+            .time-slot-pill {
+                padding: 10px 8px;
+                font-size: 0.78rem;
+                border-radius: 10px;
+            }
+
+            /* ESTO SALVA LOS BOTONES DE NAVEGACIÓN EN MÓVILES */
+            .content-area { 
+                padding: 20px; 
+                padding-bottom: 120px !important; /* Espacio extra para que el menú flotante no estorbe */
+            }
+            .d-flex.justify-content-between.align-items-center.mt-5 { 
+                flex-direction: column; gap: 20px; text-align: center; 
+            }
+            .d-flex.gap-3 { 
+                width: 100%; flex-direction: column; gap: 12px !important; 
+            }
+            .btn-continue, .btn-cancel { 
+                width: 100%; 
+            }
+        
         }
 
         /* --- CONTENIDO DE PASOS --- */
@@ -377,6 +491,220 @@
         
         }
 
+        /* --- ESTILOS DEL WIDGET CALENDARIO INTERACTIVO REAL (PASO 4) --- */
+        .carousel-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+        }
+        .carousel-nav-btn {
+            width: 42px; 
+            height: 42px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 1.5px solid var(--border-color);
+            color: var(--text-muted);
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+        .carousel-nav-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-light);
+            transform: scale(1.05);
+        }
+        .day-carousel {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding: 10px 4px;
+            scrollbar-width: none;
+            scroll-behavior: smooth; /* Scroll fluido y elegante */
+            flex: 1; /* Ocupa el espacio restante entre los botones */
+        }
+        .day-carousel::-webkit-scrollbar { display: none; }
+        
+        .day-pill {
+            flex: 0 0 auto;
+            width: 75px;
+            background: #ffffff;
+            border: 1.5px solid var(--border-color);
+            border-radius: 16px;
+            padding: 12px 6px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+        .day-pill:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+        .day-pill.selected {
+            background: var(--primary-dark) !important;
+            border-color: var(--primary-dark) !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.15);
+        }
+        .day-pill.selected .day-abbr, 
+        .day-pill.selected .day-num, 
+        .day-pill.selected .day-month {
+            color: #ffffff !important;
+        }
+        .day-pill .day-abbr {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            display: block;
+        }
+        .day-pill .day-num {
+            font-weight: 800;
+            font-size: 1.25rem;
+            color: var(--text-main);
+            display: block;
+            margin: 2px 0;
+            line-height: 1.1;
+        }
+        .day-pill .day-month {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            display: block;
+        }
+        .day-pill.has-booking {
+            border-color: #10b981;
+        }
+        .day-pill.has-booking:not(.selected) {
+            background: #ecfdf5;
+        }
+
+        .time-slot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+        .time-slot-pill {
+            background: #ffffff;
+            border: 1.5px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.88rem;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .time-slot-pill:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+        .time-slot-pill.active {
+            background: var(--primary) !important;
+            border-color: var(--primary) !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 10px rgba(30, 64, 175, 0.1);
+        }
+
+        /* BANNER AESTHETIC SÁBADOS */
+        .alert-aesthetic-warning {
+            background-color: #fffbeb;
+            border: 1px solid #fef3c7;
+            color: #b45309;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-top: 15px;
+            animation: fadeIn 0.3s ease;
+        }
+        .alert-aesthetic-warning i {
+            font-size: 1.2rem;
+            margin-top: 2px;
+        }
+
+        /* --- REDISEÑO DE TARJETAS DE SESIONES (UX UI) --- */
+        .booked-session-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            animation: fadeIn 0.3s ease;
+            gap: 10px;
+        }
+        .booked-session-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap; /* Permite que en móviles muy estrechos se acomode */
+        }
+        .booked-session-badge {
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 800;
+            font-size: 0.72rem;
+            padding: 6px 10px;
+            border-radius: 8px;
+            text-transform: uppercase;
+        }
+        .session-details {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .session-date {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+        .session-time {
+            font-weight: 500;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        /* Botón de basurero moderno y clickeable */
+        .btn-delete-session {
+            background: #fef2f2;
+            color: #ef4444;
+            border: none;
+            border-radius: 10px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+            flex-shrink: 0;
+        }
+        .btn-delete-session:hover {
+            background: #ef4444;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        /* ==================================================
+           SLA / ACCESOS: CONTROL DE VISTA PARA MODO ADMIN
+           ================================================== */
+        html.admin-mode .nav-links-desktop,
+        html.admin-mode .bottom-nav,
+        html.admin-mode .nav-user,
+        html.admin-mode .mh-actions {
+            display: none !important;
+        }
+
     </style>
 </head>
 <body>
@@ -463,7 +791,7 @@
                     </div>
                 </div>
 
-                <div class="wizard-card">
+                <div class="wizard-card" id="mainWizardCard" style="display: none;">
                     <div class="stepper-container" id="stepper">
                         <!-- Paso 1 -->
                         <div class="step-tab active" id="tab-1" onclick="irAPaso(1)">
@@ -750,21 +1078,64 @@
                             
                             <div id="horario-container" style="display: none;">
                                 <div class="section-label mt-2">Definir Disponibilidad</div>
-                                <div class="p-4 rounded-4" style="background-color: var(--primary-light); border: 1px solid #bfdbfe;">
-                                    <div class="d-flex align-items-start gap-2 mb-4 pb-3 border-bottom" style="border-color: #93c5fd !important;">
-                                        <i class="fa-solid fa-circle-info text-primary mt-1"></i>
-                                        <p class="small text-muted m-0" style="line-height: 1.5;">
-                                            <strong class="text-primary-dark">Indique su disponibilidad:</strong> Seleccione el día y la franja horaria para dictar su clase. Si el curso contempla dos sesiones o requiere dictarse en dos momentos diferentes de la semana, haga clic en <b>"Añadir segundo día"</b>.
-                                        </p>
-                                    </div>
+                                <div class="p-4 rounded-4 bg-white border" style="border-color: var(--border-color);">
                                     
-                                    <div id="schedule-rows">
-                                        <!-- Las filas se inyectan por JS -->
+                                    <!-- Encabezado Informativo Dinámico Adaptable -->
+                                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 pb-3 border-bottom" style="border-color: var(--border-color);">
+                                        <div>
+                                            <h6 class="fw-bold m-0 text-primary-dark"><i class="fa-regular fa-calendar-days me-2"></i>Programación de Clases</h6>
+                                            <p class="text-muted small m-0 mt-1">Seleccione las fechas exactas dentro del rango de su curso.</p>
+                                        </div>
+                                        <div class="w-100 text-md-end" style="max-width: 200px;">
+                                            <div class="badge rounded-pill fw-bold text-primary w-100 p-2" style="background: var(--primary-light); font-size: 0.85rem;" id="txtSessionsCounter">0 de 4 Agendadas</div>
+                                        </div>
                                     </div>
+
+                                    <!-- Paso 1: Carrusel de Días Reales (SaaS Slider) -->
+                                    <label class="form-label small fw-bold text-uppercase text-muted" style="letter-spacing: 0.5px;">1. Seleccione un día del calendario</label>
                                     
-                                    <button type="button" class="btn btn-sm btn-outline-primary fw-bold mt-2 bg-white" id="btnAddSchedule" onclick="agregarDiaHorario()" style="border-radius: 8px; border-color: #bfdbfe;">
-                                        <i class="fa-solid fa-plus me-1"></i> Añadir segundo día (Opcional)
-                                    </button>
+                                    <div class="carousel-wrapper mb-4">
+                                        <!-- Botón Izquierda -->
+                                        <button type="button" class="carousel-nav-btn" onclick="scrollCarousel('left')" title="Desplazar a la izquierda">
+                                            <i class="fa-solid fa-chevron-left"></i>
+                                        </button>
+                                        
+                                        <!-- Carrusel -->
+                                        <div class="day-carousel" id="carouselDays">
+                                            <!-- Se inyecta dinámicamente el rango de fechas de calendario -->
+                                        </div>
+                                        
+                                        <!-- Botón Derecha -->
+                                        <button type="button" class="carousel-nav-btn" onclick="scrollCarousel('right')" title="Desplazar a la derecha">
+                                            <i class="fa-solid fa-chevron-right"></i>
+                                        </button>
+                                    </div>
+
+                                    <!-- Paso 2: Horarios del Día Seleccionado -->
+                                    <label class="form-label small fw-bold text-uppercase text-muted" style="letter-spacing: 0.5px;">2. Elija la franja horaria para el día elegido</label>
+                                    <div id="wrapperTimeSlots">
+                                        <div class="time-slot-grid" id="gridTimeSlots">
+                                            <!-- Se inyecta dinámicamente -->
+                                        </div>
+                                        
+                                        <!-- NOTA CONDICIONAL EXCLUSIVA PARA LOS SÁBADOS -->
+                                        <div id="saturdayNotice" class="alert-aesthetic-warning d-none">
+                                            <i class="fa-solid fa-circle-exclamation"></i>
+                                            <div>
+                                                <h6 class="fw-bold m-0" style="font-size:0.9rem;">Día de Gestión Especial Académica</h6>
+                                                <p class="m-0 mt-1" style="font-size:0.8rem; line-height:1.4;">Este día se gestionará con el área académica para saber si se puede o no, porque normalmente las clases se dictan de lunes a viernes. Los sábados son casos especiales a gestionar.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Resumen de Sesiones Agendadas -->
+                                    <div id="wrapperBookedSessions" style="display: none; margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+                                        <label class="form-label small fw-bold text-uppercase text-muted" style="letter-spacing: 0.5px; margin-bottom: 12px;">Mis Fechas Seleccionadas</label>
+                                        <div id="listBookedSessions">
+                                            <!-- Se listan las clases agendadas -->
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
@@ -860,6 +1231,48 @@
                         </div>
                     </form>
                 </div>
+                
+                <!-- SECCIÓN ADICIONAL PARA FIRMA DIGITAL DEL DOCENTE -->
+                <div id="teacherSignatureSection" style="display: none; width: 100%; margin-top: 20px;">
+                    <div class="row g-4 align-items-stretch">
+                        <!-- Izquierda: Vista previa del documento degradado premium -->
+                        <div class="col-lg-6">
+                            <div class="teacher-pdf-panel">
+                                <div class="teacher-pdf-header">
+                                    <i class="fa-solid fa-file-pdf"></i> Vista previa del contrato
+                                </div>
+                                <div class="teacher-pdf-container">
+                                    <iframe id="teacher-pdf-preview" src="about:blank"></iframe>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Derecha: Formulario, Selector de Documentos y Firma -->
+                        <div class="col-lg-6">
+                            <div class="form-card d-flex flex-column" style="height: 100%; padding: 32px; background: white; border-radius: var(--card-radius); border: 1px solid rgba(0,0,0,0.04); box-shadow: 0 10px 30px rgba(0,0,0,0.01);">
+                                <span class="section-badge" style="background:#fef3c7; color:#b45309;"><i class="fa-solid fa-signature me-2"></i>Firma Digital del Docente</span>
+                                <h4 class="fw-bold mb-3 text-primary-dark">Firma de Documentos de Contratación</h4>
+                                <p class="text-muted small mb-4">Seleccione cada uno de los documentos que requieren su firma, revise la vista previa a la izquierda, dibuje su firma digital y haga clic en <b>"Generar y Firmar"</b>.</p>
+                                
+                                <label class="form-label small fw-bold text-muted text-uppercase mb-2">1. Seleccione documento a firmar</label>
+                                <div id="teacherDocsList" class="mb-4">
+                                    <!-- Se listan los documentos firmables: Letter of Appointment, Confidentiality Agreement, etc. -->
+                                </div>
+
+                                <label class="form-label small fw-bold text-muted text-uppercase mb-2">2. Dibuje su firma digital</label>
+                                <div class="signature-wrapper" style="position: relative; background: #f8fafc; border: 1.5px solid var(--border-color); border-radius: 12px; overflow: hidden; margin-bottom: 1.5rem;">
+                                    <button type="button" class="clear-btn" id="teacherClearSigBtn" style="position: absolute; top: 10px; right: 10px; background: rgba(226, 232, 240, 0.8); border: none; padding: 5px 12px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); cursor: pointer; z-index: 5;">Limpiar</button>
+                                    <canvas id="teacher-signature-canvas" style="width: 100%; height: 180px; background: white; cursor: crosshair; touch-action: none; display: block;"></canvas>
+                                </div>
+
+                                <button type="button" class="btn btn-primary w-100 py-3 fw-bold" id="btnTeacherSign" onclick="ejecutarFirmaDocente()" style="border-radius: 12px; background: var(--primary-dark); font-size: 0.95rem; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15); border: none; color: white;">
+                                    <i class="fa-solid fa-file-signature me-2"></i>Generar y Firmar Documento
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </main>
@@ -875,7 +1288,10 @@
         
         let pasoActual = 1; const totalPasos = 6;
         let idExpedienteUrl = new URLSearchParams(window.location.search).get('exp');
-        let userId = localStorage.getItem('userId');
+        
+        // Si viene un ID de docente por la URL (modo administrativo), lo cargamos prioritariamente
+        const docParam = new URLSearchParams(window.location.search).get('doc');
+        let userId = docParam || localStorage.getItem('userId');
         let selectedInvitationId = null;
         
         let urlCVGlobal = ""; 
@@ -887,6 +1303,127 @@
         let urlIdGlobal = "";
         let isEditingId = true;
         let itiCelular;
+
+        // --- CONTROLADORES EXCLUSIVOS DE FIRMA DEL DOCENTE ---
+        let teacherSigPad;
+        let teacherCanvas;
+        let teacherSelectedDocName = "";
+        let teacherSelectedDocUrl = "";
+
+        function renderTeacherDocsFirma(exp) {
+            let htmlDocs = "";
+            // El docente puede ver todos los documentos de su contrato (incluso si no requieren firma)
+            const docsContrato = ["Letter of Appointment", "Proposed Salary", "Confidentiality Agreement", "Direct Deposit"];
+            let primerDoc = true;
+
+            docsContrato.forEach(nombre => {
+                const fileObj = exp.urls[nombre];
+                if (fileObj && fileObj.url) {
+                    const isSelect = primerDoc ? "selected" : "";
+                    const isChecked = primerDoc ? "checked" : "";
+
+                    htmlDocs += `
+                    <div class="course-radio-card w-100 mb-2 ${isSelect}" onclick="seleccionarDocDocente('${nombre}', '${fileObj.url}', this)">
+                        <div class="d-flex align-items-center gap-3">
+                            <input type="radio" name="teacherDocRad" ${isChecked} style="width:18px; height:18px;">
+                            <div>
+                                <div class="fw-bold text-dark text-start" style="font-size:0.88rem;">${nombre}</div>
+                                <div class="text-muted small" style="font-size:0.75rem;">v${fileObj.version} • Estado: ${fileObj.estado}</div>
+                            </div>
+                        </div>
+                    </div>`;
+
+                    if (primerDoc) {
+                        teacherSelectedDocName = nombre;
+                        teacherSelectedDocUrl = fileObj.url;
+                        actualizarTeacherIframe(fileObj.url);
+                        primerDoc = false;
+                    }
+                }
+            });
+
+            document.getElementById('teacherDocsList').innerHTML = htmlDocs || '<p class="text-muted m-0">No se encontraron documentos listos para revisión.</p>';
+        }
+
+        function seleccionarDocDocente(nombre, url, el) {
+            teacherSelectedDocName = nombre;
+            teacherSelectedDocUrl = url;
+            document.querySelectorAll('#teacherDocsList .course-radio-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            el.querySelector('input').checked = true;
+            actualizarTeacherIframe(url);
+        }
+
+        function actualizarTeacherIframe(url) {
+            if (!url) return;
+            const match = url.match(/id=([a-zA-Z0-9_-]+)/);
+            if (match && match[1]) {
+                document.getElementById('teacher-pdf-preview').src = `https://docs.google.com/viewer?srcid=${match[1]}&pid=explorer&efplat=embed&embed=true&chrome=false&hl=es`;
+            } else {
+                document.getElementById('teacher-pdf-preview').src = url;
+            }
+        }
+
+        async function ejecutarFirmaDocente() {
+            if(teacherSigPad.isEmpty()) {
+                Swal.fire('Firma Requerida', 'Por favor, dibuje su firma en el recuadro antes de guardar.', 'warning');
+                return;
+            }
+
+            const confirm = await Swal.fire({
+                title: '¿Confirmar Firma de Contrato?',
+                text: `Se aplicará su firma digital en el documento "${teacherSelectedDocName}" de forma permanente.`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#1e3a8a',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, firmar',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if(!confirm.isConfirmed) return;
+
+            const btn = document.getElementById('btnTeacherSign');
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i>Estampando Firma Digital...`;
+
+            try {
+                const base64Signature = teacherSigPad.toDataURL('image/png').split(',')[1];
+                const payload = {
+                    action: "teacher_sign_document",
+                    idExpediente: idExpedienteUrl,
+                    documento: teacherSelectedDocName,
+                    signature: base64Signature
+                };
+
+                const res = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+
+                if(result.status === 'success') {
+                    Swal.fire({
+                        title: '¡Contrato Firmado!',
+                        text: `Firma digital estampada exitosamente en ${teacherSelectedDocName}. El área de Contratación continuará con el cierre de su expediente.`,
+                        icon: 'success',
+                        confirmButtonColor: '#1e3a8a'
+                    }).then(() => {
+                        window.location.reload(); 
+                    });
+                } else {
+                    Swal.fire('Error', result.message || 'No se pudo aplicar la firma.', 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = originalHTML;
+                }
+
+            } catch(e) {
+                Swal.fire('Error', 'Fallo de red al conectar con el servidor.', 'error');
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+        }
 
         function habilitarEdicionFoto() {
             isEditingFoto = true;
@@ -1197,46 +1734,130 @@
 
             if(idExpedienteUrl) cargarDatosPrevios();
             cargarCursosPendientes();
+
+            // Ocultamos la barra de navegación del docente si es el administrador el que edita
+            const modeParamInit = new URLSearchParams(window.location.search).get('mode');
+            if (modeParamInit === 'admin') {
+                // Oculta links, barra inferior, panel de usuario (A- A+ y Avatar) y acciones móviles
+                document.querySelectorAll('.nav-links-desktop, .bottom-nav, .nav-user, .mh-actions').forEach(el => el.style.display = 'none');
+            }
         });
 
         async function cargarDatosPrevios() {
-            document.getElementById('btnNext').disabled = true;
+            // Deshabilitar botón por seguridad durante la carga
+            const btnNext = document.getElementById('btnNext');
+            if (btnNext) btnNext.disabled = true;
+
             try {
-                const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: userId, id_expediente: idExpedienteUrl }) });
+                // 1. Obtener estado del expediente de forma segura para interceptar firmas
+                let expEstadoReal = "";
+                let expedienteCompleto = null;
+                if (idExpedienteUrl) {
+                    try {
+                        const resExp = await fetch(GAS_URL, { 
+                            method: 'POST', 
+                            body: JSON.stringify({ action: 'get_expediente_data', expId: idExpedienteUrl }) 
+                        });
+                        const dataExp = await resExp.json();
+                        if (dataExp.status === 'success' && dataExp.expediente) {
+                            expEstadoReal = dataExp.expediente.estado;
+                            expedienteCompleto = dataExp.expediente;
+                        }
+                    } catch(errExp) { 
+                        console.error("Error obteniendo estado del expediente:", errExp); 
+                    }
+                }
+
+                // 2. Cargar perfil del docente
+                const response = await fetch(GAS_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ action: 'get_profile', id: userId, id_expediente: idExpedienteUrl }) 
+                });
                 const result = await response.json();
                 
-                document.getElementById('step1-loader').style.display = 'none';
-                document.getElementById('step2-loader').classList.add('d-none');
-                document.getElementById('step2-content').classList.remove('d-none');
-                document.getElementById('btnNext').disabled = false;
+                // Quitar loaders de forma segura
+                const loader = document.getElementById('step1-loader');
+                if (loader) loader.style.display = 'none';
+                
+                const step2Loader = document.getElementById('step2-loader');
+                if (step2Loader) step2Loader.classList.add('d-none');
+                
+                const step2Content = document.getElementById('step2-content');
+                if (step2Content) step2Content.classList.remove('d-none');
+                
+                if (btnNext) btnNext.disabled = false;
 
                 if (result.status === 'success') {
                     const d = result.data;
                     window.docsSolicitadosGlobal = result.documentosSolicitados || "";
 
+                    // Adaptación estética de títulos para Administradores
+                    const modeParam = new URLSearchParams(window.location.search).get('mode');
+                    if (modeParam === 'admin') {
+                        const dHeaderH1 = document.querySelector('.desktop-header h1');
+                        const dHeaderP = document.querySelector('.desktop-header p');
+                        if(dHeaderH1) dHeaderH1.innerText = `Expediente: ${idExpedienteUrl}`;
+                        if(dHeaderP) dHeaderP.innerText = `Docente: ${d.nombres} ${d.apellidos}`;
+
+                        const mHeaderH1 = document.querySelector('.mobile-header .mh-text h1');
+                        const mHeaderP = document.querySelector('.mobile-header .mh-text p');
+                        if(mHeaderH1) mHeaderH1.innerText = idExpedienteUrl;
+                        if(mHeaderP) mHeaderP.innerText = `${d.nombres} ${d.apellidos}`;
+                    }
+
+                    // --- INTERCEPTOR EXCLUSIVO: GESTIÓN DE FIRMA DIGITAL DE CONTRATOS ---
+                    const rolesAdmin = ['Administrativo', 'Administrador', 'Ejecutivo Licenciamiento', 'Asesora Academica', 'Ejecutiva Credenciales'];
+                    const isAdminView = rolesAdmin.some(rol => userRoleHead && userRoleHead.toLowerCase() === rol.toLowerCase());
+                    const estadosFirma = ['contrato enviado', 'por contratar', 'firmado', 'contratado'];
+
+                    if (estadosFirma.includes(expEstadoReal.toLowerCase()) && !isAdminView) {
+                        // Ocultamos el stepper de registro y mostramos la sección de firma directamente
+                        const wizardCard = document.getElementById('mainWizardCard');
+                        if (wizardCard) wizardCard.style.display = 'none';
+
+                        const sigSection = document.getElementById('teacherSignatureSection');
+                        if (sigSection) sigSection.style.display = 'block';
+
+                        teacherCanvas = document.getElementById('teacher-signature-canvas');
+                        teacherSigPad = new SignaturePad(teacherCanvas, { backgroundColor: 'rgb(255, 255, 255)' });
+                        
+                        function resizeTeacherCanvas() {
+                            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                            teacherCanvas.width = teacherCanvas.offsetWidth * ratio;
+                            teacherCanvas.height = teacherCanvas.offsetHeight * ratio;
+                            teacherCanvas.getContext("2d").scale(ratio, ratio);
+                            teacherSigPad.clear();
+                        }
+                        window.addEventListener('resize', resizeTeacherCanvas);
+                        const clearBtn = document.getElementById('teacherClearSigBtn');
+                        if (clearBtn) clearBtn.addEventListener('click', () => teacherSigPad.clear());
+                        
+                        renderTeacherDocsFirma(expedienteCompleto);
+                        setTimeout(resizeTeacherCanvas, 300);
+                        return; // Detiene la carga normal
+                    }
+
+                    // SI NO ES FASE DE FIRMA, forzamos mostrar el wizard de registro
+                    const wizardCard = document.getElementById('mainWizardCard');
+                    if (wizardCard) wizardCard.style.display = 'block';
+
+                    // Llenado de campos del perfil habitual
                     if(d.nombres) document.getElementById('reg-nombres').value = d.nombres;
                     if(d.apellidos) document.getElementById('reg-apellidos').value = d.apellidos;
                     if(d.dni) document.getElementById('reg-dni').value = d.dni;
                     if(d.celular) { 
-                        // 1. Limpiamos espacios o duplicados raros que vengan de Google Sheets (+51+51...)
                         let celStr = d.celular.toString().replace(/\s+/g, '').replace(/^(\+\d+)\1/, '$1');
-                        
-                        // 2. Le pasamos el número al plugin para que coloque la bandera
                         itiCelular.setNumber(celStr); 
-
-                        // 3. Forzamos limpieza estética: Si el código se coló en la caja, lo podamos
                         setTimeout(() => {
                             const countryData = itiCelular.getSelectedCountryData();
                             if (countryData && countryData.dialCode) {
                                 const dialCodeStr = "+" + countryData.dialCode;
                                 const inputCelular = document.getElementById('reg-celular');
-                                
-                                // Si el texto dentro empieza con el código (+51), lo reemplazamos por nada
                                 if (inputCelular.value.startsWith(dialCodeStr)) {
                                     inputCelular.value = inputCelular.value.replace(dialCodeStr, '').trim();
                                 }
                             }
-                        }, 200); // 200ms da tiempo exacto a que la UI se dibuje antes de limpiar
+                        }, 200);
                     }
                     if(d.pais) document.getElementById('reg-pais').value = d.pais;
                     if(d.direccion) document.getElementById('reg-direccion').value = d.direccion;
@@ -1244,80 +1865,6 @@
                     if(d.moneda) document.getElementById('reg-moneda').value = d.moneda;
                     if(d.cuenta) document.getElementById('reg-cuenta').value = d.cuenta;
 
-                    // Rellenar Competencias (Paso 6)
-                    if(d.tecnologia) document.getElementById('skill-tech').value = d.tecnologia;
-                    if(d.idiomas) document.getElementById('skill-lang').value = d.idiomas;
-                    if(d.sociales) document.getElementById('skill-social').value = d.sociales;
-                    
-                    // PASO 1: Evaluación Independiente (Fricción Cero)
-                    document.getElementById('step1-upload-mode').style.display = 'block';
-                    document.getElementById('step1-view-mode').style.display = 'block';
-
-                    // PASO 1: Carga Inteligente e Individual
-                    if (d.url_cv) {
-                        urlCVGlobal = d.url_cv;
-                        isEditingCV = false;
-                        document.getElementById('view-link-cv').href = getDriveViewUrl(urlCVGlobal);
-                        
-                        const statusContainer = document.getElementById('cv-status-container');
-                        if (statusContainer) {
-                            if (result.drafts && result.drafts.experiencia && result.drafts.experiencia.length > 0) {
-                                statusContainer.dataset.estado = "Procesado";
-                                statusContainer.innerHTML = `<span class="badge bg-light text-dark border mt-1">Procesado</span>`;
-                            } else {
-                                statusContainer.dataset.estado = "Subido";
-                                statusContainer.innerHTML = `<span class="badge bg-light text-dark border mt-1">Subido</span>`;
-                            }
-                        }
-                    } else { isEditingCV = true; }
-
-                    if (d.url_handbook) {
-                        urlHbGlobal = d.url_handbook;
-                        isEditingHb = false;
-                        document.getElementById('view-link-hb').href = getDriveViewUrl(urlHbGlobal);
-                    } else { isEditingHb = true; }
-
-                    actualizarVistaPaso1(); // Dibuja la pantalla según lo que falte
-
-                    // PASO 2: RENDERIZAR TARJETAS DINÁMICAS
-                    const dipContainer = document.getElementById('diplomas-container');
-                    dipContainer.innerHTML = '';
-                    if (result.drafts && result.drafts.educacion && result.drafts.educacion.length > 0) {
-                        result.drafts.educacion.forEach(edu => renderDiplomaReadonly(edu));
-                        marcarTabComoCompletada(2);
-                    } else {
-                        addDiplomaEdit(); 
-                    }
-
-                    // Asignar campos del paso 3 
-                    if(d.correo) document.getElementById('reg-correo').value = d.correo;
-                    if(d.celular) document.getElementById('reg-celular').value = d.celular;
-                    if(d.nombres) document.getElementById('reg-nombres').value = d.nombres;
-                    if(d.apellidos) document.getElementById('reg-apellidos').value = d.apellidos;
-                    if(d.tipo_id) document.getElementById('reg-tipo-id').value = d.tipo_id;
-                    if(d.dni) document.getElementById('reg-dni').value = d.dni;
-                    
-                    if(d.fecha_nacimiento) {
-                        try {
-                            const dObj = new Date(d.fecha_nacimiento);
-                            if (!isNaN(dObj)) document.getElementById('reg-fecha-nac').value = dObj.toISOString().split('T')[0];
-                        } catch(e){}
-                    }
-                    
-                    if(d.ciudad) document.getElementById('reg-ciudad').value = d.ciudad;
-                    if(d.cp) document.getElementById('reg-cp').value = d.cp;
-                    if(d.direccion) document.getElementById('reg-direccion').value = d.direccion;
-                    
-                    // Bancos
-                    if(d.banco) document.getElementById('reg-banco').value = d.banco;
-                    if(d.moneda) document.getElementById('reg-moneda').value = d.moneda;
-                    if(d.tipo_cuenta) document.getElementById('reg-tipo-cuenta').value = d.tipo_cuenta;
-                    if(d.cuenta) document.getElementById('reg-cuenta').value = d.cuenta;
-                    if(d.cci) document.getElementById('reg-cci').value = d.cci;
-                    if(d.tipo_ruta) document.getElementById('reg-tipo-ruta').value = d.tipo_ruta;
-                    if(d.codigo_ruta) document.getElementById('reg-codigo-ruta').value = d.codigo_ruta;
-
-                    // Rellenar Competencias (Paso 6)
                     if(d.tecnologia) document.getElementById('skill-tech').value = d.tecnologia;
                     if(d.idiomas) document.getElementById('skill-lang').value = d.idiomas;
                     if(d.sociales) document.getElementById('skill-social').value = d.sociales;
@@ -1363,14 +1910,27 @@
                             });
                         }
                     }
-                     // NUEVO: Verificamos si el paso 6 califica para pintarse de verde
                     setTimeout(() => {
                         if (validarPaso6Completo()) { marcarTabComoCompletada(6); }
                     }, 500);
-                } else { document.getElementById('step1-upload-mode').style.display = 'block'; addDiplomaEdit(); }
-            } catch(e) { document.getElementById('step1-upload-mode').style.display = 'block'; document.getElementById('btnNext').disabled = false; addDiplomaEdit(); }
+                } else { 
+                    // Blindaje: si el servidor responde con error, mostramos de todas formas el formulario
+                    const wizardCard = document.getElementById('mainWizardCard');
+                    if (wizardCard) wizardCard.style.display = 'block';
+                    document.getElementById('step1-upload-mode').style.display = 'block'; 
+                    addDiplomaEdit(); 
+                }
+            } catch(e) { 
+                console.error("Error en cargarDatosPrevios:", e);
+                // Blindaje ante caídas de red: si el fetch falla, forzamos mostrar el wizard para que la pantalla no quede en blanco
+                const wizardCard = document.getElementById('mainWizardCard');
+                if (wizardCard) wizardCard.style.display = 'block';
+                document.getElementById('step1-upload-mode').style.display = 'block'; 
+                if (btnNext) btnNext.disabled = false; 
+                addDiplomaEdit(); 
+            }
         }
-
+        
         function marcarTabComoCompletada(paso) {
             const tab = document.getElementById(`tab-${paso}`);
             if(tab) { 
@@ -1543,6 +2103,250 @@
         function mostrarNombre(input, id) { if(input.files.length > 0) document.getElementById(id).innerText = "✅ " + input.files[0].name; }
         const getBase64 = (file) => new Promise((resolve) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result.split(',')[1]); });
 
+
+
+        // --- MOTOR DE PLANIFICACIÓN POR CALENDARIO REAL (PASO 4) ---
+        let maxClasses = 4;
+        let availableSlots = [];
+        let bookedSessions = []; // Almacena { dateStr: "DD/MM/YYYY", slot: "19:00 a 20:30" }
+        let generatedDates = []; // Array de objetos Date dentro del rango
+        let selectedDateObj = null;
+
+        // Función para parsear texto a número de clases
+        function parseClasesCount(val) {
+            if (!val) return 4;
+            const clean = String(val).trim().toLowerCase();
+            const map = {
+                'una': 1, 'uno': 1, '1': 1,
+                'dos': 2, '2': 2,
+                'tres': 3, '3': 3,
+                'cuatro': 4, '4': 4,
+                'cinco': 5, '5': 5,
+                'seis': 6, '6': 6,
+                'siete': 7, '7': 7,
+                'ocho': 8, '8': 8,
+                'nueve': 9, '9': 9,
+                'diez': 10, '10': 10
+            };
+            return map[clean] || parseInt(clean) || 4;
+        }
+
+        // Función para extraer horarios legibles desde GSheets
+        function extractTimeSlots(franjasStr) {
+            if (!franjasStr) return ["19:00 a 20:30", "20:30 a 22:00"];
+            const regex = /(\d{2}:\d{2}\s*(?:a|to|-)\s*\d{2}:\d{2})/gi;
+            const matches = franjasStr.match(regex);
+            if (matches && matches.length > 0) {
+                return matches.map(m => m.trim().replace(/\s*to\s*/i, ' a '));
+            }
+            return ["19:00 a 20:30", "20:30 a 22:00"];
+        }
+
+        // Evitar desajustes de zona horaria local en JS al parsear fechas ISO de GSheets
+        function parseDateSecure(str) {
+            if (!str) return new Date();
+            if (str instanceof Date) return str;
+            const parts = String(str).split('T')[0].split('-');
+            if (parts.length === 3) {
+                return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+            }
+            return new Date(str);
+        }
+
+        function formatDateToDDMMYYYY(date) {
+            return ("0" + date.getDate()).slice(-2) + "/" + ("0" + (date.getMonth() + 1)).slice(-2) + "/" + date.getFullYear();
+        }
+
+        // Generar lista de días válidos (Excluye domingos)
+        function generateDatesRange(startStr, endStr) {
+            const dates = [];
+            const sDate = parseDateSecure(startStr);
+            const eDate = parseDateSecure(endStr);
+            let temp = new Date(sDate);
+
+            while (temp <= eDate) {
+                if (temp.getDay() !== 0) { // Excluir Domingos (0)
+                    dates.push(new Date(temp));
+                }
+                temp.setDate(temp.getDate() + 1);
+            }
+            return dates;
+        }
+
+        // Inicializador del widget del calendario real
+        function initScheduleWidget(inv) {
+            maxClasses = parseClasesCount(inv.clases);
+            availableSlots = extractTimeSlots(inv.franjas);
+            bookedSessions = [];
+            
+            // Generar fechas reales del calendario
+            generatedDates = generateDatesRange(inv.fechaInicio, inv.fechaFin);
+
+            // Mapeo e interpretación de clases ya registradas previamente
+            if (inv.dias && inv.horario) {
+                const daysArr = inv.dias.split(',').map(d => d.trim());
+                const hoursArr = inv.horario.split('|').map(h => h.trim());
+                
+                daysArr.forEach((dateStr, idx) => {
+                    if (dateStr && hoursArr[idx]) {
+                        const slot = hoursArr[idx].includes(':') ? hoursArr[idx].split(/:(.*)/s)[1].trim() : hoursArr[idx].trim();
+                        bookedSessions.push({ dateStr: dateStr, slot: slot });
+                    }
+                });
+            }
+
+            // Selecciona la primera fecha por defecto
+            selectedDateObj = generatedDates.length > 0 ? generatedDates[0] : null;
+            renderScheduleWidget();
+        }
+
+        function renderScheduleWidget() {
+            if (!selectedDateObj) return;
+
+            const carousel = document.getElementById('carouselDays');
+            const grid = document.getElementById('gridTimeSlots');
+            const selectedDateStr = formatDateToDDMMYYYY(selectedDateObj);
+
+            const diasAbreviados = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+            const mesesAbreviados = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
+            // 1. Renderizar Carrusel Horizontal de Fechas
+            let htmlDays = "";
+            generatedDates.forEach(date => {
+                const dateStr = formatDateToDDMMYYYY(date);
+                const isSelected = dateStr === selectedDateStr ? "selected" : "";
+                const hasBooking = bookedSessions.some(s => s.dateStr === dateStr) ? "has-booking" : "";
+                
+                htmlDays += `
+                <div class="day-pill ${isSelected} ${hasBooking}" onclick="selectDate('${date.toISOString()}')">
+                    <span class="day-abbr">${diasAbreviados[date.getDay()]}</span>
+                    <span class="day-num">${date.getDate()}</span>
+                    <span class="day-month">${mesesAbreviados[date.getMonth()]}</span>
+                </div>`;
+            });
+            carousel.innerHTML = htmlDays;
+
+            // 2. Controlar Alerta Condicional de Sábados
+            const isSaturday = selectedDateObj.getDay() === 6; // Sábado es 6
+            const saturdayNotice = document.getElementById('saturdayNotice');
+            if (isSaturday) {
+                saturdayNotice.classList.remove('d-none');
+            } else {
+                saturdayNotice.classList.add('d-none');
+            }
+
+            // 3. Renderizar Horarios Disponibles para esta fecha específica
+            let htmlSlots = "";
+            availableSlots.forEach(slot => {
+                const isActive = bookedSessions.some(s => s.dateStr === selectedDateStr && s.slot === slot) ? "active" : "";
+                htmlSlots += `<div class="time-slot-pill ${isActive}" onclick="bookSlot('${slot}')">${slot}</div>`;
+            });
+            grid.innerHTML = htmlSlots;
+
+            // 4. Renderizar Resumen de clases agendadas
+            renderBookedSessionsList();
+            evaluarBotonSiguienteWidget();
+        }
+
+        function selectDate(dateIsoStr) {
+            selectedDateObj = new Date(dateIsoStr);
+            renderScheduleWidget();
+        }
+
+        // Función para mover el carrusel con botones
+        function scrollCarousel(direction) {
+            const carousel = document.getElementById('carouselDays');
+            // Mueve 250 pixeles (aprox 3 tarjetas) por cada clic
+            const scrollAmount = 250; 
+            
+            if (direction === 'left') {
+                carousel.scrollLeft -= scrollAmount;
+            } else {
+                carousel.scrollLeft += scrollAmount;
+            }
+        }
+
+        // Agendar fecha (Sustitución inteligente si cambia horario del mismo día)
+        function bookSlot(slot) {
+            const selectedDateStr = formatDateToDDMMYYYY(selectedDateObj);
+            const existingIndex = bookedSessions.findIndex(s => s.dateStr === selectedDateStr);
+
+            if (existingIndex !== -1) {
+                // Si hace clic en el horario ya seleccionado, lo elimina (Deseleccionar)
+                if (bookedSessions[existingIndex].slot === slot) {
+                    bookedSessions.splice(existingIndex, 1);
+                } else {
+                    // Si elige el otro horario en el mismo día, REEMPLAZA al anterior (Restricción de 1 clase por día)
+                    bookedSessions[existingIndex].slot = slot;
+                }
+            } else {
+                // Validamos que no supere la capacidad máxima de clases
+                if (bookedSessions.length >= maxClasses) {
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'warning', title: `Ya has seleccionado tus ${maxClasses} clases. Elimina una para cambiar.`, showConfirmButton: false, timer: 3500 });
+                    return;
+                }
+                bookedSessions.push({ dateStr: selectedDateStr, slot: slot });
+            }
+
+            renderScheduleWidget();
+        }
+
+        function renderBookedSessionsList() {
+            const container = document.getElementById('wrapperBookedSessions');
+            const list = document.getElementById('listBookedSessions');
+            const counter = document.getElementById('txtSessionsCounter');
+
+            counter.innerText = `${bookedSessions.length} de ${maxClasses} Agendadas`;
+
+            if (bookedSessions.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+
+            container.style.display = 'block';
+            let html = "";
+            
+            bookedSessions.sort((a, b) => {
+                const partsA = a.dateStr.split('/');
+                const partsB = b.dateStr.split('/');
+                return new Date(partsA[2], partsA[1] - 1, partsA[0]) - new Date(partsB[2], partsB[1] - 1, partsB[0]);
+            });
+
+            bookedSessions.forEach((s, idx) => {
+                // REDISEÑO UX: Tarjetas más limpias, con íconos y datos apilados
+                html += `
+                <div class="booked-session-card">
+                    <div class="booked-session-info">
+                        <span class="booked-session-badge">Clase ${idx + 1}</span>
+                        <div class="session-details">
+                            <span class="session-date"><i class="fa-regular fa-calendar text-primary me-1"></i> ${s.dateStr}</span>
+                            <span class="session-time"><i class="fa-regular fa-clock text-muted me-1"></i> ${s.slot}</span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-delete-session" onclick="removeSession(${idx})" title="Eliminar clase">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>`;
+            });
+            list.innerHTML = html;
+        }
+
+        function removeSession(idx) {
+            bookedSessions.splice(idx, 1);
+            renderScheduleWidget();
+        }
+
+        function evaluarBotonSiguienteWidget() {
+            const btnNext = document.getElementById('btnNext');
+            if (pasoActual === 4) {
+                if (bookedSessions.length === maxClasses) {
+                    btnNext.disabled = false;
+                } else {
+                    btnNext.disabled = true;
+                }
+            }
+        }
+
         // CARGAR INVITACIONES
         async function cargarCursosPendientes() {
             // Le enviamos el idExpedienteUrl al backend para que nos devuelva solo 1 curso
@@ -1563,6 +2367,7 @@
                 }
                 
                 let html = "";
+                window.currentInvitacionesGlobal = pendientes;
                 pendientes.forEach(inv => { 
                     const est = (inv.estado || "").toString().trim().toLowerCase();
                     const isRespondido = est === 'respondido' || est === 'completado' || est === 'procesado' || est === 'aceptado';
@@ -1627,9 +2432,9 @@
             
             if (!isRespondido) {
                 document.getElementById('horario-container').style.display = 'block'; 
-                // Aseguramos que exista al menos la primera fila
-                if (document.querySelectorAll('.schedule-row').length === 0) {
-                    document.getElementById('schedule-rows').innerHTML = getScheduleRowHTML(1);
+                const selectedInv = window.currentInvitacionesGlobal.find(i => String(i.id).trim() === String(invId));
+                if (selectedInv) {
+                    initScheduleWidget(selectedInv);
                 }
             } else {
                 document.getElementById('horario-container').style.display = 'none'; 
@@ -1641,36 +2446,11 @@
             const tarjeta = event.target.closest('.course-radio-card');
             seleccionarCurso(invId, tarjeta, false);
             
-            // Limpiamos la UI e inyectamos la fila 1
-            document.getElementById('schedule-rows').innerHTML = getScheduleRowHTML(1);
-            document.getElementById('btnAddSchedule').style.display = 'inline-block';
-
-            if (!diaStr) return;
-
-            // Separar la cadena (Ej: "Lunes y Miércoles" -> ["Lunes", "Miércoles"])
-            const dias = diaStr.split(' y ');
-            const horas = horaStr.split(' | ');
-
-            dias.forEach((dia, index) => {
-                const num = index + 1;
-                if (num > 1) agregarDiaHorario(); // Crea la segunda fila si existe
-                
-                const selectDia = document.getElementById(`reg-dia-${num}`);
-                const selectHora = document.getElementById(`reg-hora-${num}`);
-                
-                if (selectDia) selectDia.value = dia.trim();
-                
-                if (selectHora && horas[index]) {
-                    // Extraer solo la hora si viene como "Lunes: 19:00 a 20:30"
-                    const timePart = horas[index].includes(':') ? horas[index].split(/:(.*)/s)[1].trim() : horas[index].trim();
-                    for (let i = 0; i < selectHora.options.length; i++) {
-                        if (selectHora.options[i].value.includes(timePart)) {
-                            selectHora.selectedIndex = i;
-                            break;
-                        }
-                    }
-                }
-            });
+            // Re-inicializamos el widget con el modo edición
+            const selectedInv = window.currentInvitacionesGlobal.find(i => String(i.id).trim() === String(invId));
+            if (selectedInv) {
+                initScheduleWidget(selectedInv);
+            }
         }
 
         // --- AUTOGUARDADO POR PASOS ---
@@ -1897,38 +2677,23 @@
                     payload.direccion = document.getElementById('reg-direccion').value;
                     payload.cp = document.getElementById('reg-cp').value;
                 }
-                // PASO 4: Confirmar Horario de Invitación
+                // PASO 4: Confirmar Horario de Invitación (Calendario Inteligente por Fechas)
                 else if (pasoActual === 4) {
                     if (selectedInvitationId) {
                         const isEditing = document.getElementById('horario-container').style.display !== 'none';
                         
                         if (isEditing) {
-                            const diasInputs = document.querySelectorAll('.reg-dia-input');
-                            const horasInputs = document.querySelectorAll('.reg-hora-input');
-                            let diasArr = [];
-                            let horasArr = [];
-                            let errorValidacion = false;
-
-                            diasInputs.forEach((input, index) => {
-                                const d = input.value;
-                                const h = horasInputs[index].value;
-                                if (d || h) {
-                                    if (!d || !h) errorValidacion = true; // Si llena día pero no hora, error
-                                    else {
-                                        diasArr.push(d);
-                                        horasArr.push(`${d}: ${h}`);
-                                    }
-                                }
-                            });
-
-                            if (diasArr.length === 0 || errorValidacion) {
-                                Swal.fire({ toast: true, position: 'top-end', icon: 'warning', title: 'Selecciona correctamente la disponibilidad (Día y Franja).', showConfirmButton: false, timer: 3000 });
+                            if (bookedSessions.length !== maxClasses) {
+                                Swal.fire({ toast: true, position: 'top-end', icon: 'warning', title: `Debes agendar exactamente las ${maxClasses} clases del curso.`, showConfirmButton: false, timer: 3500 });
                                 btnNext.disabled = false; btnNext.innerHTML = originalHTML; return;
                             }
 
-                            // Unimos los datos para no romper Google Sheets
+                            // Formateamos las fechas y horas seleccionadas de manera prolija para la base de datos
+                            const diasArr = bookedSessions.map(s => s.dateStr);
+                            const horasArr = bookedSessions.map(s => `${s.dateStr}: ${s.slot}`);
+
                             payload.idInvitacion = selectedInvitationId;
-                            payload.dia = diasArr.join(' y '); 
+                            payload.dia = diasArr.join(', '); 
                             payload.hora = horasArr.join(' | ');
 
                         } else {
@@ -2018,11 +2783,24 @@
                     
                     if (resJson.status === "success") {
                         if (pasoActual === totalPasos) {
-                            const esFinalizar = document.getElementById('btnNext').dataset.intencion === "finalizar";
-                            if (esFinalizar) {
-                                Swal.fire({ title: '¡Completado!', text: 'Expediente guardado y enviado con éxito.', icon: 'success' }).then(()=>window.location.href = "misexpedientes.html");
-                                return;
-                            } else {
+                        const esFinalizar = document.getElementById('btnNext').dataset.intencion === "finalizar";
+                        if (esFinalizar) {
+                            Swal.fire({ 
+                                title: '¡Completado!', 
+                                text: 'Expediente guardado y enviado con éxito.', 
+                                icon: 'success' 
+                            }).then(() => {
+                                const modeParam = new URLSearchParams(window.location.search).get('mode');
+                                if (modeParam === 'admin') {
+                                    // Si es administrativo, lo devuelve directamente al expediente de origen
+                                    window.location.href = `Admin/expediente.html?expId=${idExpedienteUrl}`;
+                                } else {
+                                    // Si es el docente, lo devuelve a su listado de expedientes
+                                    window.location.href = "misexpedientes.html";
+                                }
+                            });
+                            return;
+                        } else {
                                 // AQUI ESTA LA MAGIA UX: Mostramos exactamente lo que falta
                                 showToast(payload.mensajeFaltantes || "Por favor, revisa que todos los pasos estén completados.", "warning");
                             }

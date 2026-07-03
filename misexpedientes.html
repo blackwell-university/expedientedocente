@@ -166,6 +166,8 @@
         .badge-status { padding: 6px 12px; border-radius: 10px; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; display: inline-flex; align-items: center; gap: 5px; width: fit-content; letter-spacing: 0.5px;}
         .status-aprobado { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0;}
         .status-pendiente { background: #fff7ed; color: #ea580c; border: 1px solid #fed7aa;}
+        .status-firmar { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;}
+        .status-contrato { background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff;}
 
         .exp-title { font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin-bottom: 8px; letter-spacing: -0.5px; line-height: 1.2;}
         .exp-date { font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
@@ -368,13 +370,47 @@
 
             let html = "";
             docsArray.forEach(exp => {
-                let isPending = exp.estado.toLowerCase() !== 'completado';
-                let statusBadge = isPending ? 'status-pendiente' : 'status-aprobado';
-                // Cambiado a Material Symbols Rounded
-                let statusIcon = isPending ? 'schedule' : 'check_circle';
-                let btnAction = isPending 
-                    ? `Completar Datos <span class="material-symbols-rounded" style="font-size: 1.1rem; vertical-align: middle;">arrow_forward</span>` 
-                    : `Ver Expediente <span class="material-symbols-rounded" style="font-size: 1.1rem; vertical-align: middle;">visibility</span>`;
+                let est = exp.estado.toLowerCase();
+                
+                // Variables dinámicas para el diseño de cada tarjeta
+                let statusBadge, statusIcon, labelEstado, btnAction, btnColor, actionIcon;
+
+                // 1. Estado: COMPLETADO (Verde)
+                if (est === 'completado') {
+                    statusBadge = 'status-aprobado';
+                    statusIcon = 'check_circle';
+                    labelEstado = 'Completado';
+                    btnAction = 'Ver Expediente';
+                    btnColor = '#16a34a'; 
+                    actionIcon = 'visibility';
+                } 
+                // 2. Estado: POR FIRMAR (Azul) - ¡La estrella de la actualización!
+                else if (est === 'por firmar') {
+                    statusBadge = 'status-firmar';
+                    statusIcon = 'edit_document'; 
+                    labelEstado = 'Por Firmar';
+                    btnAction = 'Firmar Contrato';
+                    btnColor = '#2563eb'; 
+                    actionIcon = 'arrow_forward';
+                } 
+                // 3. Estado: EN CONTRATACIÓN (Morado)
+                else if (est === 'en proceso de contratación') {
+                    statusBadge = 'status-contrato';
+                    statusIcon = 'handshake'; 
+                    labelEstado = 'En Contratación';
+                    btnAction = 'Ver Estado';
+                    btnColor = '#7e22ce'; 
+                    actionIcon = 'visibility';
+                } 
+                // 4. Estado por defecto: PENDIENTE (Naranja)
+                else {
+                    statusBadge = 'status-pendiente';
+                    statusIcon = 'schedule';
+                    labelEstado = 'Pendiente';
+                    btnAction = 'Completar Datos';
+                    btnColor = 'var(--primary)'; 
+                    actionIcon = 'arrow_forward';
+                }
 
                 html += `
                     <div class="col-md-6 col-xl-4">
@@ -382,8 +418,8 @@
                             <div class="exp-header">
                                 <div class="exp-icon"><span class="material-symbols-rounded">folder_open</span></div>
                                 <span class="badge-status ${statusBadge}">
-                                    <span class="material-symbols-rounded" style="font-size: 1rem;">${statusIcon}</span> 
-                                    ${isPending ? 'Pendiente' : 'Completado'}
+                                    <span class="material-symbols-rounded" style="font-size: 1.05rem;">${statusIcon}</span> 
+                                    ${labelEstado}
                                 </span>
                             </div>
                             <h3 class="exp-title">Expediente <br><span style="color: var(--primary);">${exp.idExpediente}</span></h3>
@@ -393,7 +429,9 @@
                             </div>
                             
                             <div class="docs-container">
-                                <span class="fw-bold" style="color: var(--primary); font-size: 0.95rem;">${btnAction}</span>
+                                <span class="fw-bold" style="color: ${btnColor}; font-size: 0.95rem;">
+                                    ${btnAction} <span class="material-symbols-rounded" style="font-size: 1.1rem; vertical-align: middle;">${actionIcon}</span>
+                                </span>
                             </div>
                         </a>
                     </div>

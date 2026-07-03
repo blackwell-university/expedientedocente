@@ -4,8 +4,10 @@
     <script>
         const isLoggedIn = localStorage.getItem('isLoggedIn');
         const userRole = localStorage.getItem('userRole');
-        if (isLoggedIn !== 'true' || (userRole !== 'Ejecutiva Credenciales' && userRole !== 'Administrador')) {
-            window.location.href = "login.html";
+        const rolesPermitidos = ['Ejecutiva Credenciales', 'Ejecutivo Licenciamiento', 'Administrador'];
+        
+        if (isLoggedIn !== 'true' || !rolesPermitidos.some(rol => userRole && userRole.toLowerCase() === rol.toLowerCase())) {
+            window.location.href = "../login.html";
         }
     </script>
     <meta charset="UTF-8">
@@ -112,8 +114,8 @@
             <span class="brand-text">Blackwell</span>
         </a>
         <div class="user-preview">
-            <div class="avatar">SB</div>
-            <div class="user-meta"><b>Sara Blackwell</b><span>Evaluadora</span></div>
+            <div class="avatar" id="avatarIcon">SB</div>
+            <div class="user-meta"><b id="userName">Sara Blackwell</b><span id="userRoleTxt">Evaluadora</span></div>
         </div>
         <ul class="nav-list">
             <li><a href="evaluacion-dashboard.html" class="nav-link active"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Evaluación Académica</span></a></li>
@@ -126,8 +128,8 @@
     <main class="main-wrapper">
         <header>
             <div>
-                <h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Área de Credenciales</h5>
-                <p class="text-muted small m-0">Revisión Profesional</p>
+                <h5 class="fw-bold mb-0" id="headerTitle">Área de Credenciales</h5>
+                <p class="text-muted small m-0" id="headerSubtitle">Revisión Profesional</p>
             </div>
         </header>
 
@@ -215,7 +217,7 @@
                         </div>
 
                         <!-- DOCUMENTOS GENERADOS DEL EXPEDIENTE -->
-                        <div class="form-card mt-4">
+                        <div class="form-card mt-4" id="cardDocsGenerados">
                             <span class="section-badge"><i class="fa-solid fa-file-invoice me-2"></i>Documentos del Expediente</span>
                             <p class="text-muted small mb-4">Lista de documentos institucionales vinculados al expediente generados en etapas anteriores.</p>
                             
@@ -236,11 +238,29 @@
         let selectedFileBase64 = null;
         let selectedFileObject = null;
 
+        // Roles de usuario
+        const role = localStorage.getItem('userRole');
+        const isSara = role === 'Ejecutiva Credenciales';
+        const isMaria = role === 'Ejecutivo Licenciamiento';
+
         document.addEventListener('DOMContentLoaded', () => {
             if(!expId) {
                 Swal.fire('Error', 'Faltan parámetros de expediente en la URL.', 'error');
                 return;
             }
+            
+            // Adaptar interfaz si es María (Licenciamiento)
+            if (isMaria) {
+                document.getElementById('avatarIcon').innerText = "MB";
+                document.getElementById('userName').innerText = "María Blackwell";
+                document.getElementById('userRoleTxt').innerText = "Licenciamiento";
+                document.getElementById('headerTitle').innerText = "Área de Licenciamiento";
+                document.getElementById('headerSubtitle').innerText = "Fase de Firma y Contratos";
+                
+                // María no tiene SLA activo
+                document.getElementById('slaCard').style.display = 'none';
+            }
+            
             cargarDetalleEvaluacion();
         });
 
@@ -256,6 +276,10 @@
                     const exp = response.expediente;
                     const doc = response.docente;
                     const drafts = response.drafts;
+
+                    // Definimos los estados concluidos de evaluación académica aquí arriba para evitar ReferenceError
+                    const estadosEvaluacionConcluidos = ["evaluado", "por contratar", "firmado", "contrato enviado", "contratado"];
+                    const esEvaluacionConcluida = estadosEvaluacionConcluidos.includes(exp.estado.toLowerCase());
 
                     // Llenado de encabezado
                     document.getElementById('txtExpId').innerText = `Expediente: ${exp.idExpediente}`;
@@ -283,30 +307,64 @@
                     }
                     document.getElementById('contenedorEvidenciasCore').innerHTML = htmlEvidencias || '<p class="text-muted m-0">No se encontraron evidencias registradas.</p>';
 
-                    // 2. RENDERIZAR DOCUMENTOS GENERADOS
+                    // 2. RENDERIZAR DOCUMENTOS GENERADOS (CON FILTROS SEGÚN ROL)
                     let htmlDocs = '';
                     let fechaAsignacionRaw = ""; 
                     
                     for (const [key, value] of Object.entries(exp.urls)) {
                         if (value && value.url) {
-                            htmlDocs += crearDocumentoGenerado(key, value);
+                            // María solo ve el Form 402 y el Faculty Handbook [2]
+                            if (isMaria) {
+                                if (key === "Form 402" || key === "Handbook") {
+                                    htmlDocs += crearDocumentoGenerado(key, value);
+                                }
+                            } else {
+                                // Sara e Inquilinos ven todo
+                                htmlDocs += crearDocumentoGenerado(key, value);
+                            }
+
                             if (value.fechaEnvio && !fechaAsignacionRaw) {
                                 fechaAsignacionRaw = value.fechaEnvio; // Tomamos la fecha de envío del primer documento asignado
                             }
                         }
                     }
-                    document.getElementById('contenedorDocsGenerados').innerHTML = htmlDocs || '<p class="text-muted m-0">No hay documentos de expediente generados.</p>';
 
-                    // 3. CALCULAR SLA (7 DÍAS DESDE EL ENVÍO)
-                    calcularSLA(fechaAsignacionRaw || exp.fechaCreacion);
+                    // Si Sara está en la mesa, ocultamos la tarjeta general de expediente institucional para no abrumar su flujo de trabajo
+                    if (isSara) {
+                        document.getElementById('cardDocsGenerados').style.display = 'none';
+                    } else {
+                        document.getElementById('contenedorDocsGenerados').innerHTML = htmlDocs || '<p class="text-muted m-0">No hay documentos de expediente generados.</p>';
+                    }
 
-                    // Si ya está en estado "Evaluado", ocultamos la carga para evitar duplicados
-                    if (exp.estado.toLowerCase() === "evaluado") {
+                    // 3. CALCULAR SLA (7 DÍAS DESDE EL ENVÍO) - Exclusivo de Sara
+                    if (isSara) {
+                        if (esEvaluacionConcluida) {
+                            document.getElementById('slaCard').style.display = 'none'; // Ocultamos el SLA si ya evaluó
+                        } else {
+                            document.getElementById('slaCard').style.display = 'block';
+                            calcularSLA(fechaAsignacionRaw || exp.fechaCreacion);
+                        }
+                    }
+
+                    if (esEvaluacionConcluida) {
+                        // Dictamen ya enviado (Carga deshabilitada para todos)
+                        let fileUrl = exp.evaluacionCredenciales ? exp.evaluacionCredenciales.url : '#';
+                        let fechaEnvioStr = exp.evaluacionCredenciales ? exp.evaluacionCredenciales.fechaEnvio : '—';
+                        
                         document.getElementById('uploadReportSection').innerHTML = `
                             <div class="text-center py-4 bg-light border border-success rounded-4" style="color: #15803d;">
                                 <i class="fa-solid fa-circle-check fa-3x mb-2"></i>
-                                <h6 class="fw-bold m-0">Dictamen Registrado exitosamente</h6>
-                                <p class="small text-muted m-0 mt-1">El expediente ya ha sido evaluado y enviado a Contratación.</p>
+                                <h6 class="fw-bold m-0" style="font-size: 0.95rem;">Dictamen Registrado exitosamente</h6>
+                                <p class="small text-muted m-0 mt-1 mb-3" style="font-size: 0.75rem;">Enviado el: ${fechaEnvioStr}</p>
+                                <a href="${getSafeDriveViewUrl(fileUrl)}" target="_blank" class="btn btn-sm btn-outline-success fw-bold px-3 py-2" style="border-radius:8px;"><i class="fa-solid fa-eye me-1"></i> Ver dictamen de Sara</a>
+                            </div>`;
+                    } else if (isMaria) {
+                        // Si está pendiente y es María, le muestra que Sara está procesando
+                        document.getElementById('uploadReportSection').innerHTML = `
+                            <div class="text-center py-4 bg-light border border-warning rounded-4" style="color: #b45309;">
+                                <i class="fa-solid fa-clock-three fa-3x mb-2 text-warning"></i>
+                                <h6 class="fw-bold m-0" style="font-size: 0.95rem;">Dictamen en Proceso</h6>
+                                <p class="small text-muted m-0 mt-1" style="font-size: 0.75rem;">Sara Blackwell se encuentra analizando y emitiendo el informe correspondiente.</p>
                             </div>`;
                     }
 
@@ -324,7 +382,6 @@
             if (!downloadUrl) return "#";
             const match = downloadUrl.match(/id=([a-zA-Z0-9_-]+)/);
             if (match && match[1]) {
-                // Reescribe para forzar el visor nativo de Google sin opción directa de edición
                 return `https://drive.google.com/file/d/${match[1]}/view?usp=sharing`;
             }
             return downloadUrl;
@@ -344,7 +401,7 @@
         function crearDocumentoGenerado(nombre, obj) {
             let statusBadge = `<span class="badge-doc-status badge-pendiente">${obj.estado}</span>`;
             if (obj.estado.toLowerCase() === "en revisión") statusBadge = `<span class="badge-doc-status badge-revision">Evaluando</span>`;
-            if (obj.estado.toLowerCase() === "completado" || obj.estado.toLowerCase() === "aprobado") statusBadge = `<span class="badge-doc-status badge-completado">Aprobado</span>`;
+            if (obj.estado.toLowerCase() === "completado" || obj.estado.toLowerCase() === "aprobado" || obj.estado.toLowerCase() === "firmado por director") statusBadge = `<span class="badge-doc-status badge-completado">Aprobado</span>`;
 
             return `
             <div class="doc-item">
@@ -368,7 +425,6 @@
             }
 
             try {
-                // Parsea formato DD/MM/YYYY o ISO
                 let parts = fechaAsignacionStr.split('/');
                 let dateAsignacion;
                 if (parts.length === 3) {
@@ -382,7 +438,6 @@
                     return;
                 }
 
-                // Sumamos 7 días de plazo
                 const dateLimite = new Date(dateAsignacion.getTime());
                 dateLimite.setDate(dateLimite.getDate() + 7);
 
@@ -397,20 +452,17 @@
                 const countdown = document.getElementById('slaCountdown');
 
                 if (diferenciaMs < 0) {
-                    // RETRASO
                     card.className = "form-card sla-card danger";
                     title.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-danger me-2"></i>¡Dictamen Fuera de Plazo!`;
                     const diasRetraso = Math.abs(diasRestantes);
                     countdown.innerText = `Retrasada por ${diasRetraso} día(s)`;
                     countdown.style.color = "#ef4444";
                 } else if (diasRestantes <= 2) {
-                    // CRÍTICO (menos de 2 días)
                     card.className = "form-card sla-card warn";
                     title.innerHTML = `<i class="fa-solid fa-clock-twotone text-warning me-2"></i>Tiempo crítico de dictamen`;
                     countdown.innerText = `Quedan ${diasRestantes} días`;
                     countdown.style.color = "#f59e0b";
                 } else {
-                    // EN PLAZO NORMAL
                     card.className = "form-card sla-card";
                     countdown.innerText = `Quedan ${diasRestantes} días`;
                     countdown.style.color = "#15803d";
@@ -459,14 +511,12 @@
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i>Procesando y Subiendo Informe...`;
 
             try {
-                // 1. Convertir archivo PDF a Base64
                 const reader = new FileReader();
                 reader.readAsDataURL(selectedFileObject);
                 
                 reader.onload = async () => {
                     const base64Data = reader.result.split(',')[1];
                     
-                    // 2. Subir a Google Drive mediante la acción nativa "get_url"
                     const resUpload = await fetch(GAS_URL, {
                         method: 'POST',
                         body: JSON.stringify({
@@ -482,7 +532,6 @@
                     if(dataUpload.status === 'success') {
                         const fileUrl = dataUpload.url;
 
-                        // 3. Registrar el reporte en el Expediente y cambiar el estado a "Evaluado"
                         const resFinal = await fetch(GAS_URL, {
                             method: 'POST',
                             body: JSON.stringify({
