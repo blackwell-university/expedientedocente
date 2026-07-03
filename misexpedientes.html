@@ -412,9 +412,13 @@
                     actionIcon = 'arrow_forward';
                 }
 
+                // Lógica de enrutamiento: Si es 'por firmar', lo enviamos al portal de firma exclusivo. 
+                // Si no, al registro normal.
+                const hrefUrl = (est === 'por firmar') ? 'contrato-detalle.html' : 'registroexpediente.html';
+
                 html += `
                     <div class="col-md-6 col-xl-4">
-                        <a href="registroexpediente.html?exp=${exp.idExpediente}" class="exp-card">
+                        <a href="${hrefUrl}?exp=${exp.idExpediente}" class="exp-card">
                             <div class="exp-header">
                                 <div class="exp-icon"><span class="material-symbols-rounded">folder_open</span></div>
                                 <span class="badge-status ${statusBadge}">

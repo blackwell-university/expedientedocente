@@ -1,6 +1,28 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <script>
+        // Verificar si ya existe una sesión activa en la memoria del navegador
+        const sessionActive = localStorage.getItem('isLoggedIn');
+        const savedRole = localStorage.getItem('userRole');
+
+        if (sessionActive === 'true' && savedRole) {
+            const roleUpper = savedRole.toUpperCase();
+            
+            // Redirección inteligente según el rol guardado
+            if (roleUpper === 'DOCENTE') {
+                window.location.href = "dashboard-docente.html";
+            } else if (roleUpper.startsWith('DIRECTOR_')) {
+                window.location.href = "Admin/director-dashboard.html";
+            } else if (roleUpper === 'EJECUTIVA CREDENCIALES' || roleUpper === 'EJECUTIVO LICENCIAMIENTO') {
+                window.location.href = "Admin/evaluacion-dashboard.html";
+            } else if (roleUpper === 'ASESORA ACADEMICA') {
+                window.location.href = "Admin/asesora-dashboard.html";
+            } else if (roleUpper === 'ADMINISTRATIVO' || roleUpper === 'ADMINISTRADOR') {
+                window.location.href = "Admin/administrativo.html";
+            }
+        }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Blackwell - Universidad Blackwell</title>
@@ -112,6 +134,7 @@
         
     </style>
 </head>
+
 <body>
 
     <div class="login-card">

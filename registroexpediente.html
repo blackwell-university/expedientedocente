@@ -1231,47 +1231,6 @@
                         </div>
                     </form>
                 </div>
-                
-                <!-- SECCIÓN ADICIONAL PARA FIRMA DIGITAL DEL DOCENTE -->
-                <div id="teacherSignatureSection" style="display: none; width: 100%; margin-top: 20px;">
-                    <div class="row g-4 align-items-stretch">
-                        <!-- Izquierda: Vista previa del documento degradado premium -->
-                        <div class="col-lg-6">
-                            <div class="teacher-pdf-panel">
-                                <div class="teacher-pdf-header">
-                                    <i class="fa-solid fa-file-pdf"></i> Vista previa del contrato
-                                </div>
-                                <div class="teacher-pdf-container">
-                                    <iframe id="teacher-pdf-preview" src="about:blank"></iframe>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Derecha: Formulario, Selector de Documentos y Firma -->
-                        <div class="col-lg-6">
-                            <div class="form-card d-flex flex-column" style="height: 100%; padding: 32px; background: white; border-radius: var(--card-radius); border: 1px solid rgba(0,0,0,0.04); box-shadow: 0 10px 30px rgba(0,0,0,0.01);">
-                                <span class="section-badge" style="background:#fef3c7; color:#b45309;"><i class="fa-solid fa-signature me-2"></i>Firma Digital del Docente</span>
-                                <h4 class="fw-bold mb-3 text-primary-dark">Firma de Documentos de Contratación</h4>
-                                <p class="text-muted small mb-4">Seleccione cada uno de los documentos que requieren su firma, revise la vista previa a la izquierda, dibuje su firma digital y haga clic en <b>"Generar y Firmar"</b>.</p>
-                                
-                                <label class="form-label small fw-bold text-muted text-uppercase mb-2">1. Seleccione documento a firmar</label>
-                                <div id="teacherDocsList" class="mb-4">
-                                    <!-- Se listan los documentos firmables: Letter of Appointment, Confidentiality Agreement, etc. -->
-                                </div>
-
-                                <label class="form-label small fw-bold text-muted text-uppercase mb-2">2. Dibuje su firma digital</label>
-                                <div class="signature-wrapper" style="position: relative; background: #f8fafc; border: 1.5px solid var(--border-color); border-radius: 12px; overflow: hidden; margin-bottom: 1.5rem;">
-                                    <button type="button" class="clear-btn" id="teacherClearSigBtn" style="position: absolute; top: 10px; right: 10px; background: rgba(226, 232, 240, 0.8); border: none; padding: 5px 12px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); cursor: pointer; z-index: 5;">Limpiar</button>
-                                    <canvas id="teacher-signature-canvas" style="width: 100%; height: 180px; background: white; cursor: crosshair; touch-action: none; display: block;"></canvas>
-                                </div>
-
-                                <button type="button" class="btn btn-primary w-100 py-3 fw-bold" id="btnTeacherSign" onclick="ejecutarFirmaDocente()" style="border-radius: 12px; background: var(--primary-dark); font-size: 0.95rem; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15); border: none; color: white;">
-                                    <i class="fa-solid fa-file-signature me-2"></i>Generar y Firmar Documento
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
             </div>
         </div>
@@ -1803,38 +1762,6 @@
                         const mHeaderP = document.querySelector('.mobile-header .mh-text p');
                         if(mHeaderH1) mHeaderH1.innerText = idExpedienteUrl;
                         if(mHeaderP) mHeaderP.innerText = `${d.nombres} ${d.apellidos}`;
-                    }
-
-                    // --- INTERCEPTOR EXCLUSIVO: GESTIÓN DE FIRMA DIGITAL DE CONTRATOS ---
-                    const rolesAdmin = ['Administrativo', 'Administrador', 'Ejecutivo Licenciamiento', 'Asesora Academica', 'Ejecutiva Credenciales'];
-                    const isAdminView = rolesAdmin.some(rol => userRoleHead && userRoleHead.toLowerCase() === rol.toLowerCase());
-                    const estadosFirma = ['contrato enviado', 'por contratar', 'firmado', 'contratado'];
-
-                    if (estadosFirma.includes(expEstadoReal.toLowerCase()) && !isAdminView) {
-                        // Ocultamos el stepper de registro y mostramos la sección de firma directamente
-                        const wizardCard = document.getElementById('mainWizardCard');
-                        if (wizardCard) wizardCard.style.display = 'none';
-
-                        const sigSection = document.getElementById('teacherSignatureSection');
-                        if (sigSection) sigSection.style.display = 'block';
-
-                        teacherCanvas = document.getElementById('teacher-signature-canvas');
-                        teacherSigPad = new SignaturePad(teacherCanvas, { backgroundColor: 'rgb(255, 255, 255)' });
-                        
-                        function resizeTeacherCanvas() {
-                            const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                            teacherCanvas.width = teacherCanvas.offsetWidth * ratio;
-                            teacherCanvas.height = teacherCanvas.offsetHeight * ratio;
-                            teacherCanvas.getContext("2d").scale(ratio, ratio);
-                            teacherSigPad.clear();
-                        }
-                        window.addEventListener('resize', resizeTeacherCanvas);
-                        const clearBtn = document.getElementById('teacherClearSigBtn');
-                        if (clearBtn) clearBtn.addEventListener('click', () => teacherSigPad.clear());
-                        
-                        renderTeacherDocsFirma(expedienteCompleto);
-                        setTimeout(resizeTeacherCanvas, 300);
-                        return; // Detiene la carga normal
                     }
 
                     // SI NO ES FASE DE FIRMA, forzamos mostrar el wizard de registro
