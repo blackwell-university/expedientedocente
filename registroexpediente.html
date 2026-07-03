@@ -1708,26 +1708,7 @@
             if (btnNext) btnNext.disabled = true;
 
             try {
-                // 1. Obtener estado del expediente de forma segura para interceptar firmas
-                let expEstadoReal = "";
-                let expedienteCompleto = null;
-                if (idExpedienteUrl) {
-                    try {
-                        const resExp = await fetch(GAS_URL, { 
-                            method: 'POST', 
-                            body: JSON.stringify({ action: 'get_expediente_data', expId: idExpedienteUrl }) 
-                        });
-                        const dataExp = await resExp.json();
-                        if (dataExp.status === 'success' && dataExp.expediente) {
-                            expEstadoReal = dataExp.expediente.estado;
-                            expedienteCompleto = dataExp.expediente;
-                        }
-                    } catch(errExp) { 
-                        console.error("Error obteniendo estado del expediente:", errExp); 
-                    }
-                }
-
-                // 2. Cargar perfil del docente
+                // 1. Cargamos el perfil del docente de forma habitual
                 const response = await fetch(GAS_URL, { 
                     method: 'POST', 
                     body: JSON.stringify({ action: 'get_profile', id: userId, id_expediente: idExpedienteUrl }) 
@@ -1764,9 +1745,51 @@
                         if(mHeaderP) mHeaderP.innerText = `${d.nombres} ${d.apellidos}`;
                     }
 
-                    // SI NO ES FASE DE FIRMA, forzamos mostrar el wizard de registro
+                    // 🚀 MOSTRAR EL FORMULARIO DE REGISTRO DIRECTAMENTE
                     const wizardCard = document.getElementById('mainWizardCard');
                     if (wizardCard) wizardCard.style.display = 'block';
+
+                    // --- 🛠️ RECUPERAR LÓGICA DE VISTAS DEL PASO 1 (CV Y HANDBOOK) ---
+                    if (d.url_cv) {
+                        urlCVGlobal = d.url_cv;
+                        isEditingCV = false;
+                        document.getElementById('view-link-cv').href = getDriveViewUrl(urlCVGlobal);
+                        const statusContainer = document.getElementById('cv-status-container');
+                        if (statusContainer) {
+                            if (result.drafts && result.drafts.experiencia && result.drafts.experiencia.length > 0) {
+                                statusContainer.dataset.estado = "Procesado";
+                                statusContainer.innerHTML = `<span class="badge bg-light text-dark border mt-1">Procesado</span>`;
+                            } else {
+                                statusContainer.dataset.estado = "Subido";
+                                statusContainer.innerHTML = `<span class="badge bg-light text-dark border mt-1">Subido</span>`;
+                            }
+                        }
+                    } else { isEditingCV = true; }
+
+                    if (d.url_handbook) {
+                        urlHbGlobal = d.url_handbook;
+                        isEditingHb = false;
+                        document.getElementById('view-link-hb').href = getDriveViewUrl(urlHbGlobal);
+                    } else { isEditingHb = true; }
+
+                    actualizarVistaPaso1(); 
+
+                    // --- 🛠️ RECUPERAR LÓGICA DE VISTAS DEL PASO 2 (DIPLOMAS) ---
+                    const dipContainer = document.getElementById('diplomas-container');
+                    dipContainer.innerHTML = '';
+                    if (result.drafts && result.drafts.educacion && result.drafts.educacion.length > 0) {
+                        result.drafts.educacion.forEach(edu => renderDiplomaReadonly(edu));
+                        document.getElementById('step2-view-mode').classList.remove('d-none');
+                        document.getElementById('step2-upload-mode').classList.add('d-none');
+                        marcarTabComoCompletada(2);
+                    } else {
+                        addDiplomaEdit();
+                        document.getElementById('step2-view-mode').classList.add('d-none');
+                        document.getElementById('step2-upload-mode').classList.remove('d-none');
+                    }
+
+                    // Llenado de campos del perfil habitual
+                    if(d.nombres) document.getElementById('reg-nombres').value = d.nombres;
 
                     // Llenado de campos del perfil habitual
                     if(d.nombres) document.getElementById('reg-nombres').value = d.nombres;
@@ -1841,7 +1864,7 @@
                         if (validarPaso6Completo()) { marcarTabComoCompletada(6); }
                     }, 500);
                 } else { 
-                    // Blindaje: si el servidor responde con error, mostramos de todas formas el formulario
+                    // Blindaje
                     const wizardCard = document.getElementById('mainWizardCard');
                     if (wizardCard) wizardCard.style.display = 'block';
                     document.getElementById('step1-upload-mode').style.display = 'block'; 
@@ -1849,15 +1872,15 @@
                 }
             } catch(e) { 
                 console.error("Error en cargarDatosPrevios:", e);
-                // Blindaje ante caídas de red: si el fetch falla, forzamos mostrar el wizard para que la pantalla no quede en blanco
                 const wizardCard = document.getElementById('mainWizardCard');
                 if (wizardCard) wizardCard.style.display = 'block';
                 document.getElementById('step1-upload-mode').style.display = 'block'; 
+                document.getElementById('step2-upload-mode').classList.remove('d-none'); // <--- Añadimos esto
                 if (btnNext) btnNext.disabled = false; 
                 addDiplomaEdit(); 
             }
         }
-        
+
         function marcarTabComoCompletada(paso) {
             const tab = document.getElementById(`tab-${paso}`);
             if(tab) { 
