@@ -1263,127 +1263,6 @@
         let isEditingId = true;
         let itiCelular;
 
-        // --- CONTROLADORES EXCLUSIVOS DE FIRMA DEL DOCENTE ---
-        let teacherSigPad;
-        let teacherCanvas;
-        let teacherSelectedDocName = "";
-        let teacherSelectedDocUrl = "";
-
-        function renderTeacherDocsFirma(exp) {
-            let htmlDocs = "";
-            // El docente puede ver todos los documentos de su contrato (incluso si no requieren firma)
-            const docsContrato = ["Letter of Appointment", "Proposed Salary", "Confidentiality Agreement", "Direct Deposit"];
-            let primerDoc = true;
-
-            docsContrato.forEach(nombre => {
-                const fileObj = exp.urls[nombre];
-                if (fileObj && fileObj.url) {
-                    const isSelect = primerDoc ? "selected" : "";
-                    const isChecked = primerDoc ? "checked" : "";
-
-                    htmlDocs += `
-                    <div class="course-radio-card w-100 mb-2 ${isSelect}" onclick="seleccionarDocDocente('${nombre}', '${fileObj.url}', this)">
-                        <div class="d-flex align-items-center gap-3">
-                            <input type="radio" name="teacherDocRad" ${isChecked} style="width:18px; height:18px;">
-                            <div>
-                                <div class="fw-bold text-dark text-start" style="font-size:0.88rem;">${nombre}</div>
-                                <div class="text-muted small" style="font-size:0.75rem;">v${fileObj.version} • Estado: ${fileObj.estado}</div>
-                            </div>
-                        </div>
-                    </div>`;
-
-                    if (primerDoc) {
-                        teacherSelectedDocName = nombre;
-                        teacherSelectedDocUrl = fileObj.url;
-                        actualizarTeacherIframe(fileObj.url);
-                        primerDoc = false;
-                    }
-                }
-            });
-
-            document.getElementById('teacherDocsList').innerHTML = htmlDocs || '<p class="text-muted m-0">No se encontraron documentos listos para revisión.</p>';
-        }
-
-        function seleccionarDocDocente(nombre, url, el) {
-            teacherSelectedDocName = nombre;
-            teacherSelectedDocUrl = url;
-            document.querySelectorAll('#teacherDocsList .course-radio-card').forEach(c => c.classList.remove('selected'));
-            el.classList.add('selected');
-            el.querySelector('input').checked = true;
-            actualizarTeacherIframe(url);
-        }
-
-        function actualizarTeacherIframe(url) {
-            if (!url) return;
-            const match = url.match(/id=([a-zA-Z0-9_-]+)/);
-            if (match && match[1]) {
-                document.getElementById('teacher-pdf-preview').src = `https://docs.google.com/viewer?srcid=${match[1]}&pid=explorer&efplat=embed&embed=true&chrome=false&hl=es`;
-            } else {
-                document.getElementById('teacher-pdf-preview').src = url;
-            }
-        }
-
-        async function ejecutarFirmaDocente() {
-            if(teacherSigPad.isEmpty()) {
-                Swal.fire('Firma Requerida', 'Por favor, dibuje su firma en el recuadro antes de guardar.', 'warning');
-                return;
-            }
-
-            const confirm = await Swal.fire({
-                title: '¿Confirmar Firma de Contrato?',
-                text: `Se aplicará su firma digital en el documento "${teacherSelectedDocName}" de forma permanente.`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#1e3a8a',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: 'Sí, firmar',
-                cancelButtonText: 'Cancelar'
-            });
-
-            if(!confirm.isConfirmed) return;
-
-            const btn = document.getElementById('btnTeacherSign');
-            const originalHTML = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i>Estampando Firma Digital...`;
-
-            try {
-                const base64Signature = teacherSigPad.toDataURL('image/png').split(',')[1];
-                const payload = {
-                    action: "teacher_sign_document",
-                    idExpediente: idExpedienteUrl,
-                    documento: teacherSelectedDocName,
-                    signature: base64Signature
-                };
-
-                const res = await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
-                const result = await res.json();
-
-                if(result.status === 'success') {
-                    Swal.fire({
-                        title: '¡Contrato Firmado!',
-                        text: `Firma digital estampada exitosamente en ${teacherSelectedDocName}. El área de Contratación continuará con el cierre de su expediente.`,
-                        icon: 'success',
-                        confirmButtonColor: '#1e3a8a'
-                    }).then(() => {
-                        window.location.reload(); 
-                    });
-                } else {
-                    Swal.fire('Error', result.message || 'No se pudo aplicar la firma.', 'error');
-                    btn.disabled = false;
-                    btn.innerHTML = originalHTML;
-                }
-
-            } catch(e) {
-                Swal.fire('Error', 'Fallo de red al conectar con el servidor.', 'error');
-                btn.disabled = false;
-                btn.innerHTML = originalHTML;
-            }
-        }
-
         function habilitarEdicionFoto() {
             isEditingFoto = true;
             document.getElementById('step3-foto-view-mode').classList.add('d-none');
@@ -1694,12 +1573,6 @@
             if(idExpedienteUrl) cargarDatosPrevios();
             cargarCursosPendientes();
 
-            // Ocultamos la barra de navegación del docente si es el administrador el que edita
-            const modeParamInit = new URLSearchParams(window.location.search).get('mode');
-            if (modeParamInit === 'admin') {
-                // Oculta links, barra inferior, panel de usuario (A- A+ y Avatar) y acciones móviles
-                document.querySelectorAll('.nav-links-desktop, .bottom-nav, .nav-user, .mh-actions').forEach(el => el.style.display = 'none');
-            }
         });
 
         async function cargarDatosPrevios() {
@@ -1708,13 +1581,40 @@
             if (btnNext) btnNext.disabled = true;
 
             try {
-                // 1. Cargamos el perfil del docente de forma habitual
-                const response = await fetch(GAS_URL, { 
-                    method: 'POST', 
-                    body: JSON.stringify({ action: 'get_profile', id: userId, id_expediente: idExpedienteUrl }) 
-                });
-                const result = await response.json();
+                // OPTIMIZACIÓN DE CARGA: Promesas en paralelo (Promise.all) para máxima velocidad
+                const peticiones = [];
                 
+                // 1. Petición del Expediente (Si existe)
+                if (idExpedienteUrl) {
+                    peticiones.push(
+                        fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_expediente_data', expId: idExpedienteUrl }) })
+                        .then(res => res.json())
+                    );
+                } else {
+                    peticiones.push(Promise.resolve(null)); // Placeholder si no hay ID
+                }
+
+                // 2. Petición del Perfil del Docente
+                peticiones.push(
+                    fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: userId, id_expediente: idExpedienteUrl }) })
+                    .then(res => res.json())
+                );
+
+                // Esperamos ambas respuestas al mismo tiempo (¡Doble de rápido!)
+                const [dataExp, result] = await Promise.all(peticiones);
+
+                let expEstadoReal = "";
+                let expedienteCompleto = null;
+                
+                if (dataExp && dataExp.status === 'success' && dataExp.expediente) {
+                    expEstadoReal = dataExp.expediente.estado || ""; 
+                    expedienteCompleto = dataExp.expediente;
+                }
+
+                // 🛑 ESTO ES LO QUE FALTABA: Hacer visible la tarjeta del Wizard que estaba oculta
+                const wizardCard = document.getElementById('mainWizardCard');
+                if (wizardCard) wizardCard.style.display = 'block';
+
                 // Quitar loaders de forma segura
                 const loader = document.getElementById('step1-loader');
                 if (loader) loader.style.display = 'none';
@@ -1745,52 +1645,6 @@
                         if(mHeaderP) mHeaderP.innerText = `${d.nombres} ${d.apellidos}`;
                     }
 
-                    // 🚀 MOSTRAR EL FORMULARIO DE REGISTRO DIRECTAMENTE
-                    const wizardCard = document.getElementById('mainWizardCard');
-                    if (wizardCard) wizardCard.style.display = 'block';
-
-                    // --- 🛠️ RECUPERAR LÓGICA DE VISTAS DEL PASO 1 (CV Y HANDBOOK) ---
-                    if (d.url_cv) {
-                        urlCVGlobal = d.url_cv;
-                        isEditingCV = false;
-                        document.getElementById('view-link-cv').href = getDriveViewUrl(urlCVGlobal);
-                        const statusContainer = document.getElementById('cv-status-container');
-                        if (statusContainer) {
-                            if (result.drafts && result.drafts.experiencia && result.drafts.experiencia.length > 0) {
-                                statusContainer.dataset.estado = "Procesado";
-                                statusContainer.innerHTML = `<span class="badge bg-light text-dark border mt-1">Procesado</span>`;
-                            } else {
-                                statusContainer.dataset.estado = "Subido";
-                                statusContainer.innerHTML = `<span class="badge bg-light text-dark border mt-1">Subido</span>`;
-                            }
-                        }
-                    } else { isEditingCV = true; }
-
-                    if (d.url_handbook) {
-                        urlHbGlobal = d.url_handbook;
-                        isEditingHb = false;
-                        document.getElementById('view-link-hb').href = getDriveViewUrl(urlHbGlobal);
-                    } else { isEditingHb = true; }
-
-                    actualizarVistaPaso1(); 
-
-                    // --- 🛠️ RECUPERAR LÓGICA DE VISTAS DEL PASO 2 (DIPLOMAS) ---
-                    const dipContainer = document.getElementById('diplomas-container');
-                    dipContainer.innerHTML = '';
-                    if (result.drafts && result.drafts.educacion && result.drafts.educacion.length > 0) {
-                        result.drafts.educacion.forEach(edu => renderDiplomaReadonly(edu));
-                        document.getElementById('step2-view-mode').classList.remove('d-none');
-                        document.getElementById('step2-upload-mode').classList.add('d-none');
-                        marcarTabComoCompletada(2);
-                    } else {
-                        addDiplomaEdit();
-                        document.getElementById('step2-view-mode').classList.add('d-none');
-                        document.getElementById('step2-upload-mode').classList.remove('d-none');
-                    }
-
-                    // Llenado de campos del perfil habitual
-                    if(d.nombres) document.getElementById('reg-nombres').value = d.nombres;
-
                     // Llenado de campos del perfil habitual
                     if(d.nombres) document.getElementById('reg-nombres').value = d.nombres;
                     if(d.apellidos) document.getElementById('reg-apellidos').value = d.apellidos;
@@ -1815,9 +1669,79 @@
                     if(d.moneda) document.getElementById('reg-moneda').value = d.moneda;
                     if(d.cuenta) document.getElementById('reg-cuenta').value = d.cuenta;
 
+                    // Rellenar Competencias (Paso 6)
                     if(d.tecnologia) document.getElementById('skill-tech').value = d.tecnologia;
                     if(d.idiomas) document.getElementById('skill-lang').value = d.idiomas;
                     if(d.sociales) document.getElementById('skill-social').value = d.sociales;
+                    
+                    // PASO 1: Evaluación Independiente (Fricción Cero)
+                    document.getElementById('step1-upload-mode').style.display = 'block';
+                    document.getElementById('step1-view-mode').style.display = 'block';
+
+                    // PASO 1: Carga Inteligente e Individual
+                    if (d.url_cv) {
+                        urlCVGlobal = d.url_cv;
+                        isEditingCV = false;
+                        document.getElementById('view-link-cv').href = getDriveViewUrl(urlCVGlobal);
+                        
+                        const statusContainer = document.getElementById('cv-status-container');
+                        if (statusContainer) {
+                            if (result.drafts && result.drafts.experiencia && result.drafts.experiencia.length > 0) {
+                                statusContainer.dataset.estado = "Procesado";
+                                statusContainer.innerHTML = `<span class="badge bg-light text-dark border mt-1">Procesado</span>`;
+                            } else {
+                                statusContainer.dataset.estado = "Subido";
+                                statusContainer.innerHTML = `<span class="badge bg-light text-dark border mt-1">Subido</span>`;
+                            }
+                        }
+                    } else { isEditingCV = true; }
+
+                    if (d.url_handbook) {
+                        urlHbGlobal = d.url_handbook;
+                        isEditingHb = false;
+                        document.getElementById('view-link-hb').href = getDriveViewUrl(urlHbGlobal);
+                    } else { isEditingHb = true; }
+
+                    actualizarVistaPaso1(); 
+
+                    // PASO 2: RENDERIZAR TARJETAS DINÁMICAS Y MARCAR COMPLETADO
+                    const dipContainer = document.getElementById('diplomas-container');
+                    if (dipContainer) dipContainer.innerHTML = '';
+                    
+                    if (result.drafts && result.drafts.educacion && result.drafts.educacion.length > 0) {
+                        result.drafts.educacion.forEach(edu => renderDiplomaReadonly(edu));
+                        marcarTabComoCompletada(2); // <- ¡Esta función es la que pone el check verde si la base de datos detectó diplomas!
+                    } else {
+                        addDiplomaEdit(); 
+                    }
+
+                    // Asignar campos del paso 3 
+                    if(d.correo) document.getElementById('reg-correo').value = d.correo;
+                    if(d.celular) document.getElementById('reg-celular').value = d.celular;
+                    if(d.nombres) document.getElementById('reg-nombres').value = d.nombres;
+                    if(d.apellidos) document.getElementById('reg-apellidos').value = d.apellidos;
+                    if(d.tipo_id) document.getElementById('reg-tipo-id').value = d.tipo_id;
+                    if(d.dni) document.getElementById('reg-dni').value = d.dni;
+                    
+                    if(d.fecha_nacimiento) {
+                        try {
+                            const dObj = new Date(d.fecha_nacimiento);
+                            if (!isNaN(dObj)) document.getElementById('reg-fecha-nac').value = dObj.toISOString().split('T')[0];
+                        } catch(e){}
+                    }
+                    
+                    if(d.ciudad) document.getElementById('reg-ciudad').value = d.ciudad;
+                    if(d.cp) document.getElementById('reg-cp').value = d.cp;
+                    if(d.direccion) document.getElementById('reg-direccion').value = d.direccion;
+                    
+                    // Bancos
+                    if(d.banco) document.getElementById('reg-banco').value = d.banco;
+                    if(d.moneda) document.getElementById('reg-moneda').value = d.moneda;
+                    if(d.tipo_cuenta) document.getElementById('reg-tipo-cuenta').value = d.tipo_cuenta;
+                    if(d.cuenta) document.getElementById('reg-cuenta').value = d.cuenta;
+                    if(d.cci) document.getElementById('reg-cci').value = d.cci;
+                    if(d.tipo_ruta) document.getElementById('reg-tipo-ruta').value = d.tipo_ruta;
+                    if(d.codigo_ruta) document.getElementById('reg-codigo-ruta').value = d.codigo_ruta;
 
                     setTimeout(() => {
                         if(d.pais) { document.getElementById('reg-pais').value = d.pais; verificarEstadoEEUU(); }
@@ -1841,7 +1765,7 @@
                     }
 
                     if (validarPaso3Completo()) { marcarTabComoCompletada(3); }
-                    if(validarPaso5Completo()) marcarTabComoCompletada(5);
+                    if (validarPaso5Completo()) { marcarTabComoCompletada(5); }
                     evaluarDesbloqueoPaso6();
 
                     if (result.drafts) {
@@ -1864,23 +1788,23 @@
                         if (validarPaso6Completo()) { marcarTabComoCompletada(6); }
                     }, 500);
                 } else { 
-                    // Blindaje
-                    const wizardCard = document.getElementById('mainWizardCard');
-                    if (wizardCard) wizardCard.style.display = 'block';
+                    // Blindaje por si el backend no encuentra datos
+                    const wizardCardFallback = document.getElementById('mainWizardCard');
+                    if (wizardCardFallback) wizardCardFallback.style.display = 'block';
                     document.getElementById('step1-upload-mode').style.display = 'block'; 
                     addDiplomaEdit(); 
                 }
             } catch(e) { 
                 console.error("Error en cargarDatosPrevios:", e);
-                const wizardCard = document.getElementById('mainWizardCard');
-                if (wizardCard) wizardCard.style.display = 'block';
+                // Si la red se cae, aseguramos que la interfaz aparezca para subir desde cero
+                const wizardCardFallback = document.getElementById('mainWizardCard');
+                if (wizardCardFallback) wizardCardFallback.style.display = 'block';
                 document.getElementById('step1-upload-mode').style.display = 'block'; 
-                document.getElementById('step2-upload-mode').classList.remove('d-none'); // <--- Añadimos esto
                 if (btnNext) btnNext.disabled = false; 
                 addDiplomaEdit(); 
             }
         }
-
+        
         function marcarTabComoCompletada(paso) {
             const tab = document.getElementById(`tab-${paso}`);
             if(tab) { 
