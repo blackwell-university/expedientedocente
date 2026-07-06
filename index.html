@@ -2,7 +2,6 @@
 <html lang="es">
 <head>
     <script>
-        // Verificar si ya existe una sesión activa en la memoria del navegador
         const sessionActive = localStorage.getItem('isLoggedIn');
         const savedRole = localStorage.getItem('userRole');
 
@@ -225,7 +224,6 @@
                     }
 
                 } else if (response.status === "inactive") {
-                    // AQUÍ ESTÁ EL MENSAJE PARA USUARIOS INACTIVOS
                     alert(response.message); // Muestra: "Este usuario no tiene acceso al sistema."
                     btn.disabled = false;
                     btn.innerHTML = 'Iniciar Sesión <i class="fa-solid fa-arrow-right"></i>';
