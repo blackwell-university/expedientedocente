@@ -5,7 +5,7 @@
         // Protección de ruta: Solo para docentes
         if (localStorage.getItem('isLoggedIn') !== 'true' || localStorage.getItem('userRole') !== 'Docente') {
             // Descomentar para producción
-            // window.location.href = "login.html";
+            // window.location.href = "index.html";
         }
     </script>
     <meta charset="UTF-8">
@@ -597,7 +597,7 @@
         }
         function logout() { 
             localStorage.clear(); 
-            window.location.href = "login.html"; 
+            window.location.href = "index.html"; 
         }
     </script>
 </body>

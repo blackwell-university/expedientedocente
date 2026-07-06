@@ -7,7 +7,7 @@
         const rolesPermitidos = ['Ejecutiva Credenciales', 'Ejecutivo Licenciamiento', 'Administrador'];
         
         if (isLoggedIn !== 'true' || !rolesPermitidos.some(rol => userRole && userRole.toLowerCase() === rol.toLowerCase())) {
-            window.location.href = "../login.html";
+            window.location.href = "../index.html";
         }
     </script>
     <meta charset="UTF-8">
@@ -570,7 +570,7 @@
 
         function logout() {
             localStorage.clear();
-            window.location.href = "../login.html";
+            window.location.href = "../index.html";
         }
     </script>
 </body>

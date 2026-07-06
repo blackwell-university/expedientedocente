@@ -3,7 +3,7 @@
 <head>
     <script>
         if (sessionStorage.getItem('isLoggedIn') !== 'true' || sessionStorage.getItem('userRole') !== 'Docente') {
-            window.location.href = "login.html";
+            window.location.href = "index.html";
         }
     </script>
     <meta charset="UTF-8">
@@ -177,7 +177,7 @@
         function logout() {
             if(confirm("¿Estás seguro que deseas cerrar sesión?")) {
                 sessionStorage.clear();
-                window.location.href = "../login.html";
+                window.location.href = "../index.html";
             }
         }
 

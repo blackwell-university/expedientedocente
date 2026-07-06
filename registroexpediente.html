@@ -19,13 +19,13 @@
 
         // Si es modo admin, permitimos el acceso a los roles administrativos autorizados
         if (isLoggedInHead !== 'true') {
-            window.location.href = "login.html";
+            window.location.href = "index.html";
         } else if (modeParam === 'admin') {
             if (!rolesAdminAutorizados.some(rol => userRoleHead && userRoleHead.toLowerCase() === rol.toLowerCase())) {
-                window.location.href = "login.html";
+                window.location.href = "index.html";
             }
         } else if (userRoleHead !== 'Docente') {
-            window.location.href = "login.html";
+            window.location.href = "index.html";
         }
     </script>
     <meta charset="UTF-8">
@@ -1972,7 +1972,7 @@
             });
         }
 
-        function logout() { localStorage.clear(); window.location.href = "login.html"; }
+        function logout() { localStorage.clear(); window.location.href = "index.html"; }
 
         function mostrarNombre(input, id) { if(input.files.length > 0) document.getElementById(id).innerText = "✅ " + input.files[0].name; }
         const getBase64 = (file) => new Promise((resolve) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result.split(',')[1]); });

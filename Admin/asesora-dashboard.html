@@ -5,7 +5,7 @@
         const isLoggedIn = localStorage.getItem('isLoggedIn');
         const userRole = localStorage.getItem('userRole');
         if (isLoggedIn !== 'true' || (userRole !== 'Asesora Academica' && userRole !== 'Administrador')) {
-            window.location.href = "../login.html";
+            window.location.href = "../index.html";
         }
     </script>
     <meta charset="UTF-8">
@@ -139,7 +139,7 @@
                 row.style.display = row.getAttribute('data-search').includes(busqueda) ? '' : 'none';
             });
         }
-        function logout() { localStorage.clear(); window.location.href = "../login.html"; }
+        function logout() { localStorage.clear(); window.location.href = "../index.html"; }
     </script>
 </body>
 </html>

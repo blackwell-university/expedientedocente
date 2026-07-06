@@ -12,7 +12,7 @@
         
         // Verifica si NO está logueado, o si el rol NO está en la lista permitida
         if (isLoggedIn !== 'true' || !rolesPermitidos.some(rol => userRole && userRole.toLowerCase() === rol.toLowerCase())) {
-            window.location.href = "../login.html";
+            window.location.href = "../index.html";
         }
     </script>
     <meta charset="UTF-8">
@@ -410,7 +410,7 @@
         function logout() {
             if(confirm("¿Estás seguro que deseas cerrar sesión?")) {
                 localStorage.clear();
-                window.location.href = "../login.html";
+                window.location.href = "../index.html";
             }
         }
 

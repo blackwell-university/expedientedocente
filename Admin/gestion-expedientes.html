@@ -11,7 +11,7 @@
         ];
         
         if (isLoggedIn !== 'true' || !rolesPermitidos.some(rol => userRole && userRole.toLowerCase() === rol.toLowerCase())) {
-            window.location.href = "../login.html";
+            window.location.href = "../index.html";
         }
     </script>
     <meta charset="UTF-8">
@@ -201,7 +201,7 @@
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); document.getElementById('toggleIcon').classList.toggle('fa-chevron-right'); document.getElementById('toggleIcon').classList.toggle('fa-chevron-left');}
         
         // CORRECCIÓN: Logout con localStorage
-        function logout() { if(confirm("¿Cerrar sesión?")) { localStorage.clear(); window.location.href = "../login.html"; } }
+        function logout() { if(confirm("¿Cerrar sesión?")) { localStorage.clear(); window.location.href = "../index.html"; } }
         
         let currentSize = 1; const sizes =["0.9rem", "1rem", "1.1rem"]; const labels =["Pequeño", "Normal", "Grande"];
         function changeFontSize(dir) { currentSize += dir; if(currentSize < 0) currentSize=0; if(currentSize > 2) currentSize=2; document.getElementById('fontSizeLabel').innerText = labels[currentSize]; document.documentElement.style.setProperty('--dynamic-font-size', sizes[currentSize]); }

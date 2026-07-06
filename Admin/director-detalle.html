@@ -5,7 +5,7 @@
         const isLoggedIn = localStorage.getItem('isLoggedIn');
         const userRole = localStorage.getItem('userRole');
         if (isLoggedIn !== 'true' || (!userRole || !userRole.toUpperCase().startsWith('DIRECTOR_'))) {
-            window.location.href = "../login.html"; // Sube un nivel hacia la raíz para encontrar el login
+            window.location.href = "../index.html"; // Sube un nivel hacia la raíz para encontrar el login
         }
     </script>
     <meta charset="UTF-8">
@@ -305,7 +305,7 @@
 
         function logout() {
             localStorage.clear();
-            window.location.href = "../login.html";
+            window.location.href = "../index.html";
         }
     </script>
 </body>
