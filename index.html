@@ -1,737 +1,247 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <script>
+        const sessionActive = localStorage.getItem('isLoggedIn');
+        const savedRole = localStorage.getItem('userRole');
+
+        if (sessionActive === 'true' && savedRole) {
+            const roleUpper = savedRole.toUpperCase();
+            
+            // Redirección inteligente según el rol guardado
+            if (roleUpper === 'DOCENTE') {
+                window.location.href = "dashboard-docente.html";
+            } else if (roleUpper.startsWith('DIRECTOR_')) {
+                window.location.href = "Admin/director-dashboard.html";
+            } else if (roleUpper === 'EJECUTIVA CREDENCIALES' || roleUpper === 'EJECUTIVO LICENCIAMIENTO') {
+                window.location.href = "Admin/evaluacion-dashboard.html";
+            } else if (roleUpper === 'ASESORA ACADEMICA') {
+                window.location.href = "Admin/asesora-dashboard.html";
+            } else if (roleUpper === 'ADMINISTRATIVO' || roleUpper === 'ADMINISTRADOR') {
+                window.location.href = "Admin/administrativo.html";
+            }
+        }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expediente Docente Premium | BGU</title>
+    <title>Login Blackwell - Universidad Blackwell</title>
+    <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@24.5.0/build/css/intlTelInput.css">
-    <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@24.5.0/build/js/intlTelInput.min.js"></script>
-    
     <style>
         :root {
-            --bgu-blue: #002D62; --bgu-gold: #FFC107; --bgu-light-blue: #003d85;
-            --bgu-dark: #001a35; --base-font: 16px; 
+            --bg-color: #f4f7fa;   
+            --card-header-bg: #1e3a8a;
+            --primary-blue: #3b82f6; 
+            --primary-dark: #1e3a8a;
+            --text-gray: #64748b;
+            --border-color: #e2e8f0;
         }
-        html { font-size: var(--base-font); }
+
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bgu-light-blue); margin: 0; padding: 0;
-            background-image: linear-gradient(rgba(0, 45, 98, 0.85), rgba(0, 45, 98, 0.85)), url('https://cdn.bitrix24.es/b15495391/landing/092/092e3ff6720db91d4b9f1a1e70f47f41/home-map-global_1x.png');
-            background-attachment: fixed; background-size: cover; color: #1e293b;
+            background-color: var(--bg-color);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
         }
-        .utility-box { background: rgba(0, 0, 0, 0.4); padding: 12px 30px; display: flex; justify-content: flex-end; align-items: center; gap: 15px; }
-        .btn-font-adj { background: transparent; border: 1px solid var(--bgu-gold); color: var(--bgu-gold); padding: 5px 15px; border-radius: 8px; font-weight: 800; cursor: pointer; transition: 0.3s; }
-        .btn-font-adj:hover { background: var(--bgu-gold); color: var(--bgu-blue); }
-        .stepper-wrapper { display: flex; justify-content: space-between; max-width: 600px; margin: 40px auto; position: relative; }
-        .stepper-wrapper::before { content: ""; position: absolute; top: 20px; left: 0; width: 100%; height: 4px; background: rgba(255,255,255,0.2); z-index: 1; }
-        .step-item { position: relative; z-index: 2; text-align: center; width: 100px; }
-        .step-counter { width: 45px; height: 45px; border-radius: 50%; background: #ccc; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: white; transition: 0.4s; border: 4px solid var(--bgu-blue); }
-        .step-item.active .step-counter { background: var(--bgu-gold); color: var(--bgu-blue); transform: scale(1.1); }
-        .step-item.completed .step-counter { background: #10b981; border-color: #10b981; }
-        .step-label { color: white; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; }
-        header.bgu-header { background: var(--bgu-blue); padding: 40px 0; text-align: center; border-bottom: 6px solid var(--bgu-gold); box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
-        .bgu-logo { max-width: 280px; }
-        .form-section { background: white; border-radius: 16px; padding: 45px; margin-bottom: 40px; box-shadow: 0 25px 60px rgba(0,0,0,0.4); display: none; }
-        .form-section.active { display: block; animation: slideIn 0.5s ease-out; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .section-header { margin-bottom: 35px; border-left: 6px solid var(--bgu-blue); padding-left: 20px; }
-        .section-header h2 { font-weight: 800; color: var(--bgu-blue); text-transform: uppercase; font-size: 1.4rem; }
-        .form-control, .form-select { border: 2px solid #e2e8f0; border-radius: 10px; padding: 12px 15px; }
-        .edu-card { background: #f8fafc; border-radius: 14px; padding: 30px; border: 1px solid #cbd5e0; position: relative; margin-bottom: 20px; }
-        .btn-remove-edu { position: absolute; top: 15px; right: 15px; background: #fee2e2; color: #b91c1c; border: none; padding: 6px 14px; border-radius: 8px; font-weight: 700; font-size: 0.8rem; }
-        .missing-data-field { border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; }
-        .btn-luxury { background: linear-gradient(145deg, var(--bgu-gold), #ff9800); color: var(--bgu-blue); border: none; padding: 18px 45px; font-weight: 800; border-radius: 50px; text-transform: uppercase; box-shadow: 0 10px 25px rgba(255,152,0,0.3); }
-        .btn-add-edu { 
-            border: 2px dashed var(--bgu-blue); 
-            color: var(--bgu-blue); 
-            background: transparent; 
-            font-weight: 800; 
-            padding: 15px; 
-            width: 100%; 
-            border-radius: 12px; 
-            text-transform: uppercase; 
-            margin-top: 10px; 
-            transition: 0.3s;
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            background-color: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
         }
-        .btn-add-edu:hover { background: var(--bgu-blue); color: white; }
-        #loading-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0, 26, 53, 0.96); z-index: 10000; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; }
-        .iti { width: 100%; display: block; }
+
+        .card-header-custom {
+            background-color: var(--card-header-bg);
+            padding: 40px 20px 30px;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
+
+        .icon-circle {
+            background-color: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(5px);
+            width: 70px; height: 70px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 15px;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .icon-circle i { color: white; font-size: 32px; }
+
+        .card-header-custom h1 { font-size: 1.4rem; font-weight: 700; margin: 0; letter-spacing: -0.5px;}
+        .card-header-custom p { font-size: 0.85rem; opacity: 0.85; margin-top: 5px; font-weight: 300; }
+
+        .card-body { padding: 35px 30px; }
+
+        /* FLOATING LABELS - Estilo App Móvil */
+        .form-floating-custom {
+            position: relative; margin-bottom: 20px;
+        }
+
+        .form-floating-custom input {
+            width: 100%; padding: 16px 15px; border: 1.5px solid var(--border-color);
+            border-radius: 12px; outline: none; font-size: 0.95rem; color: #1e293b;
+            background-color: transparent; transition: all 0.2s ease;
+        }
+
+        .form-floating-custom label {
+            position: absolute; top: 50%; left: 15px; transform: translateY(-50%);
+            color: var(--text-gray); font-size: 0.95rem; pointer-events: none;
+            transition: all 0.2s ease; background-color: white; padding: 0 5px;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        /* Activación del floating effect al hacer click/escribir */
+        .form-floating-custom input:focus,
+        .form-floating-custom input:not(:placeholder-shown) {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-floating-custom input:focus ~ label,
+        .form-floating-custom input:not(:placeholder-shown) ~ label {
+            top: 0; font-size: 0.75rem; color: var(--primary-blue); font-weight: 600;
+        }
+
+        .btn-login {
+            background-color: var(--primary-dark); color: white; width: 100%; padding: 14px;
+            border-radius: 12px; font-weight: 600; border: none; font-size: 1rem;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            transition: all 0.3s; margin-top: 10px; box-shadow: 0 4px 15px rgba(30, 58, 138, 0.2);
+        }
+        .btn-login:hover { background-color: #152963; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(30, 58, 138, 0.3); }
+
+        .demo-accounts {
+            margin-top: 25px; text-align: center; font-size: 0.75rem; color: #94a3b8;
+            background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px dashed #cbd5e1;
+        }
+
+        
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
+
 <body>
 
-<div class="utility-box">
-    <button class="btn-font-adj" onclick="changeFontSize(-2)">A -</button>
-    <button class="btn-font-adj" onclick="changeFontSize(2)">A +</button>
-</div>
-
-<div id="loading-overlay">
-    <div class="spinner-border text-warning mb-4" style="width: 5rem; height: 5rem;"></div>
-    <h2 id="loading-title">TERMINANDO DE PROCESAR...</h2>
-    <p id="loading-desc" class="fs-5">Un momento por favor, estamos terminando de analizar sus archivos.</p>
-</div>
-
-<header class="bgu-header">
-    <img src="https://cdn.bitrix24.es/b15495391/landing/46b/46b5cbaf9e1efd30d1866c50bbf395b6/logo_bgu_1x.png" class="bgu-logo">
-</header>
-
-<div class="container" style="max-width: 1000px;">
-
-    <!-- NUEVO: TÍTULO DEL FORMULARIO -->
-    <div class="text-center mt-4 mb-5">
-        <h1 class="fw-bold" style="color: white; text-shadow: 0 4px 10px rgba(0,0,0,0.4); letter-spacing: -0.5px;">Portal de Incorporación Docente</h1>
-        <p style="color: rgba(255,255,255,0.9); font-size: 1.1rem; font-weight: 300;">Complete su expediente para formalizar su vinculación académica</p>
-    </div>
-
-    <!-- Nombres de Pasos actualizados -->
-    <div class="stepper-wrapper">
-        <div class="step-item active" id="st-1"><div class="step-counter">1</div><div class="step-label text-white">Documentos</div></div>
-        <div class="step-item" id="st-2"><div class="step-counter">2</div><div class="step-label text-white">Datos y Pago</div></div>
-        <div class="step-item" id="st-3"><div class="step-counter">3</div><div class="step-label text-white">Validación</div></div>
-    </div>
-
-    <form id="docenteWizard" novalidate>
-        <!-- PASO 1: DOCUMENTOS (Bienvenida y Subida) -->
-        <div class="form-section active" id="step-1">
-            <div class="section-header">
-                <h2>1. Bienvenida y Documentos</h2>
-                <p>Bienvenido. Por favor, adjunte su CV, Faculty Handbook y los documentos de sus grados académicos.</p>
-            </div>
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <label>CV (PDF) * <span id="cv-status" class="text-success fw-bold ms-2" style="display:none; font-size: 0.8rem;"><i class="bi bi-check-circle-fill"></i> Documento guardado (Sube otro solo para reemplazar)</span></label>
-                    <input type="file" id="cv_file" class="form-control" accept=".pdf" required>
-                </div>
-                <div class="col-md-6"><label>Faculty Handbook *</label><input type="file" id="handbook_file" class="form-control" accept=".pdf"></div>
-
-                <div class="col-12 mt-4">
-                    <h5 class="fw-bold text-primary">Grados Académicos</h5>
-                    <div id="edu-container">
-                        <div class="edu-card bg-light border-primary border-opacity-25 edu-item">
-                            <div class="row g-3">
-                                <div class="col-md-12"><label>Grado *</label><select class="form-select grado-select" required><option value="">Seleccione...</option><option>Bachelor</option><option>Master</option><option>Doctorado</option></select></div>
-                                <div class="col-md-6"><label>Diploma *</label><input type="file" class="form-control diploma-file" required></div>
-                                <div class="col-md-6"><label>Transcript</label><input type="file" class="form-control transcript-file"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="button" class="btn btn-add-edu" onclick="addEduField()">+ AGREGAR OTRO GRADO</button>
-                </div>
-            </div>
-            <div class="text-end mt-5">
-                <!-- Al dar clic aquí iniciará procesarIA() ocultamente mientras se pasa al step 2 -->
-                <button type="button" class="btn btn-luxury" onclick="procesarIA()">Siguiente Paso <i class="bi bi-arrow-right-short"></i></button>
-            </div>
-        </div>
-        
-        <!-- PASO 2: DATOS PERSONALES E INFORMACIÓN DE PAGO -->
-        <div class="form-section" id="step-2">
-            <div class="section-header">
-                <h2>2. Datos Personales y Bancarios</h2>
-                <p>Complete con su información personal de contacto.</p>
-            </div>
-            <div class="row g-4">
-                <h5 class="fw-bold text-primary mb-0 mt-4">Información Personal</h5>
-                <div class="col-md-6"><label>Nombres *</label><input type="text" id="nombres" class="form-control" required></div>
-                <div class="col-md-6"><label>Apellidos *</label><input type="text" id="apellidos" class="form-control" required></div>
-                <div class="col-md-6"><label>ID Documento *</label><input type="text" id="id_documento" class="form-control" required></div>
-                <div class="col-md-6"><label>Fecha de Nacimiento *</label><input type="date" id="fecha_nacimiento" class="form-control"></div>
-                <div class="col-md-6"><label>Correo Electrónico *</label><input type="email" id="correo" class="form-control"></div>
-                <div class="col-md-6">
-                    <label>Celular / WhatsApp *</label><br>
-                    <input type="tel" id="celular" class="form-control" required>
-                    <div style="font-size: 11px; color: #888; margin-top: 4px;">Selecciona tu bandera</div>
-                </div>
-                <hr>
-                <h5 class="fw-bold text-primary mb-0 mt-5">Disponibilidad para el Dictado</h5>
-                <div class="col-md-6">
-                    <label>Día de preferencia *</label>
-                    <select id="dia_clase" class="form-select" required>
-                        <option value="">Seleccione...</option>
-                        <option value="Lunes">Lunes</option>
-                        <option value="Martes">Martes</option>
-                        <option value="Miércoles">Miércoles</option>
-                        <option value="Jueves">Jueves</option>
-                        <option value="Viernes">Viernes</option>
-                        <option value="Sábado">Sábado</option>
-                    </select>
-                </div>
-                <div class="col-md-6">
-                    <label>Franja Horaria (GMT-5) *</label>
-                    <select id="hora_clase" class="form-select" required>
-                        <option value="">Seleccione...</option>
-                        <option value="19:00 a 20:30 Hrs">19:00 a 20:30 Hrs</option>
-                        <option value="20:30 a 22:00 Hrs">20:30 a 22:00 Hrs</option>
-                    </select>
-                </div>
-
-                <h5 class="fw-bold text-primary mb-0 mt-5">Información de Pago y Ubicación</h5>
-                <div class="col-md-4"><label>País *</label><input type="text" id="pais" class="form-control" required></div>
-                <div class="col-md-3"><label>Código Postal *</label><input type="text" id="codigo_postal" class="form-control" required></div>
-                <div class="col-md-5"><label>Dirección *</label><input type="text" id="direccion" class="form-control" required></div>
-
-                <div class="col-md-6"><label>Banco *</label><input type="text" id="banco" class="form-control" required></div>
-                <div class="col-md-6"><label>Tipo de Cuenta *</label>
-                    <select id="tipo_cuenta" class="form-select" required>
-                        <option value="">Seleccione...</option>
-                        <option value="Soles">Soles</option>
-                        <option value="Dólares">Dólares</option>
-                    </select>
-                </div>
-                <div class="col-md-6"><label>Cuenta Interbancaria (CCI) *</label><input type="text" id="cci" class="form-control" required></div>
-                <div class="col-md-6"><label>Número de Cuenta *</label><input type="text" id="cuenta" class="form-control" required></div>
-            </div>
-            <div class="text-end mt-5">
-                <button type="button" class="btn btn-outline-secondary rounded-pill px-4 me-2" onclick="goBack(1)">Atrás</button>
-                <!-- Al dar clic aquí validará y chequeará si la IA ya terminó -->
-                <button type="button" class="btn btn-luxury" onclick="verificarIAParaPaso3()">Siguiente Paso <i class="bi bi-arrow-right-short"></i></button>
-            </div>
+    <div class="login-card">
+        <div class="card-header-custom">
+            <div class="icon-circle"><i class="fa-solid fa-graduation-cap"></i></div>
+            <h1>Universidad Blackwell</h1>
+            <p>Sistema de Gestión de Expedientes</p>
         </div>
 
-        <!-- PASO 3: VALIDACIÓN DE INFORMACIÓN (Igual al anterior) -->
-        <div class="form-section" id="step-3">
-            <div class="section-header">
-                <h2>3. Validación de Información</h2>
-                <p>Hemos extraído estos datos de sus documentos. <strong>Revíselos y complete con los datos faltantes</strong> para finalizar con el registro</p>
-            </div>
-
-            <!-- NUEVO: SPINNER INTERNO MIENTRAS PROCESA N8N -->
-            <div id="step3-processing" class="text-center py-5" style="display: none;">
-                <div class="spinner-border mb-3" style="width: 4rem; height: 4rem; color: var(--bgu-gold);" role="status"></div>
-                <h4 class="fw-bold" style="color: var(--bgu-blue);">Procesando sus datos con Inteligencia Artificial...</h4>
-                <p class="text-muted fs-5">Esto puede tomar unos segundos. Estamos extrayendo la información de su CV y Diplomas.</p>
-            </div>
-            <div id="step3-content">
-                <h5 class="fw-bold text-primary mb-3">Formación Académica</h5>
-                <div id="ai-results-container"></div>
-                <hr class="my-5">
-                <h5 class="fw-bold text-primary mb-3">Experiencia Profesional</h5>
-                <div id="experience-results-container"></div>
-                <button type="button" class="btn btn-add-edu" onclick="addExpField()">+ AGREGAR EXPERIENCIA MANUALMENTE</button>
-
-                <!-- NUEVO: SECCIÓN DE HABILIDADES -->
-                <hr class="my-5">
-                <h5 class="fw-bold text-primary mb-3">Competencias y Habilidades</h5>
-                <div class="edu-card shadow-sm bg-white mb-4">
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label class="fw-bold">Competencias Tecnológicas *</label>
-                            <select id="hab_tecnologia" class="form-select" required>
-                                <option value="">Seleccione...</option>
-                                <option value="Básico">Básico</option>
-                                <option value="Intermedio">Intermedio</option>
-                                <option value="Avanzado">Avanzado</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="fw-bold">Competencias de Idiomas *</label>
-                            <select id="hab_idiomas" class="form-select" required>
-                                <option value="">Seleccione...</option>
-                                <option value="Básico">Básico</option>
-                                <option value="Intermedio">Intermedio</option>
-                                <option value="Avanzado">Avanzado</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="fw-bold">Habilidades Sociales *</label>
-                            <select id="hab_sociales" class="form-select" required>
-                                <option value="">Seleccione...</option>
-                                <option value="Bajo">Bajo</option>
-                                <option value="Promedio">Promedio</option>
-                                <option value="Alto">Alto</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="text-end mt-5">
-                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4 me-2" onclick="goBack(2)">Atrás</button>
-                    <button type="submit" class="btn btn-luxury">Finalizar Registro y Enviar</button>
-                </div>
-            </div>
+        <div class="card-body">
             
-        </div>
-    </form>
-</div>
-
-
-
-<!-- SCRIPTS DE BOOTSTRAP PARA EL POPUP -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- NUEVO: POPUP / MODAL DE BIENVENIDA -->
-<div class="modal fade" id="welcomeModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.5);">
-            <div class="modal-header text-center" style="background: var(--bgu-blue); border-bottom: 5px solid var(--bgu-gold); padding: 25px;">
-                <h4 class="modal-title fw-bold text-white w-100"><i class="bi bi-stars text-warning me-2"></i>¡Bienvenido a Blackwell!</h4>
-            </div>
-            
-            <div class="modal-body text-center p-5">
-                
-                <!-- 1. SPINNER DE CARGA (Visible inicialmente) -->
-                <div id="welcomeLoading" class="mb-3">
-                    <div class="spinner-border" role="status" style="width: 3.5rem; height: 3.5rem; color: var(--bgu-blue);">
-                        <span class="visually-hidden">Cargando...</span>
-                    </div>
-                    <h5 class="fw-bold mt-4" style="color: var(--bgu-blue);">Identificando su expediente...</h5>
-                    <p class="text-muted">Un momento, por favor.</p>
+            <form id="loginForm">
+                <!-- Floating Input: Usuario -->
+                <div class="form-floating-custom">
+                    <!-- placeholder=" " en blanco es obligatorio para la animación CSS -->
+                    <input type="text" id="emailInput" placeholder=" " required autocomplete="off">
+                    <label for="emailInput"><i class="fa-solid fa-user"></i> Usuario</label>
                 </div>
 
-                <!-- 2. CONTENIDO DEL MENSAJE (Oculto inicialmente) -->
-                <div id="welcomeContent" style="display: none;">
-                    <h2 class="fw-bold text-primary mb-3" id="welcomeName" style="color: var(--bgu-blue) !important;">Estimado(a) Docente</h2>
-                    <p class="text-muted fs-5 mb-4" style="line-height: 1.6;">Queremos expresarle nuestro más sincero agradecimiento por aceptar nuestra invitación. Es un verdadero honor para nosotros que forme parte de la familia de <strong>Blackwell Global University</strong>.</p>
-                    <p class="text-secondary" style="font-size: 0.95rem;">A continuación, lo guiaremos paso a paso para completar su expediente docente de forma segura.</p>
+                <!-- Floating Input: Contraseña -->
+                <div class="form-floating-custom">
+                    <input type="password" id="passwordInput" placeholder=" " required>
+                    <label for="passwordInput"><i class="fa-solid fa-lock"></i> Contraseña</label>
                 </div>
-            </div>
 
-            <div class="modal-footer justify-content-center border-0 pb-5 pt-0">
-                <!-- Botón inicia desactivado hasta que cargue el nombre -->
-                <button type="button" id="btnComenzar" class="btn btn-luxury w-75 disabled" data-bs-dismiss="modal" style="font-size: 1.1rem; padding: 15px; opacity: 0.5;">Comenzar mi registro <i class="bi bi-arrow-right-circle ms-2"></i></button>
+                <button type="submit" class="btn-login">
+                    Iniciar Sesión <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <div class="demo-accounts">
+                <span>Ingresa con tus credenciales asignadas por la administración.</span>
             </div>
         </div>
     </div>
-</div>
 
-<script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
-    const N8N_URL = "https://n8n.balticec.com/webhook/ad08f4fd-2709-460a-9368-238395ad8533";
-    let iaListo = false;
-    let fileIdsToMove =[];
-    let urlCVFinal = "";
-    let urlHandbookFinal = "";
-    let docenteIdInterno = "";
-    let invitacionIdInterno = "";
-    let iti;
+    <script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
 
-
-    // --- INICIALIZAR LIBRERÍA DE TELÉFONO ---
-    document.addEventListener("DOMContentLoaded", () => {
-        const inputPhone = document.querySelector("#celular");
-        iti = window.intlTelInput(inputPhone, {
-            utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@24.5.0/build/js/utils.js", 
-            separateDialCode: true, 
-            initialCountry: "auto", 
-            i18n: { searchPlaceholder: "Buscar país...", pe: "Perú", mx: "México", co: "Colombia", es: "España", us: "Estados Unidos", ar: "Argentina", cl: "Chile" },
-            geoIpLookup: function(callback) {
-                fetch("https://ipapi.co/json")
-                .then(res => res.json()).then(data => callback(data.country_code)).catch(() => callback("PE")); 
-            },
-            preferredCountries: ['pe', 'mx', 'co', 'cl', 'ar', 'bo', 'ec', 'es', 'us'], 
-        });
-    });
-    
-    // --- ALERTA DE SEGURIDAD SI INTENTA CERRAR LA PESTAÑA ---
-    let procesandoIA = false; 
-    window.addEventListener('beforeunload', function (e) {
-        if (procesandoIA && !iaListo) {
+        document.getElementById('loginForm').onsubmit = function(e) {
             e.preventDefault();
-            e.returnValue = 'Sus documentos aún se están analizando con IA. Si cierra la pestaña ahora, perderá su progreso.';
-        }
-    });
+            
+            const email = document.getElementById('emailInput').value.trim();
+            const password = document.getElementById('passwordInput').value.trim();
+            const btn = e.target.querySelector('button');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Validando...';
 
-    // Función auxiliar para forzar la fecha a YYYY-MM para los inputs
-    function formatToMonth(val) {
-        if (!val || val === "Actualidad") return val;
-        try { const d = new Date(val); if(isNaN(d.getTime())) return val; let m = d.getMonth() + 1; return d.getFullYear() + "-" + (m < 10 ? '0'+m : m); } catch(e) { return val; }
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const idDesdeUrl = urlParams.get('id');
-        invitacionIdInterno = urlParams.get('inv');
-        const nombreUrl = urlParams.get('name');
-        
-        if(idDesdeUrl) {
-            docenteIdInterno = idDesdeUrl;
-
-            // 1. Mostrar el modal SIEMPRE en estado de "Cargando" al inicio
-            const myModal = new bootstrap.Modal(document.getElementById('welcomeModal'));
-            myModal.show();
-
-            // 2. Consulta en segundo plano para traer datos
-            fetch(GAS_URL, {
+            fetch(WEB_APP_URL, {
                 method: 'POST',
-                body: JSON.stringify({ action: "get_profile", id: docenteIdInterno, id_invitacion: invitacionIdInterno })
+                body: JSON.stringify({ action: "login", email: email, password: password })
             })
             .then(res => res.json())
-            .then(res => {
-                if (res.status === "success") {
-                    const inputNombres = document.getElementById('nombres');
-                    const inputApellidos = document.getElementById('apellidos');
-                    
-                    if(res.data.nombres) { inputNombres.value = res.data.nombres; inputNombres.readOnly = true; inputNombres.style.backgroundColor = "#f1f5f9"; }
-                    if(res.data.apellidos) { inputApellidos.value = res.data.apellidos; inputApellidos.readOnly = true; inputApellidos.style.backgroundColor = "#f1f5f9"; }
-                    if(res.data.celular && typeof iti !== 'undefined') iti.setNumber(res.data.celular.toString());
+            .then(response => {
+                if (response.status === "success") {
+                    let rolAsignado = response.role ? response.role.toUpperCase() : "";
 
-                    // RECUPERAR URLS Y QUITAR OBLIGATORIEDAD DE SUBIR PDF DE NUEVO
-                    if(res.data.url_cv) {
-                        urlCVFinal = res.data.url_cv;
-                        document.getElementById('cv_file').removeAttribute('required'); 
-                        document.getElementById('cv-status').style.display = 'inline'; // Muestra el mensaje verde
+                    // GUARDADO INTELIGENTE Y PERSISTENTE
+                    localStorage.setItem('isLoggedIn', 'true');
+                    localStorage.setItem('userId', response.userId);   
+                    localStorage.setItem('userName', response.userName); 
+
+                    if (rolAsignado === 'DOCENTE') {
+                        localStorage.setItem('userRole', 'Docente');
+                        window.location.href = "dashboard-docente.html";
+                    } else if (rolAsignado.startsWith('DIRECTOR_')) {
+                        localStorage.setItem('userRole', response.role);
+                        window.location.href = "Admin/director-dashboard.html";
+                    } else if (rolAsignado === 'EJECUTIVA CREDENCIALES' || rolAsignado === 'EJECUTIVO LICENCIAMIENTO') {
+                        localStorage.setItem('userRole', response.role);
+                        window.location.href = "Admin/evaluacion-dashboard.html"; // Su panel exclusivo
+                    } else if (rolAsignado === 'ASESORA ACADEMICA') {
+                        localStorage.setItem('userRole', 'Asesora Academica');
+                        window.location.href = "Admin/asesora-dashboard.html";
+                    } else if (
+                        rolAsignado === 'ADMINISTRATIVO' || 
+                        rolAsignado === 'ADMINISTRADOR'
+                    ) {
+                        // Guardamos el rol exacto para futuros permisos, pero todos van al mismo panel
+                        localStorage.setItem('userRole', response.role);
+                        window.location.href = "Admin/administrativo.html";
                     }
-                    if(res.data.url_handbook) urlHandbookFinal = res.data.url_handbook;
-
-                    // Si ya hay educación guardada, quitamos la obligatoriedad del cuadro de diploma vacío del Paso 1
-                    if (res.drafts && res.drafts.educacion.length > 0) {
-                        const primerDiploma = document.querySelector('.diploma-file');
-                        const primerGrado = document.querySelector('.grado-select');
-                        if(primerDiploma) primerDiploma.removeAttribute('required');
-                        if(primerGrado) primerGrado.removeAttribute('required');
-                    }
-
-                    // --- CARGAR DATOS EN EL PASO 3 (Para borradores o para modificar datos ya enviados) ---
-                    if (res.drafts && (res.drafts.educacion.length > 0 || res.drafts.experiencia.length > 0)) {
-                        res.drafts.educacion.forEach(edu => {
-                            document.getElementById('ai-results-container').insertAdjacentHTML('beforeend', 
-                            `<div class="edu-card shadow-sm bg-white ai-edu-record" data-grado="${edu.grado}" data-url="${edu.url_diploma}">
-                                <h6 class="fw-bold text-primary">Grado: ${edu.grado}</h6>
-                                <div class="row g-3">
-                                    <div class="col-md-6"><label>Carrera *</label><input type="text" class="form-control ai-rama" value="${edu.rama||''}" required></div>
-                                    <div class="col-md-6"><label>Institución *</label><input type="text" class="form-control ai-institucion" value="${edu.instituto||''}" required></div>
-                                    <div class="col-md-6"><label>Ubicacion (Ciudad, País) *</label><input type="text" class="form-control ai-ubicacion" value="${edu.ubicacion||''}" required></div>
-                                    <div class="col-md-3"><label>Inicio *</label><input type="month" class="form-control ai-inicio" value="${formatToMonth(edu.inicio)||''}" required></div>
-                                    <div class="col-md-3"><label>Fin *</label><input type="month" class="form-control ai-fin" value="${formatToMonth(edu.fin)||''}" required></div>
-                                </div>
-                            </div>`);
-                        });
-                        res.drafts.experiencia.forEach(exp => {
-                            addExpField({ empresa: exp.empresa, cargo: exp.cargo, area_ensenanza: exp.area, direccion: exp.direccion, inicio: formatToMonth(exp.inicio), fin: formatToMonth(exp.fin) });
-                        });
-                        iaListo = true;
+                    else {
+                        alert("Error: Tu usuario no tiene un rol válido asignado en el sistema.");
+                        btn.disabled = false;
+                        btn.innerHTML = 'Iniciar Sesión <i class="fa-solid fa-arrow-right"></i>';
                     }
 
-                    // --- AQUÍ VALIDAMOS QUÉ PANTALLA MOSTRAR ---
-                    if (res.invEstado === "Respondido") {
-                        
-                        myModal.hide(); 
-                        
-                        setTimeout(() => {
-                            Swal.fire({
-                                title: '¡Información ya enviada!',
-                                text: 'Usted ya completó su expediente. Si desea corregir algún dato, haga clic en "Modificar mis datos".',
-                                icon: 'info',
-                                showCancelButton: true,
-                                confirmButtonText: 'Modificar mis datos',
-                                cancelButtonText: 'Cerrar',
-                                confirmButtonColor: '#002D62',
-                                allowOutsideClick: false
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    // LO LLEVAMOS DIRECTO AL PASO 2 (Y ya no se le exige PDF)
-                                    goNext(2);
-                                } else {
-                                    document.getElementById('docenteWizard').style.display = 'none';
-                                    document.querySelector('.stepper-wrapper').style.display = 'none';
-                                }
-                            });
-                        }, 400);
+                } else if (response.status === "inactive") {
+                    alert(response.message); // Muestra: "Este usuario no tiene acceso al sistema."
+                    btn.disabled = false;
+                    btn.innerHTML = 'Iniciar Sesión <i class="fa-solid fa-arrow-right"></i>';
 
-                    } else {
-                        
-                        // SI NO HA ENVIADO:
-                        let nombreAMostrar = "";
-                        if (nombreUrl) nombreAMostrar = decodeURIComponent(nombreUrl).split(" ")[0];
-                        else if (res.data.nombres) nombreAMostrar = res.data.nombres.split(" ")[0];
-
-                        if (nombreAMostrar) document.getElementById('welcomeName').innerText = "¡Hola, " + nombreAMostrar + "!";
-                        
-                        document.getElementById('welcomeLoading').style.display = 'none';
-                        document.getElementById('welcomeContent').style.display = 'block';
-                        const btn = document.getElementById('btnComenzar'); 
-                        btn.classList.remove('disabled'); 
-                        btn.style.opacity = '1';
-
-                        // Si tiene borrador pendiente, lo mandamos al paso 2
-                        if (iaListo) goNext(2);
-                    }
+                } else {
+                    // Si el status es "error" (usuario o clave mal)
+                    alert("Usuario o contraseña incorrectos.");
+                    btn.disabled = false;
+                    btn.innerHTML = 'Iniciar Sesión <i class="fa-solid fa-arrow-right"></i>';
                 }
-            }).catch(e => console.log(e));
-        }
-    });
-
-    function changeFontSize(n) {
-        const root = document.documentElement;
-        let current = parseInt(getComputedStyle(root).getPropertyValue('--base-font'));
-        root.style.setProperty('--base-font', (current + n) + 'px');
-    }
-
-    function addEduField() {
-        const container = document.getElementById('edu-container');
-        const div = document.createElement('div');
-        div.className = 'edu-card edu-item bg-light border-primary border-opacity-25';
-        div.innerHTML = `
-            <button type="button" class="btn-remove-edu" onclick="this.parentElement.remove()">Eliminar</button>
-            <div class="row g-3"><div class="col-md-12"><label>Grado *</label><select class="form-select grado-select" required><option value="">Seleccione...</option><option>Bachelor</option><option>Master</option><option>Doctorado</option></select></div>
-            <div class="col-md-6"><label>Diploma *</label><input type="file" class="form-control diploma-file" required></div>
-            <div class="col-md-6"><label>Transcript</label><input type="file" class="form-control transcript-file"></div></div>`;
-        container.appendChild(div);
-    }
-
-    function addExpField(data = {}) {
-        const container = document.getElementById('experience-results-container');
-        const div = document.createElement('div');
-        div.className = 'edu-card shadow-sm bg-white exp-item mb-4';
-
-        const esActualidad = data.fin === "Actualidad" || data.fin === "";
-        const finVal = esActualidad ? "" : (data.fin || "");
-
-        div.innerHTML = `
-            <button type="button" class="btn-remove-edu" onclick="this.parentElement.remove()">Eliminar</button>
-            <div class="row g-3">
-                <div class="col-md-6"><label>Empresa</label><input type="text" class="form-control exp-empresa" value="${data.empresa || ''}" required></div>
-                <div class="col-md-6"><label>Cargo</label><input type="text" class="form-control exp-cargo" value="${data.cargo || ''}" required></div>
-                <div class="col-md-12"><label>Área de enseñanza (*Solo si enseñó)</label><input type="text" class="form-control exp-area" value="${data.area_ensenanza || ''}"></div>
-                <div class="col-md-12"><label>Dirección (Calle, Ciudad/Pais, Opcional: Código postal)</label><input type="text" class="form-control exp-direccion" value="${data.direccion || ''}" required></div>
-                <div class="col-md-6"><label>Inicio</label><input type="month" class="form-control exp-inicio" value="${data.inicio || ''}" required></div>
-                <div class="col-md-6">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <label>Culminación</label>
-                        <div class="form-check form-switch">
-                            <input class="form-check-input exp-actualidad-check" type="checkbox" ${esActualidad ? 'checked' : ''} onchange="toggleFin(this)">
-                            <label class="form-check-label small fw-bold text-primary">Actualidad</label>
-                        </div>
-                    </div>
-                    <input type="month" class="form-control exp-fin" value="${finVal}" ${esActualidad ? 'disabled' : 'required'}>
-                </div>
-            </div>`;
-        container.appendChild(div);
-    }
-
-    const toB64 = f => new Promise((res) => {
-        const r = new FileReader(); r.readAsDataURL(f);
-        r.onload = () => res({ base64: r.result.split(',')[1], name: f.name, type: f.type });
-    });
-
-    async function subirArchivoYRegistrar(file) {
-        if (!file) return null;
-        const b64 = await toB64(file);
-        const resp = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "get_url", file: b64.base64, name: b64.name, type: b64.type }) }).then(r => r.json());
-        fileIdsToMove.push(resp.fileId);
-        return resp.url;
-    }
-
-    async function procesarIA() {
-        const step1 = document.getElementById('step-1');
-        const requiredFields = step1.querySelectorAll('[required]');
-        let valid = true;
-        requiredFields.forEach(f => { if(!f.checkValidity()){ f.reportValidity(); valid = false; }});
-        if (!valid) return;
-    
-        // Avanza al paso 2 mientras la IA corre en el fondo
-        goNext(2);
-        iaListo = false;
-        procesandoIA = true; 
-        fileIdsToMove =[];
-
-        try {
-            // 1. Subir CV y Handbook SOLO SI SON NUEVOS
-            const nuevoCvFile = document.getElementById('cv_file').files[0];
-            if (nuevoCvFile) {
-                urlCVFinal = await subirArchivoYRegistrar(nuevoCvFile);
-                
-                // Si subió un nuevo CV, la IA vuelve a extraer la experiencia
-                const teacherId = document.getElementById('id_documento').value;
-                const n8nCv = await fetch(N8N_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ fileUrl: urlCVFinal, id: docenteIdInterno, grado: "CV" })}).then(r=>r.json());
-                let cvText = (n8nCv.content && n8nCv.content[0]) ? n8nCv.content[0].text : (Array.isArray(n8nCv) && n8nCv[0]?.content ? n8nCv[0].content[0].text : n8nCv);
-                if (typeof cvText !== 'string' && cvText.text) cvText = cvText.text;
-                let parsedCv = typeof cvText === 'string' ? JSON.parse(cvText.replace(/```json|```/g, "")) : cvText;
-                (parsedCv.experiencias ||[]).forEach(e => addExpField(e));
-            }
-
-            const nuevoHandbookFile = document.getElementById('handbook_file').files[0];
-            if (nuevoHandbookFile) {
-                urlHandbookFinal = await subirArchivoYRegistrar(nuevoHandbookFile);
-            }
-
-            // 2. Subir Diplomas SOLO SI HAY ARCHIVOS SELECCIONADOS
-            const diplomaItems = document.querySelectorAll('.edu-item');
-            for (let item of diplomaItems) {
-                const dipFile = item.querySelector('.diploma-file').files[0];
-                if (!dipFile) continue; // ¡AQUÍ ESTÁ LA MAGIA! Si el campo está vacío, lo salta sin causar error.
-                
-                const transFile = item.querySelector('.transcript-file').files[0];
-                const diplomaUrl = await subirArchivoYRegistrar(dipFile);
-                if(transFile) await subirArchivoYRegistrar(transFile);
-
-                const currentGrado = item.querySelector('.grado-select').value;
-                const n8nDip = await fetch(N8N_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ fileUrl: diplomaUrl, id: docenteIdInterno, grado: currentGrado })}).then(r=>r.json());
-
-                let dipText = (n8nDip.content && n8nDip.content[0]) ? n8nDip.content[0].text : n8nDip;
-                let data = typeof dipText === 'string' ? JSON.parse(dipText.replace(/```json|```/g, "")) : dipText;
-
-                document.getElementById('ai-results-container').insertAdjacentHTML('beforeend', 
-                `<div class="edu-card shadow-sm bg-white ai-edu-record" data-grado="${currentGrado}" data-url="${diplomaUrl}">
-                    <h6 class="fw-bold text-primary">Grado: ${currentGrado}</h6>
-                    <div class="row g-3">
-                        <div class="col-md-6"><label>Carrera *</label><input type="text" class="form-control ai-rama" value="${data.carrera||''}" required></div>
-                        <div class="col-md-6"><label>Institución *</label><input type="text" class="form-control ai-institucion" value="${data.instituto||''}" required></div>
-                        <div class="col-md-6"><label>Ubicacion (Ciudad, País) *</label><input type="text" class="form-control ai-ubicacion" value="${data.ubicacion||''}" required></div>
-                        <div class="col-md-3"><label>Inicio *</label><input type="month" class="form-control ai-inicio" value="${data.fecha_inicio||''}" required></div>
-                        <div class="col-md-3"><label>Fin *</label><input type="month" class="form-control ai-fin" value="${data.fecha_fin||''}" required></div>
-                    </div>
-                </div>`);
-            }
-
-            // -----------------------------------------------------
-
-            iaListo = true;
-            
-            document.getElementById('step3-processing').style.display = 'none';
-            document.getElementById('step3-content').style.display = 'block';
-
-            // --- AUTO-GUARDAR BORRADOR EN SEGUNDO PLANO ---
-            const draftPayload = {
-                action: "save_draft_step1",
-                docente: { id: docenteIdInterno, id_invitacion: invitacionIdInterno, url_cv: urlCVFinal, url_handbook: urlHandbookFinal },
-                educacion: Array.from(document.querySelectorAll('.ai-edu-record')).map(r => ({
-                    grado: r.dataset.grado, rama: r.querySelector('.ai-rama').value, instituto: r.querySelector('.ai-institucion').value,
-                    ubicacion: r.querySelector('.ai-ubicacion').value, inicio: r.querySelector('.ai-inicio').value, fin: r.querySelector('.ai-fin').value, url_diploma: r.dataset.url
-                })),
-                experiencia: Array.from(document.querySelectorAll('.exp-item')).map(i => ({
-                    empresa: i.querySelector('.exp-empresa').value, cargo: i.querySelector('.exp-cargo').value, area: i.querySelector('.exp-area').value,
-                    direccion: i.querySelector('.exp-direccion').value, inicio: i.querySelector('.exp-inicio').value, 
-                    fin: i.querySelector('.exp-actualidad-check').checked ? "Actualidad" : i.querySelector('.exp-fin').value
-                }))
-            };
-            fetch(GAS_URL, { method: 'POST', body: JSON.stringify(draftPayload) });
-            // -----------------------------------------------------
-
-        } catch (e) { 
-            console.error(e); 
-            iaListo = true; 
-            // Si la IA falla, le mostramos el paso 3 vacío para que lo llene manual
-            document.getElementById('step3-processing').style.display = 'none';
-            document.getElementById('step3-content').style.display = 'block';
-        }
-    }
-
-    function verificarIAParaPaso3() {
-        const requiredFields = document.getElementById('step-2').querySelectorAll('[required]');
-        let valid = true;
-        requiredFields.forEach(f => { if(!f.checkValidity()){ f.reportValidity(); valid = false; }});
-        if (!valid) return;
-
-        // NUEVO: Validar que el celular sea correcto
-        if (!iti.isValidNumber()) {
-            Swal.fire('Número de celular inválido', 'Por favor, ingresa un número de celular válido para el país seleccionado.', 'warning');
-            return;
-        }
-        
-        goNext(3); // Pasa al paso 3 de inmediato para que el profesor fluya rápido
-        
-        // UX: Si la IA de n8n aún no termina, mostramos el spinner interno
-        if (!iaListo) {
-            document.getElementById('step3-processing').style.display = 'block';
-            document.getElementById('step3-content').style.display = 'none';
-        } else {
-            // Si ya terminó, mostramos los datos normales
-            document.getElementById('step3-processing').style.display = 'none';
-            document.getElementById('step3-content').style.display = 'block';
-        }
-    }
-
-    function toggleFin(checkbox) {
-        const input = checkbox.closest('.row').querySelector('.exp-fin');
-        input.disabled = checkbox.checked;
-        if (checkbox.checked) { input.value = ""; input.required = false; } else { input.required = true; }
-    }
-
-    function goNext(n) {
-        document.querySelectorAll('.form-section').forEach( s => s.classList.remove('active'));
-        document.getElementById('step-' + n).classList.add('active');
-        document.querySelectorAll('.step-item').forEach((s, i) => { s.classList.toggle('active', i+1===n); s.classList.toggle('completed', i+1<n); } );
-        window.scrollTo(0,0);
-    } 
-
-    function goBack(n) { goNext(n); }
-
-    document.getElementById('docenteWizard').addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const inputsStep3 = document.getElementById('step-3').querySelectorAll('[required]');
-        let valid = true;
-        inputsStep3.forEach(i => { if(!i.value && !i.disabled){ i.classList.add('missing-data-field'); valid = false; } else { i.classList.remove('missing-data-field'); } });
-        if(!valid) { alert("Complete los campos obligatorios."); return; }
-
-        document.getElementById('loading-overlay').style.display = 'flex';
-        document.getElementById('loading-title').innerText = "GUARDANDO...";
-
-        const payload = {
-            docente: {
-                id: docenteIdInterno,
-                id_invitacion: invitacionIdInterno,
-                dni: document.getElementById('id_documento').value, 
-                nombres: document.getElementById('nombres').value,
-                apellidos: document.getElementById('apellidos').value,
-                correo: document.getElementById('correo').value,
-                celular: iti.getNumber(),
-                pais: document.getElementById('pais').value, // <-- NUEVO
-                cp: document.getElementById('codigo_postal').value,
-                direccion: document.getElementById('direccion').value,
-                banco: document.getElementById('banco').value,
-                tipo_cuenta: document.getElementById('tipo_cuenta').value, 
-                cuenta: document.getElementById('cuenta').value,
-                cci: document.getElementById('cci').value,
-                // --- DOS CAMPOS NUEVOS AÑADIDOS AQUI ---
-                dia_clase: document.getElementById('dia_clase').value,
-                hora_clase: document.getElementById('hora_clase').value,
-                // ---------------------------------------
-                url_cv: urlCVFinal,
-                url_handbook: urlHandbookFinal
-            },
-            habilidades: {
-                tecnologia: document.getElementById('hab_tecnologia').value,
-                idiomas: document.getElementById('hab_idiomas').value,
-                sociales: document.getElementById('hab_sociales').value
-            },
-            educacion: Array.from(document.querySelectorAll('.ai-edu-record')).map(r => ({
-                grado: r.dataset.grado, 
-                rama: r.querySelector('.ai-rama').value,
-                instituto: r.querySelector('.ai-institucion').value,
-                ubicacion: r.querySelector('.ai-ubicacion').value,
-                inicio: r.querySelector('.ai-inicio').value,
-                fin: r.querySelector('.ai-fin').value,
-                url_diploma: r.dataset.url
-            })),
-            experiencia: Array.from(document.querySelectorAll('.exp-item')).map(i => ({
-                empresa: i.querySelector('.exp-empresa').value, 
-                cargo: i.querySelector('.exp-cargo').value, 
-                area: i.querySelector('.exp-area').value,
-                direccion: i.querySelector('.exp-direccion').value,
-                inicio: i.querySelector('.exp-inicio').value, 
-                fin: i.querySelector('.exp-actualidad-check').checked ? "Actualidad" : i.querySelector('.exp-fin').value
-            })),
-            fileIdsToMove: fileIdsToMove
-        };
-
-        try {
-            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
-            
-            procesandoIA = false; 
-
-            Swal.fire({
-                title: '¡Expediente Recibido!',
-                html: `Muchas gracias por completar su información, <strong>${document.getElementById('nombres').value}</strong>.<br><br>La ejecutiva a cargo verificará su data y se comunicará con usted a la brevedad.`,
-                icon: 'success',
-                confirmButtonColor: '#002D62',
-                confirmButtonText: 'Finalizar',
-                allowOutsideClick: false
-            }).then(() => {
-                location.reload(); // Recarga para limpiar todo
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Error de conexión con el servidor. Por favor intenta de nuevo.");
+                btn.disabled = false;
+                btn.innerHTML = 'Iniciar Sesión <i class="fa-solid fa-arrow-right"></i>';
             });
-
-        } catch (err) { 
-            Swal.fire('Error', 'Hubo un problema al conectar con el servidor.', 'error');
-        } finally { 
-            document.getElementById('loading-overlay').style.display = 'none'; 
-        }
-    });
-</script>
+        };
+    </script>
 </body>
 </html>
