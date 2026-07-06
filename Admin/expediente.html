@@ -575,12 +575,13 @@
             document.getElementById('sidebar').classList.toggle('collapsed');
         }
 
-        function logout() {
-            if(confirm("¿Cerrar sesión?")) {
-                sessionStorage.clear();
-                window.location.href = "../index.html";
-            }
+        function logout() { 
+            if(confirm("¿Cerrar sesión?")) { 
+                localStorage.clear(); 
+                window.location.href = "../index.html"; 
+            } 
         }
+
 
         function changeFontSize(dir) {
             // Tu lógica existente de cambio de fuente
