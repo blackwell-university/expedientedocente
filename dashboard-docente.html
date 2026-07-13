@@ -184,12 +184,21 @@
         .card-slider::-webkit-scrollbar { display: none; }
         
         .app-card {
-            min-width: 260px; border-radius: var(--card-radius); padding: 22px;
+            min-width: 260px; max-width: 340px; border-radius: var(--card-radius); padding: 22px;
             scroll-snap-align: start; display: flex; flex-direction: column; justify-content: space-between;
             position: relative; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.04);
         }
         .app-card-blue { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; }
         .app-card-dark { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white; }
+
+        /* --- SKELETON DE CARGA (mientras se obtienen los datos reales) --- */
+        @keyframes skeletonPulse { 0% { opacity: 0.55; } 50% { opacity: 1; } 100% { opacity: 0.55; } }
+        .app-card-skeleton { background: white; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+        .skeleton-line, .skeleton-text {
+            background: #e2e8f0; border-radius: 6px; animation: skeletonPulse 1.3s ease-in-out infinite;
+            display: inline-block;
+        }
+        .skeleton-text { width: 30px; height: 1.2em; vertical-align: middle; }
         
         .card-pill { background: rgba(255,255,255,0.2); backdrop-filter: blur(5px); padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; display: inline-block; margin-bottom: 15px; width: fit-content; text-transform: uppercase; letter-spacing: 0.5px; }
         .app-card h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 25px; line-height: 1.3; }
@@ -271,7 +280,7 @@
 
         @media (min-width: 769px) {
             .card-slider { overflow-x: visible; flex-wrap: wrap; }
-            .app-card { min-width: 300px; flex: 1; }
+            .app-card { min-width: 300px; max-width: 340px; flex: 0 1 320px; }
             .mobile-header { display: none; }
             .kpi-grid { grid-template-columns: repeat(4, 1fr); }
         }
@@ -368,65 +377,33 @@
                 <div class="kpi-grid">
                     <div class="kpi-card">
                         <div class="kpi-icon blue"><i class="fa-solid fa-chalkboard-user"></i></div>
-                        <div class="kpi-val">3</div>
+                        <div class="kpi-val skeleton-text" id="kpiCursosVal">&nbsp;</div>
                         <div class="kpi-label">Cursos Asignados</div>
                     </div>
                     <div class="kpi-card">
                         <div class="kpi-icon yellow"><i class="fa-regular fa-file-lines"></i></div>
-                        <div class="kpi-val text-warning">0</div>
+                        <div class="kpi-val text-warning skeleton-text" id="kpiDocsVal">&nbsp;</div>
                         <div class="kpi-label">Docs Pendientes</div>
                     </div>
                 </div>
 
                 <!-- SECCIÓN: PRÓXIMAS CLASES (Estilo Priority Cards Horizontal) -->
                 <h3 class="section-title">Próximas Clases</h3>
-                <div class="card-slider">
-                    
-                    <!-- Tarjeta Azul -->
-                    <div class="app-card app-card-blue">
-                        <div class="card-top">
-                            <div class="card-pill">Hoy</div>
-                            <!-- Botón Aula Virtual -->
-                            <a href="enlace-a-tu-aula-1.html" class="btn-aula">
-                                <i class="fa-solid fa-video"></i> Aula Virtual
-                            </a>
-                        </div>
-                        <h3>Inteligencia Artificial</h3>
-                        <div class="app-card-footer">
-                            <div><i class="fa-regular fa-comments"></i> 24 Alumnos</div>
-                            <div><i class="fa-regular fa-clock"></i> 18:00 hrs</div>
+                <div class="card-slider" id="cardSliderCursos">
+                    <!-- Skeleton de carga: se reemplaza por datos reales en cargarCursosReales() -->
+                    <div class="app-card app-card-skeleton">
+                        <div class="skeleton-line" style="width: 40%; height: 20px; border-radius: 20px;"></div>
+                        <div class="skeleton-line" style="width: 70%; height: 22px; margin-top: 20px;"></div>
+                        <div class="app-card-footer" style="border-top: 1px solid rgba(0,0,0,0.05);">
+                            <div class="skeleton-line" style="width: 90px; height: 14px;"></div>
+                            <div class="skeleton-line" style="width: 70px; height: 14px;"></div>
                         </div>
                     </div>
-
-                    <!-- Tarjeta Oscura -->
-                    <div class="app-card app-card-dark">
-                        <div class="card-top">
-                            <div class="card-pill">Mañana</div>
-                            <!-- Botón Aula Virtual -->
-                            <a href="enlace-a-tu-aula-2.html" class="btn-aula">
-                                <i class="fa-solid fa-video"></i> Aula Virtual
-                            </a>
-                        </div>
-                        <h3>Metodología de la Investigación</h3>
-                        <div class="app-card-footer">
-                            <div><i class="fa-regular fa-comments"></i> 18 Alumnos</div>
-                            <div><i class="fa-regular fa-clock"></i> 20:00 hrs</div>
-                        </div>
-                    </div>
-
                 </div>
 
                 <!-- SECCIÓN: ATAJOS RÁPIDOS (Reemplazo de Actividad Reciente, estilo "Popular Language") -->
                 <h3 class="section-title">Atajos Docente</h3>
                 <div class="shortcut-list">
-                    
-                    <a href="#" class="shortcut-item">
-                        <div class="shortcut-left">
-                            <div class="shortcut-icon bg-orange">RN</div>
-                            <span class="shortcut-text">Revisar Notas</span>
-                        </div>
-                        <i class="fa-solid fa-arrow-right shortcut-arrow"></i>
-                    </a>
 
                     <a href="#" class="shortcut-item">
                         <div class="shortcut-left">
@@ -436,13 +413,6 @@
                         <i class="fa-solid fa-arrow-right shortcut-arrow"></i>
                     </a>
 
-                    <a href="#" class="shortcut-item">
-                        <div class="shortcut-left">
-                            <div class="shortcut-icon bg-green">SS</div>
-                            <span class="shortcut-text">Subir Sílabo</span>
-                        </div>
-                        <i class="fa-solid fa-arrow-right shortcut-arrow"></i>
-                    </a>
 
                     <a href="misexpedientes.html" class="shortcut-item">
                         <div class="shortcut-left">
@@ -457,6 +427,22 @@
             </div>
         </div>
     </main>
+
+    <div class="modal" id="modalCambioPassword" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">Actualiza tu contraseña</h5></div>
+        <div class="modal-body">
+            <p>Por seguridad, establece una nueva contraseña antes de continuar.</p>
+            <input type="password" id="nuevaPass1" class="form-control mb-2" placeholder="Nueva contraseña">
+            <input type="password" id="nuevaPass2" class="form-control" placeholder="Confirma tu contraseña">
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" onclick="guardarNuevaPassword()">Guardar</button>
+        </div>
+        </div>
+    </div>
+    </div>
 
     <!-- MODAL DE BIENVENIDA -->
     <div class="modal fade modal-modern" id="modalBienvenida" tabindex="-1" aria-hidden="true">
@@ -539,8 +525,188 @@
             const idDocente = localStorage.getItem('userId') || localStorage.getItem('userName');
             if (idDocente) {
                 verificarDocenteNuevo(idDocente); 
+                cargarCursosReales(idDocente);
+            }
+
+            // Si el docente tiene Acceso = "0" (primer ingreso), forzamos el cambio de contraseña
+            const acceso = localStorage.getItem('userAcceso');
+            if (acceso === "0") {
+                const modalPass = new bootstrap.Modal(document.getElementById('modalCambioPassword'));
+                modalPass.show();
+            }
+
+            if (localStorage.getItem('userAcceso') === '0') {
+                new bootstrap.Modal(document.getElementById('modalCambioPassword')).show();
             }
         });
+
+        // --- CAMBIO DE CONTRASEÑA OBLIGATORIO (PRIMER INGRESO) ---
+        document.getElementById('formCambioPassword').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const nueva = document.getElementById('nuevaPassword').value.trim();
+            const confirmar = document.getElementById('confirmarPassword').value.trim();
+            const errorMsg = document.getElementById('passwordErrorMsg');
+            errorMsg.style.display = 'none';
+
+            if (nueva !== confirmar) {
+                errorMsg.innerText = 'Las contraseñas no coinciden.';
+                errorMsg.style.display = 'block';
+                return;
+            }
+            if (nueva.length < 6) {
+                errorMsg.innerText = 'La contraseña debe tener al menos 6 caracteres.';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            const btn = document.getElementById('btnGuardarPassword');
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Guardando...`;
+
+            const idDocente = localStorage.getItem('userId') || localStorage.getItem('userName');
+
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'update_password', idDocente: idDocente, nuevaPassword: nueva })
+                });
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    localStorage.setItem('userAcceso', '1');
+                    const modalEl = document.getElementById('modalCambioPassword');
+                    bootstrap.Modal.getInstance(modalEl).hide();
+                } else {
+                    errorMsg.innerText = result.message || 'No se pudo actualizar la contraseña.';
+                    errorMsg.style.display = 'block';
+                }
+            } catch (err) {
+                errorMsg.innerText = 'Error de conexión con el servidor. Intenta de nuevo.';
+                errorMsg.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+        });
+
+        function guardarNuevaPassword() {
+            const p1 = document.getElementById('nuevaPass1').value.trim();
+            const p2 = document.getElementById('nuevaPass2').value.trim();
+            if (p1.length < 6) return alert('La contraseña debe tener al menos 6 caracteres.');
+            if (p1 !== p2) return alert('Las contraseñas no coinciden.');
+
+            fetch(WEB_APP_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'update_password', idDocente: localStorage.getItem('userId'), nuevaPassword: p1 })
+            }).then(r => r.json()).then(res => {
+                if (res.status === 'success') {
+                localStorage.setItem('userAcceso', '1');
+                bootstrap.Modal.getInstance(document.getElementById('modalCambioPassword')).hide();
+                } else {
+                alert('No se pudo actualizar la contraseña.');
+                }
+            });
+            }
+
+        function obtenerProximaSesion(c) {
+            const segmentos = (c.horaElegida || '').split('|').map(s => s.trim()).filter(Boolean);
+            const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+            let candidatas = [];
+
+            segmentos.forEach(seg => {
+                const match = seg.match(/(\d{2})\/(\d{2})\/(\d{4})\s*:\s*(.+)/);
+                if (match) {
+                    const [, dd, mm, yyyy, rangoHora] = match;
+                    candidatas.push({
+                        fecha: new Date(parseInt(yyyy), parseInt(mm) - 1, parseInt(dd)),
+                        textoFecha: `${dd}/${mm}/${yyyy}`,
+                        hora: rangoHora
+                    });
+                }
+            });
+
+            candidatas.sort((a, b) => a.fecha - b.fecha);
+            const futuras = candidatas.filter(s => s.fecha >= hoy);
+
+            if (futuras.length > 0) {
+                return { fecha: futuras[0].textoFecha, hora: futuras[0].hora, hayFecha: true };
+            }
+            // Ya no hay sesiones futuras: mostramos solo la franja horaria general del curso
+            return { fecha: null, hora: c.franjas || c.horaElegida || 'Por confirmar', hayFecha: false };
+        }
+
+        // --- CARGA DE CURSOS/CLASES REALES  ---
+        async function cargarCursosReales(idDocente) {
+            const slider = document.getElementById('cardSliderCursos');
+            const kpiCursos = document.getElementById('kpiCursosVal');
+            const kpiDocs = document.getElementById('kpiDocsVal');
+
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'get_mis_cursos', docenteId: idDocente })
+                });
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    const cursos = result.data || [];
+
+                    if (kpiCursos) {
+                        kpiCursos.classList.remove('skeleton-text');
+                        kpiCursos.innerText = cursos.length;
+                    }
+
+                    if (cursos.length === 0) {
+                        slider.innerHTML = `
+                            <div class="text-center w-100 py-5" style="background: white; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+                                <i class="fa-regular fa-calendar-xmark mb-3" style="font-size: 2.2rem; color: #cbd5e1;"></i>
+                                <p class="text-muted fw-semibold m-0">Aún no tienes cursos asignados</p>
+                                <p class="text-muted small m-0">Cuando la universidad te asigne un curso, aparecerá aquí.</p>
+                            </div>`;
+                    } else {
+                        const paletas = ['app-card-blue', 'app-card-dark'];
+                        slider.innerHTML = cursos.slice(0, 6).map((c, idx) => {
+                            const clase = paletas[idx % paletas.length];
+                            const sesion = obtenerProximaSesion(c);
+                            const etiqueta = sesion.hayFecha ? 'Próxima clase' : (c.programaTipo || 'Curso');
+                            return `
+                            <div class="app-card ${clase}">
+                                <div class="card-top">
+                                    <div class="card-pill">${etiqueta}</div>
+                                </div>
+                                <h3>${c.cursoNombre || 'Curso sin nombre'}</h3>
+                                <div class="app-card-footer">
+                                    ${sesion.hayFecha ? `<div><i class="fa-regular fa-calendar"></i> ${sesion.fecha}</div>` : ''}
+                                    <div><i class="fa-regular fa-clock"></i> ${sesion.hora}</div>
+                                </div>
+                            </div>`;
+                        }).join('');
+                    }
+                }
+            } catch (e) {
+                console.error("Error al cargar cursos reales:", e);
+                slider.innerHTML = `<div class="text-center w-100 py-4 text-danger small">No se pudieron cargar tus cursos. Intenta recargar la página.</div>`;
+            }
+
+            // Docs Pendientes: se basa en expedientes que aún no están 100% completados
+            try {
+                const respExp = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'get_expedientes_docente', docenteId: idDocente })
+                });
+                const resultExp = await respExp.json();
+                if (resultExp.status === 'success' && kpiDocs) {
+                    const pendientes = (resultExp.data || []).filter(e => e.estado !== 'Completado').length;
+                    kpiDocs.classList.remove('skeleton-text');
+                    kpiDocs.innerText = pendientes;
+                }
+            } catch (e) {
+                console.error("Error al cargar expedientes:", e);
+                if (kpiDocs) { kpiDocs.classList.remove('skeleton-text'); kpiDocs.innerText = '–'; }
+            }
+        }
 
         // --- 3. VERIFICACIÓN DOCENTE BASE DE DATOS ---
         async function verificarDocenteNuevo(userId) {

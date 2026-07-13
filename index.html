@@ -196,6 +196,8 @@
                     localStorage.setItem('isLoggedIn', 'true');
                     localStorage.setItem('userId', response.userId);   
                     localStorage.setItem('userName', response.userName); 
+                    // Guardamos el estado de acceso ("0" = primer ingreso, debe cambiar su contraseña)
+                    localStorage.setItem('userAcceso', response.acceso !== undefined ? String(response.acceso) : "1");
 
                     if (rolAsignado === 'DOCENTE') {
                         localStorage.setItem('userRole', 'Docente');

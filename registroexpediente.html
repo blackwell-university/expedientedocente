@@ -2279,7 +2279,13 @@
                     // Desplegar automáticamente los inputs si se autoseleccionó
                     if (isAutoSelected) {
                         selectedInvitationId = inv.id;
-                        setTimeout(() => document.getElementById('horario-container').style.display = 'block', 50);
+                        setTimeout(() => {
+                            document.getElementById('horario-container').style.display = 'block';
+                            // FIX: antes solo se mostraba el contenedor pero nunca se generaba
+                            // el calendario, por eso el docente tenía que volver a hacer clic
+                            // en la tarjeta del curso para que aparecieran los días.
+                            initScheduleWidget(inv);
+                        }, 50);
                     }
                 });
                 lista.innerHTML = html;
@@ -2442,6 +2448,13 @@
                             if (!currentGrado) { alert("Selecciona el Nivel de Grado en todos los campos."); btnNext.disabled=false; btnNext.innerHTML=originalHTML; return; }
                             if (!dipFile) { alert("Falta subir el archivo PDF del Diploma."); btnNext.disabled=false; btnNext.innerHTML=originalHTML; return; }
 
+                            // FIX: generamos (o reutilizamos) un ID único de diploma ANTES de guardar,
+                            // así el backend nunca tiene que "adivinar" un ID nuevo y n8n puede
+                            // devolver la extracción exactamente a esta fila (no por "grado", que puede
+                            // repetirse si hay 2 diplomas del mismo nivel).
+                            const idDipGenerado = item.dataset.id || ("DIP-" + new Date().getTime().toString().slice(-6) + Math.floor(Math.random() * 100));
+                            item.dataset.id = idDipGenerado;
+
                             const b64Dip = await getBase64(dipFile);
                             const resDip = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Dip, name: dipFile.name, type: dipFile.type, idExpediente: idExpedienteUrl }) }).then(r => r.json());
 
@@ -2453,12 +2466,12 @@
                             }
 
                             diplomasParaGuardar.push({
-                                id_diploma: item.dataset.id || null, // Mantiene el ID si estaba editando
+                                id_diploma: idDipGenerado,
                                 grado: currentGrado, url_diploma: resDip.url, url_transcript: urlTrans, estado: "Subido"
                             });
 
-                            // Enviar al Webhook de N8N (Es un documento nuevo/editado)
-                            fetch(N8N_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: "extract_diploma", fileUrl: resDip.url, idDocente: userId, idExpediente: idExpedienteUrl, grado: currentGrado }) }).catch(e => console.log(e));
+                            // Enviar al Webhook de N8N (Es un documento nuevo/editado) - incluye idDiploma para que la respuesta se guarde en la fila exacta
+                            fetch(N8N_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: "extract_diploma", fileUrl: resDip.url, idDocente: userId, idExpediente: idExpedienteUrl, idDiploma: idDipGenerado, grado: currentGrado }) }).catch(e => console.log(e));
 
                         } else {
                             // MODO LECTURA (Ya estaban guardados en BD)
@@ -2473,7 +2486,7 @@
                             
                             // LÓGICA CLAVE: Si ya estaba guardado pero se quedó en "Subido", mandamos a N8N otra vez. Si dice "Procesado", lo ignora y avanza.
                             if (estadoItem.toLowerCase() === "subido") {
-                                fetch(N8N_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: "extract_diploma", fileUrl: item.dataset.url, idDocente: userId, idExpediente: idExpedienteUrl, grado: item.dataset.grado }) }).catch(e => console.log(e));
+                                fetch(N8N_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: "extract_diploma", fileUrl: item.dataset.url, idDocente: userId, idExpediente: idExpedienteUrl, idDiploma: item.dataset.id, grado: item.dataset.grado }) }).catch(e => console.log(e));
                             }
                         }
                     }
@@ -2829,7 +2842,7 @@
                 } else {
                     todosProcesados = false;
                 }
-                // NUEVA LÓGICA: Verificar que el CV también esté Procesado para dejarlo entrar
+
                 const cvContainer = document.getElementById('cv-status-container');
                 if (cvContainer) {
                     const cvEstado = (cvContainer.dataset.estado || "").toLowerCase();
@@ -3135,38 +3148,16 @@
             const step2Listo = document.getElementById('tab-2').classList.contains('completed');
             const tab6 = document.getElementById('tab-6');
 
-            // NUEVA LÓGICA: Verificar que todos los diplomas estén "Procesados"
-            let todosProcesados = true;
-            const diplomas = document.querySelectorAll('.diploma-item.view-mode-dip');
-            
-            if (diplomas.length === 0) {
-                todosProcesados = false; // Si no hay diplomas, no puede estar listo
-            } else {
-                diplomas.forEach(dip => {
-                    const estado = (dip.dataset.estado || "").toLowerCase();
-                    if (estado !== 'procesado' && estado !== 'completado') {
-                        todosProcesados = false;
-                    }
-                });                
-            }
-            // NUEVA LÓGICA: Verificar que el CV también esté Procesado
-            const cvContainer = document.getElementById('cv-status-container');
-            if (cvContainer) {
-                const cvEstado = (cvContainer.dataset.estado || "").toLowerCase();
-                if (cvEstado !== 'procesado' && cvEstado !== 'completado') {
-                    todosProcesados = false;
-                }
-            }
-
-            // Solo se quita el candado si Paso 1, Paso 2 y el Procesamiento están listos
-           if (step1Listo && step2Listo && todosProcesados) {
+            // Ya no exigimos "Procesado por IA" como condición de bloqueo,
+            // basta con que Paso 1 (CV/Handbook subidos) y Paso 2 (diplomas) estén completos.
+            if (step1Listo && step2Listo) {
                 tab6.classList.remove('step-locked');
                 const icon = tab6.querySelector('.default-icon');
-                if(icon) icon.className = 'fa-solid fa-file-signature default-icon';
+                if (icon) icon.className = 'fa-solid fa-file-signature default-icon';
             } else {
                 tab6.classList.add('step-locked');
                 const icon = tab6.querySelector('.default-icon');
-                if(icon) icon.className = 'fa-solid fa-lock default-icon';
+                if (icon) icon.className = 'fa-solid fa-lock default-icon';
             }
         }
 

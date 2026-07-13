@@ -189,10 +189,11 @@
             font-weight: 600; font-size: 14px; color: #334155; margin-bottom: 10px;
         }
 
+        /* --- ESTANDARIZACIÓN GLOBAL DE INPUTS Y BOTONES (UX/UI uniforme) --- */
         .form-control {
-            border-radius: 14px; padding: 14px 18px;
+            border-radius: 12px; padding: 11px 16px;
             border: 1px solid #e2e8f0; background: #f8fafc;
-            font-size: 15px; color: var(--text-main); transition: var(--transition);
+            font-size: 0.9rem; color: var(--text-main); transition: var(--transition);
         }
 
         .form-control:focus {
@@ -200,10 +201,13 @@
             box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
         }
 
+        .btn-primary, .btn-light {
+            border-radius: 12px; padding: 11px 22px;
+            font-weight: 700; font-size: 0.875rem; transition: var(--transition);
+        }
+
         .btn-primary {
             background: var(--primary); border: none;
-            border-radius: 14px; padding: 14px 32px;
-            font-weight: 700; font-size: 15px; transition: var(--transition);
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
         }
 
@@ -214,8 +218,8 @@
         }
 
         .btn-light {
-            background: #f1f5f9; border: none; border-radius: 14px;
-            padding: 14px 32px; font-weight: 600; color: #475569;
+            background: #f1f5f9; border: none;
+            font-weight: 600; color: #475569;
         }
 
         /* --- ESTILOS RESPONSIVE MENÚ MÓVIL --- */
@@ -337,8 +341,8 @@
                             </div>
                             <!-- NUEVO CAMPO UX/UI -->
                             <div class="col-md-6">
-                                <label class="form-label">Número de Celular</label>
-                                <input type="tel" class="form-control" id="celularDocente" placeholder="Ej: 1 234 567 8900" required>
+                                <label class="form-label">Contraseña Temporal (Celular)</label>
+                                <input type="tel" class="form-control" id="passwordTemporalDocente" placeholder="Ej: 1 234 567 8900" required>
                                 <div class="mt-2 d-flex align-items-start gap-2 text-muted" style="font-size: 12.5px; line-height: 1.4;">
                                     <i class="fa-solid fa-circle-info mt-1" style="color: var(--primary);"></i>
                                     <span>Este número será utilizado como la <b>contraseña temporal</b> de acceso para el docente.</span>
@@ -394,7 +398,7 @@
                 nombres: document.getElementById('nombresDocente').value,
                 apellidos: document.getElementById('apellidosDocente').value,
                 correo: document.getElementById('correoDocente').value,
-                celular: document.getElementById('celularDocente').value,
+                celular: document.getElementById('passwordTemporalDocente').value,
                 rol: "DOCENTE",
                 estado: "Activo",
                 acceso: "0"
