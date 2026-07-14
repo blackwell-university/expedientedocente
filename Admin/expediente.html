@@ -1237,7 +1237,7 @@
 
                 if (res2.isConfirmed) {
                     showToast("Enviando y asignando documentos...", "info");
-                    const resFinal = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'send_to_evaluation', idExpediente: expId }) });
+                    const resFinal = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'confirm_evaluation_approval', idExpediente: expId }) });
                     const dataFinal = await resFinal.json();
                     if(dataFinal.status === 'success') {
                         showToast("Enviado a Evaluación exitosamente", "success");
