@@ -610,15 +610,12 @@
 
                     try {
                         // Enviamos la petición utilizando un nuevo endpoint exclusivo o enviando un payload específico
-                        // Reutilizamos send_invitation_email o creamos una petición compatible
                         const response = await fetch(GAS_URL, {
                             method: 'POST',
                             body: JSON.stringify({
-                                action: 'send_invitation_email', // Reutiliza el endpoint actual que ya dispara correos de credenciales si el usuario tiene acceso 0
+                                action: 'send_credentials_only',
                                 docenteId: docenteId,
-                                docenteCorreo: correoDocente,
-                                docenteNombre: nombreDocente.split(' ')[0],
-                                deManeraDirectaAccesos: true // Flag opcional por seguridad
+                                docenteCorreo: correoDocente
                             })
                         });
 

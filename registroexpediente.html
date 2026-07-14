@@ -2823,6 +2823,52 @@
                 inputFin.disabled = false;
             }
         }
+        // --- NUEVA FUNCIÓN: ACTUALIZACIÓN SILENCIOSA DEL PASO 6 (Educación/Experiencia extraídas por n8n) ---
+        // Antes, estos campos solo se llenaban una vez al cargar la página (cargarDatosPrevios).
+        // Si el docente llegaba al Paso 6 antes de que n8n terminara de extraer el CV/Diplomas,
+        // se quedaba vacío hasta hacer F5. Esta función agrega SOLO lo que falta (por ID),
+        // sin duplicar ni pisar lo que el docente ya haya editado a mano.
+        async function refrescarPaso6IA() {
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: userId, id_expediente: idExpedienteUrl }) });
+                const result = await res.json();
+                if (result.status !== 'success' || !result.drafts) return;
+
+                let seAgregoAlgo = false;
+
+                // Educación (Grados académicos)
+                if (result.drafts.educacion && result.drafts.educacion.length > 0) {
+                    const idsExistentes = new Set(Array.from(document.querySelectorAll('.ai-edu-record')).map(el => el.dataset.id));
+                    result.drafts.educacion.forEach(edu => {
+                        if (edu.id_diploma && !idsExistentes.has(String(edu.id_diploma))) {
+                            addEduReviewField(edu);
+                            seAgregoAlgo = true;
+                        }
+                    });
+                }
+
+                // Experiencia laboral y Competencias
+                if (result.drafts.experiencia && result.drafts.experiencia.length > 0) {
+                    const idsExistentes = new Set(
+                        Array.from(document.querySelectorAll('.exp-item, .skill-item')).map(el => el.dataset.id)
+                    );
+                    result.drafts.experiencia.forEach(exp => {
+                        const idExp = exp.id_experiencia ? String(exp.id_experiencia) : null;
+                        if (idExp && idsExistentes.has(idExp)) return; // ya está en pantalla, no duplicar
+
+                        if (exp.tipo && exp.tipo.startsWith('C')) addSkillField(exp);
+                        else addExpField(exp);
+                        seAgregoAlgo = true;
+                    });
+                }
+
+                // Si agregamos tarjetas nuevas, reevaluamos si el botón final ya puede pasar a "Finalizar Registro"
+                if (seAgregoAlgo && pasoActual === totalPasos) {
+                    evaluarEstadoBotonFinal();
+                }
+            } catch (e) { console.log("Error refrescando Paso 6 en segundo plano:", e); }
+        }
+
         // --- NUEVA FUNCIÓN: ACTUALIZACIÓN SILENCIOSA DEL PASO 2 ---
         async function refrescarDiplomasIA() {
             try {
@@ -2944,6 +2990,7 @@
             }
             // ASEGURAR QUE EL PASO 6 NO SE PINTE DE VERDE SI NO ESTÁ LLENO
             if (pasoActual === 6) {
+                refrescarPaso6IA(); // Rellena educación/experiencia si n8n ya terminó de procesar (sin necesitar F5)
                 if (validarPaso6Completo(false)) { 
                     marcarTabComoCompletada(6);
                 } else {
@@ -3234,14 +3281,41 @@
                         });
                     }
 
+                    // --- Paso 6: rellenar educación/experiencia si n8n ya las extrajo (sin duplicar lo ya mostrado) ---
+                    if (result.drafts) {
+                        if (result.drafts.educacion && result.drafts.educacion.length > 0) {
+                            const idsEduExistentes = new Set(Array.from(document.querySelectorAll('.ai-edu-record')).map(el => el.dataset.id));
+                            result.drafts.educacion.forEach(edu => {
+                                if (edu.id_diploma && !idsEduExistentes.has(String(edu.id_diploma))) {
+                                    addEduReviewField(edu);
+                                    huboCambios = true;
+                                }
+                            });
+                        }
+                        if (result.drafts.experiencia && result.drafts.experiencia.length > 0) {
+                            const idsExpExistentes = new Set(
+                                Array.from(document.querySelectorAll('.exp-item, .skill-item')).map(el => el.dataset.id)
+                            );
+                            result.drafts.experiencia.forEach(exp => {
+                                const idExp = exp.id_experiencia ? String(exp.id_experiencia) : null;
+                                if (idExp && idsExpExistentes.has(idExp)) return; // ya está en pantalla
+
+                                if (exp.tipo && exp.tipo.startsWith('C')) addSkillField(exp);
+                                else addExpField(exp);
+                                huboCambios = true;
+                            });
+                        }
+                    }
+
                     // Si algo cambió, reevaluamos si ya se puede desbloquear el Paso 6 (sin recargar la página)
                     if (huboCambios) {
                         evaluarDesbloqueoPaso6();
+                        if (pasoActual === totalPasos) evaluarEstadoBotonFinal();
                     }
                 } catch (e) {
                     console.log("Error en polling de procesamiento:", e);
                 }
-            }, 9000); // consulta cada 8 segundos
+            }, 8000); // consulta cada 8 segundos
         }
 
         // --- FUNCIÓN PARA DESBLOQUEAR VISUALMENTE EL PASO 6 ---

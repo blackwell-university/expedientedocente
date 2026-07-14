@@ -430,16 +430,29 @@
 
     <div class="modal" id="modalCambioPassword" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-        <div class="modal-header"><h5 class="modal-title">Actualiza tu contraseña</h5></div>
-        <div class="modal-body">
-            <p>Por seguridad, establece una nueva contraseña antes de continuar.</p>
-            <input type="password" id="nuevaPass1" class="form-control mb-2" placeholder="Nueva contraseña">
-            <input type="password" id="nuevaPass2" class="form-control" placeholder="Confirma tu contraseña">
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-primary" onclick="guardarNuevaPassword()">Guardar</button>
-        </div>
+        <div class="modal-content shadow-lg border-0" style="border-radius: 24px;">
+            <div class="modal-body text-center p-5">
+                <div style="width: 80px; height: 80px; background: #eff6ff; color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; margin: 0 auto 20px;">
+                    <i class="fa-solid fa-key"></i>
+                </div>
+                <h3 class="fw-bold mb-2" style="color: var(--primary-dark);">Actualiza tu Contraseña</h3>
+                <p class="text-muted mb-4" style="font-size: 0.92rem;">Por seguridad, este es tu primer ingreso al portal. Antes de continuar, crea una nueva contraseña personal (diferente a tu número de celular).</p>
+
+                <div class="text-start">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Nueva Contraseña</label>
+                        <input type="password" id="nuevaPass1" class="form-control" style="border-radius: 12px; padding: 11px 16px; border: 1px solid #e2e8f0; background: #f8fafc;" minlength="6" placeholder="Mínimo 6 caracteres">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Confirmar Contraseña</label>
+                        <input type="password" id="nuevaPass2" class="form-control" style="border-radius: 12px; padding: 11px 16px; border: 1px solid #e2e8f0; background: #f8fafc;" minlength="6" placeholder="Repite tu nueva contraseña">
+                    </div>
+                    <div id="passwordErrorMsg" class="text-danger small mb-3" style="display:none;"></div>
+                    <button type="button" id="btnGuardarPassword" class="btn btn-primary w-100 py-3 fw-bold" style="border-radius: 14px; font-size: 1rem;" onclick="guardarNuevaPassword()">
+                        Guardar y Continuar <i class="fa-solid fa-arrow-right ms-2"></i>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
     </div>
@@ -531,31 +544,24 @@
             // Si el docente tiene Acceso = "0" (primer ingreso), forzamos el cambio de contraseña
             const acceso = localStorage.getItem('userAcceso');
             if (acceso === "0") {
-                const modalPass = new bootstrap.Modal(document.getElementById('modalCambioPassword'));
-                modalPass.show();
-            }
-
-            if (localStorage.getItem('userAcceso') === '0') {
                 new bootstrap.Modal(document.getElementById('modalCambioPassword')).show();
             }
         });
 
         // --- CAMBIO DE CONTRASEÑA OBLIGATORIO (PRIMER INGRESO) ---
-        document.getElementById('formCambioPassword').addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const nueva = document.getElementById('nuevaPassword').value.trim();
-            const confirmar = document.getElementById('confirmarPassword').value.trim();
+        async function guardarNuevaPassword() {
+            const p1 = document.getElementById('nuevaPass1').value.trim();
+            const p2 = document.getElementById('nuevaPass2').value.trim();
             const errorMsg = document.getElementById('passwordErrorMsg');
             errorMsg.style.display = 'none';
 
-            if (nueva !== confirmar) {
-                errorMsg.innerText = 'Las contraseñas no coinciden.';
+            if (p1.length < 6) {
+                errorMsg.innerText = 'La contraseña debe tener al menos 6 caracteres.';
                 errorMsg.style.display = 'block';
                 return;
             }
-            if (nueva.length < 6) {
-                errorMsg.innerText = 'La contraseña debe tener al menos 6 caracteres.';
+            if (p1 !== p2) {
+                errorMsg.innerText = 'Las contraseñas no coinciden.';
                 errorMsg.style.display = 'block';
                 return;
             }
@@ -565,19 +571,16 @@
             btn.disabled = true;
             btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Guardando...`;
 
-            const idDocente = localStorage.getItem('userId') || localStorage.getItem('userName');
-
             try {
                 const response = await fetch(GAS_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'update_password', idDocente: idDocente, nuevaPassword: nueva })
+                    body: JSON.stringify({ action: 'update_password', idDocente: localStorage.getItem('userId'), nuevaPassword: p1 })
                 });
                 const result = await response.json();
 
                 if (result.status === 'success') {
                     localStorage.setItem('userAcceso', '1');
-                    const modalEl = document.getElementById('modalCambioPassword');
-                    bootstrap.Modal.getInstance(modalEl).hide();
+                    bootstrap.Modal.getInstance(document.getElementById('modalCambioPassword')).hide();
                 } else {
                     errorMsg.innerText = result.message || 'No se pudo actualizar la contraseña.';
                     errorMsg.style.display = 'block';
@@ -589,26 +592,7 @@
                 btn.disabled = false;
                 btn.innerHTML = originalHTML;
             }
-        });
-
-        function guardarNuevaPassword() {
-            const p1 = document.getElementById('nuevaPass1').value.trim();
-            const p2 = document.getElementById('nuevaPass2').value.trim();
-            if (p1.length < 6) return alert('La contraseña debe tener al menos 6 caracteres.');
-            if (p1 !== p2) return alert('Las contraseñas no coinciden.');
-
-            fetch(WEB_APP_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: 'update_password', idDocente: localStorage.getItem('userId'), nuevaPassword: p1 })
-            }).then(r => r.json()).then(res => {
-                if (res.status === 'success') {
-                localStorage.setItem('userAcceso', '1');
-                bootstrap.Modal.getInstance(document.getElementById('modalCambioPassword')).hide();
-                } else {
-                alert('No se pudo actualizar la contraseña.');
-                }
-            });
-            }
+        }
 
         function obtenerProximaSesion(c) {
             const segmentos = (c.horaElegida || '').split('|').map(s => s.trim()).filter(Boolean);
