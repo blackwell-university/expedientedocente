@@ -1767,6 +1767,7 @@
                     if (validarPaso3Completo()) { marcarTabComoCompletada(3); }
                     if (validarPaso5Completo()) { marcarTabComoCompletada(5); }
                     evaluarDesbloqueoPaso6();
+                    iniciarPollingProcesamiento(); // Vigila en segundo plano si hay documentos "Subido" pendientes de procesar
 
                     if (result.drafts) {
                         const eduCont = document.getElementById('ai-education-container');
@@ -2369,19 +2370,32 @@
                         showToast("Procesando y guardando documentos...", "success");
                     }
 
-                    // 3. Procesar Subidas (Solo de lo que realmente editó)
+                    // 3. Procesar Subidas EN PARALELO (antes se subían una tras otra, ahora al mismo tiempo)
+                    const subidasPaso1 = [];
+
                     if (isEditingCV && cvFile) {
-                        const b64Cv = await getBase64(cvFile); 
-                        const resCv = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Cv, name: cvFile.name, type: cvFile.type, uploadTo: 'docente', idDocente: userId }) }).then(r=>r.json());
-                        urlCVGlobal = resCv.url; payload.url_cv = urlCVGlobal;
-                        fetch(N8N_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: "extract_cv", fileUrl: urlCVGlobal, idDocente: userId, idExpediente: idExpedienteUrl }) }).catch(e=>console.log(e));
+                        subidasPaso1.push(
+                            getBase64(cvFile).then(b64Cv =>
+                                fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Cv, name: cvFile.name, type: cvFile.type, uploadTo: 'docente', idDocente: userId }) }).then(r=>r.json())
+                            ).then(resCv => {
+                                urlCVGlobal = resCv.url; payload.url_cv = urlCVGlobal;
+                                fetch(N8N_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: "extract_cv", fileUrl: urlCVGlobal, idDocente: userId, idExpediente: idExpedienteUrl }) }).catch(e=>console.log(e));
+                            })
+                        );
                     } else { payload.url_cv = urlCVGlobal; }
 
                     if (isEditingHb && hbFile) {
-                        const b64Hb = await getBase64(hbFile); 
-                        const resHb = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Hb, name: hbFile.name, type: hbFile.type, uploadTo: 'docente', idDocente: userId }) }).then(r=>r.json());
-                        urlHbGlobal = resHb.url; payload.url_handbook = urlHbGlobal;
+                        subidasPaso1.push(
+                            getBase64(hbFile).then(b64Hb =>
+                                fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Hb, name: hbFile.name, type: hbFile.type, uploadTo: 'docente', idDocente: userId }) }).then(r=>r.json())
+                            ).then(resHb => {
+                                urlHbGlobal = resHb.url; payload.url_handbook = urlHbGlobal;
+                            })
+                        );
                     } else { payload.url_handbook = urlHbGlobal; }
+
+                    // Esperamos a que ambas subidas (si las hubo) terminen A LA VEZ, no una después de la otra
+                    await Promise.all(subidasPaso1);
 
                     // 4. Guardar en Base de Datos y Actualizar UI
                     if(isEditingCV || isEditingHb) {
@@ -2396,6 +2410,7 @@
                     actualizarVistaPaso1(); 
 
                     cambiarUI(1); 
+                    iniciarPollingProcesamiento(); // Empezamos a vigilar en segundo plano cuándo n8n termine de procesar
                     return; 
                 }
                 
@@ -2435,18 +2450,25 @@
                     }
                     // --- FIN NUEVA LÓGICA ---
 
-                    let diplomasParaGuardar =[];
                     let hayNuevosOEditados = false;  // Control para saber si usamos Google Sheets
 
+                    // --- FASE 1: Validación rápida y síncrona de TODOS los items (sin red, instantánea) ---
                     for (let item of diplomaItems) {
+                        if (item.classList.contains('edit-mode-dip')) {
+                            const currentGrado = item.querySelector('.dip-grado').value;
+                            const dipFile = item.querySelector('.dip-file').files[0];
+                            if (!currentGrado) { alert("Selecciona el Nivel de Grado en todos los campos."); btnNext.disabled=false; btnNext.innerHTML=originalHTML; return; }
+                            if (!dipFile) { alert("Falta subir el archivo PDF del Diploma."); btnNext.disabled=false; btnNext.innerHTML=originalHTML; return; }
+                        }
+                    }
+
+                    // --- FASE 2: Subidas EN PARALELO (antes cada diploma y su transcript se subían uno por uno) ---
+                    const tareasDiplomas = Array.from(diplomaItems).map(item => {
                         if (item.classList.contains('edit-mode-dip')) { // Archivos nuevos o en edición
                             hayNuevosOEditados = true;
                             const dipFile = item.querySelector('.dip-file').files[0];
                             const transFile = item.querySelector('.dip-transcript').files[0];
                             const currentGrado = item.querySelector('.dip-grado').value;
-
-                            if (!currentGrado) { alert("Selecciona el Nivel de Grado en todos los campos."); btnNext.disabled=false; btnNext.innerHTML=originalHTML; return; }
-                            if (!dipFile) { alert("Falta subir el archivo PDF del Diploma."); btnNext.disabled=false; btnNext.innerHTML=originalHTML; return; }
 
                             // FIX: generamos (o reutilizamos) un ID único de diploma ANTES de guardar,
                             // así el backend nunca tiene que "adivinar" un ID nuevo y n8n puede
@@ -2455,41 +2477,44 @@
                             const idDipGenerado = item.dataset.id || ("DIP-" + new Date().getTime().toString().slice(-6) + Math.floor(Math.random() * 100));
                             item.dataset.id = idDipGenerado;
 
-                            const b64Dip = await getBase64(dipFile);
-                            const resDip = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Dip, name: dipFile.name, type: dipFile.type, idExpediente: idExpedienteUrl }) }).then(r => r.json());
+                            const subirDiploma = getBase64(dipFile).then(b64Dip =>
+                                fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Dip, name: dipFile.name, type: dipFile.type, idExpediente: idExpedienteUrl }) }).then(r => r.json())
+                            );
+                            const subirTranscript = transFile
+                                ? getBase64(transFile).then(b64Trans => fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Trans, name: transFile.name, type: transFile.type, idExpediente: idExpedienteUrl }) }).then(r => r.json()))
+                                : Promise.resolve({ url: "" });
 
-                            let urlTrans = "";
-                            if (transFile) {
-                                const b64Trans = await getBase64(transFile);
-                                const resTrans = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Trans, name: transFile.name, type: transFile.type, idExpediente: idExpedienteUrl }) }).then(r => r.json());
-                                urlTrans = resTrans.url;
-                            }
+                            // Ambos archivos (diploma + transcript) se suben al mismo tiempo, no uno tras otro
+                            return Promise.all([subirDiploma, subirTranscript]).then(([resDip, resTrans]) => {
+                                // Enviar al Webhook de N8N (Es un documento nuevo/editado) - incluye idDiploma para que la respuesta se guarde en la fila exacta
+                                fetch(N8N_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: "extract_diploma", fileUrl: resDip.url, idDocente: userId, idExpediente: idExpedienteUrl, idDiploma: idDipGenerado, grado: currentGrado }) }).catch(e => console.log(e));
 
-                            diplomasParaGuardar.push({
-                                id_diploma: idDipGenerado,
-                                grado: currentGrado, url_diploma: resDip.url, url_transcript: urlTrans, estado: "Subido"
+                                return {
+                                    id_diploma: idDipGenerado,
+                                    grado: currentGrado, url_diploma: resDip.url, url_transcript: resTrans.url || "", estado: "Subido"
+                                };
                             });
-
-                            // Enviar al Webhook de N8N (Es un documento nuevo/editado) - incluye idDiploma para que la respuesta se guarde en la fila exacta
-                            fetch(N8N_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: "extract_diploma", fileUrl: resDip.url, idDocente: userId, idExpediente: idExpedienteUrl, idDiploma: idDipGenerado, grado: currentGrado }) }).catch(e => console.log(e));
 
                         } else {
                             // MODO LECTURA (Ya estaban guardados en BD)
                             const estadoItem = item.dataset.estado || "Subido";
 
-                            diplomasParaGuardar.push({
+                            // LÓGICA CLAVE: Si ya estaba guardado pero se quedó en "Subido", mandamos a N8N otra vez. Si dice "Procesado", lo ignora y avanza.
+                            if (estadoItem.toLowerCase() === "subido") {
+                                fetch(N8N_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: "extract_diploma", fileUrl: item.dataset.url, idDocente: userId, idExpediente: idExpedienteUrl, idDiploma: item.dataset.id, grado: item.dataset.grado }) }).catch(e => console.log(e));
+                            }
+
+                            return Promise.resolve({
                                 id_diploma: item.dataset.id, grado: item.dataset.grado, rama: item.dataset.rama,
                                 instituto: item.dataset.instituto, ubicacion: item.dataset.ubicacion,
                                 inicio: item.dataset.inicio, fin: item.dataset.fin, url_diploma: item.dataset.url,
                                 url_transcript: item.dataset.transcript, estado: estadoItem
                             });
-                            
-                            // LÓGICA CLAVE: Si ya estaba guardado pero se quedó en "Subido", mandamos a N8N otra vez. Si dice "Procesado", lo ignora y avanza.
-                            if (estadoItem.toLowerCase() === "subido") {
-                                fetch(N8N_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: "extract_diploma", fileUrl: item.dataset.url, idDocente: userId, idExpediente: idExpedienteUrl, idDiploma: item.dataset.id, grado: item.dataset.grado }) }).catch(e => console.log(e));
-                            }
                         }
-                    }
+                    });
+
+                    // Todos los diplomas (nuevos y ya existentes) se resuelven a la vez
+                    const diplomasParaGuardar = await Promise.all(tareasDiplomas);
                     
                     if (hayNuevosOEditados) {
                         payload.step = 2;
@@ -2518,6 +2543,7 @@
                     }
                     
                     cambiarUI(1); // Cambia al Paso 3 instantáneamente
+                    iniciarPollingProcesamiento(); // Empezamos a vigilar en segundo plano cuándo n8n termine de procesar
                     return;
                 }
                 
@@ -3140,6 +3166,82 @@
             });
 
             return esValido;
+        }
+
+        // --- POLLING ASÍNCRONO: revisa en segundo plano si n8n ya terminó de procesar el CV/Diplomas ---
+        // Antes, el estado "Subido" -> "Procesado" solo se veía al refrescar la página. Ahora se
+        // consulta cada 8s en silencio y, si algo cambió, se repinta la tarjeta y se reevalúa el
+        // desbloqueo del Paso 6 sin recargar nada.
+        let pollingProcesamiento = null;
+
+        function iniciarPollingProcesamiento() {
+            if (pollingProcesamiento) return; // ya está corriendo, evitamos duplicar el intervalo
+
+            pollingProcesamiento = setInterval(async () => {
+                const tab6 = document.getElementById('tab-6');
+                // Si ya no hay nada bloqueado, dejamos de consultar (ya no hace falta)
+                if (tab6 && !tab6.classList.contains('step-locked')) {
+                    clearInterval(pollingProcesamiento);
+                    pollingProcesamiento = null;
+                    return;
+                }
+
+                try {
+                    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: userId, id_expediente: idExpedienteUrl }) });
+                    const result = await res.json();
+                    if (result.status !== 'success') return;
+
+                    let huboCambios = false;
+
+                    // --- Estado del CV ---
+                    if (result.data && result.data.estado_cv) {
+                        const cvContainer = document.getElementById('cv-status-container');
+                        if (cvContainer) {
+                            const estadoNuevo = result.data.estado_cv;
+                            if ((cvContainer.dataset.estado || '').toLowerCase() !== estadoNuevo.toLowerCase()) {
+                                cvContainer.dataset.estado = estadoNuevo;
+                                cvContainer.innerHTML = `<span class="badge bg-light text-dark border mt-1">${estadoNuevo}</span>`;
+                                huboCambios = true;
+                            }
+                        }
+                    }
+
+                    // --- Estado de cada Diploma (repintamos solo la tarjeta que cambió, no toda la página) ---
+                    if (result.drafts && result.drafts.educacion) {
+                        document.querySelectorAll('.diploma-item.view-mode-dip').forEach(card => {
+                            const eduActualizada = result.drafts.educacion.find(e => String(e.id_diploma) === String(card.dataset.id));
+                            if (!eduActualizada) return;
+
+                            const estadoNuevo = (eduActualizada.estado || '').toLowerCase();
+                            const estadoActual = (card.dataset.estado || '').toLowerCase();
+
+                            if (estadoNuevo !== estadoActual || (eduActualizada.rama && eduActualizada.rama !== card.dataset.rama)) {
+                                card.dataset.estado = eduActualizada.estado || card.dataset.estado;
+                                card.dataset.rama = eduActualizada.rama || card.dataset.rama;
+                                card.dataset.instituto = eduActualizada.instituto || card.dataset.instituto;
+                                card.dataset.ubicacion = eduActualizada.ubicacion || card.dataset.ubicacion;
+                                card.dataset.inicio = eduActualizada.inicio || card.dataset.inicio;
+                                card.dataset.fin = eduActualizada.fin || card.dataset.fin;
+
+                                const badge = card.querySelector('.badge');
+                                if (badge) badge.textContent = eduActualizada.estado || 'Procesado';
+                                const pInfo = card.querySelector('p.small.text-muted');
+                                if (pInfo) {
+                                    pInfo.innerHTML = `<b>Especialidad:</b> ${eduActualizada.rama || 'Pendiente de procesar...'}<br><b>Institución:</b> ${eduActualizada.instituto || 'Pendiente de procesar...'}`;
+                                }
+                                huboCambios = true;
+                            }
+                        });
+                    }
+
+                    // Si algo cambió, reevaluamos si ya se puede desbloquear el Paso 6 (sin recargar la página)
+                    if (huboCambios) {
+                        evaluarDesbloqueoPaso6();
+                    }
+                } catch (e) {
+                    console.log("Error en polling de procesamiento:", e);
+                }
+            }, 9000); // consulta cada 8 segundos
         }
 
         // --- FUNCIÓN PARA DESBLOQUEAR VISUALMENTE EL PASO 6 ---
