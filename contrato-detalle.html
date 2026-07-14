@@ -232,7 +232,7 @@
             <div class="doc-dots" id="docDots"></div>
 
             <span class="section-badge" style="background:#fef3c7; color:#b45309;"><i class="fa-solid fa-signature me-2"></i>2. Estampar Firma Digital</span>
-            <p class="text-muted small mb-3">Dibuje su firma en el recuadro inferior y presione "Generar y Firmar" para insertar su rúbrica directamente en su expediente.</p>
+            <p class="text-muted small mb-3">Dibuje su firma una sola vez en el recuadro inferior. Se aplicará automáticamente, junto con la fecha de hoy, a todos los documentos que aún tenga pendientes de firma.</p>
 
             <div id="panelFirmaContenido">
                 <div class="signature-wrapper">
@@ -344,7 +344,7 @@
             if (documentosDisponibles.length === 0) {
                 wrapper.innerHTML = '<p class="text-muted m-0 text-center w-100 py-3">No se encontraron documentos listos para firma.</p>';
                 dotsWrapper.innerHTML = '';
-                actualizarPanelFirma(false);
+                actualizarPanelFirma();
                 return;
             }
 
@@ -373,7 +373,7 @@
             selectedDocName = d.nombre;
             selectedDocUrl = d.url;
             actualizarIframe(d.url);
-            actualizarPanelFirma(yaFirmado);
+            actualizarPanelFirma();
         }
 
         function navegarDocumento(delta) {
@@ -388,12 +388,13 @@
             renderCarrusel();
         }
 
-        // Decide qué mostrar en el panel de firma según el estado del documento actual
-        function actualizarPanelFirma(yaFirmado) {
+        // El panel de firma ya no depende de qué documento estás viendo (la firma es única para
+        // todos los pendientes) — solo depende de si TODAVÍA queda algo por firmar en total.
+        function actualizarPanelFirma() {
             const panel = document.getElementById('panelFirmaContenido');
-            const todosFirmados = documentosDisponibles.length > 0 && documentosDisponibles.every(d => d.estado.includes('Firmado'));
+            const pendientes = documentosDisponibles.filter(d => !d.estado.includes('Firmado'));
 
-            if (todosFirmados) {
+            if (pendientes.length === 0) {
                 panel.innerHTML = `
                     <div class="all-signed-notice">
                         <i class="fa-solid fa-circle-check fa-3x text-success mb-3"></i>
@@ -404,25 +405,15 @@
                 return;
             }
 
-            if (yaFirmado) {
-                panel.innerHTML = `
-                    <div class="signed-doc-notice">
-                        <i class="fa-solid fa-circle-check text-success fa-2x mb-2"></i>
-                        <p class="fw-bold text-success mb-1">Este documento ya está firmado</p>
-                        <p class="small text-muted m-0">Usa las flechas de arriba para ir a otro documento pendiente.</p>
-                    </div>`;
-                signaturePad = null; canvas = null;
-                return;
-            }
-
-            // Documento pendiente: mostramos el área de firma
+            // Mientras quede al menos un documento pendiente, mostramos el área de firma —
+            // sin importar cuál esté visible en el carrusel en ese momento.
             panel.innerHTML = `
                 <div class="signature-wrapper">
                     <button type="button" class="clear-btn" id="clearSignatureBtn"><i class="fa-solid fa-eraser"></i> Limpiar</button>
                     <canvas id="signature-pad-canvas"></canvas>
                 </div>
                 <button type="button" class="btn-sign" id="btnSubmitSignature" onclick="ejecutarFirmaDocente()">
-                    <i class="fa-solid fa-file-signature"></i> Generar y Firmar Documento
+                    <i class="fa-solid fa-file-signature"></i> Firmar Todos los Documentos Pendientes
                 </button>`;
             inicializarSignaturePad();
         }
@@ -443,19 +434,28 @@
         }
 
         async function ejecutarFirmaDocente() {
-            if(signaturePad.isEmpty()) {
+            if(!signaturePad || signaturePad.isEmpty()) {
                 Swal.fire('Firma Requerida', 'Por favor, dibuje su firma en el recuadro antes de guardar.', 'warning');
                 return;
             }
 
+            const pendientes = documentosDisponibles.filter(d => !d.estado.includes('Firmado'));
+            if (pendientes.length === 0) return;
+
+            const listaHtml = pendientes.map(d => `<li style="margin-bottom:4px;">${d.nombre}</li>`).join('');
+
             const confirm = await Swal.fire({
-                title: '¿Confirmar Firma del Contrato?',
-                text: `Se aplicará su firma digital en el documento "${selectedDocName}" de forma permanente.`,
+                title: '¿Confirmar Firma Digital?',
+                html: `
+                    <p style="margin-bottom: 10px;">¿Has leído y deseas firmar los siguientes ${pendientes.length} documento(s) con tu firma digital?</p>
+                    <ul style="text-align:left; max-height: 220px; overflow-y: auto; padding-left: 20px; font-size: 0.9rem;">${listaHtml}</ul>
+                    <p style="margin-top: 10px; font-size: 0.85rem; color: #64748b;">Tu firma y la fecha de hoy se aplicarán automáticamente a todos ellos.</p>
+                `,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#1e3a8a',
                 cancelButtonColor: '#64748b',
-                confirmButtonText: 'Sí, firmar',
+                confirmButtonText: 'Sí, firmar todos',
                 cancelButtonText: 'Cancelar'
             });
 
@@ -469,9 +469,8 @@
             try {
                 const base64Signature = signaturePad.toDataURL('image/png').split(',')[1];
                 const payload = {
-                    action: "teacher_sign_document",
+                    action: "teacher_sign_all_documents",
                     idExpediente: expId,
-                    documento: selectedDocName,
                     signature: base64Signature
                 };
 
@@ -482,13 +481,14 @@
                 const result = await res.json();
 
                 if(result.status === 'success') {
+                    const cantidad = (result.firmados || []).length;
                     Swal.fire({
-                        title: '¡Documento Firmado!',
-                        text: `Su firma digital se ha estampado exitosamente en ${selectedDocName}.`,
+                        title: '¡Documentos Firmados!',
+                        text: `Su firma digital se aplicó exitosamente en ${cantidad} documento(s).`,
                         icon: 'success',
                         confirmButtonColor: '#1e3a8a'
                     }).then(() => {
-                        window.location.reload(); 
+                        window.location.reload();
                     });
                 } else {
                     Swal.fire('Error', result.message || 'No se pudo aplicar la firma.', 'error');
