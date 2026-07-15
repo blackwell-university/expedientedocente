@@ -76,16 +76,31 @@
         
         /* --- TABLA MODERNA --- */
         .table-card { background: white; border-radius: var(--card-radius); border: 1px solid rgba(0,0,0,0.04); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.02); }
-        .table thead th { background-color: #f8fafc; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; padding: 18px 24px; border-bottom: 1px solid #e2e8f0; border-top: none; }
-        .table tbody td { padding: 16px 24px; color: var(--text-main); border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-        .table tbody tr:hover { background-color: #fcfdfe; }
+        .table thead th { background-color: #f8fafc; color: #94a3b8; font-weight: 700; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.06em; padding: 16px 24px; border-bottom: 1px solid #eef1f5; border-top: none; }
+        .table tbody td { padding: 14px 24px; color: var(--text-main); border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+        .table tbody tr:last-child td { border-bottom: none; }
+        .table tbody tr:hover { background-color: #f9fafb; }
 
         /* Estados */
-        .badge-status { padding: 6px 14px; border-radius: 50px; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 6px;}
-        .status-Pendiente { background: #fef3c7; color: #92400e; }
+        .badge-status { padding: 6px 14px 6px 10px; border-radius: 50px; font-weight: 700; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.3px; display: inline-flex; align-items: center; gap: 6px;}
+        .status-Pendiente { background: #fffbeb; color: #b45309; }
         .status-Completado { background: #eff6ff; color: #1d4ed8; }
         .status-Aprobado { background: #f0fdf4; color: #15803d; }
         .status-Rechazado { background: #fef2f2; color: #b91c1c; }
+
+        /* Botón "Revisar" — mismo lenguaje visual que "Expediente" en Gestión de Docentes */
+        .btn-revisar-link {
+            display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px;
+            border-radius: 10px; background: #eff6ff; color: var(--primary); font-weight: 600;
+            font-size: 0.8rem; text-decoration: none; transition: var(--transition); border: none;
+        }
+        .btn-revisar-link:hover { background: var(--primary); color: white; transform: translateY(-1px); }
+
+        /* Píldora de rango de fechas, más minimalista (sin borde duro) */
+        .badge-periodo {
+            font-weight: 600; color: #334155; background: #f8fafc; padding: 6px 12px;
+            border-radius: 8px; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 6px;
+        }
 
         @media (max-width: 768px) { .sidebar { display: none; } header, .content-area { padding: 20px; } }
     </style>
@@ -337,15 +352,15 @@
                         <div class="text-muted" style="font-size: 0.75rem;">Docente: <span class="fw-medium">${exp.docenteId}</span> <br> Exp: <span class="text-dark fw-medium">${exp.idExpediente}</span></div>
                     </td>
                     <td>
-                        <div class="fw-medium text-dark bg-light px-2 py-1 rounded d-inline-block border" style="font-size: 0.85rem;">
-                            ${fIni} <i class="fa-solid fa-arrow-right mx-1 text-muted"></i> ${fFin}
+                        <div class="badge-periodo">
+                            ${fIni} <i class="fa-solid fa-arrow-right text-muted" style="font-size: 0.7rem;"></i> ${fFin}
                         </div>
                     </td>
                     <td><div class="text-muted"><i class="fa-regular fa-calendar me-2"></i>${fCrea}</div></td>
                     <td><span class="badge-status status-${exp.estado}">${getIconForStatus(exp.estado)} ${exp.estado}</span></td>
                     <td class="text-center">
-                        <a href="${linkHref}" class="btn btn-sm btn-light border fw-bold text-secondary" style="border-radius: 8px; padding: 6px 12px; text-decoration: none; display:inline-flex; align-items:center; gap:6px;">
-                            <i class="fa-regular fa-folder-open" style="color: var(--primary)"></i> Revisar
+                        <a href="${linkHref}" class="btn-revisar-link">
+                            <i class="fa-regular fa-folder-open"></i> Revisar
                         </a>
                     </td>
                 </tr>`;

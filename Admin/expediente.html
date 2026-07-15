@@ -131,9 +131,13 @@
         .assigned-text i { font-size: 0.7rem; color: #94a3b8; }
 
         /* Acciones de tabla */
-        .table-actions { display: flex; gap: 12px; }
-        .table-actions a { color: var(--text-muted); text-decoration: none; font-size: 0.75rem; font-weight: 500; }
-        .table-actions a:hover { color: var(--primary); }
+        .table-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+        .table-actions a {
+            color: var(--text-muted); text-decoration: none; font-size: 0.78rem; font-weight: 600;
+            display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 8px;
+            transition: var(--transition);
+        }
+        .table-actions a:hover { color: var(--primary); background: #eff6ff; }
 
         /* --- NUEVOS ESTILOS PARA BOTONES DE ACCIÓN Y TABLA --- */
         .action-buttons-bar {
@@ -1181,9 +1185,33 @@
 
         function getDriveViewUrl(downloadUrl) {
             if (!downloadUrl) return "#";
-            const match = downloadUrl.match(/id=([a-zA-Z0-9_-]+)/);
-            if (match && match[1]) {
-                return `https://drive.google.com/file/d/${match[1]}/view`;
+            // FIX: antes usaba drive.google.com/.../view — ese endpoint, para Google Docs NATIVOS
+            // (no PDFs sueltos), redirige automáticamente al editor completo, por eso "Ver" abría
+            // en modo edición. "/preview" sí muestra una vista de solo lectura real, tanto para
+            // Google Docs como para PDFs subidos por el docente.
+            const match = downloadUrl.match(/[-\w]{25,}/);
+            if (match && match[0]) {
+                return `https://drive.google.com/file/d/${match[0]}/preview`;
+            }
+            return downloadUrl;
+        }
+
+        // NUEVO: abre el documento generado en el editor real de Google Docs (para poder editarlo)
+        function getDriveEditUrl(downloadUrl) {
+            if (!downloadUrl) return "#";
+            const match = downloadUrl.match(/[-\w]{25,}/);
+            if (match && match[0]) {
+                return `https://docs.google.com/document/d/${match[0]}/edit`;
+            }
+            return downloadUrl;
+        }
+
+        // NUEVO: descarga el documento generado directamente como PDF
+        function getDrivePdfDownloadUrl(downloadUrl) {
+            if (!downloadUrl) return "#";
+            const match = downloadUrl.match(/[-\w]{25,}/);
+            if (match && match[0]) {
+                return `https://docs.google.com/document/d/${match[0]}/export?format=pdf`;
             }
             return downloadUrl;
         }
@@ -1375,8 +1403,9 @@
                         <td>${doc.fechaEnvio || "—"}</td>
                         <td>${doc.fechaAprobacion || "—"}</td>
                         <td class="table-actions">
-                            <a href="${getDriveViewUrl(doc.url)}" target="_blank"><i class="fa-regular fa-eye"></i> Ver</a>
-                            <a href="#" onclick="simularEdicion('${doc.nombre}')"><i class="fa-regular fa-pen-to-square"></i> Editar</a>
+                            <a href="${getDriveViewUrl(doc.url)}" target="_blank" title="Ver en modo lectura"><i class="fa-regular fa-eye"></i> Ver</a>
+                            <a href="${getDriveEditUrl(doc.url)}" target="_blank" title="Abrir para editar"><i class="fa-regular fa-pen-to-square"></i> Editar</a>
+                            <a href="${getDrivePdfDownloadUrl(doc.url)}" title="Descargar como PDF"><i class="fa-solid fa-download"></i> Descargar</a>
                         </td>
                     </tr>`;
                 }
@@ -1408,10 +1437,6 @@
 
         function guardarTrazabilidad() {
             localStorage.setItem(`trace_${expId}`, JSON.stringify(documentTrace));
-        }
-
-        function simularEdicion(nombre) {
-            showToast(`Edición de ${nombre}`, "info");
         }
 
         function extractPureUrl(val) {
