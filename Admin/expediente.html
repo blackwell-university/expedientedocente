@@ -481,22 +481,6 @@
                             </div>
                         </div>
 
-                        <div class="form-card mb-4">
-                            <span class="section-badge mb-4"><i class="fa-solid fa-user me-2"></i>Datos del Docente (Financieros)</span>
-                            <div class="row g-3">
-                                <div class="col-md-4 info-group"><span class="info-label">Nombres</span><div id="view-nombres" class="info-value view-mode">-</div><input type="text" id="edit-nombres" class="input-modern edit-mode d-none"></div>
-                                <div class="col-md-4 info-group"><span class="info-label">Apellidos</span><div id="view-apellidos" class="info-value view-mode">-</div><input type="text" id="edit-apellidos" class="input-modern edit-mode d-none"></div>
-                                <div class="col-md-4 info-group"><span class="info-label">Correo</span><div id="view-correo" class="info-value view-mode">-</div><input type="email" id="edit-correo" class="input-modern edit-mode d-none"></div>
-                                <div class="col-md-3 info-group"><span class="info-label">Banco</span><div id="view-banco" class="info-value view-mode">-</div><input type="text" id="edit-banco" class="input-modern edit-mode d-none"></div>
-                                <div class="col-md-3 info-group"><span class="info-label">Moneda</span><div id="view-moneda" class="info-value view-mode">-</div><select id="edit-moneda" class="form-select input-modern edit-mode d-none"><option value="Dólares">Dólares ($)</option><option value="Soles">Soles (S/.)</option><option value="Euros">Euros (€)</option></select></div>
-                                <div class="col-md-3 info-group"><span class="info-label">Cuenta Bancaria</span><div id="view-cuenta" class="info-value view-mode">-</div><input type="text" id="edit-cuenta" class="input-modern edit-mode d-none"></div>
-                                <div class="col-md-3 info-group"><span class="info-label">CCI / Cuenta Interbancaria</span><div id="view-cci" class="info-value view-mode">-</div><input type="text" id="edit-cci" class="input-modern edit-mode d-none"></div>
-                                <input type="hidden" id="edit-celular"><input type="hidden" id="edit-pais"><input type="hidden" id="edit-ciudad">
-                                <input type="hidden" id="edit-estado_region"><input type="hidden" id="edit-direccion"><input type="hidden" id="edit-tipo_cuenta">
-                                <input type="hidden" id="edit-tipo_ruta"><input type="hidden" id="edit-codigo_ruta">
-                            </div>
-                        </div>
-
                         <!-- NUEVO: ACORDEÓN CON TODOS LOS DATOS QUE EL DOCENTE VA LLENANDO EN SU FORMULARIO -->
                         <div class="form-card mb-4">
                             <span class="section-badge"><i class="fa-solid fa-list-check me-2"></i>Ver Todos los Datos del Formulario</span>
@@ -1128,14 +1112,6 @@
                     document.getElementById('view-pago').innerText = inv.pago || "-";
                     
                     // Datos del docente
-                    document.getElementById('view-nombres').innerText = d.nombres || '-';
-                    document.getElementById('view-apellidos').innerText = d.apellidos || '-';
-                    document.getElementById('view-correo').innerText = d.correo || '-';
-                    document.getElementById('view-banco').innerText = d.banco || '-';
-                    document.getElementById('view-moneda').innerText = d.moneda || '-';
-                    document.getElementById('view-cuenta').innerText = d.cuenta || '-';
-                    document.getElementById('view-cci').innerText = d.cci || '-';
-                    
                     // NUEVO: Cargar el perfil completo (todos los campos del formulario) para el acordeón
                     // (esta función ahora también construye la lista de "Documentos Subidos", incluyendo
                     // transcripts y, si existen, sus versiones en inglés — antes esta lista se armaba aquí
@@ -1227,6 +1203,8 @@
                     <div class="d-flex align-items-center gap-2">
                         <!-- Ahora usa getDriveViewUrl para abrir la vista previa -->
                         <a href="${getDriveViewUrl(url)}" target="_blank" class="btn-ver-file">Abrir</a>
+                        <!-- NUEVO: descarga directa del archivo original (ya es un link de descarga de Drive) -->
+                        <a href="${url}" download class="btn-ver-file" title="Descargar"><i class="fa-solid fa-download"></i></a>
                         <span class="doc-en-slot">${urlEn ? `<a href="${getDriveViewUrl(urlEn)}" target="_blank" class="btn-ver-file btn-ver-file-en" title="Versión en inglés">EN</a>` : ''}</span>
                     </div>
                 </div>
@@ -1276,81 +1254,6 @@
                 } else {
                     cargarExpediente(); // Solo recarga para mostrar el estado "Verificado"
                 }
-            }
-        }
-
-        // ==================== EDITAR DATOS DEL DOCENTE ====================
-        let isEditing = false;
-        const editableFields = ['nombres', 'apellidos', 'correo', 'banco', 'moneda', 'cuenta', 'cci'];
-
-        function toggleEdit() {
-            const controls = document.getElementById('edit-controls');
-            if(!isEditing) {
-                editableFields.forEach(f => {
-                    const text = document.getElementById(`view-${f}`).innerText;
-                    document.getElementById(`edit-${f}`).value = text === '-' ? '' : text;
-                });
-                
-                document.querySelectorAll('.view-mode').forEach(el => el.classList.add('d-none'));
-                document.querySelectorAll('.edit-mode').forEach(el => el.classList.remove('d-none'));
-
-                controls.innerHTML = `
-                    <button class="btn btn-sm btn-light border me-2 fw-bold text-secondary" style="border-radius: 8px;" onclick="cancelEdit()">Cancelar</button>
-                    <button class="btn btn-sm btn-success-solid" style="padding: 6px 16px;" onclick="guardarCambiosDocente()"><i class="fa-solid fa-save me-1"></i> Guardar</button>
-                `;
-                isEditing = true;
-            }
-        }
-
-        function cancelEdit() {
-            document.querySelectorAll('.view-mode').forEach(el => el.classList.remove('d-none'));
-            document.querySelectorAll('.edit-mode').forEach(el => el.classList.add('d-none'));
-            document.getElementById('edit-controls').innerHTML = `<button class="btn btn-sm btn-outline-primary fw-bold" id="btnEditar" onclick="toggleEdit()" style="border-radius: 8px;"><i class="fa-solid fa-pencil me-1"></i> Editar Datos</button>`;
-            isEditing = false;
-        }
-
-        async function guardarCambiosDocente() {
-            const controls = document.getElementById('edit-controls');
-            controls.innerHTML = `<button class="btn btn-sm btn-light border" disabled><i class="fa-solid fa-spinner fa-spin me-1"></i> Guardando...</button>`;
-
-            const payload = {
-                action: "update_profile",
-                id: docId,
-                nombres: document.getElementById('edit-nombres').value,
-                apellidos: document.getElementById('edit-apellidos').value,
-                correo: document.getElementById('edit-correo').value,
-                banco: document.getElementById('edit-banco').value,
-                moneda: document.getElementById('edit-moneda').value,
-                cuenta: document.getElementById('edit-cuenta').value,
-                cci: document.getElementById('edit-cci').value,
-                celular: document.getElementById('edit-celular').value,
-                pais: document.getElementById('edit-pais').value,
-                ciudad: document.getElementById('edit-ciudad').value,
-                estado_region: document.getElementById('edit-estado_region').value,
-                direccion: document.getElementById('edit-direccion').value,
-                tipo_cuenta: document.getElementById('edit-tipo_cuenta').value,
-                tipo_ruta: document.getElementById('edit-tipo_ruta').value,
-                codigo_ruta: document.getElementById('edit-codigo_ruta').value
-            };
-
-            try {
-                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
-                const result = await res.json();
-                if(result.status === "success") {
-                    showToast("Datos actualizados correctamente.", "success");
-                    editableFields.forEach(f => {
-                        const val = document.getElementById(`edit-${f}`).value;
-                        document.getElementById(`view-${f}`).innerText = val || '-';
-                    });
-                    document.getElementById('det-subtitle').innerHTML = `Docente: ${payload.nombres} ${payload.apellidos}`;
-                    cancelEdit();
-                } else {
-                    showToast("No se pudo actualizar.", "danger");
-                    cancelEdit();
-                }
-            } catch(e) {
-                showToast("Error de red.", "danger");
-                cancelEdit();
             }
         }
 
