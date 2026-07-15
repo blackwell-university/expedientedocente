@@ -112,6 +112,10 @@
         .stat-title { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 5px; font-weight: 600; }
         .stat-value { font-size: 2rem; font-weight: 800; color: var(--text-main); line-height: 1; letter-spacing: -0.03em; }
 
+        /* NUEVO: estado de carga (mientras se obtienen los datos reales) */
+        @keyframes skeletonPulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        .skeleton-text { background: #e2e8f0; border-radius: 6px; width: 50px; height: 1.6rem; display: inline-block; animation: skeletonPulse 1.3s ease-in-out infinite; }
+
         /* Paneles Detallados */
         .panel-card {
             background: white; border-radius: var(--card-radius); padding: 32px; border: 1px solid rgba(0,0,0,0.04);
@@ -135,6 +139,23 @@
 
         .view-all-link { display: inline-block; width: 100%; text-align: center; color: var(--primary); font-weight: 600; font-size: 0.9rem; text-decoration: none; margin-top: 20px; padding: 12px; background: #eff6ff; border-radius: 12px; transition: var(--transition); }
         .view-all-link:hover { background: var(--primary); color: white; }
+
+        /* --- NUEVO: PANEL DE ACCESOS RÁPIDOS Y AYUDA --- */
+        .quick-actions-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .quick-action-btn {
+            display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
+            padding: 16px; background: #f8fafc; border: 1px solid transparent; border-radius: 14px;
+            text-decoration: none; color: var(--text-main); font-weight: 700; font-size: 0.85rem;
+            transition: var(--transition);
+        }
+        .quick-action-btn:hover { border-color: #e2e8f0; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.03); transform: translateY(-2px); color: var(--text-main); }
+        .quick-action-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+
+        .help-item { border: 1px solid var(--gray-border, #e2e8f0); border-radius: 12px !important; overflow: hidden; margin-bottom: 8px; }
+        .help-btn { font-size: 0.85rem; font-weight: 600; padding: 12px 16px; background: #fafbfc; color: var(--text-main); }
+        .help-btn:not(.collapsed) { background: #eff6ff; color: var(--primary-dark); box-shadow: none; }
+        .help-btn:focus { box-shadow: none; }
+        .help-body { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; padding: 14px 16px; }
 
         /* Actividad Reciente */
         .activity-item { display: flex; gap: 16px; padding: 16px; background-color: #f8fafc; border-radius: 14px; margin-bottom: 12px; border: 1px solid transparent; transition: var(--transition); }
@@ -169,6 +190,10 @@
             header, .content-area { padding: 16px; }
             .page-header { flex-direction: column; align-items: flex-start; gap: 16px; margin-bottom: 24px; }
             .stat-card { margin-bottom: 10px; }
+            .panel-card { padding: 20px; }
+        }
+        @media (max-width: 420px) {
+            .quick-actions-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -242,162 +267,144 @@
                 <!-- Fila de Estadísticas -->
                 <div class="row g-4 mb-4">
                     <!-- Stat 1 -->
-                    <div class="col-md-6 col-xl-3">
+                    <div class="col-md-6 col-xl-4">
                         <div class="stat-card">
                             <div class="stat-header">
                                 <div class="stat-icon icon-blue">
                                     <i class="fa-solid fa-user-group"></i>
                                 </div>
-                                <!--<div class="stat-trend">
-                                    <i class="fa-solid fa-arrow-trend-up"></i> +12
-                                </div>-->
                             </div>
                             <div>
                                 <div class="stat-title">Total Docentes</div>
-                                <div class="stat-value">156</div>
+                                <div class="stat-value skeleton-text" id="statTotalDocentes">&nbsp;</div>
                             </div>
                         </div>
                     </div>
                     <!-- Stat 2 -->
-                    <div class="col-md-6 col-xl-3">
+                    <div class="col-md-6 col-xl-4">
                         <div class="stat-card">
                             <div class="stat-header">
                                 <div class="stat-icon icon-green">
                                     <i class="fa-regular fa-circle-check"></i>
                                 </div>
-                                <!--<div class="stat-trend">
-                                    <i class="fa-solid fa-arrow-trend-up"></i> +8
-                                </div>-->
                             </div>
                             <div>
                                 <div class="stat-title">Expedientes Aprobados</div>
-                                <div class="stat-value">142</div>
+                                <div class="stat-value skeleton-text" id="statExpedientesAprobados">&nbsp;</div>
                             </div>
                         </div>
                     </div>
                     <!-- Stat 3 -->
-                    <div class="col-md-6 col-xl-3">
+                    <div class="col-md-6 col-xl-4">
                         <div class="stat-card">
                             <div class="stat-header">
                                 <div class="stat-icon icon-yellow">
                                     <i class="fa-regular fa-clock"></i>
                                 </div>
-                                <!--<div class="stat-trend" style="background:#fef2f2; color:#ef4444;">
-                                    <i class="fa-solid fa-arrow-trend-down"></i> -3
-                                </div>-->
                             </div>
                             <div>
                                 <div class="stat-title">Pendientes de Revisión</div>
-                                <div class="stat-value">14</div>
+                                <div class="stat-value skeleton-text" id="statPendientesRevision">&nbsp;</div>
                             </div>
                         </div>
                     </div>
-                    <!-- Stat 4
-                    <div class="col-md-6 col-xl-3">
-                        <div class="stat-card">
-                            <div class="stat-header">
-                                <div class="stat-icon icon-purple">
-                                    <i class="fa-regular fa-file-lines"></i>
-                                </div>
-                                <div class="stat-trend">
-                                    <i class="fa-solid fa-arrow-trend-up"></i> +156
-                                </div>
-                            </div>
-                            <div>
-                                <div class="stat-title">Documentos Procesados</div>
-                                <div class="stat-value">1,247</div>
-                            </div>
-                        </div>
-                    </div> -->
                 </div>
 
-                <!-- Fila de Paneles Detallados 
+                <!-- Fila de Paneles Detallados -->
                 <div class="row g-4">
+                    <!-- Panel: Expedientes Pendientes de Revisión (datos reales) -->
                     <div class="col-lg-6">
                         <div class="panel-card">
                             <h3 class="panel-title">
-                                <i class="fa-solid fa-circle-exclamation text-warning"></i> Expedientes Pendientes
+                                <i class="fa-solid fa-circle-exclamation text-warning"></i> Expedientes Pendientes de Revisión
                             </h3>
-
-                            <div class="list-block">
-                                <div class="list-info">
-                                    <b>Dra. Laura Fernández</b>
-                                    <span>Matemáticas</span>
-                                </div>
-                                <div class="time-badge">2 días</div>
+                            <div id="contenedorExpedientesPendientes">
+                                <div class="text-center text-muted py-4"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando expedientes...</div>
                             </div>
-
-                            <div class="list-block">
-                                <div class="list-info">
-                                    <b>Prof. Miguel Ángel Torres</b>
-                                    <span>Física</span>
-                                </div>
-                                <div class="time-badge">3 días</div>
-                            </div>
-
-                            <div class="list-block">
-                                <div class="list-info">
-                                    <b>Dra. Carmen Ruiz</b>
-                                    <span>Química</span>
-                                </div>
-                                <div class="time-badge" style="background: #fef2f2; color: #ef4444;">1 día</div>
-                            </div>
-
-                            <div class="list-block">
-                                <div class="list-info">
-                                    <b>Prof. José Antonio García</b>
-                                    <span>Biología</span>
-                                </div>
-                                <div class="time-badge">5 días</div>
-                            </div>
-
                             <a href="gestion-expedientes.html" class="view-all-link">Revisar todos los expedientes</a>
                         </div>
-                    </div>-->
+                    </div>
 
-                    <!-- Panel: Actividad Reciente 
+                    <!-- NUEVO: Panel de Accesos Rápidos y Ayuda -->
                     <div class="col-lg-6">
                         <div class="panel-card">
                             <h3 class="panel-title">
-                                <i class="fa-solid fa-bolt" style="color: var(--primary);"></i> Actividad Reciente
+                                <i class="fa-solid fa-bolt" style="color: var(--primary);"></i> Accesos Rápidos
                             </h3>
 
-                            <div class="activity-item">
-                                <div class="activity-dot"></div>
-                                <div class="activity-details">
-                                    <b>Expediente aprobado</b>
-                                    <span>Dr. Carlos Martínez ha sido habilitado en el sistema.</span>
-                                    <small><i class="fa-regular fa-clock me-1"></i> Hace 15 minutos</small>
-                                </div>
+                            <div class="quick-actions-grid mb-4">
+                                <a href="registrodocente.html" class="quick-action-btn">
+                                    <div class="quick-action-icon icon-blue"><i class="fa-solid fa-user-plus"></i></div>
+                                    <span>Nuevo Docente</span>
+                                </a>
+                                <a href="gestion-expedientes.html" class="quick-action-btn">
+                                    <div class="quick-action-icon icon-yellow"><i class="fa-solid fa-folder-open"></i></div>
+                                    <span>Ver Expedientes</span>
+                                </a>
+                                <a href="gestion-docentes.html" class="quick-action-btn">
+                                    <div class="quick-action-icon icon-green"><i class="fa-solid fa-users"></i></div>
+                                    <span>Plana Docente</span>
+                                </a>
+                                <a href="gestion-cursos.html" class="quick-action-btn">
+                                    <div class="quick-action-icon icon-purple"><i class="fa-solid fa-book-open"></i></div>
+                                    <span>Gestión Cursos</span>
+                                </a>
                             </div>
 
-                            <div class="activity-item">
-                                <div class="activity-dot" style="background: #10b981; box-shadow: 0 0 0 3px #f0fdf4;"></div>
-                                <div class="activity-details">
-                                    <b>Nuevo docente registrado</b>
-                                    <span>Dra. Ana López completó su formulario de registro.</span>
-                                    <small><i class="fa-regular fa-clock me-1"></i> Hace 1 hora</small>
+                            <h3 class="panel-title" style="font-size: 1rem; margin-bottom: 14px;">
+                                <i class="fa-regular fa-circle-question" style="color: var(--primary);"></i> Guía Rápida
+                            </h3>
+
+                            <div class="accordion" id="accordionAyuda">
+                                <div class="accordion-item help-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed help-btn" type="button" data-bs-toggle="collapse" data-bs-target="#ayuda1">
+                                            ¿Qué significa cada estado de un expediente?
+                                        </button>
+                                    </h2>
+                                    <div id="ayuda1" class="accordion-collapse collapse" data-bs-parent="#accordionAyuda">
+                                        <div class="accordion-body help-body">
+                                            El expediente avanza por etapas: <b>Recibido/Verificado</b> (el docente subió sus documentos), <b>Por contratar</b> (ya se generaron los documentos de contratación), <b>Contrato enviado</b> (esperando que el docente firme), <b>Firmado</b> (el docente ya firmó todo) y <b>Contratado</b> (los directores también firmaron — proceso terminado).
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item help-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed help-btn" type="button" data-bs-toggle="collapse" data-bs-target="#ayuda2">
+                                            ¿Cómo genero los documentos de un docente?
+                                        </button>
+                                    </h2>
+                                    <div id="ayuda2" class="accordion-collapse collapse" data-bs-parent="#accordionAyuda">
+                                        <div class="accordion-body help-body">
+                                            Entra al expediente del docente desde <b>Expedientes</b>, ve a la pestaña "Datos del Expediente", selecciona los documentos que necesites en el modal de generación y presiona "Generar Documentos". Se crean automáticamente en Google Docs con los datos del docente.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item help-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed help-btn" type="button" data-bs-toggle="collapse" data-bs-target="#ayuda3">
+                                            El docente no puede iniciar sesión, ¿qué hago?
+                                        </button>
+                                    </h2>
+                                    <div id="ayuda3" class="accordion-collapse collapse" data-bs-parent="#accordionAyuda">
+                                        <div class="accordion-body help-body">
+                                            Entra a su expediente y usa el botón <b>"Enviar Credenciales"</b> en Acciones Administrativas — le vuelve a mandar su usuario y contraseña temporal al correo institucional registrado.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item help-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed help-btn" type="button" data-bs-toggle="collapse" data-bs-target="#ayuda4">
+                                            ¿Puedo editar o eliminar un docente ya registrado?
+                                        </button>
+                                    </h2>
+                                    <div id="ayuda4" class="accordion-collapse collapse" data-bs-parent="#accordionAyuda">
+                                        <div class="accordion-body help-body">
+                                            Sí, desde <b>Gestión de Docentes</b> — el ícono de lápiz edita sus datos básicos, y el de basura lo elimina (bloqueado automáticamente si ya tiene expedientes registrados, para evitar perder información).
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-
-                            <div class="activity-item">
-                                <div class="activity-dot" style="background: #eab308; box-shadow: 0 0 0 3px #fefce8;"></div>
-                                <div class="activity-details">
-                                    <b>Documentos en revisión</b>
-                                    <span>Prof. Juan Pérez actualizó sus diplomas y CV.</span>
-                                    <small><i class="fa-regular fa-clock me-1"></i> Hace 2 horas</small>
-                                </div>
-                            </div>
-
-                            <div class="activity-item">
-                                <div class="activity-dot" style="background: #a855f7; box-shadow: 0 0 0 3px #faf5ff;"></div>
-                                <div class="activity-details">
-                                    <b>Contrato enviado (FORM 402)</b>
-                                    <span>Se envió la propuesta al Dr. Roberto Silva.</span>
-                                    <small><i class="fa-regular fa-clock me-1"></i> Hace 4 horas</small>
-                                </div>
-                            </div>-->
-                            
                         </div>
                     </div>
                 </div>
@@ -406,7 +413,10 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
+
         function logout() {
             if(confirm("¿Estás seguro que deseas cerrar sesión?")) {
                 localStorage.clear();
@@ -425,7 +435,90 @@
             // Actualizar el texto del rol en el sidebar (para que no todos digan "Administrador")
             const roleSpan = document.querySelector('.user-meta span');
             if(roleSpan) roleSpan.innerText = role;
+
+            cargarEstadisticasReales();
         });
+
+        // NUEVO: trae los datos reales del sistema (antes las 3 tarjetas y el panel de pendientes eran fijos/de ejemplo)
+        async function cargarEstadisticasReales() {
+            try {
+                const [resDocentes, resExpedientes] = await Promise.all([
+                    fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_all_teachers' }) }).then(r => r.json()),
+                    fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_all_expedientes_global' }) }).then(r => r.json())
+                ]);
+
+                if (resDocentes.status === 'success') {
+                    pintarValor('statTotalDocentes', resDocentes.data.length);
+                }
+
+                if (resExpedientes.status === 'success') {
+                    const expedientes = resExpedientes.data || [];
+                    const aprobados = expedientes.filter(e => e.estado === 'Aprobado').length;
+                    // "Pendientes de Revisión" = el docente ya completó su expediente y está listo para que lo revisen
+                    const pendientes = expedientes.filter(e => e.estado === 'Completado');
+
+                    pintarValor('statExpedientesAprobados', aprobados);
+                    pintarValor('statPendientesRevision', pendientes.length);
+
+                    renderExpedientesPendientes(pendientes);
+                } else {
+                    document.getElementById('contenedorExpedientesPendientes').innerHTML = '<p class="text-danger text-center py-3 m-0">No se pudieron cargar los expedientes.</p>';
+                }
+            } catch (e) {
+                console.error('Error cargando estadísticas del dashboard:', e);
+                document.getElementById('contenedorExpedientesPendientes').innerHTML = '<p class="text-danger text-center py-3 m-0">Error de conexión.</p>';
+            }
+        }
+
+        function pintarValor(idElemento, valor) {
+            const el = document.getElementById(idElemento);
+            if (!el) return;
+            el.classList.remove('skeleton-text');
+            el.style.width = 'auto'; el.style.height = 'auto';
+            el.innerText = valor;
+        }
+
+        // Calcula hace cuántos días se creó el expediente, a partir de fechaCreacion (formato dd/mm/yyyy o ISO)
+        function calcularDiasDesde(fechaStr) {
+            if (!fechaStr) return null;
+            let fecha;
+            const partesSlash = String(fechaStr).split('/');
+            if (partesSlash.length === 3) {
+                fecha = new Date(partesSlash[2], partesSlash[1] - 1, partesSlash[0]);
+            } else {
+                fecha = new Date(fechaStr);
+            }
+            if (isNaN(fecha.getTime())) return null;
+            const hoy = new Date(); hoy.setHours(0,0,0,0); fecha.setHours(0,0,0,0);
+            return Math.round((hoy - fecha) / (1000 * 60 * 60 * 24));
+        }
+
+        function renderExpedientesPendientes(lista) {
+            const cont = document.getElementById('contenedorExpedientesPendientes');
+            if (!cont) return;
+
+            if (lista.length === 0) {
+                cont.innerHTML = '<p class="text-muted text-center py-3 m-0" style="font-size:0.9rem;"><i class="fa-regular fa-circle-check me-2 text-success"></i>No hay expedientes pendientes de revisión.</p>';
+                return;
+            }
+
+            // Los más antiguos primero (los que más tiempo llevan esperando)
+            const ordenados = [...lista].sort((a, b) => (calcularDiasDesde(b.fechaCreacion) || 0) - (calcularDiasDesde(a.fechaCreacion) || 0));
+
+            cont.innerHTML = ordenados.slice(0, 5).map(exp => {
+                const dias = calcularDiasDesde(exp.fechaCreacion);
+                const diasTexto = dias === null ? '—' : (dias === 0 ? 'Hoy' : `${dias} día${dias === 1 ? '' : 's'}`);
+                const esUrgente = dias !== null && dias >= 3;
+                return `
+                <a href="expediente.html?expId=${exp.idExpediente}" class="list-block" style="text-decoration:none;">
+                    <div class="list-info">
+                        <b>${exp.nombreDocente}</b>
+                        <span>Exp: ${exp.idExpediente}</span>
+                    </div>
+                    <div class="time-badge" style="${esUrgente ? 'background:#fef2f2; color:#ef4444;' : ''}">${diasTexto}</div>
+                </a>`;
+            }).join('');
+        }
 
         function toggleSidebar() {
             const sb = document.getElementById('sidebar');

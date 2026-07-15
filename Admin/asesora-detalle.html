@@ -22,6 +22,10 @@
         .brand-section { display: flex; align-items: center; gap: 12px; padding: 0 12px 32px; text-decoration: none; }
         .logo-box { min-width: 42px; height: 42px; background: var(--primary-dark); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
         .brand-text { font-weight: 800; font-size: 1.2rem; color: var(--primary-dark); }
+        .user-preview { display: flex; align-items: center; gap: 12px; padding: 12px; background: #f1f5f9; border-radius: 16px; margin-bottom: 24px; }
+        .avatar { min-width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 13px; }
+        .user-meta { display: flex; flex-direction: column; line-height: 1.2; }
+        .user-meta b { font-size: 13px; } .user-meta span { font-size: 11px; color: var(--text-muted); }
         .nav-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
         .nav-link { display: flex; align-items: center; gap: 16px; padding: 12px 14px; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 6px; transition: 0.2s; }
         .nav-link:hover, .nav-link.active { background: #eff6ff; color: var(--primary); font-weight: 600; }
@@ -47,45 +51,106 @@
 
         /* Agenda Original */
         .agenda-list { display: flex; flex-direction: column; gap: 10px; background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid var(--gray-border); }
-        .agenda-item { display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; padding-bottom: 8px; border-bottom: 1px dashed var(--gray-border); }
+        /* FIX: antes badge+fecha+hora iban en una sola fila con justify-content:space-between,
+           y en columnas angostas el texto de la hora se partía a la mitad ("a" solo en su propia
+           línea). Ahora es un layout de 2 líneas: arriba badge+fecha, abajo el rango de hora. */
+        .agenda-item { display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem; padding-bottom: 10px; border-bottom: 1px dashed var(--gray-border); }
         .agenda-item:last-child { padding-bottom: 0; border-bottom: none; }
-        .agenda-badge { background: var(--primary-light); color: var(--primary); font-weight: 800; font-size: 0.7rem; padding: 3px 8px; border-radius: 6px; }
+        .agenda-item-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .agenda-badge { background: var(--primary-light); color: var(--primary); font-weight: 800; font-size: 0.7rem; padding: 3px 8px; border-radius: 6px; flex-shrink: 0; }
+        .agenda-time { color: var(--text-muted); font-size: 0.8rem; display: flex; align-items: center; gap: 6px; }
 
         /* Sesiones dinámicas */
         .session-card { background: #f8fafc; border: 1px solid var(--gray-border); border-radius: 12px; padding: 20px; margin-bottom: 15px; transition: 0.3s;}
         .session-card.realizada { border-left: 4px solid #10b981; }
         .session-card.reprogramada { border-left: 4px solid #f59e0b; }
         .session-card.pendiente { border-left: 4px solid var(--text-muted); }
-        
+        .session-card-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+        .session-badge-num { background: var(--primary-dark); color: white; font-weight: 700; font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; }
+
         .form-control, .form-select { border-radius: 8px; border-color: #cbd5e1; font-size: 0.9rem; }
         .form-control:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
-        
+
+        /* NUEVO: select de estado más minimalista (antes tenía emojis y look genérico de bootstrap) */
+        .sel-estado { border-radius: 8px; font-weight: 700; font-size: 0.8rem; padding: 6px 30px 6px 12px; border: 1px solid var(--gray-border); background-color: #f1f5f9; color: var(--text-muted); cursor: pointer; }
+        .sel-estado.estado-realizada { background-color: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+        .sel-estado.estado-reprogramada { background-color: #fffbeb; color: #b45309; border-color: #fde68a; }
+
         .btn-add { background: transparent; border: 2px dashed #cbd5e1; color: var(--text-muted); font-weight: 700; font-size: 0.9rem; border-radius: 12px; padding: 12px; width: 100%; transition: 0.2s; }
         .btn-add:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
         
-        .btn-delete { background: #fee2e2; color: #ef4444; border: none; border-radius: 8px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .btn-delete { background: #fee2e2; color: #ef4444; border: none; border-radius: 8px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; transition: 0.2s; flex-shrink: 0; }
         .btn-delete:hover { background: #ef4444; color: white; }
 
-        /* Botones de guardado locales */
-        .btn-save-local { background: var(--primary-dark); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; transition: 0.2s; }
-        .btn-save-local:hover { background: var(--primary); }
+        /* NUEVO: header de cada form-card con el badge y el botón de guardar, en la misma línea
+           que combina con el resto del sistema (antes se apretaba mucho en pantallas angostas) */
+        .form-card-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+
+        /* Botones de guardado locales — mismo lenguaje visual que .btn-primary del resto del sistema */
+        .btn-save-local {
+            background: var(--primary-dark); color: white; border: none; padding: 10px 20px;
+            border-radius: 10px; font-weight: 700; font-size: 0.85rem; transition: var(--transition, 0.2s);
+            display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15);
+            flex-shrink: 0;
+        }
+        .btn-save-local:hover { background: var(--primary); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(37, 99, 235, 0.2); }
+
+        /* NUEVO: overlay oscuro + menú lateral flotante en móvil (esta página no tenía versión responsive) */
+        .sidebar-overlay {
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.4);
+            z-index: 999; backdrop-filter: blur(3px); opacity: 0; transition: opacity 0.3s ease;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed; left: -280px; top: 0;
+                height: 100vh; z-index: 1000; width: 260px !important;
+                box-shadow: 10px 0 30px rgba(0,0,0,0.15); transition: left 0.3s ease;
+            }
+            .sidebar.show-mobile { left: 0; }
+            .sidebar-overlay.active { display: block; opacity: 1; }
+            header { padding: 15px 20px; }
+            .content-area { padding: 20px 15px; }
+            .page-header h1 { font-size: 1.5rem; }
+            .form-card { padding: 18px; }
+            .profile-header { flex-wrap: wrap; }
+
+            /* NUEVO: botones de guardado a ancho completo en móvil (más fácil de tocar) */
+            .form-card-header { flex-direction: column; align-items: stretch; }
+            .btn-save-local { justify-content: center; width: 100%; }
+
+            /* NUEVO: el botón de eliminar enlace no se ve bien centrado solo en su columna al apilarse */
+            .link-row .col-md-1 { justify-content: flex-start !important; margin-top: -4px; }
+
+            .session-card { padding: 16px; }
+            .session-badge-num { font-size: 0.68rem; }
+        }
     </style>
 </head>
 <body>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
 
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
         <a href="#" class="brand-section">
             <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div><span class="brand-text">Blackwell</span>
         </a>
-        <ul class="nav-list mt-4">
+        <div class="user-preview">
+            <div class="avatar">AA</div><div class="user-meta"><b>Asesora Académica</b><span>Gestión de Cursos</span></div>
+        </div>
+        <ul class="nav-list">
             <li><a href="asesora-dashboard.html" class="nav-link active"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Gestión de Clases</span></a></li>
         </ul>
-        <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</a>
+        <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;"><i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span></a>
     </aside>
 
     <main class="main-wrapper">
         <header>
-            <div><h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Área Académica</h5><p class="text-muted small m-0">Portal de Asesoría</p></div>
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn border-0 p-0 d-md-none text-dark fs-4" onclick="toggleMobileSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div><h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Área Académica</h5><p class="text-muted small m-0">Portal de Asesoría</p></div>
+            </div>
         </header>
 
         <div class="content-area">
@@ -129,10 +194,10 @@
                         
                         <!-- ENLACES DE CLASE (GUARDADO CONTEXTUAL) -->
                         <div class="form-card">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="form-card-header">
                                 <span class="section-badge m-0" style="background:#fef3c7; color:#b45309;"><i class="fa-solid fa-link me-2"></i>Enlaces Virtuales de la Clase</span>
                                 <button type="button" class="btn-save-local" id="btnSaveLinks" onclick="guardarEnlaces()">
-                                    <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Enlaces
+                                    <i class="fa-solid fa-floppy-disk"></i> Guardar Enlaces
                                 </button>
                             </div>
                             <p class="text-muted small mb-4">Añada los enlaces de videoconferencia para que estén disponibles en el portal del profesor.</p>
@@ -145,10 +210,10 @@
 
                         <!-- CONTROL DE SESIONES (GUARDADO CONTEXTUAL) -->
                         <div class="form-card">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="form-card-header">
                                 <span class="section-badge m-0" style="background:#e0e7ff; color:#3730a3;"><i class="fa-solid fa-calendar-check me-2"></i>Asistencias y Reprogramaciones</span>
                                 <button type="button" class="btn-save-local" id="btnSaveSessions" onclick="guardarSesiones()">
-                                    <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Asistencias
+                                    <i class="fa-solid fa-floppy-disk"></i> Guardar Asistencias
                                 </button>
                             </div>
                             <p class="text-muted small mb-4">Actualice el dictado de cada sesión o configure una fecha y horario alternativo si se solicita una reprogramación.</p>
@@ -230,18 +295,19 @@
                     const diasArr = inv.diasElegidos ? inv.diasElegidos.split(',').map(s=>s.trim()) : [];
                     const horasArr = inv.horasElegidas ? inv.horasElegidas.split('|').map(s=>s.trim()) : [];
                     
-                    let htmlAgenda = '<div class="agenda-list">';
+                    let htmlAgenda = '';
                     diasArr.forEach((dia, idx) => {
                         let horaStr = horasArr[idx] || "";
                         if(horaStr.includes(': ')) horaStr = horaStr.split(/:\s*(.*)/s)[1].trim();
                         htmlAgenda += `
                         <div class="agenda-item">
-                            <span class="agenda-badge">Sesión ${idx + 1}</span>
-                            <span class="fw-bold text-dark">${dia}</span>
-                            <span class="text-muted font-monospace">${horaStr}</span>
+                            <div class="agenda-item-top">
+                                <span class="agenda-badge">Sesión ${idx + 1}</span>
+                                <span class="fw-bold text-dark">${dia}</span>
+                            </div>
+                            <span class="agenda-time"><i class="fa-regular fa-clock"></i> ${horaStr}</span>
                         </div>`;
                     });
-                    htmlAgenda += '</div>';
                     document.getElementById('contenedorAgendaOriginal').innerHTML = htmlAgenda || '<p class="text-muted m-0">No se encontraron clases agendadas.</p>';
 
                     // Parsear Enlaces (Columna P)
@@ -352,12 +418,12 @@
 
                 html += `
                 <div class="session-card ${claseClp} ses-row" data-index="${idx}">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="fw-bold m-0"><span class="badge bg-secondary me-2">Sesión ${ses.num}</span> Programación Original</h6>
-                        <select class="form-select form-select-sm fw-bold w-auto sel-estado" onchange="cambiarEstadoSesion(${idx}, this)" style="background-color: transparent; border-color: var(--gray-border);">
-                            <option value="Pendiente" ${ses.estado === 'Pendiente' ? 'selected' : ''}>Pendiente ⏳</option>
-                            <option value="Realizada" ${ses.estado === 'Realizada' ? 'selected' : ''}>Realizada ✅</option>
-                            <option value="Reprogramada" ${ses.estado === 'Reprogramada' ? 'selected' : ''}>Reprogramada 🔄</option>
+                    <div class="session-card-header">
+                        <h6 class="fw-bold m-0"><span class="session-badge-num me-2">Sesión ${ses.num}</span> Programación Original</h6>
+                        <select class="form-select form-select-sm fw-bold w-auto sel-estado estado-${claseClp}" onchange="cambiarEstadoSesion(${idx}, this)">
+                            <option value="Pendiente" ${ses.estado === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
+                            <option value="Realizada" ${ses.estado === 'Realizada' ? 'selected' : ''}>Realizada</option>
+                            <option value="Reprogramada" ${ses.estado === 'Reprogramada' ? 'selected' : ''}>Reprogramada</option>
                         </select>
                     </div>
                     
@@ -398,6 +464,10 @@
             
             card.classList.remove('pendiente', 'realizada', 'reprogramada');
             card.classList.add(selectEl.value.toLowerCase());
+
+            // NUEVO: recolorear el select para que combine con el estado elegido
+            selectEl.classList.remove('estado-pendiente', 'estado-realizada', 'estado-reprogramada');
+            selectEl.classList.add('estado-' + selectEl.value.toLowerCase());
 
             const box = card.querySelector('.reprogramacion-box');
             if (selectEl.value === 'Reprogramada') {
@@ -486,6 +556,10 @@
         }
 
         function logout() { localStorage.clear(); window.location.href = "../index.html"; }
+        function toggleMobileSidebar() {
+            document.getElementById('sidebar').classList.toggle('show-mobile');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+        }
     </script>
 </body>
 </html>

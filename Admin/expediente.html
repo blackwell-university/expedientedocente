@@ -91,11 +91,16 @@
         .input-modern { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px; font-size: 0.95rem; color: #334155; width: 100%; transition: 0.2s;}
         .input-modern:focus { background-color: #ffffff; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); outline: none;}
 
-        .file-item { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; transition: 0.2s; }
+        .file-item { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; transition: 0.2s; }
         .file-item:hover { border-color: var(--primary); background: #eff6ff; }
-        .file-info { display: flex; align-items: center; gap: 12px; overflow: hidden;}
-        .file-info i { font-size: 1.4rem; color: var(--primary); }
-        .file-name { font-size: 0.9rem; font-weight: 600; color: #334155; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;}
+        /* FIX: antes .file-info no tenía flex-basis/min-width propios, y como tenía overflow:hidden,
+           el navegador lo dejaba encoger hasta 0px cuando los botones de al lado (ahora son 4, antes
+           eran 1-2) necesitaban más espacio — por eso el nombre del archivo desaparecía por completo
+           en vez de solo truncarse con "...". Ahora tiene un ancho mínimo garantizado. */
+        .file-info { display: flex; align-items: center; gap: 10px; overflow: hidden; flex: 1 1 140px; min-width: 90px; }
+        .file-info i { font-size: 1.4rem; color: var(--primary); flex-shrink: 0; }
+        .file-name { font-size: 0.9rem; font-weight: 600; color: #334155; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+        .file-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex-shrink: 0; }
         .btn-ver-file { font-size: 0.8rem; font-weight: 700; color: var(--primary); text-decoration: none; background: #e0e7ff; padding: 6px 12px; border-radius: 8px; flex-shrink: 0; cursor: pointer; border: none;}
 
         /* Toolbar de acciones */
@@ -275,6 +280,33 @@
             .action-buttons-bar { flex-direction: column; }
             .btn-action { width: 100%; text-align: center; }
             .documents-table th, .documents-table td { padding: 10px 8px; font-size: 0.7rem; }
+
+            /* NUEVO: menú lateral flotante (off-canvas) en móvil — esta página no lo tenía */
+            .sidebar {
+                position: fixed; left: -280px; top: 0;
+                height: 100vh; z-index: 1000; width: 260px !important;
+                box-shadow: 10px 0 30px rgba(0,0,0,0.15);
+            }
+            .sidebar.show-mobile { left: 0; }
+            .sidebar.collapsed { width: 260px !important; }
+            .collapse-btn { display: none; }
+            .sidebar-overlay.active { display: block; opacity: 1; }
+
+            /* NUEVO: otros elementos que se veían apretados en pantallas angostas */
+            .breadcrumb-nav { margin-bottom: 16px; font-size: 13px; }
+            .section-badge { font-size: 0.68rem; padding: 5px 10px; }
+            .accordion-button { font-size: 0.82rem; padding: 12px 14px; }
+            .diploma-mini-card { padding: 12px 14px; }
+            .file-item { padding: 12px 14px; }
+            .file-actions { width: 100%; justify-content: flex-start; }
+            .nav-tabs .nav-link { padding: 10px 14px; font-size: 0.85rem; }
+        }
+
+        /* NUEVO: overlay oscuro para el menú móvil (antes esta página no tenía versión móvil del sidebar) */
+        .sidebar-overlay {
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.4);
+            z-index: 999; backdrop-filter: blur(3px); opacity: 0; transition: opacity 0.3s ease;
         }
 
         /* --- PIPELINE STAGES (ESTILO ACME INC) --- */
@@ -351,6 +383,9 @@
 </head>
 <body>
 
+    <!-- NUEVO: Overlay oscuro para menú móvil -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
+
     <aside class="sidebar" id="sidebar">
         <div class="collapse-btn" onclick="toggleSidebar()"><i class="fa-solid fa-chevron-left" id="toggleIcon"></i></div>
         <a href="#" class="brand-section">
@@ -374,9 +409,15 @@
 
     <main class="main-wrapper">
         <header>
-            <div>
-                <h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Gestión de Personal</h5>
-                <p class="text-muted small m-0">Portal Administrativo</p>
+            <div class="d-flex align-items-center gap-3">
+                <!-- NUEVO: Botón hamburguesa, solo visible en móvil -->
+                <button class="btn border-0 p-0 d-md-none text-dark fs-4" onclick="toggleMobileSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div>
+                    <h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Gestión de Personal</h5>
+                    <p class="text-muted small m-0">Portal Administrativo</p>
+                </div>
             </div>
             <div class="d-flex align-items-center gap-3">
                 <div class="bg-white px-3 py-2 rounded-pill shadow-sm d-flex gap-2 align-items-center">
@@ -392,6 +433,7 @@
                 <div class="breadcrumb-nav">
                     <a href="gestion-expedientes.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Volver a Revisión de Expedientes</a>
                 </div>
+
 
                 <div class="page-header">
                     <div>
@@ -991,6 +1033,12 @@
             document.getElementById('sidebar').classList.toggle('collapsed');
         }
 
+        // NUEVO: abre/cierra el menú lateral flotante en móvil
+        function toggleMobileSidebar() {
+            document.getElementById('sidebar').classList.toggle('show-mobile');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+        }
+
         function logout() { 
             if(confirm("¿Cerrar sesión?")) { 
                 localStorage.clear(); 
@@ -1197,13 +1245,13 @@
 
         function crearItemArchivo(nombre, url, tipo = '', idDiploma = '', urlEn = '') {
             return `
-            <div class="col-md-6">
+            <div class="col-12 col-lg-6">
                 <div class="file-item" data-tipo="${tipo}" data-iddiploma="${idDiploma}" data-url-original="${url}">
                     <div class="file-info">
                         <i class="fa-regular fa-file-pdf"></i>
                         <span class="file-name">${nombre}</span>
                     </div>
-                    <div class="d-flex align-items-center gap-2">
+                    <div class="d-flex align-items-center gap-2 file-actions">
                         <!-- Ahora usa getDriveViewUrl para abrir la vista previa -->
                         <a href="${getDriveViewUrl(url)}" target="_blank" class="btn-ver-file">Abrir</a>
                         <!-- NUEVO: descarga directa del archivo original (ya es un link de descarga de Drive) -->
