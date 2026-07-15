@@ -962,7 +962,10 @@
                             document.querySelectorAll('#contenedor-adjuntos-revision .file-item').forEach(item => {
                                 if (item.dataset.tipo === p.tipo && String(item.dataset.iddiploma) === String(p.idDiploma)) {
                                     const slot = item.querySelector('.doc-en-slot');
-                                    if (slot) slot.innerHTML = `<a href="${getDriveViewUrl(urlActual)}" target="_blank" class="btn-ver-file btn-ver-file-en" title="Versión en inglés">EN</a>`;
+                                    if (slot) slot.innerHTML = `
+                                        <a href="${getDriveViewUrl(urlActual)}" target="_blank" class="btn-ver-file btn-ver-file-en" title="Ver versión en inglés">EN</a>
+                                        <a href="${getDriveEditUrl(urlActual)}" target="_blank" class="btn-ver-file btn-ver-file-en" title="Editar versión en inglés"><i class="fa-solid fa-pen"></i></a>
+                                    `;
                                 }
                             });
                             huboCambios = true;
@@ -1205,7 +1208,10 @@
                         <a href="${getDriveViewUrl(url)}" target="_blank" class="btn-ver-file">Abrir</a>
                         <!-- NUEVO: descarga directa del archivo original (ya es un link de descarga de Drive) -->
                         <a href="${url}" download class="btn-ver-file" title="Descargar"><i class="fa-solid fa-download"></i></a>
-                        <span class="doc-en-slot">${urlEn ? `<a href="${getDriveViewUrl(urlEn)}" target="_blank" class="btn-ver-file btn-ver-file-en" title="Versión en inglés">EN</a>` : ''}</span>
+                        <span class="doc-en-slot">${urlEn ? `
+                            <a href="${getDriveViewUrl(urlEn)}" target="_blank" class="btn-ver-file btn-ver-file-en" title="Ver versión en inglés">EN</a>
+                            <a href="${getDriveEditUrl(urlEn)}" target="_blank" class="btn-ver-file btn-ver-file-en" title="Editar versión en inglés"><i class="fa-solid fa-pen"></i></a>
+                        ` : ''}</span>
                     </div>
                 </div>
             </div>`;
