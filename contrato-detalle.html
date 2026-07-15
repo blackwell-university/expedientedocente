@@ -482,6 +482,23 @@
 
                 if(result.status === 'success') {
                     const cantidad = (result.firmados || []).length;
+                    const sinErrores = !result.conError || result.conError.length === 0;
+
+                    // NUEVO: si todos los documentos pendientes se firmaron sin errores, significa que
+                    // ya no queda ninguno por firmar — actualizamos el estado GENERAL del expediente a
+                    // "Firmado" (reutilizando la acción que ya existe: update_expediente_status), para
+                    // que en expediente.html se habilite el botón "Enviar contrato a directores".
+                    if (sinErrores) {
+                        try {
+                            await fetch(GAS_URL, {
+                                method: 'POST',
+                                body: JSON.stringify({ action: 'update_expediente_status', id: expId, estado: 'Firmado' })
+                            });
+                        } catch (e) {
+                            console.log('No se pudo actualizar el estado general del expediente:', e);
+                        }
+                    }
+
                     Swal.fire({
                         title: '¡Documentos Firmados!',
                         text: `Su firma digital se aplicó exitosamente en ${cantidad} documento(s).`,

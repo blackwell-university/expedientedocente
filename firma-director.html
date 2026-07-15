@@ -277,6 +277,16 @@
             return esZamudio ? !!fileObj.zamudioFirmado : !!fileObj.ernestoFirmado;
         }
 
+        // Determina si el backend ya detectó que este documento NO tiene ningún placeholder
+        // para este director (es decir, no le corresponde firmarlo — ej. Proposed Salary no
+        // lleva la firma de Zamudio). Este flag lo escribe director_sign_all_documents la
+        // primera vez que se intenta firmar; antes de ese primer intento, el documento puede
+        // aparecer igual en la lista (se corrige solo después de firmar una vez).
+        function noAplicaAEsteDirector(fileObj) {
+            if (!fileObj) return false;
+            return esZamudio ? !!fileObj.noAplicaZamudio : !!fileObj.noAplicaErnesto;
+        }
+
         async function cargarDetallesFirma() {
             try {
                 const res = await fetch(GAS_URL, {
@@ -292,12 +302,17 @@
                     document.getElementById('txtDocenteNombre').innerText = `Hola, ${nombreDirectorMostrado}`;
                     document.getElementById('txtExpDetails').innerText = `Expediente N°: ${exp.idExpediente} • Docente: ${doc.nombres} ${doc.apellidos}`;
 
-                    // Documentos que firman los DIRECTORES (según backend: director_sign_document / director_sign_all_documents)
-                    const docsFirmablesDirector = ["Letter of Appointment", "Confidentiality Agreement"];
+                    // Documentos que PUEDEN necesitar firma de un director (el backend revisa cuál
+                    // de los 9 realmente tiene el placeholder de este director dentro del documento)
+                    const docsFirmablesDirector = [
+                        "Letter of Appointment", "Resume", "Reference Check Forms", "Proposed Salary",
+                        "Academic Preparation Evaluation Form", "Assigned Employee Notice",
+                        "Direct Deposit", "Confidentiality Agreement", "Job Description"
+                    ];
 
                     documentosDisponibles = docsFirmablesDirector
                         .map(nombre => ({ nombre, ...(exp.urls[nombre] || {}) }))
-                        .filter(d => d.url)
+                        .filter(d => d.url && !noAplicaAEsteDirector(d))
                         .map(d => ({ ...d, estado: firmadoPorEsteDirector(d) ? 'Firmado' : 'Pendiente' }));
 
                     // Arrancamos en el primer documento aún pendiente de firma para ESTE director
@@ -461,9 +476,18 @@
 
                 if(result.status === 'success') {
                     const cantidad = (result.firmados || []).length;
+
+                    // El propio backend (director_sign_all_documents) ya revisó si queda algún
+                    // placeholder de director sin firmar en CUALQUIER documento del expediente, y si
+                    // no queda ninguno, ya dejó el expediente en estado "Contratado" — no hace falta
+                    // que el frontend vuelva a consultar ni decidir nada aquí.
+                    const mensajeFinal = result.procesoCompleto
+                        ? 'Su firma se aplicó exitosamente. Con esto, el proceso de contratación quedó completo.'
+                        : `Su firma digital se aplicó exitosamente en ${cantidad} documento(s).`;
+
                     Swal.fire({
                         title: '¡Documentos Firmados!',
-                        text: `Su firma digital se aplicó exitosamente en ${cantidad} documento(s).`,
+                        text: mensajeFinal,
                         icon: 'success',
                         confirmButtonColor: '#1e3a8a'
                     }).then(() => {
