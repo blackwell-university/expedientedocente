@@ -379,6 +379,86 @@
         .file-item.file-item-en { border-color: #93c5fd; background: #f0f7ff; }
         .btn-ver-file.btn-ver-file-en { background: #dbeafe; color: #1e3a8a; }
         .badge-en-pendiente { background: #fef3c7; color: #b45309; font-size: 0.65rem; font-weight: 700; padding: 3px 8px; border-radius: 20px; margin-left: 8px; }
+
+        /* ==================== NUEVO: MODAL DE ENVIAR NOTIFICACIÓN ==================== */
+        .notif-section-label {
+            display: inline-flex; align-items: center; gap: 6px; font-size: 0.7rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.04em; color: var(--primary); background: #eff6ff;
+            padding: 5px 12px; border-radius: 20px; margin-bottom: 10px;
+        }
+        .dest-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+        .dest-contador { font-size: 0.72rem; font-weight: 700; color: var(--primary); background: #eff6ff; padding: 3px 10px; border-radius: 20px; }
+
+        .buscador-destinatarios {
+            position: relative; margin-bottom: 8px;
+        }
+        .buscador-destinatarios i {
+            position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.8rem;
+        }
+        .buscador-destinatarios input {
+            width: 100%; padding: 8px 12px 8px 32px; border: 1px solid var(--gray-border, #e2e8f0);
+            border-radius: 10px; font-size: 0.82rem; background: #f8fafc; transition: 0.15s;
+        }
+        .buscador-destinatarios input:focus { outline: none; border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+
+        .lista-destinatarios {
+            max-height: 140px; overflow-y: auto; border: 1px solid var(--gray-border, #e2e8f0);
+            border-radius: 12px; padding: 6px; background: #f8fafc;
+        }
+        .destinatario-item {
+            display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 8px;
+            transition: 0.15s; cursor: pointer;
+        }
+        .destinatario-item:hover { background: white; }
+        .destinatario-item input[type="checkbox"] { width: 15px; height: 15px; flex-shrink: 0; cursor: pointer; }
+        .destinatario-item .dest-info { display: flex; flex-direction: column; line-height: 1.2; overflow: hidden; }
+        .destinatario-item .dest-correo { font-size: 0.8rem; font-weight: 600; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .destinatario-item .dest-rol { font-size: 0.68rem; color: #94a3b8; }
+
+        .rte-toolbar {
+            display: flex; gap: 4px; flex-wrap: wrap; padding: 8px; background: #f8fafc;
+            border: 1px solid var(--gray-border, #e2e8f0); border-bottom: none;
+            border-radius: 10px 10px 0 0;
+        }
+        .rte-btn {
+            width: 32px; height: 32px; border: none; background: transparent; border-radius: 6px;
+            color: #475569; display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; cursor: pointer; transition: 0.15s;
+        }
+        .rte-btn:hover { background: #e2e8f0; color: var(--primary); }
+        .rte-btn.active { background: #dbeafe; color: var(--primary); }
+        .rte-sep { width: 1px; background: #e2e8f0; margin: 4px 2px; }
+
+        .rte-body {
+            min-height: 130px; max-height: 220px; overflow-y: auto; padding: 14px;
+            border: 1px solid var(--gray-border, #e2e8f0); border-radius: 0 0 10px 10px;
+            font-size: 0.9rem; color: #1e293b; background: white;
+        }
+        .rte-body:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        .rte-body ul, .rte-body ol { padding-left: 22px; }
+        .rte-body:empty:before { content: attr(data-placeholder); color: #94a3b8; pointer-events: none; }
+
+        .adjuntos-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+        .adjunto-item {
+            display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+            background: #f8fafc; border: 1px solid var(--gray-border, #e2e8f0); border-radius: 10px;
+        }
+        .adjunto-item .adjunto-icon { color: var(--primary); font-size: 1.1rem; flex-shrink: 0; }
+        .adjunto-item .adjunto-nombre { font-size: 0.82rem; font-weight: 600; color: #334155; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+        .adjunto-item .adjunto-peso { font-size: 0.72rem; color: #94a3b8; flex-shrink: 0; }
+        .adjunto-item .btn-quitar-adjunto {
+            background: #fee2e2; color: #ef4444; border: none; width: 26px; height: 26px;
+            border-radius: 7px; display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; transition: 0.15s;
+        }
+        .adjunto-item .btn-quitar-adjunto:hover { background: #ef4444; color: white; }
+
+        .btn-adjuntar {
+            display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px;
+            border: 1.5px dashed #cbd5e1; border-radius: 10px; background: transparent;
+            color: var(--text-muted); font-weight: 600; font-size: 0.82rem; cursor: pointer; transition: 0.2s;
+        }
+        .btn-adjuntar:hover { border-color: var(--primary); color: var(--primary); background: #eff6ff; }
     </style>
 </head>
 <body>
@@ -683,6 +763,71 @@
                     <button type="button" class="btn btn-white border fw-bold px-4 flex-grow-1" style="border-radius: 12px; padding: 12px; color: var(--text-muted);" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary fw-bold px-4 flex-grow-1" style="border-radius: 12px; padding: 12px;" onclick="ejecutarGeneracionDocs()">
                         <i class="fa-solid fa-wand-magic-sparkles me-2"></i>Generar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NUEVO: MODAL DE ENVIAR NOTIFICACIÓN (correo a uno o varios usuarios, con texto enriquecido y adjuntos) -->
+    <div class="modal fade" id="modalEnviarNotificacion" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-header border-0 pb-0 pt-4 px-4">
+                    <h5 class="fw-bold text-dark fs-5"><i class="fa-solid fa-bell text-primary me-2"></i>Enviar Notificación por Correo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+
+                    <span class="notif-section-label"><i class="fa-solid fa-users"></i> Destinatarios</span>
+                    <div class="dest-header">
+                        <div class="buscador-destinatarios flex-grow-1 me-2">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="buscadorDestinatarios" placeholder="Buscar por correo o rol..." oninput="filtrarDestinatarios(this.value)">
+                        </div>
+                        <span class="dest-contador" id="contadorDestinatarios">0 seleccionados</span>
+                    </div>
+                    <div class="lista-destinatarios mb-4" id="listaDestinatariosNotif">
+                        <div class="text-center text-muted py-3"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando usuarios...</div>
+                    </div>
+
+                    <span class="notif-section-label"><i class="fa-regular fa-envelope"></i> Asunto</span>
+                    <div class="mb-3">
+                        <input type="text" class="form-control input-modern" id="inputAsuntoNotif" placeholder="Ej. Actualización sobre tu expediente">
+                    </div>
+
+                    <span class="notif-section-label"><i class="fa-regular fa-pen-to-square"></i> Mensaje</span>
+                    <div class="mb-3">
+                        <div class="rte-toolbar">
+                            <button type="button" class="rte-btn" onclick="rteAplicar('bold')" title="Negrita"><i class="fa-solid fa-bold"></i></button>
+                            <button type="button" class="rte-btn" onclick="rteAplicar('italic')" title="Cursiva"><i class="fa-solid fa-italic"></i></button>
+                            <button type="button" class="rte-btn" onclick="rteAplicar('underline')" title="Subrayado"><i class="fa-solid fa-underline"></i></button>
+                            <div class="rte-sep"></div>
+                            <button type="button" class="rte-btn" onclick="rteAplicar('insertUnorderedList')" title="Lista con viñetas"><i class="fa-solid fa-list-ul"></i></button>
+                            <button type="button" class="rte-btn" onclick="rteAplicar('insertOrderedList')" title="Lista numerada"><i class="fa-solid fa-list-ol"></i></button>
+                            <div class="rte-sep"></div>
+                            <button type="button" class="rte-btn" onclick="rteAplicar('justifyLeft')" title="Alinear izquierda"><i class="fa-solid fa-align-left"></i></button>
+                            <button type="button" class="rte-btn" onclick="rteAplicar('justifyCenter')" title="Centrar"><i class="fa-solid fa-align-center"></i></button>
+                            <div class="rte-sep"></div>
+                            <button type="button" class="rte-btn" onclick="rteAplicar('removeFormat')" title="Quitar formato"><i class="fa-solid fa-text-slash"></i></button>
+                        </div>
+                        <div class="rte-body" id="rteMensajeNotif" contenteditable="true" data-placeholder="Escribe tu mensaje aquí..."></div>
+                    </div>
+
+                    <span class="notif-section-label"><i class="fa-solid fa-paperclip"></i> Adjuntos</span>
+                    <div class="mb-2">
+                        <input type="file" id="inputAdjuntosNotif" multiple hidden onchange="agregarAdjuntosUI(this.files)">
+                        <button type="button" class="btn-adjuntar" onclick="document.getElementById('inputAdjuntosNotif').click()">
+                            <i class="fa-solid fa-paperclip"></i> Adjuntar Archivo(s)
+                        </button>
+                        <div class="adjuntos-list" id="listaAdjuntosNotif"></div>
+                    </div>
+
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0 d-flex gap-2">
+                    <button type="button" class="btn btn-white border fw-bold px-4 flex-grow-1" style="border-radius: 12px; padding: 12px; color: var(--text-muted);" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary fw-bold px-4 flex-grow-1" id="btnEnviarNotifSubmit" style="border-radius: 12px; padding: 12px;" onclick="enviarNotificacionGlobal()">
+                        <i class="fa-solid fa-paper-plane me-2"></i>Enviar
                     </button>
                 </div>
             </div>
@@ -1006,6 +1151,7 @@
                                     const slot = item.querySelector('.doc-en-slot');
                                     if (slot) slot.innerHTML = `
                                         <a href="${getDriveViewUrl(urlActual)}" target="_blank" class="btn-ver-file btn-ver-file-en" title="Ver versión en inglés">EN</a>
+                                        <a href="${getDrivePdfDownloadUrl(urlActual)}" class="btn-ver-file btn-ver-file-en" title="Descargar versión en inglés (PDF)"><i class="fa-solid fa-download"></i></a>
                                         <a href="${getDriveEditUrl(urlActual)}" target="_blank" class="btn-ver-file btn-ver-file-en" title="Editar versión en inglés"><i class="fa-solid fa-pen"></i></a>
                                     `;
                                 }
@@ -1258,6 +1404,7 @@
                         <a href="${url}" download class="btn-ver-file" title="Descargar"><i class="fa-solid fa-download"></i></a>
                         <span class="doc-en-slot">${urlEn ? `
                             <a href="${getDriveViewUrl(urlEn)}" target="_blank" class="btn-ver-file btn-ver-file-en" title="Ver versión en inglés">EN</a>
+                            <a href="${getDrivePdfDownloadUrl(urlEn)}" class="btn-ver-file btn-ver-file-en" title="Descargar versión en inglés (PDF)"><i class="fa-solid fa-download"></i></a>
                             <a href="${getDriveEditUrl(urlEn)}" target="_blank" class="btn-ver-file btn-ver-file-en" title="Editar versión en inglés"><i class="fa-solid fa-pen"></i></a>
                         ` : ''}</span>
                     </div>
@@ -1576,7 +1723,7 @@
             let html = '';
 
             // Botón GLOBAL (Siempre presente)
-            html += `<button class="action-btn" onclick="enviarNotificacionGlobal()"><i class="fa-solid fa-bell"></i> Enviar notificación</button>`;
+            html += `<button class="action-btn" onclick="abrirModalNotificacion()"><i class="fa-solid fa-bell"></i> Enviar notificación</button>`;
 
             // ETAPAS 1 y 2 (Recopilación y Revisión)
             const etapa1y2 = ['Por enviar', 'Enviado', 'En proceso', 'Recibido', 'En revisión', 'Verificado'];
@@ -1657,11 +1804,187 @@
             }
         }
 
-        // ==================== NUEVAS ACCIONES (STUBS) ====================
-        function enviarNotificacionGlobal() {
-            showToast("Notificación enviada exitosamente.", "success");
+        // ==================== NUEVO: MODAL DE ENVIAR NOTIFICACIÓN (real) ====================
+        let adjuntosNotif = []; // [{name, type, size, base64}]
+
+        async function abrirModalNotificacion() {
+            const modal = new bootstrap.Modal(document.getElementById('modalEnviarNotificacion'));
+            modal.show();
+
+            // Reiniciar el formulario cada vez que se abre
+            document.getElementById('inputAsuntoNotif').value = '';
+            document.getElementById('rteMensajeNotif').innerHTML = '';
+            adjuntosNotif = [];
+            renderAdjuntosNotifUI();
+
+            await cargarDestinatariosNotificacion();
         }
 
+        let listaUsuariosNotifGlobal = []; // Guardamos la lista completa para poder filtrarla sin re-consultar el backend
+
+        async function cargarDestinatariosNotificacion() {
+            const cont = document.getElementById('listaDestinatariosNotif');
+            cont.innerHTML = '<div class="text-center text-muted py-3"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando usuarios...</div>';
+            document.getElementById('buscadorDestinatarios').value = '';
+
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_all_users_emails' }) });
+                const result = await res.json();
+
+                if (result.status !== 'success' || !result.data || result.data.length === 0) {
+                    cont.innerHTML = '<p class="text-muted text-center m-0 py-3">No se encontraron usuarios.</p>';
+                    return;
+                }
+
+                // El correo del docente de este expediente aparece primero y viene pre-seleccionado
+                const correoDocenteActual = (perfilCompletoGlobal && perfilCompletoGlobal.data) ? perfilCompletoGlobal.data.correo : '';
+
+                listaUsuariosNotifGlobal = [...result.data].sort((a, b) => {
+                    if (a.correo === correoDocenteActual) return -1;
+                    if (b.correo === correoDocenteActual) return 1;
+                    return 0;
+                });
+
+                renderListaDestinatarios(listaUsuariosNotifGlobal, correoDocenteActual);
+            } catch (e) {
+                cont.innerHTML = '<p class="text-danger text-center m-0 py-3">Error al cargar los usuarios.</p>';
+            }
+        }
+
+        function renderListaDestinatarios(lista, correoPreseleccionado) {
+            const cont = document.getElementById('listaDestinatariosNotif');
+            // Conservamos lo que ya estaba marcado antes de re-renderizar (por ejemplo, al filtrar)
+            const marcadosPrevios = new Set(Array.from(document.querySelectorAll('#listaDestinatariosNotif input[type="checkbox"]:checked')).map(c => c.value));
+
+            if (lista.length === 0) {
+                cont.innerHTML = '<p class="text-muted text-center m-0 py-3" style="font-size:0.85rem;">Ningún usuario coincide con la búsqueda.</p>';
+                return;
+            }
+
+            cont.innerHTML = lista.map(u => {
+                const marcado = marcadosPrevios.has(u.correo) || u.correo === correoPreseleccionado;
+                return `
+                <label class="destinatario-item">
+                    <input type="checkbox" value="${u.correo}" ${marcado ? 'checked' : ''} onchange="actualizarContadorDestinatarios()">
+                    <div class="dest-info">
+                        <span class="dest-correo">${u.correo}</span>
+                        <span class="dest-rol">${u.rol || 'Usuario'}</span>
+                    </div>
+                </label>`;
+            }).join('');
+
+            actualizarContadorDestinatarios();
+        }
+
+        function filtrarDestinatarios(texto) {
+            const q = texto.trim().toLowerCase();
+            const filtrados = !q ? listaUsuariosNotifGlobal : listaUsuariosNotifGlobal.filter(u =>
+                u.correo.toLowerCase().includes(q) || (u.rol || '').toLowerCase().includes(q)
+            );
+            renderListaDestinatarios(filtrados, null);
+        }
+
+        function actualizarContadorDestinatarios() {
+            // Contamos sobre la lista completa de checkboxes marcados en TODO el modal (no solo los visibles tras filtrar)
+            const marcados = new Set(Array.from(document.querySelectorAll('#listaDestinatariosNotif input[type="checkbox"]:checked')).map(c => c.value));
+            const el = document.getElementById('contadorDestinatarios');
+            if (el) el.innerText = `${marcados.size} seleccionado${marcados.size === 1 ? '' : 's'}`;
+        }
+
+        // --- Editor de texto enriquecido (contenteditable + execCommand) ---
+        function rteAplicar(comando) {
+            document.execCommand(comando, false, null);
+            document.getElementById('rteMensajeNotif').focus();
+        }
+
+        // --- Adjuntos ---
+        function agregarAdjuntosUI(fileList) {
+            Array.from(fileList).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    adjuntosNotif.push({
+                        name: file.name,
+                        type: file.type || 'application/octet-stream',
+                        size: file.size,
+                        base64: e.target.result.split(',')[1]
+                    });
+                    renderAdjuntosNotifUI();
+                };
+                reader.readAsDataURL(file);
+            });
+            document.getElementById('inputAdjuntosNotif').value = ''; // permite volver a elegir el mismo archivo después
+        }
+
+        function quitarAdjuntoUI(idx) {
+            adjuntosNotif.splice(idx, 1);
+            renderAdjuntosNotifUI();
+        }
+
+        function formatearPeso(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        function renderAdjuntosNotifUI() {
+            const cont = document.getElementById('listaAdjuntosNotif');
+            cont.innerHTML = adjuntosNotif.map((a, idx) => {
+                const esImagen = a.type.startsWith('image/');
+                return `
+                <div class="adjunto-item">
+                    <i class="adjunto-icon fa-solid ${esImagen ? 'fa-image' : 'fa-file'}"></i>
+                    <span class="adjunto-nombre">${a.name}</span>
+                    <span class="adjunto-peso">${formatearPeso(a.size)}</span>
+                    <button type="button" class="btn-quitar-adjunto" onclick="quitarAdjuntoUI(${idx})" title="Quitar adjunto">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>`;
+            }).join('');
+        }
+
+        // --- Envío real del correo ---
+        async function enviarNotificacionGlobal() {
+            const correosSeleccionados = Array.from(document.querySelectorAll('#listaDestinatariosNotif input[type="checkbox"]:checked')).map(c => c.value);
+            const asunto = document.getElementById('inputAsuntoNotif').value.trim();
+            const mensajeHtml = document.getElementById('rteMensajeNotif').innerHTML.trim();
+
+            if (correosSeleccionados.length === 0) { Swal.fire('Falta un destinatario', 'Selecciona al menos un usuario para enviar la notificación.', 'warning'); return; }
+            if (!asunto) { Swal.fire('Falta el asunto', 'Escribe un asunto para el correo.', 'warning'); return; }
+            if (!mensajeHtml) { Swal.fire('Falta el mensaje', 'Escribe el contenido del mensaje.', 'warning'); return; }
+
+            const btn = document.getElementById('btnEnviarNotifSubmit');
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Enviando...`;
+
+            try {
+                const res = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'send_bulk_notification',
+                        destinatarios: correosSeleccionados,
+                        asunto: asunto,
+                        mensajeHtml: mensajeHtml,
+                        adjuntos: adjuntosNotif.map(a => ({ name: a.name, type: a.type, base64: a.base64 }))
+                    })
+                });
+                const result = await res.json();
+
+                if (result.status === 'success') {
+                    bootstrap.Modal.getInstance(document.getElementById('modalEnviarNotificacion')).hide();
+                    showToast(`Notificación enviada a ${correosSeleccionados.length} destinatario(s).`, "success");
+                } else {
+                    Swal.fire('Error', result.message || 'No se pudo enviar la notificación.', 'error');
+                }
+            } catch (e) {
+                Swal.fire('Error de conexión', 'No se pudo contactar al servidor.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+        }
+
+        // ==================== NUEVAS ACCIONES (STUBS) ====================
         function subirInformeEvaluacion() {
             // Aquí puedes abrir un modal de carga o llamar a una función.
             // Para el ejemplo, simulamos la subida y cambiamos el estado
