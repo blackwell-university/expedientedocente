@@ -262,6 +262,19 @@
             }
         }
 
+        /* --- NUEVO: ACORDEÓN "VER TODOS LOS DATOS DEL FORMULARIO" (igual que en expediente.html) --- */
+        .accordion-item { border: 1px solid var(--gray-border); border-radius: 12px !important; margin-bottom: 10px; overflow: hidden; }
+        .accordion-button { font-weight: 700; font-size: 0.9rem; color: var(--text-main); background: #fafbfc; }
+        .accordion-button:not(.collapsed) { background: #eff6ff; color: var(--primary-dark); box-shadow: none; }
+        .accordion-button:focus { box-shadow: none; }
+        .badge-campo-ok { background: #dcfce7; color: #15803d; font-size: 0.7rem; font-weight: 700; }
+        .badge-campo-falta { background: #fee2e2; color: #b91c1c; font-size: 0.7rem; font-weight: 700; }
+        .dato-campo { margin-bottom: 10px; }
+        .dato-campo .info-label { margin-bottom: 2px; }
+        .dato-campo .dato-valor { font-size: 0.88rem; color: #0f172a; }
+        .dato-campo .dato-valor.dato-falta { color: #b91c1c; font-style: italic; font-size: 0.82rem; }
+        .diploma-mini-card { background: #f8fafc; border: 1px solid var(--gray-border); border-radius: 12px; padding: 16px 18px; margin-bottom: 12px; }
+
     </style>
 </head>
 <body>
@@ -373,6 +386,18 @@
                                             <i class="fa-solid fa-chevron-right action-arrow"></i>
                                         </button>
 
+                                        <!-- NUEVO: Acción — Subir datos del docente SIN asignar curso todavía -->
+                                        <button class="btn-action-minimal" onclick="subirInformacionSinCurso()">
+                                            <div class="action-icon-wrapper" style="background:#f0fdf4; color:#15803d;">
+                                                <i class="fa-solid fa-id-card-clip"></i>
+                                            </div>
+                                            <div class="action-text">
+                                                <span class="action-title">Subir Información del Docente</span>
+                                                <span class="action-desc">Registra CV, educación y datos, sin asignar curso aún</span>
+                                            </div>
+                                            <i class="fa-solid fa-chevron-right action-arrow"></i>
+                                        </button>
+
                                         <!-- Acción 2: Enviar Accesos (NUEVO CON CONFIRMACIÓN) -->
                                         <button class="btn-action-minimal" onclick="enviarAccesosDocente()">
                                             <div class="action-icon-wrapper icon-key">
@@ -387,6 +412,71 @@
 
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- NUEVO: ACORDEÓN CON TODOS LOS DATOS QUE EL DOCENTE VA LLENANDO EN SU FORMULARIO -->
+                        <div class="form-card mt-4">
+                            <span class="section-badge"><i class="fa-solid fa-list-check me-2"></i>Ver Todos los Datos del Formulario</span>
+                            <p class="text-muted" style="font-size: 0.85rem; margin-top: -12px;">Despliega cada sección para ver, a simple vista, qué campos ya llenó el docente y cuáles faltan.</p>
+                            <div class="accordion" id="accordionDatosDocente">
+
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accPersonales">
+                                            <i class="fa-solid fa-id-card me-2 text-primary"></i>&nbsp;Datos Personales
+                                            <span class="badge rounded-pill ms-2" id="badge-personales">-</span>
+                                        </button>
+                                    </h2>
+                                    <div id="accPersonales" class="accordion-collapse collapse" data-bs-parent="#accordionDatosDocente">
+                                        <div class="accordion-body row g-3" id="cont-datos-personales">
+                                            <p class="text-muted m-0"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando...</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accEducacion">
+                                            <i class="fa-solid fa-graduation-cap me-2 text-primary"></i>&nbsp;Educación (Grados Académicos)
+                                            <span class="badge rounded-pill ms-2" id="badge-educacion">-</span>
+                                        </button>
+                                    </h2>
+                                    <div id="accEducacion" class="accordion-collapse collapse" data-bs-parent="#accordionDatosDocente">
+                                        <div class="accordion-body" id="cont-educacion">
+                                            <p class="text-muted m-0"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando...</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accExperiencia">
+                                            <i class="fa-solid fa-briefcase me-2 text-primary"></i>&nbsp;Experiencia Laboral
+                                            <span class="badge rounded-pill ms-2" id="badge-experiencia">-</span>
+                                        </button>
+                                    </h2>
+                                    <div id="accExperiencia" class="accordion-collapse collapse" data-bs-parent="#accordionDatosDocente">
+                                        <div class="accordion-body" id="cont-experiencia">
+                                            <p class="text-muted m-0"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando...</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accBancarios">
+                                            <i class="fa-solid fa-building-columns me-2 text-primary"></i>&nbsp;Datos Bancarios
+                                            <span class="badge rounded-pill ms-2" id="badge-bancarios">-</span>
+                                        </button>
+                                    </h2>
+                                    <div id="accBancarios" class="accordion-collapse collapse" data-bs-parent="#accordionDatosDocente">
+                                        <div class="accordion-body row g-3" id="cont-datos-bancarios">
+                                            <p class="text-muted m-0"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando...</p>
+                                        </div>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -567,8 +657,127 @@
                     if (document.getElementById('det-telefono')) document.getElementById('det-telefono').innerText = d.celular || "-";
                     if (document.getElementById('det-pais')) document.getElementById('det-pais').innerText = d.pais || "-";
                     if (document.getElementById('det-direccion')) document.getElementById('det-direccion').innerText = d.direccion || "-";
+
+                    // NUEVO: llenar el acordeón "Ver Todos los Datos del Formulario" con la misma respuesta
+                    llenarAcordeonDatosDocente(d, json.drafts || { educacion: [], experiencia: [] });
                 }
             } catch(e) { console.error(e); }
+        }
+
+        // ==================== NUEVO: ACORDEÓN "VER TODOS LOS DATOS DEL FORMULARIO" ====================
+        // (Misma lógica que ya usa expediente.html, adaptada a esta página)
+        function campoDato(label, valor) {
+            const tieneValor = valor !== undefined && valor !== null && String(valor).trim() !== '';
+            return `
+            <div class="col-md-4 dato-campo">
+                <span class="info-label">${label}</span>
+                <div class="dato-valor ${tieneValor ? '' : 'dato-falta'}">${tieneValor ? valor : 'Sin llenar'}</div>
+            </div>`;
+        }
+
+        const MESES_CORTOS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+        function formatFechaMesAnio(valor) {
+            if (!valor) return '';
+            const str = String(valor).trim();
+            if (/actualidad|presente/i.test(str)) return 'Actualidad';
+            let m = str.match(/^(\d{4})-(\d{2})-\d{2}T/);
+            if (m) return `${MESES_CORTOS[parseInt(m[2], 10) - 1]} ${m[1]}`;
+            m = str.match(/^(\d{4})-(\d{2})$/);
+            if (m) return `${MESES_CORTOS[parseInt(m[2], 10) - 1]} ${m[1]}`;
+            return str;
+        }
+
+        function formatFechaCompleta(valor) {
+            if (!valor) return '';
+            const str = String(valor).trim();
+            const m = str.match(/^(\d{4})-(\d{2})-(\d{2})T/);
+            if (m) return `${m[3]}/${m[2]}/${m[1]}`;
+            return str;
+        }
+
+        function actualizarBadgeSeccion(idBadge, llenos, total) {
+            const badge = document.getElementById(idBadge);
+            if (!badge) return;
+            badge.textContent = `${llenos}/${total}`;
+            badge.className = 'badge rounded-pill ms-2 ' + (llenos === total ? 'badge-campo-ok' : 'badge-campo-falta');
+        }
+
+        function llenarAcordeonDatosDocente(d, drafts) {
+            // --- DATOS PERSONALES (Estado/Región solo aplica si el país es Estados Unidos) ---
+            const paisEsEEUU = /estados unidos|united states|^usa$/i.test((d.pais || '').trim());
+            const camposPersonales = [
+                ['DNI / Pasaporte', d.dni], ['Tipo de Documento', d.tipo_id], ['Nombres', d.nombres], ['Apellidos', d.apellidos],
+                ['Correo', d.correo], ['Celular', d.celular], ['Fecha de Nacimiento', formatFechaCompleta(d.fecha_nacimiento)], ['Código Postal', d.cp],
+                ['País', d.pais], ['Ciudad', d.ciudad], ['Dirección', d.direccion]
+            ];
+            let htmlPersonales = camposPersonales.map(([l, v]) => campoDato(l, v)).join('');
+            let llenosPersonales = camposPersonales.filter(([, v]) => v && String(v).trim() !== '').length;
+            let totalPersonales = camposPersonales.length;
+
+            if (paisEsEEUU) {
+                htmlPersonales += campoDato('Estado/Región', d.estado_region);
+                totalPersonales += 1;
+                if (d.estado_region && String(d.estado_region).trim() !== '') llenosPersonales += 1;
+            } else {
+                htmlPersonales += `
+                <div class="col-md-4 dato-campo">
+                    <span class="info-label">Estado/Región</span>
+                    <div class="dato-valor text-muted" style="font-style:italic;">No aplica (solo EE. UU.)</div>
+                </div>`;
+            }
+            document.getElementById('cont-datos-personales').innerHTML = htmlPersonales;
+            actualizarBadgeSeccion('badge-personales', llenosPersonales, totalPersonales);
+
+            // --- DATOS BANCARIOS ---
+            const camposBancarios = [
+                ['Banco', d.banco], ['Moneda', d.moneda], ['Tipo de Cuenta', d.tipo_cuenta], ['Cuenta Bancaria', d.cuenta],
+                ['CCI / Interbancaria', d.cci], ['Tipo de Ruta (ACH)', d.tipo_ruta], ['Código de Ruta', d.codigo_ruta]
+            ];
+            document.getElementById('cont-datos-bancarios').innerHTML = camposBancarios.map(([l, v]) => campoDato(l, v)).join('');
+            actualizarBadgeSeccion('badge-bancarios', camposBancarios.filter(([,v]) => v && String(v).trim() !== '').length, camposBancarios.length);
+
+            // --- EDUCACIÓN ---
+            const eduList = drafts.educacion || [];
+            if (eduList.length === 0) {
+                document.getElementById('cont-educacion').innerHTML = '<p class="text-danger m-0" style="font-size:0.85rem;"><i class="fa-solid fa-triangle-exclamation me-1"></i>El docente aún no ha subido ningún diploma.</p>';
+            } else {
+                document.getElementById('cont-educacion').innerHTML = eduList.map(edu => `
+                    <div class="diploma-mini-card">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <b style="font-size:0.9rem;">${edu.grado || 'Grado'}</b>
+                            <span class="badge-state ${String(edu.estado).toLowerCase() === 'procesado' ? 'badge-completed' : 'badge-pending'}">${edu.estado || 'Subido'}</span>
+                        </div>
+                        <div class="row g-2">
+                            ${campoDato('Carrera / Especialidad', edu.rama)}
+                            ${campoDato('Institución', edu.instituto)}
+                            ${campoDato('Ubicación', edu.ubicacion)}
+                            ${campoDato('Inicio', formatFechaMesAnio(edu.inicio))}
+                            ${campoDato('Fin', formatFechaMesAnio(edu.fin))}
+                        </div>
+                    </div>`).join('');
+            }
+            const camposEduLlenos = eduList.reduce((acc, e) => acc + ['rama','instituto','ubicacion','inicio','fin'].filter(k => e[k] && String(e[k]).trim() !== '').length, 0);
+            actualizarBadgeSeccion('badge-educacion', camposEduLlenos, eduList.length * 5 || 1);
+
+            // --- EXPERIENCIA LABORAL ---
+            const expList = (drafts.experiencia || []).filter(e => !e.tipo || !e.tipo.startsWith('C'));
+            if (expList.length === 0) {
+                document.getElementById('cont-experiencia').innerHTML = '<p class="text-danger m-0" style="font-size:0.85rem;"><i class="fa-solid fa-triangle-exclamation me-1"></i>El docente aún no ha registrado experiencia laboral.</p>';
+            } else {
+                document.getElementById('cont-experiencia').innerHTML = expList.map(exp => `
+                    <div class="diploma-mini-card">
+                        <b style="font-size:0.9rem;">${exp.empresa || 'Empresa sin nombre'}</b>
+                        <div class="row g-2 mt-1">
+                            ${campoDato('Cargo', exp.cargo)}
+                            ${campoDato('Área', exp.area)}
+                            ${campoDato('Dirección', exp.direccion)}
+                            ${campoDato('Inicio', formatFechaMesAnio(exp.inicio))}
+                            ${campoDato('Fin', formatFechaMesAnio(exp.fin))}
+                        </div>
+                    </div>`).join('');
+            }
+            actualizarBadgeSeccion('badge-experiencia', expList.length, expList.length || 1);
         }
 
         // NUEVO: FUNCIÓN PARA ENVIAR ACCESOS AL DOCENTE CON SWAL INTERACTIVO
@@ -610,12 +819,15 @@
 
                     try {
                         // Enviamos la petición utilizando un nuevo endpoint exclusivo o enviando un payload específico
+                        // Reutilizamos send_invitation_email o creamos una petición compatible
                         const response = await fetch(GAS_URL, {
                             method: 'POST',
                             body: JSON.stringify({
-                                action: 'send_credentials_only',
+                                action: 'send_invitation_email', // Reutiliza el endpoint actual que ya dispara correos de credenciales si el usuario tiene acceso 0
                                 docenteId: docenteId,
-                                docenteCorreo: correoDocente
+                                docenteCorreo: correoDocente,
+                                docenteNombre: nombreDocente.split(' ')[0],
+                                deManeraDirectaAccesos: true // Flag opcional por seguridad
                             })
                         });
 
@@ -648,6 +860,16 @@
 
         let catalogoCursos =[], currentInvitacionId = null;
         let modoAccionActual = 'expediente'; 
+
+        // NUEVO: abre el mismo asistente paso a paso, pero SIN ningún expediente de por medio —
+        // solo para que la ejecutiva registre CV, educación, datos personales y bancarios del
+        // docente antes de que exista un curso asignado. La creación del expediente sigue
+        // ocurriendo únicamente junto con la invitación ("Crear Expediente + Invitación").
+        // Como esos datos se guardan a nivel del docente (no del expediente), cuando en el futuro
+        // sí se le asigne un curso, ya aparecerán pre-llenados en el asistente.
+        function subirInformacionSinCurso() {
+            window.open(`../registroexpediente.html?doc=${docenteId}&mode=admin`, '_blank');
+        }
 
         async function abrirModalInvitacion(modo) {
             modoAccionActual = modo;

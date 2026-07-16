@@ -1247,6 +1247,11 @@
         
         let pasoActual = 1; const totalPasos = 6;
         let idExpedienteUrl = new URLSearchParams(window.location.search).get('exp');
+
+        // NUEVO: si no hay ningún expediente (?exp=...), es porque estamos en el modo
+        // "solo registrar datos del docente" — en ese caso el Paso 4 (Asignación de Curso)
+        // no aplica en absoluto y se oculta por completo del asistente.
+        const soloDatosMode = !idExpedienteUrl;
         
         // Si viene un ID de docente por la URL (modo administrativo), lo cargamos prioritariamente
         const docParam = new URLSearchParams(window.location.search).get('doc');
@@ -1513,6 +1518,12 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             
+            // NUEVO: en modo "solo datos" (sin expediente), el Paso 4 no aplica y se oculta del stepper
+            if (soloDatosMode) {
+                const tab4El = document.getElementById('tab-4');
+                if (tab4El) tab4El.style.display = 'none';
+            }
+
             // 1. Traemos los datos que ya están guardados en el navegador
             const fullName = localStorage.getItem('userName') || "Docente";
             const firstName = fullName.split(' ')[0];
@@ -1570,7 +1581,10 @@
                 </div>
             `;
 
-            if(idExpedienteUrl) cargarDatosPrevios();
+            // NUEVO: antes solo se cargaban los datos previos si había un expediente (?exp=...).
+            // Ahora también se cargan cuando solo tenemos el docente (modo "solo datos", sin curso
+            // asignado todavía) — así el CV/diplomas/perfil ya guardados aparecen pre-llenados.
+            if(idExpedienteUrl || userId) cargarDatosPrevios();
             cargarCursosPendientes();
 
         });
@@ -1636,12 +1650,13 @@
                     if (modeParam === 'admin') {
                         const dHeaderH1 = document.querySelector('.desktop-header h1');
                         const dHeaderP = document.querySelector('.desktop-header p');
-                        if(dHeaderH1) dHeaderH1.innerText = `Expediente: ${idExpedienteUrl}`;
+                        // NUEVO: si no hay expediente (modo "solo datos"), el título no debe decir "Expediente: null"
+                        if(dHeaderH1) dHeaderH1.innerText = idExpedienteUrl ? `Expediente: ${idExpedienteUrl}` : 'Registro de Datos del Docente';
                         if(dHeaderP) dHeaderP.innerText = `Docente: ${d.nombres} ${d.apellidos}`;
 
                         const mHeaderH1 = document.querySelector('.mobile-header .mh-text h1');
                         const mHeaderP = document.querySelector('.mobile-header .mh-text p');
-                        if(mHeaderH1) mHeaderH1.innerText = idExpedienteUrl;
+                        if(mHeaderH1) mHeaderH1.innerText = idExpedienteUrl || 'Registro de Datos';
                         if(mHeaderP) mHeaderP.innerText = `${d.nombres} ${d.apellidos}`;
                     }
 
@@ -2222,6 +2237,19 @@
             }
         }
 
+        // NUEVO: permite avanzar al Paso 5 cuando el expediente se creó solo para recolectar
+        // datos del docente, sin tener todavía un curso/invitación vinculado.
+        function omitirAsignacionCurso() {
+            const tab4 = document.getElementById('tab-4');
+            if (tab4) {
+                tab4.classList.remove('completed');
+                const badge = tab4.querySelector('.step-badge');
+                if (badge) { badge.innerText = "No aplica"; badge.style.background = "#e2e8f0"; badge.style.color = "#64748b"; }
+            }
+            cambiarUI(1);
+        }
+
+
         // CARGAR INVITACIONES
         async function cargarCursosPendientes() {
             // Le enviamos el idExpedienteUrl al backend para que nos devuelva solo 1 curso
@@ -2237,7 +2265,17 @@
                 });
                 
                 if(pendientes.length === 0) { 
-                    lista.innerHTML = `<div class="p-3 bg-light border rounded text-center text-muted">No se encontró un curso vinculado a este expediente.</div>`; 
+                    // NUEVO: si este expediente se creó para solo recolectar los datos del docente
+                    // (sin asignar curso todavía), dejamos avanzar sin bloquear en este paso.
+                    lista.innerHTML = `
+                        <div class="p-4 bg-light border rounded text-center">
+                            <i class="fa-regular fa-calendar-xmark mb-2" style="font-size:1.8rem; color:#94a3b8;"></i>
+                            <p class="text-muted mb-3">Este docente aún no tiene un curso asignado.</p>
+                            <button type="button" class="btn btn-primary fw-bold px-4" style="border-radius:10px;" onclick="omitirAsignacionCurso()">
+                                Continuar sin asignar curso (solo guardar datos)
+                            </button>
+                        </div>`;
+                    document.getElementById('btnNext').disabled = true; // el botón normal queda inactivo; se avanza con el botón de arriba
                     return; 
                 }
                 
@@ -2341,6 +2379,12 @@
             btnNext.disabled = true; 
             btnNext.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin me-2"></i> Procesando...';
 
+            // NUEVO: guardamos en qué paso estábamos ANTES de empezar a subir/guardar (async).
+            // Si el usuario hace clic en otra pestaña mientras esto sigue "Procesando...", pasoActual
+            // (variable global) cambia — sin esto, al terminar se marcaría el check verde en el paso
+            // donde el usuario terminó parado, no en el paso que realmente se guardó.
+            const pasoOrigen = pasoActual;
+
             let payload = { action: "save_expediente_step", step: pasoActual, idDocente: userId, idExpediente: idExpedienteUrl, idInvitacion: selectedInvitationId };
 
             try {
@@ -2409,7 +2453,7 @@
                     document.getElementById('view-link-hb').href = getDriveViewUrl(urlHbGlobal);
                     actualizarVistaPaso1(); 
 
-                    cambiarUI(1); 
+                    cambiarUI(1, pasoOrigen); 
                     iniciarPollingProcesamiento(); // Empezamos a vigilar en segundo plano cuándo n8n termine de procesar
                     return; 
                 }
@@ -2542,7 +2586,7 @@
                         });
                     }
                     
-                    cambiarUI(1); // Cambia al Paso 3 instantáneamente
+                    cambiarUI(1, pasoOrigen); // Cambia al Paso 3 instantáneamente
                     iniciarPollingProcesamiento(); // Empezamos a vigilar en segundo plano cuándo n8n termine de procesar
                     return;
                 }
@@ -2610,7 +2654,7 @@
                             payload.hora = horasArr.join(' | ');
 
                         } else {
-                            cambiarUI(1); 
+                            cambiarUI(1, pasoOrigen); 
                             return; 
                         }
                     } else {
@@ -2740,7 +2784,7 @@
                     } catch(e) {}
                 }
 
-                cambiarUI(1);
+                cambiarUI(1, pasoOrigen);
 
             } catch (error) { 
                 console.error(error); 
@@ -3004,11 +3048,24 @@
             }
         }
 
-        function cambiarUI(direccion) {
-            let nuevoPaso = pasoActual + direccion;
+        function cambiarUI(direccion, pasoOrigen) {
+            // FIX: antes esta función siempre usaba "pasoActual" (variable global) para decidir
+            // qué pestaña marcar como completada. Si el usuario hacía clic en otra pestaña MIENTRAS
+            // el guardado anterior seguía en curso (asíncrono), pasoActual ya había cambiado para
+            // cuando el guardado terminaba — y el check verde se marcaba en el paso equivocado.
+            // Ahora recibe el paso que REALMENTE se guardó (pasoOrigen); si no se pasa explícitamente
+            // (ej. navegación manual), usa el paso actual como antes.
+            const pasoBase = (pasoOrigen !== undefined && pasoOrigen !== null) ? pasoOrigen : pasoActual;
+            let nuevoPaso = pasoBase + direccion;
+
+            // NUEVO: en modo "solo datos" el Paso 4 está oculto, así que la navegación lo salta
+            // por completo (de 3 se va directo a 5, y de 5 hacia atrás se va directo a 3)
+            if (soloDatosMode && nuevoPaso === 4) {
+                nuevoPaso = direccion === 1 ? 5 : 3;
+            }
             
             if(direccion === 1) { 
-                if (pasoActual === 3) {
+                if (pasoBase === 3) {
                     if (validarPaso3Completo()) { marcarTabComoCompletada(3); } 
                     else {
                         const tab3 = document.getElementById('tab-3');
@@ -3016,7 +3073,7 @@
                         if (tab3.querySelector('.step-badge')) tab3.querySelector('.step-badge').innerText = "En progreso";
                     }
                 }
-                else if (pasoActual === 4) {
+                else if (pasoBase === 4) {
                     if (validarPaso4Completo()) { marcarTabComoCompletada(4); } 
                     else {
                         const tab4 = document.getElementById('tab-4');
@@ -3024,7 +3081,7 @@
                         if (tab4.querySelector('.step-badge')) tab4.querySelector('.step-badge').innerText = "En progreso";
                     }
                 }
-                else if (pasoActual === 5) {
+                else if (pasoBase === 5) {
                     if (validarPaso5Completo()) { marcarTabComoCompletada(5); } 
                     else {
                         const tab5 = document.getElementById('tab-5');
@@ -3032,9 +3089,11 @@
                         if (tab5.querySelector('.step-badge')) tab5.querySelector('.step-badge').innerText = "En progreso";
                     }
                     evaluarDesbloqueoPaso6();
+                    // Solo navegamos si el usuario sigue parado en el paso que se acaba de guardar
+                    if (pasoActual === pasoBase && nuevoPaso >= 1 && nuevoPaso <= totalPasos) { irAPaso(nuevoPaso); }
                     return;                
                 } 
-                else if (pasoActual === 6) {
+                else if (pasoBase === 6) {
                     if (validarPaso6Completo(false)) { 
                         marcarTabComoCompletada(6); 
                     } else {
@@ -3044,12 +3103,16 @@
                     }
                 }
                 else {
-                    marcarTabComoCompletada(pasoActual); 
+                    marcarTabComoCompletada(pasoBase); 
                 }
                 
                 evaluarDesbloqueoPaso6(); 
             }
-            if (nuevoPaso >= 1 && nuevoPaso <= totalPasos) { irAPaso(nuevoPaso); }
+
+            // NUEVO: si el usuario ya se movió manualmente a otro paso mientras esto se guardaba,
+            // no lo arrastramos de vuelta a una navegación automática — solo dejamos el check verde
+            // puesto en el paso correcto y no tocamos dónde está parado ahora mismo.
+            if (pasoActual === pasoBase && nuevoPaso >= 1 && nuevoPaso <= totalPasos) { irAPaso(nuevoPaso); }
         }
 
         // Función experta para verificar si el paso 3 está realmente lleno
