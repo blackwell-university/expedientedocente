@@ -349,6 +349,21 @@
 
         /* --- CONTENIDO DE PASOS --- */
         .step-content { display: none; }
+
+        /* NUEVO: Spinner de carga inicial (antes no había nada mientras se cargaban los datos —
+           se veía el título de golpe y luego, tras un rato, aparecía el formulario sin avisar) */
+        .loader-inicial-wizard {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 16px; padding: 80px 20px; background: white; border-radius: var(--radius-lg, 20px);
+            border: 1px solid var(--border-color, #e2e8f0);
+        }
+        .spinner-inicial {
+            width: 42px; height: 42px; border: 4px solid #e2e8f0; border-top-color: var(--primary);
+            border-radius: 50%; animation: spinInicial 0.8s linear infinite;
+        }
+        @keyframes spinInicial { to { transform: rotate(360deg); } }
+        .loader-inicial-wizard p { color: var(--text-muted, #64748b); font-size: 0.9rem; font-weight: 600; margin: 0; }
+
         .step-content.active { display: block; animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -361,10 +376,10 @@
 
         /* --- FORMULARIOS --- */
         .form-label { font-weight: 600; font-size: 0.9rem; color: #475569; margin-bottom: 8px; display: block; }
-        .form-control, .form-select { border-radius: 12px; padding: 15px 18px; border: 1px solid #cbd5e1; background-color: #ffffff; font-size: 1rem; color: var(--text-main); transition: var(--transition); width: 100%; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+        .form-control, .form-select { border-radius: 10px; padding: 10px 14px; border: 1px solid #cbd5e1; background-color: #ffffff; font-size: 0.88rem; color: var(--text-main); transition: var(--transition); width: 100%; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
         .form-control:disabled, .form-select:disabled { background-color: var(--bg-body); color: #94a3b8; }
-        .form-select { appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; background-size: 16px; padding-right: 40px; }
-        .form-control:focus, .form-select:focus { background-color: white; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.1); outline: none; }
+        .form-select { appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; background-size: 14px; padding-right: 34px; }
+        .form-control:focus, .form-select:focus { background-color: white; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1); outline: none; }
 
         /* --- UPLOAD BOX --- */
         .file-upload-box { border: 2px dashed #cbd5e1; border-radius: 16px; padding: 45px 20px; text-align: center; background: #ffffff; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;}
@@ -789,6 +804,11 @@
                             <span class="material-symbols-rounded">notifications</span>
                         </button>
                     </div>
+                </div>
+
+                <div id="loaderInicial" class="loader-inicial-wizard">
+                    <div class="spinner-inicial"></div>
+                    <p>Cargando tu información...</p>
                 </div>
 
                 <div class="wizard-card" id="mainWizardCard" style="display: none;">
@@ -1625,9 +1645,11 @@
                     expedienteCompleto = dataExp.expediente;
                 }
 
-                // 🛑 ESTO ES LO QUE FALTABA: Hacer visible la tarjeta del Wizard que estaba oculta
                 const wizardCard = document.getElementById('mainWizardCard');
                 if (wizardCard) wizardCard.style.display = 'block';
+
+                const loaderInicial1 = document.getElementById('loaderInicial');
+                if (loaderInicial1) loaderInicial1.style.display = 'none';
 
                 // Quitar loaders de forma segura
                 const loader = document.getElementById('step1-loader');
@@ -1807,6 +1829,10 @@
                     // Blindaje por si el backend no encuentra datos
                     const wizardCardFallback = document.getElementById('mainWizardCard');
                     if (wizardCardFallback) wizardCardFallback.style.display = 'block';
+
+                    const loaderInicial2 = document.getElementById('loaderInicial');
+                    if (loaderInicial2) loaderInicial2.style.display = 'none';
+
                     document.getElementById('step1-upload-mode').style.display = 'block'; 
                     addDiplomaEdit(); 
                 }
@@ -1815,6 +1841,10 @@
                 // Si la red se cae, aseguramos que la interfaz aparezca para subir desde cero
                 const wizardCardFallback = document.getElementById('mainWizardCard');
                 if (wizardCardFallback) wizardCardFallback.style.display = 'block';
+
+                const loaderInicial3 = document.getElementById('loaderInicial');
+                if (loaderInicial3) loaderInicial3.style.display = 'none';
+
                 document.getElementById('step1-upload-mode').style.display = 'block'; 
                 if (btnNext) btnNext.disabled = false; 
                 addDiplomaEdit(); 
@@ -2678,7 +2708,10 @@
                     const intencion = document.getElementById('btnNext').dataset.intencion;
                     payload.esFinalizar = false; // Por defecto es solo un borrador
 
-                    if (intencion === "finalizar") {
+                    // NUEVO: en modo "solo datos" (sin expediente) nunca se marca como "finalizar" —
+                    // aquí solo se guardan los datos del docente, nunca se actualiza ningún estado
+                    // de expediente (porque no existe ninguno en este modo).
+                    if (intencion === "finalizar" && !soloDatosMode) {
                         payload.esFinalizar = true; 
                     } else {
                         // SI ESTÁ AZUL (Guardar Avance), evaluamos QUÉ FALTÓ
@@ -2686,12 +2719,15 @@
                         if (!document.getElementById('tab-1').classList.contains('completed')) pasosFaltantes.push("1 (Docs)");
                         if (!document.getElementById('tab-2').classList.contains('completed')) pasosFaltantes.push("2 (Grados)");
                         if (!validarPaso3Completo()) pasosFaltantes.push("3 (Perfil)");
-                        if (!validarPaso4Completo()) pasosFaltantes.push("4 (Curso)");
+                        // NUEVO: el Paso 4 (Curso) no aplica en modo solo-datos, así que no se exige
+                        if (!soloDatosMode && !validarPaso4Completo()) pasosFaltantes.push("4 (Curso)");
                         if (!validarPaso5Completo()) pasosFaltantes.push("5 (Banco)");
                         if (!validarPaso6Completo(true)) pasosFaltantes.push("6 (Datos vacíos)"); 
 
                         // Guardamos el mensaje en el payload para usarlo después del fetch
-                        payload.mensajeFaltantes = `Avance guardado. Te falta revisar el Paso: ${pasosFaltantes.join(', ')}`;
+                        payload.mensajeFaltantes = pasosFaltantes.length > 0
+                            ? `Avance guardado. Te falta revisar el Paso: ${pasosFaltantes.join(', ')}`
+                            : (soloDatosMode ? "Todos los datos del docente se guardaron correctamente." : "Avance guardado correctamente.");
                     }
 
                     // Preparamos los datos a guardar
@@ -2758,8 +2794,9 @@
                             });
                             return;
                         } else {
-                                // AQUI ESTA LA MAGIA UX: Mostramos exactamente lo que falta
-                                showToast(payload.mensajeFaltantes || "Por favor, revisa que todos los pasos estén completados.", "warning");
+                                // AQUI ESTA LA MAGIA UX: Mostramos exactamente lo que falta (o éxito si no falta nada)
+                                const huboFaltantes = (payload.mensajeFaltantes || "").includes("Te falta revisar");
+                                showToast(payload.mensajeFaltantes || "Por favor, revisa que todos los pasos estén completados.", huboFaltantes ? "warning" : "success");
                             }
                         } else {
                             showToast("Avance guardado correctamente.", "success");
@@ -2916,8 +2953,10 @@
         // --- NUEVA FUNCIÓN: ACTUALIZACIÓN SILENCIOSA DEL PASO 2 ---
         async function refrescarDiplomasIA() {
             try {
-                // Solo ejecutamos esto si estamos viendo el Paso 2
-                if (pasoActual !== 2) return; 
+                // FIX: antes esto solo corría si pasoActual === 2, así que si guardabas un diploma
+                // y te ibas a otro paso, la tarjeta se quedaba "a medio convertir" (en modo edición)
+                // hasta que volvías aquí. Ahora corre sin importar en qué paso estés — el propio
+                // guard de "editando" (más abajo) ya protege de pisar algo que sigas subiendo.
 
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: userId, id_expediente: idExpedienteUrl }) });
                 const result = await res.json();
@@ -3303,6 +3342,11 @@
 
                     let huboCambios = false;
 
+                    // NUEVO: si algún diploma sigue "a medio convertir" (recién guardado, en modo edición),
+                    // esto lo convierte a tarjeta de solo-lectura con el estado real — antes esto solo
+                    // pasaba si el usuario volvía manualmente al Paso 2.
+                    await refrescarDiplomasIA();
+
                     // --- Estado del CV ---
                     if (result.data && result.data.estado_cv) {
                         const cvContainer = document.getElementById('cv-status-container');
@@ -3408,15 +3452,23 @@
             const p1 = document.getElementById('tab-1').classList.contains('completed');
             const p2 = document.getElementById('tab-2').classList.contains('completed');
             const p3 = validarPaso3Completo();
-            const p4 = validarPaso4Completo();
+            const p4 = soloDatosMode ? true : validarPaso4Completo(); // El Paso 4 no aplica en modo solo-datos
             const p5 = validarPaso5Completo();
             const p6 = validarPaso6Completo(false); // false para que evalúe sin pintar de rojo
 
             if (p1 && p2 && p3 && p4 && p5 && p6) {
-                // TODO ESTÁ LISTO
-                btnNext.innerHTML = 'Finalizar Registro <i class="fa-solid fa-check-double ms-2"></i>'; 
-                btnNext.style.background = '#10b981'; // Verde
-                btnNext.dataset.intencion = "finalizar";
+                if (soloDatosMode) {
+                    // NUEVO: en este modo no hay expediente que "finalizar" — solo se guardan
+                    // los datos del docente, nunca se marca ni se muestra como "completado"
+                    btnNext.innerHTML = 'Guardar Datos del Docente <i class="fa-solid fa-save ms-2"></i>';
+                    btnNext.style.background = 'var(--primary)';
+                    btnNext.dataset.intencion = "borrador";
+                } else {
+                    // TODO ESTÁ LISTO
+                    btnNext.innerHTML = 'Finalizar Registro <i class="fa-solid fa-check-double ms-2"></i>'; 
+                    btnNext.style.background = '#10b981'; // Verde
+                    btnNext.dataset.intencion = "finalizar";
+                }
             } else {
                 // ALGO FALTA
                 btnNext.innerHTML = 'Guardar Avance <i class="fa-solid fa-save ms-2"></i>'; 
