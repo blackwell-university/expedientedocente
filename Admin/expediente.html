@@ -622,7 +622,12 @@
                         </div>
 
                         <div class="form-card mb-4">
-                            <span class="section-badge"><i class="fa-solid fa-circle-info me-2"></i>Información de la Invitación</span>
+                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                                <span class="section-badge"><i class="fa-solid fa-circle-info me-2"></i>Información de la Invitación</span>
+                                <button type="button" class="action-btn" style="margin-top: -4px;" onclick="abrirModalEditarInvitacion()">
+                                    <i class="fa-solid fa-pen"></i> Editar Invitación
+                                </button>
+                            </div>
                             <div class="row g-3">
                                 <div class="col-md-3"><span class="info-label">Estado</span><div id="view-estado" class="info-value fw-bold text-primary">-</div></div>
                                 <div class="col-md-3"><span class="info-label">Curso Propuesto</span><div id="view-curso" class="info-value">-</div></div>
@@ -895,6 +900,83 @@
         </div>
     </div>
 
+    <!-- NUEVO: MODAL PARA EDITAR LOS DATOS DE LA INVITACIÓN (curso, fechas, horario y pago) -->
+    <div class="modal fade" id="modalEditarInvitacion" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-header border-0 pb-0 pt-4 px-4">
+                    <div>
+                        <h5 class="fw-bold text-dark fs-5 m-0"><i class="fa-solid fa-pen-to-square text-primary me-2"></i>Editar Invitación</h5>
+                        <p class="text-muted small m-0 mt-1">Corrige el curso, fechas, horario o pago asignado a este docente.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="editInvLoading" class="text-center text-muted py-3">
+                        <i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando datos de la invitación...
+                    </div>
+                    <form id="formEditarInvitacion" class="d-none">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <span class="info-label">Programa Académico</span>
+                                <select id="editSelPrograma" class="form-select" onchange="filtrarCursosEdit()">
+                                    <option value="">Cargando...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <span class="info-label">Curso Asignado</span>
+                                <select id="editSelCurso" class="form-select">
+                                    <option value="">Seleccionar curso</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <span class="info-label">Inicio de Clases</span>
+                                <input type="date" id="editFechaInicio" class="form-control">
+                            </div>
+                            <div class="col-md-4">
+                                <span class="info-label">Fin de Clases</span>
+                                <input type="date" id="editFechaFin" class="form-control">
+                            </div>
+                            <div class="col-md-4">
+                                <span class="info-label">Cantidad Sesiones</span>
+                                <input type="text" id="editCantClases" class="form-control" value="cuatro">
+                            </div>
+
+                            <div class="col-md-12">
+                                <span class="info-label">Franjas Horarias</span>
+                                <input type="text" id="editHorario" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <span class="info-label">Moneda de Pago</span>
+                                <select id="editMoneda" class="form-select">
+                                    <option value="$">Dólares ($ USD)</option>
+                                    <option value="S/.">Soles (S/. PEN)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <span class="info-label">Pago Total a depositar</span>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0 text-muted px-3"><i class="fa-solid fa-money-bill-wave"></i></span>
+                                    <input type="number" id="editCosto" class="form-control border-start-0 ps-0" placeholder="0.00">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0 d-flex gap-2">
+                    <button type="button" class="btn btn-white border fw-bold px-4 flex-grow-1" style="border-radius: 12px; padding: 12px; color: var(--text-muted);" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary fw-bold px-4 flex-grow-1" style="border-radius: 12px; padding: 12px;" id="btnGuardarEdicionInv" onclick="guardarEdicionInvitacion()">
+                        <i class="fa-solid fa-floppy-disk me-2"></i>Guardar Cambios
+                    </button>
+                    <button type="button" class="btn btn-success fw-bold px-4 flex-grow-1 d-none" style="border-radius: 12px; padding: 12px;" id="btnEnviarCorreoActualizacion" onclick="enviarCorreoActualizacionInvitacion()">
+                        <i class="fa-regular fa-paper-plane me-2"></i>Notificar al Docente
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="toast-container position-fixed bottom-0 end-0 p-4" style="z-index: 1055;" id="toastContainer"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -904,6 +986,12 @@
         const urlParams = new URLSearchParams(window.location.search);
         const expId = urlParams.get('expId');
         let docId = "";
+
+        // --- NUEVO: Estado para el modal de Editar Invitación ---
+        let idInvitacionActual = "";
+        let docenteNombreActual = "";
+        let docenteCorreoActual = "";
+        let catalogoCursosEdit = [];
         let documentTrace = []; // { nombre, version, estado, asignadoA, fechaEnvio, fechaAprobacion, url }
         let pollingTraducciones = null;
 
@@ -1327,6 +1415,11 @@
                     const d = response.docente;
                     const inv = response.invitacion;
                     docId = d.id;
+
+                    // NUEVO: Guardamos referencias para el modal de Editar Invitación
+                    idInvitacionActual = exp.idInvitacion || "";
+                    docenteNombreActual = `${d.nombres || ''} ${d.apellidos || ''}`.trim();
+                    docenteCorreoActual = d.correo || "";
                     
                     // Header
                     document.getElementById('det-nombre-curso').innerText = `Expediente: ${exp.idExpediente}`;
@@ -1412,6 +1505,180 @@
             } catch (e) {
                 console.error("Error al cargar expediente:", e);
                 mostrarErrorDatos();
+            }
+        }
+
+        // ==================== EDITAR DATOS DE LA INVITACIÓN (Ejecutivo) ====================
+        async function abrirModalEditarInvitacion() {
+            if (!idInvitacionActual) {
+                showToast("No se encontró la invitación asociada a este expediente.", "danger");
+                return;
+            }
+
+            const loadingDiv = document.getElementById('editInvLoading');
+            const form = document.getElementById('formEditarInvitacion');
+            const btnGuardar = document.getElementById('btnGuardarEdicionInv');
+            const btnEnviar = document.getElementById('btnEnviarCorreoActualizacion');
+
+            // Reset de UI cada vez que se abre
+            loadingDiv.classList.remove('d-none');
+            form.classList.add('d-none');
+            btnGuardar.classList.remove('d-none');
+            btnGuardar.disabled = false;
+            btnGuardar.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i>Guardar Cambios';
+            btnEnviar.classList.add('d-none');
+
+            new bootstrap.Modal(document.getElementById('modalEditarInvitacion')).show();
+
+            try {
+                // 1. Cargar catálogo de programas/cursos (solo la primera vez)
+                if (catalogoCursosEdit.length === 0) {
+                    const resCat = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_catalogs' }) });
+                    const dataCat = await resCat.json();
+                    catalogoCursosEdit = dataCat.cursos || [];
+                    const selP = document.getElementById('editSelPrograma');
+                    selP.innerHTML = '<option value="">Seleccionar programa</option>';
+                    (dataCat.programas || []).forEach(p => { selP.innerHTML += `<option value="${p.id}">${p.nombre}</option>`; });
+                }
+
+                // 2. Cargar los datos actuales de la invitación
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_invitation_details', idInvitacion: idInvitacionActual }) });
+                const result = await res.json();
+
+                if (result.status !== 'success') {
+                    showToast("No se pudieron cargar los datos de la invitación.", "danger");
+                    bootstrap.Modal.getInstance(document.getElementById('modalEditarInvitacion')).hide();
+                    return;
+                }
+
+                const dInv = result.data;
+
+                // Preseleccionar Programa y disparar el filtrado de Cursos
+                const selP = document.getElementById('editSelPrograma');
+                selP.value = dInv.idPrograma || "";
+                filtrarCursosEdit();
+
+                // Preseleccionar Curso
+                const selC = document.getElementById('editSelCurso');
+                selC.value = dInv.idCurso || "";
+
+                document.getElementById('editFechaInicio').value = dInv.fechaInicio || "";
+                document.getElementById('editFechaFin').value = dInv.fechaFin || "";
+                document.getElementById('editCantClases').value = dInv.clases || "cuatro";
+                document.getElementById('editHorario').value = dInv.franjas || "";
+                document.getElementById('editMoneda').value = dInv.moneda || "$";
+                document.getElementById('editCosto').value = dInv.costo || "";
+
+                loadingDiv.classList.add('d-none');
+                form.classList.remove('d-none');
+            } catch (e) {
+                console.error(e);
+                showToast("Error de conexión al cargar la invitación.", "danger");
+                bootstrap.Modal.getInstance(document.getElementById('modalEditarInvitacion')).hide();
+            }
+        }
+
+        function filtrarCursosEdit() {
+            const selP = document.getElementById('editSelPrograma');
+            const selC = document.getElementById('editSelCurso');
+            const cursoPrevio = selC.value;
+            selC.innerHTML = '<option value="">Seleccionar curso</option>';
+            if (selP.selectedIndex === -1 || !selP.value) return;
+            const progId = String(selP.value).trim();
+            const progName = String(selP.options[selP.selectedIndex] ? selP.options[selP.selectedIndex].text : '').trim();
+            catalogoCursosEdit.filter(c => c.idPrograma === progId || c.idPrograma === progName).forEach(c => {
+                selC.innerHTML += `<option value="${c.idCurso}">${c.nombre}</option>`;
+            });
+            if (cursoPrevio) selC.value = cursoPrevio;
+        }
+
+        async function guardarEdicionInvitacion() {
+            const selP = document.getElementById('editSelPrograma');
+            const selC = document.getElementById('editSelCurso');
+
+            if (!selP.value || !selC.value || !document.getElementById('editFechaInicio').value) {
+                showToast("Completa Programa, Curso y Fecha de Inicio.", "danger");
+                return;
+            }
+
+            const btnGuardar = document.getElementById('btnGuardarEdicionInv');
+            btnGuardar.disabled = true;
+            btnGuardar.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Guardando...';
+
+            const payload = {
+                action: 'update_invitation_details',
+                idInvitacion: idInvitacionActual,
+                idCurso: selC.value,
+                fechaInicio: document.getElementById('editFechaInicio').value,
+                fechaFin: document.getElementById('editFechaFin').value,
+                horario: document.getElementById('editHorario').value,
+                cantidadClases: document.getElementById('editCantClases').value,
+                monedaSimbolo: document.getElementById('editMoneda').value,
+                costo: document.getElementById('editCosto').value
+            };
+
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const result = await res.json();
+
+                if (result.status === 'success') {
+                    showToast("Invitación actualizada correctamente.", "success");
+                    btnGuardar.classList.add('d-none');
+                    document.getElementById('btnEnviarCorreoActualizacion').classList.remove('d-none');
+                    cargarExpediente(); // Refrescamos la tarjeta con los nuevos datos
+                } else {
+                    showToast(result.message || "No se pudo actualizar la invitación.", "danger");
+                    btnGuardar.disabled = false;
+                    btnGuardar.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i>Guardar Cambios';
+                }
+            } catch (e) {
+                console.error(e);
+                showToast("Error de conexión al guardar los cambios.", "danger");
+                btnGuardar.disabled = false;
+                btnGuardar.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i>Guardar Cambios';
+            }
+        }
+
+        async function enviarCorreoActualizacionInvitacion() {
+            const btn = document.getElementById('btnEnviarCorreoActualizacion');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-paper-plane fa-bounce me-2"></i>Enviando...';
+
+            const selP = document.getElementById('editSelPrograma');
+            const selC = document.getElementById('editSelCurso');
+            const fInicio = document.getElementById('editFechaInicio').value;
+            const fFin = document.getElementById('editFechaFin').value;
+
+            const payload = {
+                action: 'send_invitation_update_email',
+                idInvitacion: idInvitacionActual,
+                docenteCorreo: docenteCorreoActual,
+                docenteNombre: docenteNombreActual.split(' ')[0],
+                programa: selP.options[selP.selectedIndex] ? selP.options[selP.selectedIndex].text : '',
+                curso: selC.options[selC.selectedIndex] ? selC.options[selC.selectedIndex].text : '',
+                rangoFechas: `${fInicio ? new Date(fInicio).toLocaleDateString('es-ES') : '-'} al ${fFin ? new Date(fFin).toLocaleDateString('es-ES') : '-'}`,
+                horario: document.getElementById('editHorario').value,
+                cantidadClases: document.getElementById('editCantClases').value,
+                monedaSimbolo: document.getElementById('editMoneda').value,
+                costo: document.getElementById('editCosto').value
+            };
+
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const result = await res.json();
+
+                if (result.status === 'success') {
+                    Swal.fire('¡Correo Enviado!', 'El docente ha sido notificado de la actualización de su invitación.', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('modalEditarInvitacion')).hide();
+                } else {
+                    showToast(result.message || "No se pudo enviar el correo.", "danger");
+                }
+            } catch (e) {
+                console.error(e);
+                showToast("Error de conexión al enviar el correo.", "danger");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-regular fa-paper-plane me-2"></i>Notificar al Docente';
             }
         }
 
