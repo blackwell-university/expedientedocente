@@ -459,6 +459,34 @@
             color: var(--text-muted); font-weight: 600; font-size: 0.82rem; cursor: pointer; transition: 0.2s;
         }
         .btn-adjuntar:hover { border-color: var(--primary); color: var(--primary); background: #eff6ff; }
+
+        /* ==================== NUEVO: ZONA DE ARRASTRAR Y SOLTAR ARCHIVOS ==================== */
+        .dropzone {
+            border: 2px dashed #cbd5e1; border-radius: 14px; padding: 28px 16px; text-align: center;
+            background: #f8fafc; cursor: pointer; transition: 0.2s;
+        }
+        .dropzone:hover { border-color: var(--primary); background: #eff6ff; }
+        .dropzone.dragover { border-color: var(--primary); background: #eff6ff; box-shadow: 0 0 0 4px rgba(37,99,235,0.08); }
+        .dropzone i { font-size: 1.8rem; color: var(--primary); margin-bottom: 8px; display: block; }
+        .dropzone .dz-titulo { font-weight: 700; color: var(--text-main); font-size: 0.9rem; margin-bottom: 2px; }
+        .dropzone .dz-subtitulo { font-size: 0.78rem; color: var(--text-muted); }
+
+        .adjuntar-mini-dropzone { border: 1.5px dashed #cbd5e1; border-radius: 10px; padding: 10px 16px; transition: 0.2s; }
+        .adjuntar-mini-dropzone.dragover { border-color: var(--primary); background: #eff6ff; }
+
+        .archivo-preview-item {
+            display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #f0fdf4;
+            border: 1px solid #bbf7d0; border-radius: 12px; margin-top: 12px;
+        }
+        .archivo-preview-item i.fa-file-pdf { color: #ef4444; font-size: 1.4rem; }
+        .archivo-preview-item .archivo-preview-nombre { font-weight: 700; font-size: 0.85rem; color: #1e293b; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .archivo-preview-item .archivo-preview-peso { font-size: 0.72rem; color: #64748b; flex-shrink: 0; }
+        .archivo-preview-item .btn-quitar-archivo {
+            background: #fee2e2; color: #ef4444; border: none; width: 26px; height: 26px; border-radius: 7px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: 0.15s;
+        }
+        .archivo-preview-item .btn-quitar-archivo:hover { background: #ef4444; color: white; }
+        .btn-adjuntar:hover { border-color: var(--primary); color: var(--primary); background: #eff6ff; }
     </style>
 </head>
 <body>
@@ -817,9 +845,11 @@
                     <span class="notif-section-label"><i class="fa-solid fa-paperclip"></i> Adjuntos</span>
                     <div class="mb-2">
                         <input type="file" id="inputAdjuntosNotif" multiple hidden onchange="agregarAdjuntosUI(this.files)">
-                        <button type="button" class="btn-adjuntar" onclick="document.getElementById('inputAdjuntosNotif').click()">
-                            <i class="fa-solid fa-paperclip"></i> Adjuntar Archivo(s)
-                        </button>
+                        <div class="adjuntar-mini-dropzone" id="dropzoneAdjuntosNotif" onclick="document.getElementById('inputAdjuntosNotif').click()">
+                            <button type="button" class="btn-adjuntar" style="border:none; padding:0; background:none;">
+                                <i class="fa-solid fa-paperclip"></i> Adjuntar Archivo(s) — o arrástralos aquí
+                            </button>
+                        </div>
                         <div class="adjuntos-list" id="listaAdjuntosNotif"></div>
                     </div>
 
@@ -835,6 +865,36 @@
     </div>
 
   
+    <!-- NUEVO: MODAL EXCLUSIVO PARA ACTUALIZAR EL FORM 402 (cuando el docente lo devuelve ya notariado) -->
+    <div class="modal fade" id="modalActualizarForm402" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-header border-0 pb-0 pt-4 px-4">
+                    <h5 class="fw-bold text-dark fs-5"><i class="fa-solid fa-file-arrow-up text-primary me-2"></i>Actualizar Form 402 Notariado</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted small mb-4">Sube la versión firmada y notariada que te envió el docente. Al subirla, el Form 402 quedará marcado automáticamente como <b>Firmado</b>.</p>
+
+                    <input type="file" id="inputForm402" accept="application/pdf" hidden onchange="manejarArchivoForm402(this.files[0])">
+                    <div class="dropzone" id="dropzoneForm402" onclick="document.getElementById('inputForm402').click()">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <div class="dz-titulo">Arrastra el PDF aquí</div>
+                        <div class="dz-subtitulo">o haz clic para seleccionarlo desde tu computadora</div>
+                    </div>
+
+                    <div id="previewForm402Container"></div>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0 d-flex gap-2">
+                    <button type="button" class="btn btn-white border fw-bold px-4 flex-grow-1" style="border-radius: 12px; padding: 12px; color: var(--text-muted);" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary fw-bold px-4 flex-grow-1" id="btnConfirmarForm402" style="border-radius: 12px; padding: 12px;" onclick="confirmarActualizacionForm402()" disabled>
+                        <i class="fa-solid fa-check me-2"></i>Subir y Marcar como Firmado
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="toast-container position-fixed bottom-0 end-0 p-4" style="z-index: 1055;" id="toastContainer"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -1223,7 +1283,36 @@
             }
             cargarExpediente();
             cargarTrazabilidad();
+
+            // NUEVO: conectar arrastrar-y-soltar en las dos zonas de subida de archivos
+            activarDropzone(document.getElementById('dropzoneForm402'), (files) => {
+                if (files[0]) manejarArchivoForm402(files[0]);
+            });
+            activarDropzone(document.getElementById('dropzoneAdjuntosNotif'), (files) => {
+                agregarAdjuntosUI(files);
+            });
         });
+
+        // NUEVO: conecta eventos de arrastrar-y-soltar a cualquier zona (dropzone) y ejecuta un callback con los archivos soltados
+        function activarDropzone(zonaEl, onFilesDropped) {
+            if (!zonaEl) return;
+            ['dragenter', 'dragover'].forEach(evt => {
+                zonaEl.addEventListener(evt, (e) => {
+                    e.preventDefault(); e.stopPropagation();
+                    zonaEl.classList.add('dragover');
+                });
+            });
+            ['dragleave', 'drop'].forEach(evt => {
+                zonaEl.addEventListener(evt, (e) => {
+                    e.preventDefault(); e.stopPropagation();
+                    zonaEl.classList.remove('dragover');
+                });
+            });
+            zonaEl.addEventListener('drop', (e) => {
+                const files = e.dataTransfer.files;
+                if (files && files.length > 0) onFilesDropped(files);
+            });
+        }
 
         async function cargarExpediente() {
             try {
@@ -1495,10 +1584,15 @@
                     docsMostrados++;
                     
                     let estadoClass = "badge-state";
-                    if(doc.estado === "Completado" || doc.estado === "Firmado por Zamudio") estadoClass += " badge-completed";
+                    if(doc.estado === "Completado" || doc.estado === "Firmado por Zamudio" || doc.estado === "Firmado") estadoClass += " badge-completed";
                     if(doc.estado === "Pendiente") estadoClass += " badge-pending";
                     if(doc.estado === "En revisión" || doc.estado === "Revisado por Sara") estadoClass += " badge-review";
-                    
+
+                    // NUEVO: solo el Form 402 permite que la ejecutiva suba la versión ya notariada por el docente
+                    const btnActualizarForm402 = doc.nombre === "Form 402"
+                        ? `<a href="#" onclick="abrirModalActualizarForm402(); return false;" title="Subir Form 402 notariado"><i class="fa-solid fa-file-arrow-up"></i> Actualizar</a>`
+                        : '';
+
                     html += `<tr>
                         <td><strong>${doc.nombre}</strong></td>
                         <td>v${doc.version}</td>
@@ -1510,6 +1604,7 @@
                             <a href="${getDriveViewUrl(doc.url)}" target="_blank" title="Ver en modo lectura"><i class="fa-regular fa-eye"></i> Ver</a>
                             <a href="${getDriveEditUrl(doc.url)}" target="_blank" title="Abrir para editar"><i class="fa-regular fa-pen-to-square"></i> Editar</a>
                             <a href="${getDrivePdfDownloadUrl(doc.url)}" title="Descargar como PDF"><i class="fa-solid fa-download"></i> Descargar</a>
+                            ${btnActualizarForm402}
                         </td>
                     </tr>`;
                 }
@@ -1979,6 +2074,84 @@
             } catch (e) {
                 Swal.fire('Error de conexión', 'No se pudo contactar al servidor.', 'error');
             } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+        }
+
+        // ==================== NUEVO: ACTUALIZAR FORM 402 NOTARIADO (solo este documento lo permite) ====================
+        let archivoForm402Actual = null; // { name, type, size, base64 }
+
+        function abrirModalActualizarForm402() {
+            archivoForm402Actual = null;
+            document.getElementById('previewForm402Container').innerHTML = '';
+            document.getElementById('btnConfirmarForm402').disabled = true;
+            document.getElementById('inputForm402').value = '';
+            new bootstrap.Modal(document.getElementById('modalActualizarForm402')).show();
+        }
+
+        function manejarArchivoForm402(file) {
+            if (!file) return;
+            if (file.type !== 'application/pdf') {
+                Swal.fire('Formato no válido', 'El Form 402 debe subirse en formato PDF.', 'warning');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                archivoForm402Actual = { name: file.name, type: file.type, size: file.size, base64: e.target.result.split(',')[1] };
+
+                document.getElementById('previewForm402Container').innerHTML = `
+                    <div class="archivo-preview-item">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        <span class="archivo-preview-nombre">${file.name}</span>
+                        <span class="archivo-preview-peso">${formatearPeso(file.size)}</span>
+                        <button type="button" class="btn-quitar-archivo" onclick="quitarArchivoForm402()" title="Quitar"><i class="fa-solid fa-xmark"></i></button>
+                    </div>`;
+                document.getElementById('btnConfirmarForm402').disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function quitarArchivoForm402() {
+            archivoForm402Actual = null;
+            document.getElementById('previewForm402Container').innerHTML = '';
+            document.getElementById('btnConfirmarForm402').disabled = true;
+            document.getElementById('inputForm402').value = '';
+        }
+
+        async function confirmarActualizacionForm402() {
+            if (!archivoForm402Actual) return;
+
+            const btn = document.getElementById('btnConfirmarForm402');
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Subiendo...`;
+
+            try {
+                const res = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'update_form402_notariado',
+                        idExpediente: expId,
+                        name: archivoForm402Actual.name,
+                        type: archivoForm402Actual.type,
+                        file: archivoForm402Actual.base64
+                    })
+                });
+                const result = await res.json();
+
+                if (result.status === 'success') {
+                    bootstrap.Modal.getInstance(document.getElementById('modalActualizarForm402')).hide();
+                    showToast("Form 402 actualizado y marcado como Firmado.", "success");
+                    cargarExpediente(); // Recarga la tabla para reflejar el nuevo estado y versión
+                } else {
+                    Swal.fire('Error', result.message || 'No se pudo actualizar el Form 402.', 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = originalHTML;
+                }
+            } catch (e) {
+                Swal.fire('Error de conexión', 'No se pudo contactar al servidor.', 'error');
                 btn.disabled = false;
                 btn.innerHTML = originalHTML;
             }
