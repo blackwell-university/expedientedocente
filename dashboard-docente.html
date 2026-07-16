@@ -721,11 +721,9 @@
 
                     localStorage.setItem('userName', nombreCompleto);
 
-                    // 2. Lógica correcta: Si el DNI está vacío, ES UN DOCENTE NUEVO -> Mostramos modal
-                    if (dniDocente === "" || dniDocente === "-") {
-                        const modalBienvenida = new bootstrap.Modal(document.getElementById('modalBienvenida'));
-                        modalBienvenida.show();
-                    }
+                    // NOTA: se quitó la lógica que mostraba el modal "modalBienvenida" cuando el DNI
+                    // venía vacío (docente nuevo) — ya no se muestra ese modal por indicación del cliente.
+                    // El modal en sí sigue existiendo en el HTML por si se necesita reactivar más adelante.
                 }
             } catch (e) {
                 console.error("Error validando al docente:", e);
