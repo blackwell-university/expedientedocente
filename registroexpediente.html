@@ -2815,8 +2815,17 @@
                         if(res.status === 'success' && res.drafts) {
                             document.getElementById('ai-education-container').innerHTML = '';
                             document.getElementById('ai-experience-container').innerHTML = '';
+                            document.getElementById('ai-skills-container').innerHTML = ''; // FIX: también se limpia, antes no se limpiaba y podía duplicar competencias visibles
                             if(res.drafts.educacion) res.drafts.educacion.forEach(edu => addEduReviewField(edu));
-                            if(res.drafts.experiencia) res.drafts.experiencia.forEach(exp => addExpField(exp));
+                            // FIX: antes esto llamaba addExpField(exp) para TODO, incluyendo los registros de
+                            // Competencias (tipo "CTecnologica"/"CLinguistica"/"CHBlandas"), que viven en la misma
+                            // hoja "Experiencias". Al no filtrar por tipo, una competencia terminaba renderizada
+                            // como si fuera una Experiencia Laboral (con su propio botón "Añadir Competencia"
+                            // en paralelo mostrando la misma correctamente) — de ahí la duplicación visual.
+                            if(res.drafts.experiencia) res.drafts.experiencia.forEach(exp => {
+                                if (exp.tipo && exp.tipo.startsWith('C')) addSkillField(exp);
+                                else addExpField(exp);
+                            });
                         }
                     } catch(e) {}
                 }
@@ -3140,6 +3149,12 @@
                         tab6.classList.remove('completed');
                         if (tab6.querySelector('.step-badge')) tab6.querySelector('.step-badge').innerText = "En progreso";
                     }
+                    // FIX: el Paso 6 es el último paso, así que "nuevoPaso" (7) siempre queda fuera de
+                    // rango y la llamada a irAPaso() de más abajo nunca se ejecuta para él. Como
+                    // evaluarEstadoBotonFinal() solo se disparaba dentro de irAPaso(), el botón
+                    // "Finalizar Registro" (verde) no aparecía hasta refrescar la página (F5) aunque
+                    // ya todo estuviera completo. Lo llamamos aquí directamente para refrescarlo al toque.
+                    if (pasoActual === totalPasos) { evaluarEstadoBotonFinal(); }
                 }
                 else {
                     marcarTabComoCompletada(pasoBase); 
