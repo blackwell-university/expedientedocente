@@ -386,6 +386,19 @@
                                             <i class="fa-solid fa-chevron-right action-arrow"></i>
                                         </button>
 
+                                        <!-- NUEVO: Acción — Asignar un curso adicional al Expediente (contrato anual) YA existente.
+                                             No pide documentos porque esos ya se solicitaron una sola vez al crear el Expediente. -->
+                                        <button class="btn-action-minimal" onclick="abrirModalInvitacion('curso')">
+                                            <div class="action-icon-wrapper" style="background:#fff7ed; color:#c2410c;">
+                                                <i class="fa-solid fa-calendar-plus"></i>
+                                            </div>
+                                            <div class="action-text">
+                                                <span class="action-title">Asignar Curso</span>
+                                                <span class="action-desc">Nueva invitación a un curso, sobre el Expediente vigente</span>
+                                            </div>
+                                            <i class="fa-solid fa-chevron-right action-arrow"></i>
+                                        </button>
+
                                         <!-- NUEVO: Acción — Subir datos del docente SIN asignar curso todavía -->
                                         <button class="btn-action-minimal" onclick="subirInformacionSinCurso()">
                                             <div class="action-icon-wrapper" style="background:#f0fdf4; color:#15803d;">
@@ -892,7 +905,10 @@
                 title.innerHTML = '<i class="fa-solid fa-folder-plus me-2 text-primary"></i>Crear Expediente e Invitación';
                 docsDiv.style.display = 'block';
             } else {
-                title.innerHTML = '<i class="fa-regular fa-paper-plane me-2 text-primary"></i>Enviar Solo Invitación a Curso';
+                // NUEVO: modo "curso" — asigna un curso adicional (nueva invitación) sobre el
+                // Expediente (contrato anual) que ya existe para este docente. No se piden
+                // documentos porque esos se solicitan una única vez, al crear el Expediente.
+                title.innerHTML = '<i class="fa-solid fa-calendar-plus me-2 text-primary"></i>Asignar Nuevo Curso al Docente';
                 docsDiv.style.display = 'none'; 
             }
 
@@ -974,6 +990,13 @@
 
                     btnGuardar.style.display = 'none'; 
                     btnEnviar.classList.remove('d-none'); 
+                } else {
+                    // NUEVO: antes un error del backend (ej. "este docente no tiene Expediente
+                    // creado aún" al usar 'Asignar Curso') se quedaba en silencio y el botón
+                    // parecía trabado en "Guardando...". Ahora se muestra el motivo real.
+                    Swal.fire('No se pudo guardar', result.message || 'Ocurrió un error al guardar la invitación.', 'warning');
+                    btnGuardar.disabled = false;
+                    btnGuardar.innerHTML = 'Guardar Invitación';
                 }
             } catch(e) { 
                 showToast("Error al guardar.", "danger"); 
@@ -1076,10 +1099,20 @@
                         const fFin = exp.fechaFin ? new Date(exp.fechaFin).toLocaleDateString('es-ES', {day: '2-digit', month: 'short', year:'numeric'}) : '-';
                         const fCreacion = exp.fechaCreacion ? new Date(exp.fechaCreacion).toLocaleDateString('es-ES', {day: '2-digit', month: 'short', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '-';
 
+                        // NUEVO: aviso de vencimiento del Expediente (contrato anual). El backend
+                        // ya calcula si está vencido o próximo a vencer (30 días o menos).
+                        const fVencimiento = exp.fechaVencimiento ? new Date(exp.fechaVencimiento).toLocaleDateString('es-ES', {day: '2-digit', month: 'short', year:'numeric'}) : null;
+                        let bannerVencimiento = '';
+                        if (exp.vencido) {
+                            bannerVencimiento = `<div class="mb-2 px-3 py-2" style="background:#fef2f2; color:#b91c1c; border-radius:8px; font-size:0.78rem; font-weight:700;"><i class="fa-solid fa-triangle-exclamation me-2"></i>Este contrato venció el ${fVencimiento}. Genera un nuevo Expediente para renovarlo.</div>`;
+                        } else if (exp.porVencer) {
+                            bannerVencimiento = `<div class="mb-2 px-3 py-2" style="background:#fffbeb; color:#b45309; border-radius:8px; font-size:0.78rem; font-weight:700;"><i class="fa-solid fa-clock me-2"></i>Este contrato está por vencer (${fVencimiento}). Considera generar un nuevo Expediente.</div>`;
+                        }
+
                         // NUEVO DISEÑO DE CARD: Más compacta, 4 columnas integradas y paddings reducidos
                         html += `
                         <div class="expediente-card p-3 mb-3" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
-                            
+                            ${bannerVencimiento}
                             <!-- Header de la Card (Reducido) -->
                             <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
                                 <div class="d-flex align-items-center gap-3">
@@ -1088,7 +1121,7 @@
                                     </div>
                                     <div>
                                         <h6 class="fw-bold m-0 text-dark" style="font-size: 0.95rem; letter-spacing: -0.01em;">${exp.idExpediente}</h6>
-                                        <span class="text-muted" style="font-size: 0.75rem; font-weight: 500;">Expediente de Registro</span>
+                                        <span class="text-muted" style="font-size: 0.75rem; font-weight: 500;">Expediente de Registro${fVencimiento ? ' · Vigente hasta ' + fVencimiento : ''}</span>
                                     </div>
                                 </div>
                                 <span class="badge ${badgeClass} px-2 py-1" style="border-radius: 6px; font-size: 0.7rem; letter-spacing: 0.5px; text-transform: uppercase;" title="Estado del Expediente">${estadoTextoExp}</span>

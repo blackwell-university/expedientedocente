@@ -102,6 +102,20 @@
             border-radius: 8px; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 6px;
         }
 
+        /* NUEVO: Chips para alternar entre Expedientes Anuales e Invitaciones */
+        .chip-vista {
+            border: 1px solid #e2e8f0; background: #ffffff; color: var(--text-muted);
+            padding: 10px 18px; border-radius: 50px; font-weight: 600; font-size: 0.85rem;
+            transition: var(--transition); cursor: pointer;
+        }
+        .chip-vista.active { background: var(--primary-dark); color: #ffffff; border-color: var(--primary-dark); }
+        .chip-vista:hover:not(.active) { background: #f1f5f9; }
+
+        /* NUEVO: Badge de vigencia de contrato (vencido / por vencer / vigente) */
+        .badge-vigencia-ok { background: #f0fdf4; color: #15803d; }
+        .badge-vigencia-porvencer { background: #fffbeb; color: #b45309; }
+        .badge-vigencia-vencido { background: #fef2f2; color: #b91c1c; }
+
         @media (max-width: 768px) { .sidebar { display: none; } header, .content-area { padding: 20px; } }
     </style>
 </head>
@@ -151,15 +165,25 @@
                     <p>Filtra y revisa los expedientes formales de la plana docente.</p>
                 </div>
 
+                <!-- NUEVO: CHIPS PARA ALTERNAR ENTRE EXPEDIENTES ANUALES (CONTRATOS) E INVITACIONES (CURSOS) -->
+                <div class="d-flex gap-2 mb-3">
+                    <button type="button" class="chip-vista active" id="chip-expedientes" onclick="cambiarVista('expedientes')">
+                        <i class="fa-solid fa-folder-tree me-2"></i>Expedientes Anuales
+                    </button>
+                    <button type="button" class="chip-vista" id="chip-invitaciones" onclick="cambiarVista('invitaciones')">
+                        <i class="fa-solid fa-chalkboard-user me-2"></i>Invitaciones (Cursos)
+                    </button>
+                </div>
+
                 <!-- FILTROS AVANZADOS -->
                 <div class="filter-section">
                     <div class="row g-3 align-items-end">
                         <div class="col-md-5">
-                            <label class="form-label-sm">Buscar por Docente o ID Expediente</label>
+                            <label class="form-label-sm" id="labelFiltroTexto">Buscar por Docente o ID Expediente</label>
                             <input type="text" id="filterText" class="form-control input-filter" placeholder="Ej: Juan Pérez o EXP-123456...">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label-sm">Estado de Expediente</label>
+                            <label class="form-label-sm" id="labelFiltroEstado">Estado de Expediente</label>
                             <select id="filterStatus" class="form-select input-filter" style="cursor: pointer;">
                                 <option value="Todos">Todos los estados</option>
                                 <option value="Pendiente">Pendiente (Sin completar)</option>
@@ -176,15 +200,15 @@
                     </div>
                 </div>
 
-                <!-- TABLA DE RESULTADOS -->
-                <div class="table-card">
+                <!-- TABLA DE RESULTADOS: EXPEDIENTES ANUALES -->
+                <div class="table-card" id="tabla-expedientes-wrap">
                     <div class="table-responsive">
                         <table class="table mb-0 align-middle">
                             <thead>
                                 <tr>
                                     <th>Docente / ID</th>
                                     <th>Período (Inicio - Fin)</th>
-                                    <th>Fecha de Creación</th>
+                                    <th>Vigencia del Contrato</th>
                                     <th>Estado</th>
                                     <th class="text-center">Acción</th>
                                 </tr>
@@ -200,6 +224,30 @@
                     </div>
                 </div>
 
+                <!-- NUEVO: TABLA DE RESULTADOS — INVITACIONES (CURSOS ASIGNADOS) -->
+                <div class="table-card d-none" id="tabla-invitaciones-wrap">
+                    <div class="table-responsive">
+                        <table class="table mb-0 align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Docente</th>
+                                    <th>Curso / Programa</th>
+                                    <th>Período (Inicio - Fin)</th>
+                                    <th>Expediente Vinculado</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lista-invitaciones">
+                                <!-- JS cargarán aquí -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="loading-spinner-inv" class="text-center py-5 d-none">
+                        <i class="fa-solid fa-circle-notch fa-spin fs-2" style="color: var(--primary);"></i>
+                        <p class="mt-3 text-muted fw-medium">Obteniendo invitaciones del sistema...</p>
+                    </div>
+                </div>
+
             </div>
         </div>
     </main>
@@ -211,6 +259,8 @@
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
         let todosExpedientes = [];
+        let todasInvitaciones = [];
+        let vistaActual = 'expedientes'; // NUEVO: 'expedientes' (contratos anuales) o 'invitaciones' (cursos)
 
         // UI Helpers
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); document.getElementById('toggleIcon').classList.toggle('fa-chevron-right'); document.getElementById('toggleIcon').classList.toggle('fa-chevron-left');}
@@ -275,10 +325,62 @@
             if(roleSpan) roleSpan.innerText = role;
 
             cargarTodosExpedientes();
+            cargarTodasInvitaciones();
             
             document.getElementById('filterText').addEventListener('input', filtrar);
             document.getElementById('filterStatus').addEventListener('change', filtrar);
         });
+
+        // NUEVO: alterna entre la vista de Expedientes Anuales (contratos) y la de Invitaciones (cursos)
+        function cambiarVista(vista) {
+            vistaActual = vista;
+            document.getElementById('chip-expedientes').classList.toggle('active', vista === 'expedientes');
+            document.getElementById('chip-invitaciones').classList.toggle('active', vista === 'invitaciones');
+            document.getElementById('tabla-expedientes-wrap').classList.toggle('d-none', vista !== 'expedientes');
+            document.getElementById('tabla-invitaciones-wrap').classList.toggle('d-none', vista !== 'invitaciones');
+
+            const labelTexto = document.getElementById('labelFiltroTexto');
+            const labelEstado = document.getElementById('labelFiltroEstado');
+            const filterStatus = document.getElementById('filterStatus');
+            if (vista === 'expedientes') {
+                labelTexto.innerText = 'Buscar por Docente o ID Expediente';
+                labelEstado.innerText = 'Estado de Expediente';
+                filterStatus.innerHTML = `
+                    <option value="Todos">Todos los estados</option>
+                    <option value="Pendiente">Pendiente (Sin completar)</option>
+                    <option value="Completado">Completado (Listo para revisar)</option>
+                    <option value="Aprobado">Aprobado</option>
+                    <option value="Rechazado">Rechazado</option>`;
+            } else {
+                labelTexto.innerText = 'Buscar por Docente, Curso o ID Invitación';
+                labelEstado.innerText = 'Estado de Invitación';
+                filterStatus.innerHTML = `
+                    <option value="Todos">Todos los estados</option>
+                    <option value="Guardado">Guardado (Sin enviar)</option>
+                    <option value="Enviado">Enviado</option>
+                    <option value="Aceptado">Aceptado</option>
+                    <option value="Respondido">Respondido</option>`;
+            }
+            filtrar();
+        }
+
+        // NUEVO: trae todas las invitaciones (cursos asignados) del sistema, ya sea que
+        // vengan de un "Crear Expediente + Invitación" o de un "Asignar Curso" posterior.
+        function cargarTodasInvitaciones() {
+            cargarDatosOptimizadosAdmin(
+                'get_all_invitations_global',
+                {},
+                (data, isLoading) => {
+                    const spinner = document.getElementById('loading-spinner-inv');
+                    if (isLoading) { spinner.classList.remove('d-none'); return; }
+                    spinner.classList.add('d-none');
+                    if (data) {
+                        todasInvitaciones = data;
+                        if (vistaActual === 'invitaciones') filtrar();
+                    }
+                }
+            );
+        }
 
         function cargarTodosExpedientes() {
             // Usamos nuestra función optimizada
@@ -306,6 +408,18 @@
         function filtrar() {
             const text = document.getElementById('filterText').value.toLowerCase();
             const status = document.getElementById('filterStatus').value;
+
+            if (vistaActual === 'invitaciones') {
+                const filtradasInv = todasInvitaciones.filter(inv => {
+                    const matchText = (inv.nombreDocente || '').toLowerCase().includes(text) ||
+                                      (inv.id || '').toLowerCase().includes(text) ||
+                                      (inv.curso || '').toLowerCase().includes(text);
+                    const matchStatus = status === "Todos" || (inv.estado || '').toLowerCase() === status.toLowerCase();
+                    return matchText && matchStatus;
+                });
+                renderTablaInvitaciones(filtradasInv);
+                return;
+            }
 
             const filtradas = todosExpedientes.filter(exp => {
                 const matchText = exp.nombreDocente.toLowerCase().includes(text) || exp.idExpediente.toLowerCase().includes(text);
@@ -340,7 +454,19 @@
             tbody.innerHTML = datos.map(exp => {
                 const fIni = formatCustomDate(exp.fechaInicio);
                 const fFin = formatCustomDate(exp.fechaFin);
-                const fCrea = formatCustomDate(exp.fechaCreacion);
+
+                // NUEVO: píldora de vigencia del contrato anual (calculada por el backend)
+                let vigenciaHtml = '<span class="text-muted">—</span>';
+                if (exp.fechaVencimiento) {
+                    const fVenc = formatCustomDate(exp.fechaVencimiento);
+                    if (exp.vencido) {
+                        vigenciaHtml = `<span class="badge-status badge-vigencia-vencido"><i class="fa-solid fa-triangle-exclamation"></i> Vencido (${fVenc})</span>`;
+                    } else if (exp.porVencer) {
+                        vigenciaHtml = `<span class="badge-status badge-vigencia-porvencer"><i class="fa-solid fa-clock"></i> Por vencer (${fVenc})</span>`;
+                    } else {
+                        vigenciaHtml = `<span class="badge-status badge-vigencia-ok"><i class="fa-solid fa-check"></i> Vigente hasta ${fVenc}</span>`;
+                    }
+                }
 
                 // Determinar el enlace. Al hacer clic enviamos expId y docId a expediente.html
                 const linkHref = `expediente.html?expId=${exp.idExpediente}`;
@@ -356,13 +482,50 @@
                             ${fIni} <i class="fa-solid fa-arrow-right text-muted" style="font-size: 0.7rem;"></i> ${fFin}
                         </div>
                     </td>
-                    <td><div class="text-muted"><i class="fa-regular fa-calendar me-2"></i>${fCrea}</div></td>
+                    <td>${vigenciaHtml}</td>
                     <td><span class="badge-status status-${exp.estado}">${getIconForStatus(exp.estado)} ${exp.estado}</span></td>
                     <td class="text-center">
                         <a href="${linkHref}" class="btn-revisar-link">
                             <i class="fa-regular fa-folder-open"></i> Revisar
                         </a>
                     </td>
+                </tr>`;
+            }).join('');
+        }
+
+        // NUEVO: pinta la tabla de Invitaciones (cursos asignados), sin importar si nacieron
+        // junto con un Expediente o fueron un "Asignar Curso" posterior sobre uno ya existente.
+        function renderTablaInvitaciones(datos) {
+            const tbody = document.getElementById('lista-invitaciones');
+            if (datos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted"><i class="fa-solid fa-chalkboard-user fs-2 mb-2 opacity-50"></i><br>No se encontraron invitaciones.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = datos.map(inv => {
+                const fIni = formatCustomDate(inv.fechaInicio);
+                const fFin = formatCustomDate(inv.fechaFin);
+                const expHtml = inv.idExpediente
+                    ? `<a href="expediente.html?expId=${inv.idExpediente}" class="btn-revisar-link"><i class="fa-regular fa-folder-open"></i> ${inv.idExpediente}</a>`
+                    : '<span class="text-muted">Sin vincular</span>';
+
+                return `
+                <tr>
+                    <td>
+                        <div class="fw-bold" style="color: var(--primary-dark)">${inv.nombreDocente}</div>
+                        <div class="text-muted" style="font-size: 0.75rem;">Docente: <span class="fw-medium">${inv.docenteId}</span> <br> Inv: <span class="text-dark fw-medium">${inv.id}</span></div>
+                    </td>
+                    <td>
+                        <div class="fw-bold" style="font-size: 0.85rem;">${inv.curso}</div>
+                        <div class="text-muted" style="font-size: 0.75rem;">${inv.programa || ''}</div>
+                    </td>
+                    <td>
+                        <div class="badge-periodo">
+                            ${fIni} <i class="fa-solid fa-arrow-right text-muted" style="font-size: 0.7rem;"></i> ${fFin}
+                        </div>
+                    </td>
+                    <td>${expHtml}</td>
+                    <td><span class="badge-status status-Completado">${inv.estado || 'Pendiente'}</span></td>
                 </tr>`;
             }).join('');
         }
