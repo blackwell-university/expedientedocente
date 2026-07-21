@@ -3345,8 +3345,13 @@
             const reqDocs = window.docsSolicitadosGlobal || "";
             const pideDoctorado = reqDocs.includes("Especialmente Doctorado");
 
+            // FIX: un Doctorado es un grado ACADÉMICAMENTE SUPERIOR a un Máster, pero antes solo se
+            // aceptaba como válido el string "master/maestría/magíster" — un docente que solo tenía
+            // registrado su Doctorado (sin un Máster aparte) se quedaba bloqueado en rojo para
+            // siempre, aunque tuviera todo lleno. Ahora un Doctorado también cubre el requisito de
+            // "al menos un Máster".
             if (pideDoctorado && !hasDoctorate) esValido = false;
-            if (!pideDoctorado && !hasMaster) esValido = false;
+            if (!pideDoctorado && !hasMaster && !hasDoctorate) esValido = false;
 
             // 3. Validar Experiencia Laboral
             const expCards = document.querySelectorAll('.exp-item');
