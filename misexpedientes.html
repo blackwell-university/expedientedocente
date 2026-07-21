@@ -4,13 +4,12 @@
     <script>
         // Protección de ruta: Solo para docentes
         if (localStorage.getItem('isLoggedIn') !== 'true' || localStorage.getItem('userRole') !== 'Docente') {
-            // Descomentar para producción
-            // window.location.href = "index.html";
+            window.location.href = "index.html";
         }
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mis Expedientes | Blackwell University</title>
+    <title>Trámites y Contratos | Blackwell University</title>
     
     <!-- Frameworks & Fonts -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -23,33 +22,27 @@
         :root {
             --primary: #1e40af; 
             --primary-light: #eff6ff;
-            --bg-body: #f4f7fa; /* Fondo gris muy claro para resaltar las tarjetas blancas */
+            --bg-body: #f8fafc; /* Gris ligeramente más claro para modernizar */
             --text-main: #1e293b;
             --text-muted: #64748b;
             --border-color: #e2e8f0;
             --primary-dark: #1e3a8a;
-            --card-radius: 24px; /* Bordes más redondeados estilo app */
+            --card-radius: 24px; 
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         /* --- AJUSTES DEL BODY --- */
         html { font-size: 16px; transition: font-size 0.3s ease; }
         body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: var(--bg-body); 
-            color: var(--text-main); 
-            margin: 0; 
-            padding-top: 70px; 
-            padding-bottom: 90px; /* Espacio para el nav inferior */
-            overflow-x: hidden;
+            font-family: 'Inter', sans-serif; background-color: var(--bg-body); 
+            color: var(--text-main); margin: 0; padding-top: 70px; padding-bottom: 90px; overflow-x: hidden;
         }
 
         /* --- TOP NAVIGATION (Escritorio) --- */
         .top-nav {
             position: fixed; top: 0; left: 0; right: 0; height: 70px;
             background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border-color);
-            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;
             padding: 0 40px; z-index: 1000;
         }
         .nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
@@ -64,52 +57,12 @@
         .user-trigger { display: flex; align-items: center; gap: 12px; padding: 6px 6px 6px 15px; background: #fff; border: 1px solid var(--border-color); border-radius: 50px; }
         .user-trigger span { font-weight: 700; font-size: 0.85rem; }
         .user-avatar { width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem; }
+        
         .user-dropdown { position: absolute; top: calc(100% + 10px); right: 0; width: 220px; background: white; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 8px; opacity: 0; visibility: hidden; transform: translateY(10px); transition: var(--transition); }
         .user-dropdown.show { opacity: 1; visibility: visible; transform: translateY(0); }
         .dropdown-link { display: flex; align-items: center; gap: 12px; padding: 12px 15px; text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 0.85rem; border-radius: 10px; transition: 0.2s; }
         .dropdown-link:hover { background: #eff6ff; color: var(--primary); }
         .dropdown-link.logout { color: #ef4444; } .dropdown-link.logout:hover { background: #fef2f2; color: #ef4444; }
-
-        /* --- BOTTOM NAVIGATION (Móvil) --- */
-        .bottom-nav {
-            position: fixed; bottom: 0; left: 0; right: 0; height: 80px;
-            background: #ffffff;
-            border-radius: 30px 30px 0 0; /* Bordes superiores redondeados */
-            box-shadow: 0 -4px 25px rgba(0,0,0,0.06); /* Sombra suave hacia arriba */
-            display: none; justify-content: space-between; align-items: center;
-            padding: 0 25px; padding-bottom: env(safe-area-inset-bottom); z-index: 1000;
-        }
-        .bottom-item {
-            display: flex; flex-direction: column; align-items: center; gap: 6px;
-            text-decoration: none; color: #94a3b8; /* Iconos plomos por defecto */
-            transition: 0.3s ease; flex: 1; position: relative;
-        }
-        .bottom-item i { font-size: 1.4rem; transition: transform 0.2s; }
-        .bottom-item span { font-size: 0.65rem; font-weight: 550; }
-        
-        .bottom-item.active { color: var(--primary); /* Azul cuando está activo */ }
-        .bottom-item.active i { transform: translateY(-2px); }
-        .bottom-item.active::after {
-            content: ''; position: absolute; bottom: -10px; width: 5px; height: 5px;
-            background: var(--primary); border-radius: 50%;
-        }
-        /* --- EFECTO MÁGICO PARA ÍCONOS (Se rellenan al estar activos) --- */
-        .bottom-item .material-symbols-rounded {
-            font-size: 1.5rem; /* Íconos mucho más grandes y visibles */
-            transition: transform 0.2s;
-            font-variation-settings: 'FILL' 1, 'wght' 400;
-        }
-
-        /* --- TÍTULO DE BIENVENIDA MÁS GRUESO --- */
-        .page-header { margin-bottom: 25px; }
-        .page-header h1 { 
-            font-weight: 800 !important; /* Letra ultra gruesa */
-            font-size: 2.2rem; 
-            margin-bottom: 8px; 
-            letter-spacing: -0.03em; /* Letras más juntas (estilo moderno) */
-            color: var(--primary-dark); 
-        }
-        .page-header p { color: var(--text-muted); font-size: 1.05rem; margin: 0; }
 
         /* --- CONTROLES DE LETRA INDEPENDIENTES (A- / A+) --- */
         .font-controls {
@@ -127,79 +80,114 @@
         .btn-font-action.a-plus { font-size: 1.25rem; }
         .font-separator { width: 1px; height: 20px; background: var(--border-color); }
 
-        /* --- HEADER MÓVIL (Estilo App) --- */
+        /* --- BOTTOM NAVIGATION (Móvil) --- */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 80px; background: #ffffff;
+            border-radius: 30px 30px 0 0; box-shadow: 0 -4px 25px rgba(0,0,0,0.06); 
+            display: none; justify-content: space-between; align-items: center;
+            padding: 0 25px; padding-bottom: env(safe-area-inset-bottom); z-index: 1000;
+        }
+        .bottom-item { display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; color: #94a3b8; transition: 0.3s ease; flex: 1; position: relative; }
+        .bottom-item i, .bottom-item .material-symbols-rounded { font-size: 1.5rem; transition: transform 0.2s; }
+        .bottom-item span { font-size: 0.65rem; font-weight: 550; }
+        .bottom-item.active { color: var(--primary); }
+        .bottom-item.active .material-symbols-rounded { font-variation-settings: 'FILL' 1; transform: translateY(-2px); }
+
+        /* --- HEADER Y CONTROLES --- */
+        .content-area { padding: 40px; display: flex; flex-direction: column; align-items: center; width: 100%; }
+        .centered-container { width: 100%; max-width: 1200px; text-align: left; }
+        .page-header { margin-bottom: 30px; }
+        .page-header h1 { font-weight: 800 !important; font-size: 2.2rem; margin-bottom: 8px; letter-spacing: -0.03em; color: var(--primary-dark); }
+        .page-header p { color: var(--text-muted); font-size: 1.05rem; margin: 0; }
         .mobile-header { display: none; margin-bottom: 25px; align-items: center; justify-content: space-between; }
         .mh-profile { display: flex; align-items: center; gap: 14px; }
         .mh-avatar { width: 50px; height: 50px; background-color: var(--border-color); border-radius: 50%; display: flex; justify-content: center; align-items: center; overflow: hidden; font-weight: 700; color: var(--primary-dark); font-size: 1.2rem; }
         .mh-text h1 { font-size: 1.3rem; font-weight: 800; letter-spacing: -1px; color: var(--primary-dark); margin: 0; }
         .mh-text p { font-size: 0.85rem; color: var(--text-muted); margin: 0; margin-top: 2px; }
         .mh-actions { display: flex; gap: 10px; }
-        .btn-circle { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border-color); background: white; display: flex; align-items: center; justify-content: center; color: var(--text-main); cursor: pointer; transition: 0.2s; }
 
-        /* --- APP-LIKE FILTERS --- */
-        .filter-pills { display: flex; gap: 10px; margin-bottom: 30px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none;}
-        .filter-pills::-webkit-scrollbar { display: none; }
-        .filter-pill { 
-            background: white; border: 1px solid var(--border-color); color: var(--text-muted); 
-            padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; 
-            cursor: pointer; transition: var(--transition); white-space: nowrap; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        /* --- PESTAÑAS ESTILO APP --- */
+        .custom-tabs-container {
+            display: flex; gap: 12px; background: #e2e8f0; padding: 6px; 
+            border-radius: 20px; width: fit-content; margin-bottom: 30px; overflow-x: auto; max-width: 100%; scrollbar-width: none;
         }
-        .filter-pill:hover { border-color: var(--primary); color: var(--primary); }
-        .filter-pill.active { background: var(--primary); border-color: var(--primary); color: white; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.25);}
+        .custom-tabs-container::-webkit-scrollbar { display: none; }
+        .custom-tab {
+            background: transparent; border: none; padding: 12px 24px; border-radius: 14px;
+            font-weight: 600; font-size: 0.95rem; color: #475569; display: flex; align-items: center; gap: 8px;
+            cursor: pointer; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); white-space: nowrap;
+        }
+        .custom-tab:hover { color: var(--primary-dark); }
+        .custom-tab.active { background: white; color: var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .custom-tab .badge-count {
+            background: #ef4444; color: white; font-size: 0.7rem; font-weight: 800;
+            padding: 2px 8px; border-radius: 20px; display: none; align-items: center; justify-content: center;
+        }
 
-        /* --- EXPEDIENT CARDS --- */
-        .content-area { padding: 40px; display: flex; flex-direction: column; align-items: center; width: 100%; }
-        .centered-container { width: 100%; max-width: 1200px; text-align: left; }
-
-        .exp-card { 
-            background: white; border-radius: var(--card-radius); padding: 22px; 
-            border: 1px solid rgba(0,0,0,0.04); box-shadow: 0 10px 20px rgba(0,0,0,0.02); 
+        /* --- TARJETAS DE TRÁMITES --- */
+        .tramite-card {
+            background: white; border-radius: var(--card-radius); padding: 24px;
+            border: 1px solid rgba(0,0,0,0.04); box-shadow: 0 10px 20px rgba(0,0,0,0.02);
             transition: var(--transition); display: flex; flex-direction: column; height: 100%;
-            text-decoration: none;
+            text-decoration: none; position: relative; overflow: hidden;
         }
-        .exp-card:hover { transform: translateY(-4px); box-shadow: 0 15px 30px rgba(0,0,0,0.06); border-color: #cbd5e1; }
+        .tramite-card:hover { transform: translateY(-4px); box-shadow: 0 15px 30px rgba(0,0,0,0.06); border-color: #cbd5e1; }
         
-        .exp-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;}
-        .exp-icon { width: 48px; height: 48px; border-radius: 14px; background: #eff6ff; color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;}
-        
+        /* Borde izquierdo de color para identificar el tipo o estado */
+        .card-accent { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--border-color); }
+        .accent-blue { background: #3b82f6; } .accent-orange { background: #f97316; } .accent-green { background: #10b981; } .accent-purple { background: #8b5cf6; }
+
+        .card-header-flex { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;}
+        .card-icon { width: 46px; height: 46px; border-radius: 14px; background: #f1f5f9; color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;}
+        .card-icon.primary { background: #eff6ff; color: var(--primary); }
+
         .badge-status { padding: 6px 12px; border-radius: 10px; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; display: inline-flex; align-items: center; gap: 5px; width: fit-content; letter-spacing: 0.5px;}
-        .status-aprobado { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0;}
         .status-pendiente { background: #fff7ed; color: #ea580c; border: 1px solid #fed7aa;}
         .status-firmar { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;}
-        .status-contrato { background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff;}
+        .status-completado { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0;}
+        .status-proceso { background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff;}
 
-        .exp-title { font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin-bottom: 8px; letter-spacing: -0.5px; line-height: 1.2;}
-        .exp-date { font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+        /* Textos específicos */
+        .t-type { font-size: 0.75rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+        .t-title { font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin-bottom: 4px; line-height: 1.2; }
+        .t-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; display: flex; align-items: center; gap: 6px;}
         
-        .docs-container { border-top: 1px solid #f1f5f9; padding-top: 15px; margin-top: auto; text-align: center;}
-        
+        .t-details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 12px; border-radius: 12px; margin-bottom: 20px;}
+        .t-detail-item { display: flex; flex-direction: column; gap: 2px;}
+        .t-detail-item span { font-size: 0.7rem; color: #94a3b8; font-weight: 600; text-transform: uppercase;}
+        .t-detail-item strong { font-size: 0.85rem; color: #334155; font-weight: 700;}
+
+        .docs-container { border-top: 1px solid #f1f5f9; padding-top: 16px; margin-top: auto; text-align: center; display: flex; justify-content: space-between; align-items: center;}
+        .btn-text-action { font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; gap: 6px; transition: 0.2s;}
+
         /* Empty State */
-        .empty-state { text-align: center; padding: 60px 20px; background: white; border-radius: var(--card-radius); border: 1px dashed #cbd5e1; }
+        .empty-state { text-align: center; padding: 60px 20px; background: white; border-radius: var(--card-radius); border: 1px dashed #cbd5e1; width: 100%;}
         .empty-state .material-symbols-rounded { font-size: 4rem; color: #cbd5e1; margin-bottom: 20px; }
         .empty-state h3 { font-weight: 800; color: var(--text-main); margin-bottom: 10px; }
 
-        .loader-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 0; color: var(--primary); }
+        /* Vistas animadas */
+        .tab-view { display: none; animation: fadeIn 0.4s ease-in-out; }
+        .tab-view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .loader-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 0; color: var(--primary); width: 100%; }
 
         /* RESPONSIVE */
-        @media (max-width: 992px) {
-            .nav-links-desktop { display: none; }
-            .top-nav { padding: 0 20px; }
-        }
-
+        @media (max-width: 992px) { .nav-links-desktop { display: none; } .top-nav { padding: 0 20px; } }
         @media (max-width: 768px) {
-            .top-nav, .page-header.desktop-header { display: none; }
+            .top-nav, .desktop-header { display: none; }
             body { padding-top: 20px; }
             .bottom-nav { display: flex; }
             .content-area { padding: 20px; }
             .mobile-header { display: flex; }
-            .filter-pills { padding-bottom: 10px; }
+            .custom-tabs-container { padding: 4px; border-radius: 16px; }
+            .custom-tab { padding: 10px 16px; font-size: 0.85rem; }
         }
     </style>
 </head>
 <body>
 
-    <!-- NAVEGACIÓN SUPERIOR (ESCRITORIO) -->
+    <!-- NAVEGACIÓN -->
     <nav class="top-nav d-none d-md-flex">
         <a href="#" class="nav-brand">
             <div class="logo-box"><span class="material-symbols-rounded">school</span></div>
@@ -207,11 +195,10 @@
         </a>
         <div class="nav-links-desktop">
             <a href="dashboard-docente.html" class="nav-item"><span class="material-symbols-rounded">home</span> Dashboard</a>
-            <a href="misexpedientes.html" class="nav-item active"><span class="material-symbols-rounded">folder_open</span> Expedientes</a>
+            <a href="misexpedientes.html" class="nav-item active"><span class="material-symbols-rounded">folder_open</span> Trámites</a>
             <a href="miscursos.html" class="nav-item"><span class="material-symbols-rounded">co_present</span> Mis Clases</a>
         </div>
         <div class="nav-user d-flex gap-3 align-items-center">
-            <!-- Controles de Accesibilidad Escritorio -->
             <div class="font-controls">
                 <button class="btn-font-action a-minus" onclick="changeFontSize(-1)" title="Reducir letra">A-</button>
                 <div class="font-separator"></div>
@@ -230,67 +217,64 @@
         </div>
     </nav>
 
-    <!-- NAVEGACIÓN INFERIOR (MÓVIL) -->
     <nav class="bottom-nav">
-        <a href="dashboard-docente.html" class="bottom-item">
-            <span class="material-symbols-rounded">home</span>
-            <span>Inicio</span>
-        </a>
-        <a href="misexpedientes.html" class="bottom-item active">
-            <span class="material-symbols-rounded">folder_open</span>
-            <span>Expedientes</span>
-        </a>
-        <a href="miscursos.html" class="bottom-item">
-            <span class="material-symbols-rounded">co_present</span>
-            <span>Mis Clases</span>
-        </a>
-        <a href="perfil.html" class="bottom-item"> 
-            <span class="material-symbols-rounded">person</span>
-            <span>Perfil</span>
-        </a>
+        <a href="dashboard-docente.html" class="bottom-item"><span class="material-symbols-rounded">home</span><span>Inicio</span></a>
+        <a href="misexpedientes.html" class="bottom-item active"><span class="material-symbols-rounded">folder_open</span><span>Trámites</span></a>
+        <a href="miscursos.html" class="bottom-item"><span class="material-symbols-rounded">co_present</span><span>Clases</span></a>
+        <a href="perfil.html" class="bottom-item"><span class="material-symbols-rounded">person</span><span>Perfil</span></a>
     </nav>
 
     <main class="main-wrapper">
         <div class="content-area">
             <div class="centered-container">
                 
-                <!-- HEADER DESKTOP (Se oculta en móvil) -->
+                <!-- HEADER -->
                 <div class="page-header desktop-header d-none d-md-block">
-                    <h1>Mis Expedientes</h1>
-                    <p>Selecciona un expediente pendiente para completar tus datos y subir tus documentos.</p>
+                    <h1>Documentos y Contratos</h1>
+                    <p>Gestiona tus invitaciones a cursos y tu expediente base anual.</p>
                 </div>
 
-                <!-- HEADER MÓVIL (Estilo App) -->
                 <div class="mobile-header">
                     <div class="mh-profile">
                         <div class="mh-avatar" id="userInitialMobile">DC</div>
                         <div class="mh-text">
-                            <h1>Expedientes</h1>
-                            <p>Gestiona tu documentación</p>
+                            <h1>Trámites</h1>
+                            <p>Tus pendientes legales</p>
                         </div>
                     </div>
                     <div class="mh-actions">
-                        <!-- Controles de Accesibilidad Móvil -->
                         <div class="font-controls">
                             <button class="btn-font-action a-minus" onclick="changeFontSize(-1)">A-</button>
                             <div class="font-separator"></div>
                             <button class="btn-font-action a-plus" onclick="changeFontSize(1)">A+</button>
                         </div>
-                        <button class="btn-circle">
-                            <span class="material-symbols-rounded">notifications</span>
-                        </button>
                     </div>
                 </div>
 
-                <!-- FILTROS ESTILO APP -->
-                <div class="filter-pills" id="filterContainer">
-                    <div class="filter-pill active" onclick="filtrarExp('todos', this)">Todos los Registros</div>
-                    <div class="filter-pill" onclick="filtrarExp('pendiente', this)">Por Completar</div>
-                    <div class="filter-pill" onclick="filtrarExp('completado', this)">Completados</div>
+                <!-- PESTAÑAS PRINCIPALES -->
+                <div class="custom-tabs-container">
+                    <button class="custom-tab active" id="tab-btn-inv" onclick="switchView('invitaciones')">
+                        <span class="material-symbols-rounded">mail</span> Invitaciones a Cursos
+                        <span class="badge-count" id="count-inv">0</span>
+                    </button>
+                    <button class="custom-tab" id="tab-btn-exp" onclick="switchView('expedientes')">
+                        <span class="material-symbols-rounded">folder_shared</span> Contratos Anuales
+                    </button>
                 </div>
 
-                <!-- CONTENEDOR DE TARJETAS -->
-                <div class="row g-4" id="cards-container"></div>
+                <!-- ================= VISTA 1: INVITACIONES A CURSOS ================= -->
+                <div id="view-invitaciones" class="tab-view active">
+                    <div class="row g-4" id="container-invitaciones">
+                        <!-- Las tarjetas se inyectarán por JS -->
+                    </div>
+                </div>
+
+                <!-- ================= VISTA 2: EXPEDIENTES (CONTRATO ANUAL) ================= -->
+                <div id="view-expedientes" class="tab-view">
+                    <div class="row g-4" id="container-expedientes">
+                        <!-- Las tarjetas se inyectarán por JS -->
+                    </div>
+                </div>
 
             </div>
         </div>
@@ -298,7 +282,6 @@
 
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
-        let expedientesGlobales = [];
 
         // --- 1. LÓGICA DE TAMAÑO DE LETRA ACCESIBLE ---
         let currentSizeLevel = 0;
@@ -312,169 +295,240 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // --- 2. LÓGICA ESTÉTICA (UX/UI): Avatar y Nombre ---
+            // UX: Nombre y Avatar
             const fullName = localStorage.getItem('userName') || "Docente";
             const firstName = fullName.split(' ')[0]; 
             const initial = fullName.substring(0, 2).toUpperCase(); 
 
-            // Aplicar a cabecera Desktop
-            const nameEl = document.getElementById('userNameNav');
-            const initialEl = document.getElementById('userInitialNav');
-            if(nameEl) nameEl.innerText = firstName;
-            if(initialEl) initialEl.innerText = initial;
+            if(document.getElementById('userNameNav')) document.getElementById('userNameNav').innerText = firstName;
+            if(document.getElementById('userInitialNav')) document.getElementById('userInitialNav').innerText = initial;
+            if(document.getElementById('userInitialMobile')) document.getElementById('userInitialMobile').innerText = initial;
 
-            // Aplicar a cabecera Móvil
-            const initialMobile = document.getElementById('userInitialMobile');
-            if(initialMobile) initialMobile.innerText = initial;
-
-            // --- 3. LÓGICA FUNCIONAL (Back-End): Cargar Expedientes ---
-            const idDocente = localStorage.getItem('userId') || localStorage.getItem('userName');
-
+            const idDocente = localStorage.getItem('userId');
             if (idDocente) {
-                cargarExpedientes(idDocente);
+                cargarDatos(idDocente);
             } else {
-                mostrarEmptyState();
+                mostrarEmptyState('container-invitaciones', 'No hay invitaciones a cursos pendientes.');
+                mostrarEmptyState('container-expedientes', 'No hay expedientes activos.');
             }
         });
 
-        async function cargarExpedientes(idDocente) {
-            const container = document.getElementById('cards-container');
-            container.innerHTML = `<div class="col-12 loader-container"><span class="material-symbols-rounded" style="font-size: 3rem; animation: spin 1s linear infinite;">autorenew</span><h5 class="fw-bold text-dark mt-3">Buscando tus expedientes...</h5></div><style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>`;
+        // --- 2. CONEXIÓN A BASE DE DATOS REAL (FETCH SIMULTÁNEO) ---
+        async function cargarDatos(idDocente) {
+            document.getElementById('container-invitaciones').innerHTML = `<div class="loader-container"><span class="material-symbols-rounded" style="font-size: 3rem; animation: spin 1s linear infinite;">autorenew</span><h5 class="fw-bold text-dark mt-3">Cargando Invitaciones...</h5></div>`;
+            document.getElementById('container-expedientes').innerHTML = `<div class="loader-container"><span class="material-symbols-rounded" style="font-size: 3rem; animation: spin 1s linear infinite;">autorenew</span><h5 class="fw-bold text-dark mt-3">Cargando Contratos...</h5></div><style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>`;
 
             try {
-                const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_expedientes_docente', docenteId: idDocente }) });
-                const result = await response.json();
-                
-                if (result.status === 'success' && result.data.length > 0) {
-                    expedientesGlobales = result.data;
-                    renderizarCards(expedientesGlobales);
-                } else {
-                    mostrarEmptyState();
-                }
+                // Fetch de ambas tablas a la vez para optimizar velocidad
+                const resExp = fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_expedientes_docente', docenteId: idDocente }) });
+                const resInv = fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_invitationsexpediente', docenteId: idDocente }) });
+
+                const [respExp, respInv] = await Promise.all([resExp, resInv]);
+                const dataExp = await respExp.json();
+                const dataInv = await respInv.json();
+
+                let expedientes = dataExp.status === 'success' ? dataExp.data : [];
+                let invitaciones = dataInv.status === 'success' ? dataInv.data : [];
+
+                // Excluimos las que estén en borrador ('Guardado')
+                invitaciones = invitaciones.filter(inv => inv.estado && inv.estado.toLowerCase() !== 'guardado');
+
+                renderInvitaciones(invitaciones);
+                renderExpedientes(expedientes);
+
+                // Calcular contador de invitaciones pendientes de acción
+                const pendientesInv = invitaciones.filter(i => {
+                    const e = i.estado.toLowerCase();
+                    return e === 'enviado' || e === 'pendiente firma docente';
+                }).length;
+
+                const countBadge = document.getElementById('count-inv');
+                countBadge.innerText = pendientesInv;
+                countBadge.style.display = pendientesInv > 0 ? 'inline-flex' : 'none';
+
             } catch (e) {
-                container.innerHTML = `<div class="col-12 text-center text-danger py-5"><span class="material-symbols-rounded" style="font-size: 3rem;">warning</span><h5 class="mt-2">Error de conexión</h5></div>`;
+                console.error("Error cargando datos:", e);
+                const errorHtml = `<div class="col-12 text-center text-danger py-5"><span class="material-symbols-rounded" style="font-size: 3rem;">warning</span><h5 class="mt-2">Error de conexión</h5></div>`;
+                document.getElementById('container-invitaciones').innerHTML = errorHtml;
+                document.getElementById('container-expedientes').innerHTML = errorHtml;
             }
         }
 
-        function formatDate(dateString) {
-            if(!dateString) return "-";
-            const date = new Date(dateString);
-            return isNaN(date) ? dateString : date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
-        }
+        // --- 3. RENDERIZADO DE INVITACIONES ---
+        function renderInvitaciones(data) {
+            const container = document.getElementById('container-invitaciones');
+            if(data.length === 0) { 
+                mostrarEmptyState('container-invitaciones', 'No tienes invitaciones a cursos activas.', 'mail'); 
+                return; 
+            }
 
-        function renderizarCards(docsArray) {
-            const container = document.getElementById('cards-container');
-            container.innerHTML = "";
+            let html = '';
+            data.forEach(inv => {
+                let badgeClass, icon, color, actionText, actionLink, accentClass;
+                let estadoVisual = inv.estado;
+                const estadoLower = inv.estado.toLowerCase();
 
-            if(docsArray.length === 0) { mostrarEmptyState(); return; }
-
-            let html = "";
-            docsArray.forEach(exp => {
-                let est = exp.estado.toLowerCase();
-                
-                // Variables dinámicas para el diseño de cada tarjeta
-                let statusBadge, statusIcon, labelEstado, btnAction, btnColor, actionIcon;
-
-                // 1. Estado: COMPLETADO (Verde)
-                if (est === 'completado') {
-                    statusBadge = 'status-aprobado';
-                    statusIcon = 'check_circle';
-                    labelEstado = 'Completado';
-                    btnAction = 'Ver Expediente';
-                    btnColor = '#16a34a'; 
-                    actionIcon = 'visibility';
-                } 
-                // 2. Estado: POR FIRMAR (Azul) - ¡La estrella de la actualización!
-                else if (est === 'por firmar') {
-                    statusBadge = 'status-firmar';
-                    statusIcon = 'edit_document'; 
-                    labelEstado = 'Por Firmar';
-                    btnAction = 'Firmar Contrato';
-                    btnColor = '#2563eb'; 
-                    actionIcon = 'arrow_forward';
-                } 
-                // 3. Estado: EN CONTRATACIÓN (Morado)
-                else if (est === 'en proceso de contratación') {
-                    statusBadge = 'status-contrato';
-                    statusIcon = 'handshake'; 
-                    labelEstado = 'En Contratación';
-                    btnAction = 'Ver Estado';
-                    btnColor = '#7e22ce'; 
-                    actionIcon = 'visibility';
-                } 
-                // 4. Estado por defecto: PENDIENTE (Naranja)
-                else {
-                    statusBadge = 'status-pendiente';
-                    statusIcon = 'schedule';
-                    labelEstado = 'Pendiente';
-                    btnAction = 'Completar Datos';
-                    btnColor = 'var(--primary)'; 
-                    actionIcon = 'arrow_forward';
+                // Reglas UX para Invitaciones
+                if (estadoLower === 'enviado') {
+                    estadoVisual = 'Por Responder';
+                    badgeClass = 'status-pendiente'; icon = 'mail'; color = '#ea580c'; 
+                    actionText = 'Aceptar e ingresar horario';
+                    actionLink = `registroinvitacion.html?inv=${inv.id}`; accentClass = 'accent-orange';
+                } else if (estadoLower === 'pendiente firma docente') {
+                    estadoVisual = 'Firma Requerida';
+                    badgeClass = 'status-firmar'; icon = 'edit_document'; color = '#2563eb'; 
+                    actionText = 'Firmar documentos'; actionLink = `contrato-detalle.html?inv=${inv.id}`; accentClass = 'accent-blue';
+                } else if (['respondido', 'aceptado', 'documentos generados'].includes(estadoLower)) {
+                    estadoVisual = 'En Proceso Administrativo';
+                    badgeClass = 'status-proceso'; icon = 'hourglass_empty'; color = '#7e22ce'; 
+                    actionText = 'Ver estado'; actionLink = '#'; accentClass = 'accent-purple';
+                } else {
+                    // Firmado, Formalizado
+                    estadoVisual = 'Completado';
+                    badgeClass = 'status-completado'; icon = 'check_circle'; color = '#16a34a'; 
+                    actionText = 'Ver detalles'; actionLink = '#'; accentClass = 'accent-green';
                 }
 
-                // Lógica de enrutamiento: Si es 'por firmar', lo enviamos al portal de firma exclusivo. 
-                // Si no, al registro normal.
-                const hrefUrl = (est === 'por firmar') ? 'contrato-detalle.html' : 'registroexpediente.html';
-
                 html += `
-                    <div class="col-md-6 col-xl-4">
-                        <a href="${hrefUrl}?exp=${exp.idExpediente}" class="exp-card">
-                            <div class="exp-header">
-                                <div class="exp-icon"><span class="material-symbols-rounded">folder_open</span></div>
-                                <span class="badge-status ${statusBadge}">
-                                    <span class="material-symbols-rounded" style="font-size: 1.05rem;">${statusIcon}</span> 
-                                    ${labelEstado}
-                                </span>
+                <div class="col-md-6 col-xl-4">
+                    <a href="${actionLink}" class="tramite-card">
+                        <div class="card-accent ${accentClass}"></div>
+                        <div class="card-header-flex">
+                            <div class="card-icon ${estadoLower === 'enviado' ? 'primary' : ''}"><span class="material-symbols-rounded">menu_book</span></div>
+                            <span class="badge-status ${badgeClass}">
+                                <span class="material-symbols-rounded" style="font-size: 1.05rem;">${icon}</span> ${estadoVisual}
+                            </span>
+                        </div>
+                        <div class="t-type">Invitación a Dictado</div>
+                        <h3 class="t-title">${inv.curso || 'Curso no definido'}</h3>
+                        <p class="t-subtitle"><span class="material-symbols-rounded" style="font-size: 1rem;">school</span> ${inv.programa || 'Programa Académico'}</p>
+                        
+                        <div class="t-details">
+                            <div class="t-detail-item">
+                                <span>Periodo de Clases</span>
+                                <strong>${formatDateShort(inv.fechaInicio)} - ${formatDateShort(inv.fechaFin)}</strong>
                             </div>
-                            <h3 class="exp-title">Expediente <br><span style="color: var(--primary);">${exp.idExpediente}</span></h3>
-                            <div class="exp-date">
-                                <span class="material-symbols-rounded" style="font-size: 1.1rem; color: var(--text-muted);">calendar_month</span> 
-                                <b>Creado:</b> <span class="text-muted ms-1">${formatDate(exp.fechaCreacion)}</span>
+                            <div class="t-detail-item">
+                                <span>Remuneración</span>
+                                <strong>${inv.pago || '-'}</strong>
                             </div>
-                            
-                            <div class="docs-container">
-                                <span class="fw-bold" style="color: ${btnColor}; font-size: 0.95rem;">
-                                    ${btnAction} <span class="material-symbols-rounded" style="font-size: 1.1rem; vertical-align: middle;">${actionIcon}</span>
-                                </span>
-                            </div>
-                        </a>
-                    </div>
-                `;
+                        </div>
+                        
+                        <div class="docs-container">
+                            <span class="text-muted" style="font-size: 0.8rem;">ID: ${inv.id}</span>
+                            <span class="btn-text-action" style="color: ${color};">
+                                ${actionText} <span class="material-symbols-rounded">arrow_forward</span>
+                            </span>
+                        </div>
+                    </a>
+                </div>`;
             });
             container.innerHTML = html;
         }
 
-        function filtrarExp(estado, elemento) {
-            document.querySelectorAll('.filter-pill').forEach(el => el.classList.remove('active'));
-            elemento.classList.add('active');
-            if(estado === 'todos') { renderizarCards(expedientesGlobales); } 
-            else { renderizarCards(expedientesGlobales.filter(d => (estado==='pendiente' && d.estado.toLowerCase()!=='completado') || (estado==='completado' && d.estado.toLowerCase()==='completado'))); }
+        // --- 4. RENDERIZADO DE EXPEDIENTES (CONTRATOS ANUALES) ---
+        function renderExpedientes(data) {
+            const container = document.getElementById('container-expedientes');
+            if(data.length === 0) { 
+                mostrarEmptyState('container-expedientes', 'La administración aún no ha generado un contrato para tu perfil.', 'folder_off'); 
+                return; 
+            }
+
+            let html = '';
+            data.forEach(exp => {
+                let badgeClass, icon, color, actionText, actionLink, accentClass;
+                let estadoVisual = exp.estado;
+                const estadoLower = exp.estado.toLowerCase();
+
+                // Reglas UX para Expedientes
+                if (estadoLower === 'pendiente' || estadoLower === 'en proceso' ||  estadoLower === 'enviado') {
+                    estadoVisual = 'Por Completar';
+                    badgeClass = 'status-pendiente'; icon = 'upload_file'; color = '#ea580c'; 
+                    actionText = 'Completar información'; actionLink = `registroexpediente.html?exp=${exp.idExpediente}`; accentClass = 'accent-orange';
+                } else if (estadoLower === 'por firmar') {
+                    estadoVisual = 'Firma Requerida';
+                    badgeClass = 'status-firmar'; icon = 'edit_document'; color = '#2563eb'; 
+                    actionText = 'Firmar Contrato Anual'; actionLink = `contrato-detalle.html?exp=${exp.idExpediente}`; accentClass = 'accent-blue';
+                } else if (estadoLower === 'en proceso de contratación' || estadoLower === 'recibido' || estadoLower.includes('revisión') || estadoLower.includes('evaluación')) {
+                    estadoVisual = 'En Revisión';
+                    badgeClass = 'status-proceso'; icon = 'manage_search'; color = '#7e22ce'; 
+                    actionText = 'Ver estado'; actionLink = `contrato-detalle.html?exp=${exp.idExpediente}`; accentClass = 'accent-purple';
+                } else {
+                    estadoVisual = 'Completado';
+                    badgeClass = 'status-completado'; icon = 'verified_user'; color = '#16a34a'; 
+                    actionText = 'Ver expediente'; actionLink = `contrato-detalle.html?exp=${exp.idExpediente}`; accentClass = 'accent-green';
+                }
+
+                const vigencia = exp.fechaVencimiento ? `Vence: ${new Date(exp.fechaVencimiento).toLocaleDateString('es-ES')}` : "Periodo actual";
+
+                html += `
+                <div class="col-md-6 col-xl-4">
+                    <a href="${actionLink}" class="tramite-card">
+                        <div class="card-accent ${accentClass}"></div>
+                        <div class="card-header-flex">
+                            <div class="card-icon"><span class="material-symbols-rounded">folder_shared</span></div>
+                            <span class="badge-status ${badgeClass}">
+                                <span class="material-symbols-rounded" style="font-size: 1.05rem;">${icon}</span> ${estadoVisual}
+                            </span>
+                        </div>
+                        <div class="t-type">Expediente Base</div>
+                        <h3 class="t-title">Contrato Anual Docente</h3>
+                        <p class="t-subtitle"><span class="material-symbols-rounded" style="font-size: 1rem;">event_available</span> ${vigencia}</p>
+                        
+                        <div class="t-details" style="grid-template-columns: 1fr;">
+                            <div class="t-detail-item">
+                                <span>Fecha de Creación</span>
+                                <strong>${new Date(exp.fechaCreacion).toLocaleDateString('es-ES', {day:'2-digit', month:'long', year:'numeric'})}</strong>
+                            </div>
+                        </div>
+                        
+                        <div class="docs-container">
+                            <span class="text-muted" style="font-size: 0.8rem;">ID: ${exp.idExpediente}</span>
+                            <span class="btn-text-action" style="color: ${color};">
+                                ${actionText} <span class="material-symbols-rounded">arrow_forward</span>
+                            </span>
+                        </div>
+                    </a>
+                </div>`;
+            });
+            container.innerHTML = html;
         }
 
-        function mostrarEmptyState() {
-            document.getElementById('cards-container').innerHTML = `
-                <div class="col-12">
-                    <div class="empty-state">
-                        <span class="material-symbols-rounded">folder_off</span>
-                        <h3>Sin expedientes activos</h3>
-                        <p class="text-muted m-0">La administración aún no ha generado un expediente para tu perfil.</p>
-                    </div>
+        // --- FUNCIONES AUXILIARES ---
+        function switchView(viewName) {
+            document.getElementById('tab-btn-inv').classList.remove('active');
+            document.getElementById('tab-btn-exp').classList.remove('active');
+            if (viewName === 'invitaciones') document.getElementById('tab-btn-inv').classList.add('active');
+            else document.getElementById('tab-btn-exp').classList.add('active');
+
+            document.getElementById('view-invitaciones').classList.remove('active');
+            document.getElementById('view-expedientes').classList.remove('active');
+            document.getElementById(`view-${viewName}`).classList.add('active');
+        }
+
+        function mostrarEmptyState(containerId, mensaje, icono = 'folder_off') {
+            document.getElementById(containerId).innerHTML = `
+                <div class="empty-state">
+                    <span class="material-symbols-rounded">${icono}</span>
+                    <h3>Todo al día</h3>
+                    <p class="text-muted m-0">${mensaje}</p>
                 </div>`;
         }
 
-        // --- LÓGICA DEL DROPDOWN DE USUARIO ---
+        function formatDateShort(dateString) {
+            if(!dateString) return "-";
+            const date = new Date(dateString);
+            return isNaN(date) ? dateString : date.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' });
+        }
+
+        // Lógica de Menú de Usuario
         const dropdownTrigger = document.getElementById('userDropdownTrigger');
         const dropdownMenu = document.getElementById('userDropdownMenu');
-
         if(dropdownTrigger && dropdownMenu) {
-            dropdownTrigger.addEventListener('click', function(e) {
-                e.stopPropagation();
-                dropdownMenu.classList.toggle('show');
-            });
-            document.addEventListener('click', function() {
-                dropdownMenu.classList.remove('show');
-            });
+            dropdownTrigger.addEventListener('click', e => { e.stopPropagation(); dropdownMenu.classList.toggle('show'); });
+            document.addEventListener('click', () => dropdownMenu.classList.remove('show'));
         }
+
         function logout() { 
             if(confirm("¿Seguro que deseas salir?")) { 
                 localStorage.clear(); 

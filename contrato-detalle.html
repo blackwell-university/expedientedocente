@@ -10,7 +10,7 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firma de Contrato | Blackwell University</title>
+    <title>Firma de Documentos | Blackwell University</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -207,7 +207,7 @@
         <!-- PANEL IZQUIERDO: VISOR PDF -->
         <div class="pdf-panel">
             <div class="pdf-header-title">
-                <i class="fa-solid fa-file-pdf"></i> Vista previa del contrato
+                <i class="fa-solid fa-file-pdf"></i> Vista previa del documento
             </div>
             <div class="pdf-container">
                 <iframe id="pdf-preview-frame" src="about:blank"></iframe>
@@ -221,7 +221,7 @@
             </div>
 
             <div class="form-header">
-                <h1 id="txtDocenteNombre">Firma de Contratos</h1>
+                <h1 id="txtDocenteNombre">Firma de Documentos</h1>
                 <p id="txtExpDetails">Expediente: —</p>
             </div>
 
@@ -249,15 +249,17 @@
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
+        
         const urlParams = new URLSearchParams(window.location.search);
         const expId = urlParams.get('exp');
+        const invId = urlParams.get('inv') || urlParams.get('invId'); // Soporta ?inv= o ?invId=
         const userId = localStorage.getItem('userId');
         
         let signaturePad;
         let canvas;
         let selectedDocName = "";
         let selectedDocUrl = "";
-        let documentosDisponibles = []; // [{nombre, url, version, estado}]
+        let documentosDisponibles = []; 
         let indiceDocActual = 0;
 
         function resizeCanvas() {
@@ -270,17 +272,15 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Estética de usuario
             const fullName = localStorage.getItem('userName') || "Docente";
             document.getElementById('userNameNav').innerText = fullName.split(' ')[0];
             document.getElementById('userInitialNav').innerText = fullName.substring(0,2).toUpperCase();
 
-            if(!expId) {
-                Swal.fire('Error', 'Faltan parámetros del expediente en la URL.', 'error').then(()=> window.location.href="misexpedientes.html");
+            if(!expId && !invId) {
+                Swal.fire('Error', 'Faltan parámetros del trámite en la URL.', 'error').then(()=> window.location.href="misexpedientes.html");
                 return;
             }
 
-            // Inicializar firma (primer render; se vuelve a inicializar cada vez que cambia de documento)
             inicializarSignaturePad();
             window.addEventListener('resize', resizeCanvas);
 
@@ -289,7 +289,7 @@
 
         function inicializarSignaturePad() {
             canvas = document.getElementById('signature-pad-canvas');
-            if (!canvas) return; // El documento actual ya está firmado: no hay canvas que inicializar
+            if (!canvas) return;
             signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' });
             const clearBtn = document.getElementById('clearSignatureBtn');
             if (clearBtn) clearBtn.addEventListener('click', () => signaturePad.clear());
@@ -298,45 +298,80 @@
 
         async function cargarDetallesFirma() {
             try {
-                const res = await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'get_expediente_data', expId: expId })
-                });
-                const response = await res.json();
+                // MODO 1: FIRMAR INVITACIÓN A CURSO
+                if (invId) {
+                    const res = await fetch(GAS_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'get_invitacion_data', idInvitacion: invId })
+                    });
+                    const response = await res.json();
 
-                if(response.status === 'success') {
-                    const exp = response.expediente;
-                    const doc = response.docente;
+                    if(response.status === 'success') {
+                        const inv = response.invitacion;
+                        const doc = response.docente;
+                        const docs = response.documentos || {};
 
-                    document.getElementById('txtDocenteNombre').innerText = `Hola, ${doc.nombres}`;
-                    document.getElementById('txtExpDetails').innerText = `Expediente N°: ${exp.idExpediente}`;
+                        document.getElementById('txtDocenteNombre').innerText = `Hola, ${doc.nombres}`;
+                        document.getElementById('txtExpDetails').innerText = `Invitación N°: ${inv.idInvitacion} • ${inv.curso}`;
 
-                    // Documentos que el docente debe firmar (según backend: teacher_sign_document)
-                    const docsFirmables = [
-                        "Letter of Appointment", "Resume", "Reference Check Forms", "Proposed Salary",
-                        "Academic Preparation Evaluation Form", "Assigned Employee Notice",
-                        "Direct Deposit", "Confidentiality Agreement", "Job Description"
-                    ];
+                        // LOS ÚNICOS 3 DOCUMENTOS QUE EL DOCENTE FIRMA EN UNA INVITACIÓN
+                        const docsFirmablesInvitacion = [
+                            "Letter of Appointment",
+                            "Proposed Salary",
+                            "Job Description"
+                        ];
 
-                    documentosDisponibles = docsFirmables
-                        .map(nombre => ({ nombre, ...(exp.urls[nombre] || {}) }))
-                        .filter(d => d.url);
+                        documentosDisponibles = docsFirmablesInvitacion
+                            .map(nombre => ({ nombre, ...(docs[nombre] || {}) }))
+                            .filter(d => d.url);
 
-                    // Arrancamos en el primer documento aún pendiente de firma (si existe)
-                    const primerPendiente = documentosDisponibles.findIndex(d => !d.estado.includes('Firmado'));
-                    indiceDocActual = primerPendiente !== -1 ? primerPendiente : 0;
+                        const primerPendiente = documentosDisponibles.findIndex(d => !d.estado || !d.estado.includes('Firmado'));
+                        indiceDocActual = primerPendiente !== -1 ? primerPendiente : 0;
 
-                    renderCarrusel();
+                        renderCarrusel();
+                    } else {
+                        Swal.fire('Error', 'No se pudo cargar la invitación.', 'error');
+                    }
+                } 
+                // MODO 2: FIRMAR EXPEDIENTE ANUAL
+                else if (expId) {
+                    const res = await fetch(GAS_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'get_expediente_data', expId: expId })
+                    });
+                    const response = await res.json();
 
-                } else {
-                    Swal.fire('Error', 'No se pudo cargar el expediente.', 'error');
+                    if(response.status === 'success') {
+                        const exp = response.expediente;
+                        const doc = response.docente;
+
+                        document.getElementById('txtDocenteNombre').innerText = `Hola, ${doc.nombres}`;
+                        document.getElementById('txtExpDetails').innerText = `Expediente Anual N°: ${exp.idExpediente}`;
+
+                        const docsFirmablesExpediente = [
+                            "Letter of Appointment", "Resume", "Reference Check Forms", "Proposed Salary",
+                            "Academic Preparation Evaluation Form", "Assigned Employee Notice",
+                            "Direct Deposit", "Confidentiality Agreement", "Job Description"
+                        ];
+
+                        documentosDisponibles = docsFirmablesExpediente
+                            .map(nombre => ({ nombre, ...(exp.urls[nombre] || {}) }))
+                            .filter(d => d.url);
+
+                        const primerPendiente = documentosDisponibles.findIndex(d => !d.estado || !d.estado.includes('Firmado'));
+                        indiceDocActual = primerPendiente !== -1 ? primerPendiente : 0;
+
+                        renderCarrusel();
+                    } else {
+                        Swal.fire('Error', 'No se pudo cargar el expediente.', 'error');
+                    }
                 }
             } catch(e) {
-                Swal.fire('Error', 'Fallo de conexión.', 'error');
+                console.error(e);
+                Swal.fire('Error', 'Fallo de conexión al servidor.', 'error');
             }
         }
 
-        // --- NUEVO: CARRUSEL COMPACTO (reemplaza la lista larga de 9 tarjetas apiladas) ---
         function renderCarrusel() {
             const wrapper = document.getElementById('docCarousel');
             const dotsWrapper = document.getElementById('docDots');
@@ -349,25 +384,25 @@
             }
 
             const d = documentosDisponibles[indiceDocActual];
-            const yaFirmado = d.estado.includes('Firmado');
+            const yaFirmado = d.estado && d.estado.includes('Firmado');
 
             wrapper.innerHTML = `
-                <button type="button" class="doc-nav-arrow" onclick="navegarDocumento(-1)" ${indiceDocActual === 0 ? 'disabled' : ''} title="Documento anterior">
+                <button type="button" class="doc-nav-arrow" onclick="navegarDocumento(-1)" ${indiceDocActual === 0 ? 'disabled' : ''} title="Anterior">
                     <i class="fa-solid fa-chevron-left"></i>
                 </button>
                 <div class="doc-current-card ${yaFirmado ? 'is-signed' : ''}">
                     <div style="min-width:0;">
                         <div class="doc-name">${d.nombre}</div>
-                        <div class="doc-meta">Documento ${indiceDocActual + 1} de ${documentosDisponibles.length} • v${d.version}</div>
+                        <div class="doc-meta">Documento ${indiceDocActual + 1} de ${documentosDisponibles.length} • v${d.version || 1}</div>
                     </div>
                     <span class="doc-badge">${yaFirmado ? '<i class="fa-solid fa-check"></i> Firmado' : 'Pendiente'}</span>
                 </div>
-                <button type="button" class="doc-nav-arrow" onclick="navegarDocumento(1)" ${indiceDocActual === documentosDisponibles.length - 1 ? 'disabled' : ''} title="Siguiente documento">
+                <button type="button" class="doc-nav-arrow" onclick="navegarDocumento(1)" ${indiceDocActual === documentosDisponibles.length - 1 ? 'disabled' : ''} title="Siguiente">
                     <i class="fa-solid fa-chevron-right"></i>
                 </button>`;
 
             dotsWrapper.innerHTML = documentosDisponibles.map((doc, i) => `
-                <button type="button" class="doc-dot ${i === indiceDocActual ? 'active' : ''} ${doc.estado.includes('Firmado') ? 'is-signed' : ''}" onclick="irADocumento(${i})" title="${doc.nombre}"></button>
+                <button type="button" class="doc-dot ${i === indiceDocActual ? 'active' : ''} ${(doc.estado && doc.estado.includes('Firmado')) ? 'is-signed' : ''}" onclick="irADocumento(${i})" title="${doc.nombre}"></button>
             `).join('');
 
             selectedDocName = d.nombre;
@@ -388,11 +423,9 @@
             renderCarrusel();
         }
 
-        // El panel de firma ya no depende de qué documento estás viendo (la firma es única para
-        // todos los pendientes) — solo depende de si TODAVÍA queda algo por firmar en total.
         function actualizarPanelFirma() {
             const panel = document.getElementById('panelFirmaContenido');
-            const pendientes = documentosDisponibles.filter(d => !d.estado.includes('Firmado'));
+            const pendientes = documentosDisponibles.filter(d => !d.estado || !d.estado.includes('Firmado'));
 
             if (pendientes.length === 0) {
                 panel.innerHTML = `
@@ -405,8 +438,6 @@
                 return;
             }
 
-            // Mientras quede al menos un documento pendiente, mostramos el área de firma —
-            // sin importar cuál esté visible en el carrusel en ese momento.
             panel.innerHTML = `
                 <div class="signature-wrapper">
                     <button type="button" class="clear-btn" id="clearSignatureBtn"><i class="fa-solid fa-eraser"></i> Limpiar</button>
@@ -420,11 +451,6 @@
 
         function actualizarIframe(url) {
             if (!url) return;
-            // Antes el regex solo reconocía links tipo "id=XXXX" (los de descarga de Drive),
-            // pero los links de Google Docs son ".../document/d/ID/edit" — nunca hacía match,
-            // y por eso terminaba metiendo la URL de EDICIÓN completa en el iframe (con menú y
-            // popup de "has iniciado sesión como..."). Ahora se extrae el ID en cualquiera de
-            // los dos formatos y se arma la URL de "/preview", que es de solo lectura.
             const match = url.match(/[-\w]{25,}/);
             if (match && match[0]) {
                 document.getElementById('pdf-preview-frame').src = `https://docs.google.com/document/d/${match[0]}/preview`;
@@ -439,7 +465,7 @@
                 return;
             }
 
-            const pendientes = documentosDisponibles.filter(d => !d.estado.includes('Firmado'));
+            const pendientes = documentosDisponibles.filter(d => !d.estado || !d.estado.includes('Firmado'));
             if (pendientes.length === 0) return;
 
             const listaHtml = pendientes.map(d => `<li style="margin-bottom:4px;">${d.nombre}</li>`).join('');
@@ -468,7 +494,13 @@
 
             try {
                 const base64Signature = signaturePad.toDataURL('image/png').split(',')[1];
-                const payload = {
+                
+                // Mapeo dinámico de acción según sea Invitación o Expediente
+                const payload = invId ? {
+                    action: "teacher_sign_invitation_documents",
+                    idInvitacion: invId,
+                    signature: base64Signature
+                } : {
                     action: "teacher_sign_all_documents",
                     idExpediente: expId,
                     signature: base64Signature
@@ -482,22 +514,6 @@
 
                 if(result.status === 'success') {
                     const cantidad = (result.firmados || []).length;
-                    const sinErrores = !result.conError || result.conError.length === 0;
-
-                    // NUEVO: si todos los documentos pendientes se firmaron sin errores, significa que
-                    // ya no queda ninguno por firmar — actualizamos el estado GENERAL del expediente a
-                    // "Firmado" (reutilizando la acción que ya existe: update_expediente_status), para
-                    // que en expediente.html se habilite el botón "Enviar contrato a directores".
-                    if (sinErrores) {
-                        try {
-                            await fetch(GAS_URL, {
-                                method: 'POST',
-                                body: JSON.stringify({ action: 'update_expediente_status', id: expId, estado: 'Firmado' })
-                            });
-                        } catch (e) {
-                            console.log('No se pudo actualizar el estado general del expediente:', e);
-                        }
-                    }
 
                     Swal.fire({
                         title: '¡Documentos Firmados!',

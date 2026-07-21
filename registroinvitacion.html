@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script>
+        // Protección de ruta: Solo para docentes
+        if (localStorage.getItem('isLoggedIn') !== 'true' || localStorage.getItem('userRole') !== 'Docente') {
+            window.location.href = "index.html";
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Confirmar Horario de Curso | Blackwell University</title>
+
+    <!-- Frameworks & Fonts -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,300,0,0" />
+
+    <style>
+        :root {
+            --primary: #1e40af; 
+            --primary-light: #eff6ff;
+            --bg-body: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --primary-dark: #1e3a8a;
+            --card-radius: 24px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --dynamic-font-size: 1rem;
+        }
+
+        html { font-size: 16px; transition: font-size 0.3s ease; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main); 
+            margin: 0; 
+            padding-top: 70px;
+            padding-bottom: 90px;
+            overflow-x: hidden;
+        }
+
+        /* --- TOP NAVIGATION (Escritorio) --- */
+        .top-nav {
+            position: fixed; top: 0; left: 0; right: 0; height: 70px;
+            background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 40px; z-index: 1000;
+        }
+        .nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .logo-box { width: 38px; height: 38px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; }
+        .brand-text { font-weight: 800; font-size: 1.2rem; color: var(--primary); letter-spacing: -0.5px; }
+
+        .nav-links-desktop { display: flex; gap: 8px; position: absolute; left: 50%; transform: translateX(-50%); }
+        .nav-item { text-decoration: none; color: var(--text-muted); font-weight: 600; font-size: 0.9rem; padding: 10px 20px; border-radius: 12px; transition: var(--transition); display: flex; align-items: center; gap: 8px; }
+        .nav-item:hover, .nav-item.active { background: #eff6ff; color: var(--primary); }
+
+        .nav-user { position: relative; cursor: pointer; }
+        .user-trigger { display: flex; align-items: center; gap: 12px; padding: 6px 6px 6px 15px; background: #fff; border: 1px solid var(--border-color); border-radius: 50px; }
+        .user-trigger span { font-weight: 700; font-size: 0.85rem; }
+        .user-avatar { width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem; }
+        .user-dropdown { position: absolute; top: calc(100% + 10px); right: 0; width: 220px; background: white; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 8px; opacity: 0; visibility: hidden; transform: translateY(10px); transition: var(--transition); }
+        .user-dropdown.show { opacity: 1; visibility: visible; transform: translateY(0); }
+        .dropdown-link { display: flex; align-items: center; gap: 12px; padding: 12px 15px; text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 0.85rem; border-radius: 10px; transition: 0.2s; }
+        .dropdown-link:hover { background: #eff6ff; color: var(--primary); }
+        .dropdown-link.logout { color: #ef4444; } .dropdown-link.logout:hover { background: #fef2f2; }
+
+        /* --- BOTTOM NAVIGATION (Móvil) --- */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 80px; background: #ffffff;
+            border-radius: 30px 30px 0 0; box-shadow: 0 -4px 25px rgba(0,0,0,0.06); 
+            display: none; justify-content: space-between; align-items: center;
+            padding: 0 25px; padding-bottom: env(safe-area-inset-bottom); z-index: 1000;
+        }
+        .bottom-item { display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; color: #94a3b8; transition: 0.3s ease; flex: 1; position: relative; }
+        .bottom-item span { font-size: 0.65rem; font-weight: 550; }
+        .bottom-item.active { color: var(--primary); }
+        .bottom-item .material-symbols-rounded { font-size: 1.5rem; transition: transform 0.2s; }
+
+        /* --- CONTROLES DE LETRA --- */
+        .font-controls {
+            display: flex; align-items: center; background: white; border: 1px solid var(--border-color);
+            border-radius: 20px; height: 40px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+        .btn-font-action {
+            background: transparent; border: none; height: 100%; padding: 0 14px;
+            color: var(--text-main); font-weight: 800; cursor: pointer; transition: 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn-font-action:hover { background: #eff6ff; color: var(--primary); }
+        .btn-font-action.a-minus { font-size: 0.9rem; }
+        .btn-font-action.a-plus { font-size: 1.25rem; }
+        .font-separator { width: 1px; height: 20px; background: var(--border-color); }
+
+        /* --- HEADER & LAYOUT --- */
+        .content-area { padding: 40px 30px; display: flex; flex-direction: column; align-items: center; width: 100%; font-size: var(--dynamic-font-size); }
+        .centered-container { width: 100%; max-width: 1000px; text-align: left; }
+        .page-header { margin-bottom: 30px; }
+        .page-header h1 { font-weight: 800; font-size: 2.2rem; margin-bottom: 8px; letter-spacing: -0.03em; color: var(--primary-dark); }
+        .page-header p { color: var(--text-muted); font-size: 1.05rem; margin: 0; }
+        
+        .mobile-header { display: none; margin-bottom: 25px; align-items: center; justify-content: space-between; }
+        .mh-profile { display: flex; align-items: center; gap: 14px; }
+        .mh-avatar { width: 50px; height: 50px; background-color: var(--border-color); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: 700; color: var(--primary-dark); font-size: 1.2rem; }
+        .mh-text h1 { font-size: 1.3rem; font-weight: 800; color: var(--primary-dark); margin: 0; }
+        .mh-text p { font-size: 0.85rem; color: var(--text-muted); margin: 0; }
+
+        /* --- CARD CONTENEDORA PRINCIPAL --- */
+        .inv-card { 
+            background: #ffffff; 
+            border-radius: var(--card-radius); 
+            padding: 35px; 
+            border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: 0 15px 35px -5px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+
+        /* BANNER INFORMATIVO DEL CURSO */
+        .course-summary-banner {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border: 1px solid #bfdbfe;
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 30px;
+        }
+        .course-summary-banner .course-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            margin-bottom: 4px;
+        }
+        .course-summary-banner .course-program {
+            font-size: 0.95rem;
+            color: #3b82f6;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        .course-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 14px 18px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.8);
+        }
+        .course-meta-item {
+            display: flex; flex-direction: column;
+        }
+        .course-meta-item span {
+            font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase;
+        }
+        .course-meta-item strong {
+            font-size: 0.92rem; color: #1e293b; font-weight: 700; margin-top: 2px;
+        }
+
+        /* --- CALENDARIO INTERACTIVO --- */
+        .carousel-wrapper { display: flex; align-items: center; gap: 12px; width: 100%; }
+        .carousel-nav-btn {
+            width: 42px; height: 42px; border-radius: 50%; background: #ffffff;
+            border: 1.5px solid var(--border-color); color: var(--text-muted);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s ease; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+        .carousel-nav-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); transform: scale(1.05); }
+
+        .day-carousel {
+            display: flex; gap: 12px; overflow-x: auto; padding: 10px 4px;
+            scrollbar-width: none; scroll-behavior: smooth; flex: 1;
+        }
+        .day-carousel::-webkit-scrollbar { display: none; }
+        
+        .day-pill {
+            flex: 0 0 auto; width: 75px; background: #ffffff; border: 1.5px solid var(--border-color);
+            border-radius: 16px; padding: 12px 6px; text-align: center; cursor: pointer; transition: all 0.25s ease; user-select: none;
+        }
+        .day-pill:hover { border-color: var(--primary); background: var(--primary-light); }
+        .day-pill.selected {
+            background: var(--primary-dark) !important; border-color: var(--primary-dark) !important; color: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.15);
+        }
+        .day-pill.selected .day-abbr, .day-pill.selected .day-num, .day-pill.selected .day-month { color: #ffffff !important; }
+        .day-pill .day-abbr { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; }
+        .day-pill .day-num { font-weight: 800; font-size: 1.25rem; color: var(--text-main); display: block; margin: 2px 0; line-height: 1.1; }
+        .day-pill .day-month { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); display: block; }
+        .day-pill.has-booking { border-color: #10b981; }
+        .day-pill.has-booking:not(.selected) { background: #ecfdf5; }
+
+        .time-slot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-top: 15px; }
+        .time-slot-pill {
+            background: #ffffff; border: 1.5px solid var(--border-color); border-radius: 12px;
+            padding: 12px; text-align: center; font-weight: 700; font-size: 0.88rem; color: var(--text-main); cursor: pointer; transition: all 0.2s ease;
+        }
+        .time-slot-pill:hover { border-color: var(--primary); background: var(--primary-light); }
+        .time-slot-pill.active { background: var(--primary) !important; border-color: var(--primary) !important; color: #ffffff !important; box-shadow: 0 4px 10px rgba(30, 64, 175, 0.1); }
+
+        .alert-aesthetic-warning {
+            background-color: #fffbeb; border: 1px solid #fef3c7; color: #b45309;
+            border-radius: 12px; padding: 16px; display: flex; align-items: flex-start; gap: 12px; margin-top: 15px;
+        }
+        .alert-aesthetic-warning i { font-size: 1.2rem; margin-top: 2px; }
+
+        .booked-session-card {
+            background: #ffffff; border: 1px solid var(--border-color); border-radius: 12px;
+            padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; gap: 10px;
+        }
+        .booked-session-badge { background: var(--primary-light); color: var(--primary); font-weight: 800; font-size: 0.72rem; padding: 6px 10px; border-radius: 8px; text-transform: uppercase; }
+        .session-details { display: flex; flex-direction: column; gap: 4px; }
+        .session-date { font-weight: 700; font-size: 0.9rem; color: var(--text-main); }
+        .session-time { font-weight: 500; font-size: 0.8rem; color: var(--text-muted); }
+        
+        .btn-delete-session {
+            background: #fef2f2; color: #ef4444; border: none; border-radius: 10px;
+            width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; transition: 0.2s; flex-shrink: 0;
+        }
+        .btn-delete-session:hover { background: #ef4444; color: white; transform: scale(1.05); }
+
+        /* BOTONES PRINCIPALES DE ACCIÓN */
+        .btn-continue { background: var(--primary); color: white; border: none; font-weight: 600; font-size: 1.05rem; padding: 16px 40px; border-radius: 14px; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer;}
+        .btn-continue:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(30, 64, 175, 0.25); background: var(--primary-dark); }
+        .btn-continue:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-cancel { background: #f8fafc; color: #475569; border: 1px solid var(--border-color); font-weight: 600; font-size: 1.05rem; padding: 15px 35px; border-radius: 14px; transition: 0.2s; display: flex; align-items: center; justify-content: center; text-decoration: none;}
+        .btn-cancel:hover { background: #f1f5f9; color: var(--text-main); }
+
+        .loader-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 0; color: var(--primary); }
+
+        @media (max-width: 768px) {
+            .top-nav, .desktop-header { display: none !important; }
+            body { padding-top: 20px; }
+            .bottom-nav { display: flex; }
+            .content-area { padding: 20px; padding-bottom: 120px !important; }
+            .mobile-header { display: flex; }
+            .inv-card { padding: 20px; }
+            .carousel-nav-btn { display: none !important; }
+            .day-pill { width: 62px; padding: 10px 4px; }
+            .time-slot-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .action-buttons-flex { flex-direction: column-reverse; gap: 12px !important; }
+            .btn-continue, .btn-cancel { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TOP NAV (Escritorio) -->
+    <nav class="top-nav d-none d-md-flex">
+        <a href="#" class="nav-brand">
+            <div class="logo-box"><span class="material-symbols-rounded">school</span></div>
+            <span class="brand-text">Blackwell</span>
+        </a>
+        <div class="nav-links-desktop">
+            <a href="dashboard-docente.html" class="nav-item"><span class="material-symbols-rounded">home</span> Dashboard</a>
+            <a href="misexpedientes.html" class="nav-item active"><span class="material-symbols-rounded">folder_open</span> Trámites</a>
+            <a href="miscursos.html" class="nav-item"><span class="material-symbols-rounded">co_present</span> Mis Clases</a>
+        </div>
+        <div class="nav-user d-flex gap-3 align-items-center">
+            <div class="font-controls">
+                <button class="btn-font-action a-minus" onclick="changeFontSize(-1)" title="Reducir letra">A-</button>
+                <div class="font-separator"></div>
+                <button class="btn-font-action a-plus" onclick="changeFontSize(1)" title="Aumentar letra">A+</button>
+            </div>
+            <div class="user-trigger" id="userDropdownTrigger">
+                <span id="userNameNav">Docente</span>
+                <div class="user-avatar" id="userInitialNav">DC</div>
+            </div>
+            <div class="user-dropdown" id="userDropdownMenu">
+                <a href="#" class="dropdown-link"><span class="material-symbols-rounded">person</span> Ver mi Perfil</a>
+                <div style="border-top: 1px solid var(--border-color); margin: 5px 0;"></div>
+                <a href="#" onclick="logout()" class="dropdown-link logout"><span class="material-symbols-rounded">logout</span> Cerrar Sesión</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- BOTTOM NAV (Móvil) -->
+    <nav class="bottom-nav">
+        <a href="dashboard-docente.html" class="bottom-item"><span class="material-symbols-rounded">home</span><span>Inicio</span></a>
+        <a href="misexpedientes.html" class="bottom-item active"><span class="material-symbols-rounded">folder_open</span><span>Trámites</span></a>
+        <a href="miscursos.html" class="bottom-item"><span class="material-symbols-rounded">co_present</span><span>Clases</span></a>
+        <a href="perfil.html" class="bottom-item"><span class="material-symbols-rounded">person</span><span>Perfil</span></a>
+    </nav>
+
+    <main class="main-wrapper">
+        <div class="content-area">
+            <div class="centered-container">
+                
+                <!-- HEADER DESKTOP -->
+                <div class="page-header desktop-header d-none d-md-block">
+                    <h1>Responder Invitación de Curso</h1>
+                    <p>Revise los detalles del curso propuesto y agende las fechas de sus clases para aceptar la invitación.</p>
+                </div>
+
+                <!-- HEADER MÓVIL -->
+                <div class="mobile-header">
+                    <div class="mh-profile">
+                        <div class="mh-avatar" id="userInitialMobile">DC</div>
+                        <div class="mh-text">
+                            <h1>Responder Invitación</h1>
+                            <p>Confirme su horario de clases</p>
+                        </div>
+                    </div>
+                    <div class="mh-actions">
+                        <div class="font-controls">
+                            <button class="btn-font-action a-minus" onclick="changeFontSize(-1)">A-</button>
+                            <div class="font-separator"></div>
+                            <button class="btn-font-action a-plus" onclick="changeFontSize(1)">A+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARGADOR DE DATOS -->
+                <div id="loader-main" class="loader-container">
+                    <span class="material-symbols-rounded" style="font-size: 3.5rem; animation: spin 1s linear infinite;">autorenew</span>
+                    <h5 class="fw-bold text-dark mt-3">Cargando detalles de la invitación...</h5>
+                    <style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
+                </div>
+
+                <!-- TARJETA PRINCIPAL -->
+                <div id="main-inv-card" class="inv-card" style="display: none;">
+                    
+                    <!-- BANNER RESUMEN DEL CURSO -->
+                    <div class="course-summary-banner">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+                            <div>
+                                <div class="course-title" id="inv-curso-nombre">Cargando curso...</div>
+                                <div class="course-program" id="inv-programa-nombre">Programa Académico</div>
+                            </div>
+                            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning fw-bold px-3 py-2 rounded-pill" id="badge-estado-inv">
+                                Pendiente de Confirmación
+                            </span>
+                        </div>
+                        
+                        <div class="course-meta-grid">
+                            <div class="course-meta-item">
+                                <span>Periodo de Clases</span>
+                                <strong id="inv-periodo">-</strong>
+                            </div>
+                            <div class="course-meta-item">
+                                <span>Clases Requeridas</span>
+                                <strong id="inv-clases-cant">-</strong>
+                            </div>
+                            <div class="course-meta-item">
+                                <span>Remuneración Total</span>
+                                <strong class="text-success" id="inv-pago">-</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- WIDGET CALENDARIO DE AGENDAMIENTO -->
+                    <div class="p-4 rounded-4 bg-white border" style="border-color: var(--border-color);">
+                        
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 pb-3 border-bottom" style="border-color: var(--border-color);">
+                            <div>
+                                <h6 class="fw-bold m-0 text-primary-dark"><i class="fa-regular fa-calendar-days me-2"></i>Programación de Clases</h6>
+                                <p class="text-muted small m-0 mt-1">Seleccione las fechas exactas dentro del rango del curso.</p>
+                            </div>
+                            <div class="w-100 text-md-end" style="max-width: 220px;">
+                                <div class="badge rounded-pill fw-bold text-primary w-100 p-2" style="background: var(--primary-light); font-size: 0.85rem;" id="txtSessionsCounter">
+                                    0 de 4 Agendadas
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Paso 1: Carrusel de Días Reales -->
+                        <label class="form-label small fw-bold text-uppercase text-muted" style="letter-spacing: 0.5px;">1. Seleccione un día del calendario</label>
+                        
+                        <div class="carousel-wrapper mb-4">
+                            <button type="button" class="carousel-nav-btn" onclick="scrollCarousel('left')" title="Anterior">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+                            
+                            <div class="day-carousel" id="carouselDays">
+                                <!-- Se inyecta dinámicamente -->
+                            </div>
+                            
+                            <button type="button" class="carousel-nav-btn" onclick="scrollCarousel('right')" title="Siguiente">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </div>
+
+                        <!-- Paso 2: Horarios del Día Seleccionado -->
+                        <label class="form-label small fw-bold text-uppercase text-muted" style="letter-spacing: 0.5px;">2. Elija la franja horaria para el día elegido (GMT-5)</label>
+                        <div id="wrapperTimeSlots">
+                            <div class="time-slot-grid" id="gridTimeSlots">
+                                <!-- Se inyecta dinámicamente -->
+                            </div>
+                            
+                            <!-- Nota de Sábados -->
+                            <div id="saturdayNotice" class="alert-aesthetic-warning d-none">
+                                <i class="fa-solid fa-circle-exclamation"></i>
+                                <div>
+                                    <h6 class="fw-bold m-0" style="font-size:0.9rem;">Día de Gestión Especial Académica</h6>
+                                    <p class="m-0 mt-1" style="font-size:0.8rem; line-height:1.4;">
+                                        Este día se gestionará con el área académica. Las clases habitualmente son de lunes a viernes.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Resumen de Sesiones Agendadas -->
+                        <div id="wrapperBookedSessions" style="display: none; margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+                            <label class="form-label small fw-bold text-uppercase text-muted" style="letter-spacing: 0.5px; margin-bottom: 12px;">Mis Fechas Seleccionadas</label>
+                            <div id="listBookedSessions">
+                                <!-- Se inyectan las clases agendadas -->
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- BOTONES DE ACCIÓN -->
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top action-buttons-flex">
+                        <a href="misexpedientes.html" class="btn-cancel">
+                            <i class="fa-solid fa-arrow-left me-2"></i> Volver a Trámites
+                        </a>
+                        <button type="button" class="btn-continue" id="btnSubmitHorario" onclick="confirmarYGuardarHorario()" disabled>
+                            <i class="fa-solid fa-check me-1"></i> Confirmar Horario y Aceptar Invitación
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-4" style="z-index: 1055;" id="toastContainer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const invId = urlParams.get('inv') || urlParams.get('invId');
+        const userId = localStorage.getItem('userId');
+
+        let maxClasses = 4;
+        let availableSlots = [];
+        let bookedSessions = [];
+        let generatedDates = [];
+        let selectedDateObj = null;
+        let invitacionData = null;
+
+        // --- ACCESIBILIDAD Y USUARIO ---
+        let currentSizeLevel = 0;
+        const fontSizes = ["16px", "18px", "20px", "22px"];
+        function changeFontSize(step) {
+            currentSizeLevel += step;
+            if (currentSizeLevel < 0) currentSizeLevel = 0;
+            else if (currentSizeLevel >= fontSizes.length) currentSizeLevel = fontSizes.length - 1;
+            document.documentElement.style.fontSize = fontSizes[currentSizeLevel];
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const fullName = localStorage.getItem('userName') || "Docente";
+            const firstName = fullName.split(' ')[0]; 
+            const initial = fullName.substring(0, 2).toUpperCase(); 
+
+            if(document.getElementById('userNameNav')) document.getElementById('userNameNav').innerText = firstName;
+            if(document.getElementById('userInitialNav')) document.getElementById('userInitialNav').innerText = initial;
+            if(document.getElementById('userInitialMobile')) document.getElementById('userInitialMobile').innerText = initial;
+
+            if (invId) {
+                cargarInvitacion();
+            } else {
+                Swal.fire('Atención', 'No se especificó una invitación válida.', 'warning').then(() => {
+                    window.location.href = "misexpedientes.html";
+                });
+            }
+        });
+
+        // --- CARGAR DATOS REALES DE LA INVITACIÓN ---
+        async function cargarInvitacion() {
+            try {
+                const res = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'get_invitacion_data', idInvitacion: invId })
+                });
+                const json = await res.json();
+
+                if (json.status !== 'success') {
+                    Swal.fire('Error', json.message || 'No se pudo cargar la invitación.', 'error');
+                    return;
+                }
+
+                invitacionData = json.invitacion;
+
+                // Llenar datos visuales
+                document.getElementById('inv-curso-nombre').innerText = invitacionData.curso || "Curso Asignado";
+                document.getElementById('inv-programa-nombre').innerText = invitacionData.programa || "Programa Académico";
+                
+                const fIni = invitacionData.fechaInicio ? new Date(invitacionData.fechaInicio).toLocaleDateString('es-ES', {day:'2-digit', month:'short', year:'numeric'}) : '-';
+                const fFin = invitacionData.fechaFin ? new Date(invitacionData.fechaFin).toLocaleDateString('es-ES', {day:'2-digit', month:'short', year:'numeric'}) : '-';
+                document.getElementById('inv-periodo').innerText = `${fIni} al ${fFin}`;
+                
+                document.getElementById('inv-clases-cant').innerText = `${invitacionData.clases || '4'} clases magistrales`;
+                document.getElementById('inv-pago').innerText = invitacionData.pago || '-';
+
+                const est = (invitacionData.estado || "").toLowerCase();
+                if (['respondido', 'aceptado', 'completado', 'formalizado'].includes(est)) {
+                    document.getElementById('badge-estado-inv').innerText = "Respuesta Registrada";
+                    document.getElementById('badge-estado-inv').className = "badge bg-success bg-opacity-10 text-success border border-success fw-bold px-3 py-2 rounded-pill";
+                }
+
+                // Inicializar Widget de Calendario
+                initScheduleWidget(invitacionData);
+
+                // Ocultar Loader y mostrar contenido
+                document.getElementById('loader-main').style.display = 'none';
+                document.getElementById('main-inv-card').style.display = 'block';
+
+            } catch (e) {
+                console.error(e);
+                showToast("Error de conexión al cargar la invitación", "danger");
+            }
+        }
+
+        // --- LÓGICA DEL CALENDARIO REAL ---
+        function parseClasesCount(val) {
+            if (!val) return 4;
+            const clean = String(val).trim().toLowerCase();
+            const map = { 'una': 1, 'uno': 1, '1': 1, 'dos': 2, '2': 2, 'tres': 3, '3': 3, 'cuatro': 4, '4': 4, 'cinco': 5, '5': 5, 'seis': 6, '6': 6, 'ocho': 8, '8': 8 };
+            return map[clean] || parseInt(clean) || 4;
+        }
+
+        function extractTimeSlots(franjasStr) {
+            if (!franjasStr) return ["19:00 a 20:30", "20:30 a 22:00"];
+            const regex = /(\d{2}:\d{2}\s*(?:a|to|-)\s*\d{2}:\d{2})/gi;
+            const matches = franjasStr.match(regex);
+            return (matches && matches.length > 0) ? matches.map(m => m.trim().replace(/\s*to\s*/i, ' a ')) : ["19:00 a 20:30", "20:30 a 22:00"];
+        }
+
+        function parseDateSecure(str) {
+            if (!str) return new Date();
+            if (str instanceof Date) return str;
+            const parts = String(str).split('T')[0].split('-');
+            return parts.length === 3 ? new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2])) : new Date(str);
+        }
+
+        function formatDateToDDMMYYYY(date) {
+            return ("0" + date.getDate()).slice(-2) + "/" + ("0" + (date.getMonth() + 1)).slice(-2) + "/" + date.getFullYear();
+        }
+
+        function generateDatesRange(startStr, endStr) {
+            const dates = [];
+            const sDate = parseDateSecure(startStr);
+            const eDate = parseDateSecure(endStr);
+            let temp = new Date(sDate);
+
+            while (temp <= eDate) {
+                if (temp.getDay() !== 0) { // Excluir Domingos
+                    dates.push(new Date(temp));
+                }
+                temp.setDate(temp.getDate() + 1);
+            }
+            return dates;
+        }
+
+        function initScheduleWidget(inv) {
+            maxClasses = parseClasesCount(inv.clases);
+            availableSlots = extractTimeSlots(inv.franjas);
+            bookedSessions = [];
+            generatedDates = generateDatesRange(inv.fechaInicio, inv.fechaFin);
+
+            // Mapeo de horario previo
+            if (inv.dias && inv.horario) {
+                const daysArr = inv.dias.split(',').map(d => d.trim());
+                const hoursArr = inv.horario.split('|').map(h => h.trim());
+                
+                daysArr.forEach((dateStr, idx) => {
+                    if (dateStr && hoursArr[idx]) {
+                        const slot = hoursArr[idx].includes(':') ? hoursArr[idx].split(/:(.*)/s)[1].trim() : hoursArr[idx].trim();
+                        bookedSessions.push({ dateStr: dateStr, slot: slot });
+                    }
+                });
+            }
+
+            selectedDateObj = generatedDates.length > 0 ? generatedDates[0] : null;
+            renderScheduleWidget();
+        }
+
+        function renderScheduleWidget() {
+            if (!selectedDateObj) return;
+
+            const carousel = document.getElementById('carouselDays');
+            const grid = document.getElementById('gridTimeSlots');
+            const selectedDateStr = formatDateToDDMMYYYY(selectedDateObj);
+
+            const diasAbreviados = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+            const mesesAbreviados = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
+            let htmlDays = "";
+            generatedDates.forEach(date => {
+                const dateStr = formatDateToDDMMYYYY(date);
+                const isSelected = dateStr === selectedDateStr ? "selected" : "";
+                const hasBooking = bookedSessions.some(s => s.dateStr === dateStr) ? "has-booking" : "";
+                
+                htmlDays += `
+                <div class="day-pill ${isSelected} ${hasBooking}" onclick="selectDate('${date.toISOString()}')">
+                    <span class="day-abbr">${diasAbreviados[date.getDay()]}</span>
+                    <span class="day-num">${date.getDate()}</span>
+                    <span class="day-month">${mesesAbreviados[date.getMonth()]}</span>
+                </div>`;
+            });
+            carousel.innerHTML = htmlDays;
+
+            // Alerta Sábados
+            const isSaturday = selectedDateObj.getDay() === 6;
+            document.getElementById('saturdayNotice').classList.toggle('d-none', !isSaturday);
+
+            // Slots de Tiempo
+            let htmlSlots = "";
+            availableSlots.forEach(slot => {
+                const isActive = bookedSessions.some(s => s.dateStr === selectedDateStr && s.slot === slot) ? "active" : "";
+                htmlSlots += `<div class="time-slot-pill ${isActive}" onclick="bookSlot('${slot}')">${slot}</div>`;
+            });
+            grid.innerHTML = htmlSlots;
+
+            renderBookedSessionsList();
+        }
+
+        function selectDate(dateIsoStr) {
+            selectedDateObj = new Date(dateIsoStr);
+            renderScheduleWidget();
+        }
+
+        function scrollCarousel(direction) {
+            const carousel = document.getElementById('carouselDays');
+            carousel.scrollLeft += direction === 'left' ? -250 : 250;
+        }
+
+        function bookSlot(slot) {
+            const selectedDateStr = formatDateToDDMMYYYY(selectedDateObj);
+            const existingIndex = bookedSessions.findIndex(s => s.dateStr === selectedDateStr);
+
+            if (existingIndex !== -1) {
+                if (bookedSessions[existingIndex].slot === slot) {
+                    bookedSessions.splice(existingIndex, 1);
+                } else {
+                    bookedSessions[existingIndex].slot = slot;
+                }
+            } else {
+                if (bookedSessions.length >= maxClasses) {
+                    showToast(`Ya has seleccionado tus ${maxClasses} clases.`, "danger");
+                    return;
+                }
+                bookedSessions.push({ dateStr: selectedDateStr, slot: slot });
+            }
+
+            renderScheduleWidget();
+        }
+
+        function renderBookedSessionsList() {
+            const container = document.getElementById('wrapperBookedSessions');
+            const list = document.getElementById('listBookedSessions');
+            const counter = document.getElementById('txtSessionsCounter');
+            const btnSubmit = document.getElementById('btnSubmitHorario');
+
+            counter.innerText = `${bookedSessions.length} de ${maxClasses} Agendadas`;
+
+            // Habilitar botón solo si completó la cantidad exacta de clases
+            btnSubmit.disabled = bookedSessions.length !== maxClasses;
+
+            if (bookedSessions.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+
+            container.style.display = 'block';
+            let html = "";
+            
+            bookedSessions.sort((a, b) => {
+                const partsA = a.dateStr.split('/');
+                const partsB = b.dateStr.split('/');
+                return new Date(partsA[2], partsA[1] - 1, partsA[0]) - new Date(partsB[2], partsB[1] - 1, partsB[0]);
+            });
+
+            bookedSessions.forEach((s, idx) => {
+                html += `
+                <div class="booked-session-card">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="booked-session-badge">Clase ${idx + 1}</span>
+                        <div class="session-details">
+                            <span class="session-date"><i class="fa-regular fa-calendar text-primary me-1"></i> ${s.dateStr}</span>
+                            <span class="session-time"><i class="fa-regular fa-clock text-muted me-1"></i> ${s.slot}</span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-delete-session" onclick="removeSession(${idx})" title="Eliminar">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>`;
+            });
+            list.innerHTML = html;
+        }
+
+        function removeSession(idx) {
+            bookedSessions.splice(idx, 1);
+            renderScheduleWidget();
+        }
+
+        // --- ENVIAR RESPUESTA AL BACKEND ---
+        async function confirmarYGuardarHorario() {
+            if (bookedSessions.length !== maxClasses) {
+                showToast(`Debes agendar las ${maxClasses} clases requeridas.`, "danger");
+                return;
+            }
+
+            const btnSubmit = document.getElementById('btnSubmitHorario');
+            const originalHTML = btnSubmit.innerHTML;
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i> Guardando...`;
+
+            const diasArr = bookedSessions.map(s => s.dateStr);
+            const horasArr = bookedSessions.map(s => `${s.dateStr}: ${s.slot}`);
+
+            const payload = {
+                action: "save_expediente_step",
+                step: 4,
+                idDocente: userId,
+                idInvitacion: invId,
+                dia: diasArr.join(', '),
+                hora: horasArr.join(' | ')
+            };
+
+            try {
+                const res = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+
+                if (result.status === 'success') {
+                    Swal.fire({
+                        title: '¡Invitación Aceptada!',
+                        text: 'Has confirmado tu horario de clases exitosamente. La administración revisará tu disponibilidad.',
+                        icon: 'success',
+                        confirmButtonColor: '#1e40af'
+                    }).then(() => {
+                        window.location.href = "misexpedientes.html";
+                    });
+                } else {
+                    showToast(result.message || "Error al guardar el horario.", "danger");
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = originalHTML;
+                }
+            } catch (e) {
+                console.error(e);
+                showToast("Error de conexión con el servidor.", "danger");
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = originalHTML;
+            }
+        }
+
+        function showToast(mensaje, tipo = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const bgClass = tipo === 'success' ? 'text-bg-success' : 'text-bg-danger';
+            toast.className = `toast align-items-center ${bgClass} border-0 show shadow-lg rounded-4 mb-3`;
+            toast.innerHTML = `<div class="d-flex p-1"><div class="toast-body fw-medium" style="font-size: 0.95rem;">${mensaje}</div><button type="button" class="btn-close btn-close-white me-3 m-auto" data-bs-dismiss="toast" onclick="this.parentElement.parentElement.remove()"></button></div>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        // Dropdown usuario
+        const dropdownTrigger = document.getElementById('userDropdownTrigger');
+        const dropdownMenu = document.getElementById('userDropdownMenu');
+        if(dropdownTrigger && dropdownMenu) {
+            dropdownTrigger.addEventListener('click', e => { e.stopPropagation(); dropdownMenu.classList.toggle('show'); });
+            document.addEventListener('click', () => dropdownMenu.classList.remove('show'));
+        }
+        function logout() { if(confirm("¿Cerrar sesión?")) { localStorage.clear(); window.location.href = "index.html"; } }
+    </script>
+</body>
+</html>

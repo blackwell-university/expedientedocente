@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script>
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        const userRole = localStorage.getItem('userRole');
+        
+        const rolesPermitidos = [
+            'Administrativo', 'Administrador', 'Ejecutivo Licenciamiento', 
+            'Asesora Academica', 'Ejecutiva Credenciales'
+        ];
+        
+        if (isLoggedIn !== 'true' || !rolesPermitidos.some(rol => userRole && userRole.toLowerCase() === rol.toLowerCase())) {
+            window.location.href = "../index.html";
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proceso de Invitación | Blackwell University</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #eff6ff;
+            --primary-dark: #1e3a8a; 
+            --bg-body: #f8fafc;
+            --sidebar-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --gray-border: #e2e8f0;
+            --card-radius: 20px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --sidebar-width: 260px;
+            --sidebar-collapsed-width: 88px;
+            --dynamic-font-size: 1rem;
+        }
+
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; letter-spacing: -0.01em; }
+
+        .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid rgba(0,0,0,0.05); display: flex; flex-direction: column; transition: var(--transition); position: relative; padding: 24px 16px; flex-shrink: 0; }
+        .sidebar.collapsed { width: var(--sidebar-collapsed-width); }
+        .brand-section { display: flex; align-items: center; gap: 12px; padding: 0 12px 32px; text-decoration: none; overflow: hidden; }
+        .logo-box { min-width: 42px; height: 42px; background: var(--primary-dark); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
+        .brand-text { font-weight: 800; font-size: 1.2rem; color: var(--primary-dark); }
+        .sidebar.collapsed .brand-text { opacity: 0; pointer-events: none; }
+        .user-preview { display: flex; align-items: center; gap: 12px; padding: 12px; background: #f1f5f9; border-radius: 16px; margin-bottom: 24px; overflow: hidden; }
+        .avatar { min-width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 13px; }
+        .user-meta { display: flex; flex-direction: column; line-height: 1.2; }
+        .user-meta b { font-size: 13px; white-space: nowrap; } .user-meta span { font-size: 11px; color: var(--text-muted); }
+        .sidebar.collapsed .user-meta { display: none; }
+        .nav-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+        .nav-link { display: flex; align-items: center; gap: 16px; padding: 12px 14px; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 6px; transition: var(--transition); white-space: nowrap; }
+        .nav-link i { font-size: 18px; width: 24px; text-align: center; }
+        .nav-link:hover, .nav-link.active { background: #eff6ff; color: var(--primary); } .nav-link.active { font-weight: 600; }
+        .sidebar.collapsed .link-text { display: none; }
+        .collapse-btn { position: absolute; right: -12px; top: 48px; width: 24px; height: 24px; background: white; border: 1px solid #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; font-size: 10px; color: var(--text-muted); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.4); z-index: 999; backdrop-filter: blur(3px); opacity: 0; transition: opacity 0.3s ease; }
+        
+        .main-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        header { padding: 20px 48px; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 5; }
+        .content-area { padding: 40px; display: flex; flex-direction: column; align-items: center; width: 100%; font-size: var(--dynamic-font-size); }
+        .centered-container { width: 100%; max-width: 1400px; text-align: left; }
+        
+        .breadcrumb-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; color: var(--text-muted); font-size: 14px; }
+        .back-link { text-decoration: none; color: var(--text-muted); display: flex; align-items: center; gap: 6px; transition: 0.2s; font-weight: 500;}
+        .back-link:hover { color: var(--primary); }
+        
+        .page-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px; }
+        .page-header h1 { font-weight: 800; font-size: 2.2rem; margin-bottom: 8px; letter-spacing: -0.03em; color: var(--primary-dark); }
+        .page-header p { color: var(--text-muted); font-size: 1.1rem; margin: 0;}
+
+        .pipeline-wrapper { margin-bottom: 25px; background: white; border: 1px solid var(--gray-border); border-radius: 12px; padding: 16px 20px; }
+        .pipeline-title { font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 12px; }
+        .pipeline-stages { display: flex; align-items: center; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+        .stage-step { flex: 1; text-align: center; padding: 10px 20px; font-size: 0.75rem; font-weight: 700; min-height: 36px; display: flex; align-items: center; justify-content: center; white-space: nowrap; clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%, 12px 50%); margin-left: -6px; transition: all 0.3s ease; }
+        .stage-step:first-child { clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%); margin-left: 0; border-top-left-radius: 20px; border-bottom-left-radius: 20px; }
+        .stage-step:last-child { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 12px 50%); border-top-right-radius: 20px; border-bottom-right-radius: 20px; }
+
+        .step-green { background: #bbf7d0; color: #166534; }
+        .step-yellow { background: #fef08a; color: #854d0e; }
+        .step-gray { background: #f1f5f9; color: #64748b; }
+
+        .nav-tabs { border-bottom: 2px solid #e2e8f0; gap: 10px; margin-bottom: 30px; }
+        .nav-tabs .nav-link { border: none; color: var(--text-muted); font-weight: 600; font-size: 0.95rem; padding: 12px 20px; background: none; transition: var(--transition); border-bottom: 3px solid transparent; border-radius: 8px 8px 0 0; }
+        .nav-tabs .nav-link:hover { color: var(--primary); background: #f8fafc; }
+        .nav-tabs .nav-link.active { color: var(--primary-dark); background: none; border-bottom-color: var(--primary); font-weight: 700; }
+
+        .form-card { background: white; border-radius: var(--card-radius); padding: 35px; border: 1px solid rgba(0,0,0,0.04); box-shadow: 0 10px 30px rgba(0,0,0,0.02); height: 100%; margin-bottom: 24px;}
+        .section-badge { background: #eff6ff; color: var(--primary); padding: 6px 14px; border-radius: 8px; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; display: inline-flex; align-items: center; margin-bottom: 24px; }
+        
+        .info-label { display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 6px; font-weight: 600; }
+        .info-value { font-size: 0.95rem; color: #0f172a; font-weight: 500; min-height: 40px; padding: 8px 0; }
+
+        .action-toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 28px; border-bottom: 1px solid var(--gray-border); padding-bottom: 20px; }
+        .action-btn { background: white; border: 1px solid var(--gray-border); padding: 8px 18px; border-radius: 30px; font-size: 0.8rem; font-weight: 500; color: var(--text-main); transition: 0.2s; cursor: pointer; }
+        .action-btn i { margin-right: 8px; color: var(--text-muted); }
+        .action-btn:hover { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+        .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .action-btn-primary { background: var(--primary-dark); border-color: var(--primary-dark); color: white; }
+        .action-btn-primary i { color: white; }
+        .action-btn-primary:hover:not(:disabled) { background: #1e40af; }
+        .action-btn-success { background: #10b981; border-color: #10b981; color: white; }
+        .action-btn-success i { color: white; }
+        .action-btn-success:hover:not(:disabled) { background: #059669; }
+
+        .summary-stats { display: flex; gap: 24px; margin-bottom: 24px; flex-wrap: wrap; }
+        .stat-card { background: white; border-radius: 14px; padding: 12px 20px; border: 1px solid var(--gray-border); min-width: 100px; flex: 1;}
+        .stat-number { font-size: 1.6rem; font-weight: 700; color: var(--primary-dark); line-height: 1.2; }
+        .stat-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .table-wrapper { background: white; border-radius: 16px; border: 1px solid var(--gray-border); overflow-x: auto; }
+        .doc-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .doc-table th { text-align: left; padding: 16px 16px; background: #f9fafb; font-weight: 600; color: var(--text-main); border-bottom: 1px solid var(--gray-border); }
+        .doc-table td { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+        .doc-table tr:hover { background: #fafafa; }
+
+        .badge-state { display: inline-block; padding: 4px 12px; border-radius: 30px; font-size: 0.7rem; font-weight: 500; background: #f1f5f9; color: #334155; }
+        .badge-completed { background: #e0f2fe; color: #0369a1; }
+        .badge-pending { background: #fef3c7; color: #b45309; }
+        .badge-success { background: #dcfce7; color: #166534; }
+
+        .table-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+        .table-actions a { color: var(--text-muted); text-decoration: none; font-size: 0.78rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 8px; transition: var(--transition); cursor: pointer; }
+        .table-actions a:hover { color: var(--primary); background: #eff6ff; }
+
+        .notif-section-label { display: inline-flex; align-items: center; gap: 6px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--primary); background: #eff6ff; padding: 5px 12px; border-radius: 20px; margin-bottom: 10px; }
+        .dest-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+        .dest-contador { font-size: 0.72rem; font-weight: 700; color: var(--primary); background: #eff6ff; padding: 3px 10px; border-radius: 20px; }
+
+        .buscador-destinatarios { position: relative; margin-bottom: 8px; }
+        .buscador-destinatarios i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.8rem; }
+        .buscador-destinatarios input { width: 100%; padding: 8px 12px 8px 32px; border: 1px solid var(--gray-border, #e2e8f0); border-radius: 10px; font-size: 0.82rem; background: #f8fafc; transition: 0.15s; }
+        .buscador-destinatarios input:focus { outline: none; border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+
+        .lista-destinatarios { max-height: 140px; overflow-y: auto; border: 1px solid var(--gray-border, #e2e8f0); border-radius: 12px; padding: 6px; background: #f8fafc; }
+        .destinatario-item { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 8px; transition: 0.15s; cursor: pointer; }
+        .destinatario-item:hover { background: white; }
+        .destinatario-item input[type="checkbox"] { width: 15px; height: 15px; flex-shrink: 0; cursor: pointer; }
+        .destinatario-item .dest-info { display: flex; flex-direction: column; line-height: 1.2; overflow: hidden; }
+        .destinatario-item .dest-correo { font-size: 0.8rem; font-weight: 600; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .destinatario-item .dest-rol { font-size: 0.68rem; color: #94a3b8; }
+
+        .rte-toolbar { display: flex; gap: 4px; flex-wrap: wrap; padding: 8px; background: #f8fafc; border: 1px solid var(--gray-border, #e2e8f0); border-bottom: none; border-radius: 10px 10px 0 0; }
+        .rte-btn { width: 32px; height: 32px; border: none; background: transparent; border-radius: 6px; color: #475569; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; cursor: pointer; transition: 0.15s; }
+        .rte-btn:hover { background: #e2e8f0; color: var(--primary); }
+        .rte-btn.active { background: #dbeafe; color: var(--primary); }
+        .rte-sep { width: 1px; background: #e2e8f0; margin: 4px 2px; }
+
+        .rte-body { min-height: 130px; max-height: 220px; overflow-y: auto; padding: 14px; border: 1px solid var(--gray-border, #e2e8f0); border-radius: 0 0 10px 10px; font-size: 0.9rem; color: #1e293b; background: white; }
+        .rte-body:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        .rte-body ul, .rte-body ol { padding-left: 22px; }
+        .rte-body:empty:before { content: attr(data-placeholder); color: #94a3b8; pointer-events: none; }
+
+        .adjuntos-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+        .adjunto-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #f8fafc; border: 1px solid var(--gray-border, #e2e8f0); border-radius: 10px; }
+        .adjunto-item .adjunto-icon { color: var(--primary); font-size: 1.1rem; flex-shrink: 0; }
+        .adjunto-item .adjunto-nombre { font-size: 0.82rem; font-weight: 600; color: #334155; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+        .adjunto-item .adjunto-peso { font-size: 0.72rem; color: #94a3b8; flex-shrink: 0; }
+        .adjunto-item .btn-quitar-adjunto { background: #fee2e2; color: #ef4444; border: none; width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: 0.15s; }
+        .adjunto-item .btn-quitar-adjunto:hover { background: #ef4444; color: white; }
+
+        .btn-adjuntar { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border: 1.5px dashed #cbd5e1; border-radius: 10px; background: transparent; color: var(--text-muted); font-weight: 600; font-size: 0.82rem; cursor: pointer; transition: 0.2s; }
+        .btn-adjuntar:hover { border-color: var(--primary); color: var(--primary); background: #eff6ff; }
+        .adjuntar-mini-dropzone { border: 1.5px dashed #cbd5e1; border-radius: 10px; padding: 10px 16px; transition: 0.2s; }
+        .adjuntar-mini-dropzone.dragover { border-color: var(--primary); background: #eff6ff; }
+
+        @media (max-width: 768px) {
+            header { padding: 15px 20px; }
+            .content-area { padding: 20px 15px; }
+            .form-card { padding: 20px; }
+            .page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .sidebar { position: fixed; left: -280px; top: 0; height: 100vh; z-index: 1000; width: 260px !important; box-shadow: 10px 0 30px rgba(0,0,0,0.15); }
+            .sidebar.show-mobile { left: 0; }
+            .sidebar-overlay.active { display: block; opacity: 1; }
+            .collapse-btn { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="collapse-btn" onclick="toggleSidebar()"><i class="fa-solid fa-chevron-left" id="toggleIcon"></i></div>
+        <a href="#" class="brand-section">
+            <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div>
+            <span class="brand-text">Blackwell</span>
+        </a>
+        <div class="user-preview">
+            <div class="avatar" id="userInitial">AD</div>
+            <div class="user-meta"><b id="userName">Admin User</b><span>Ejecutivo Asignado</span></div>
+        </div>
+        <ul class="nav-list">
+            <li><a href="administrativo.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
+            <li><a href="gestion-docentes.html" class="nav-link"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
+            <li><a href="gestion-expedientes.html" class="nav-link active"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
+            <li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Gestión Cursos</span></a></li>
+        </ul>
+        <a href="#" class="nav-link" onclick="logout()" style="color: #f43f5e; margin-top: auto;">
+            <i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span>
+        </a>
+    </aside>
+
+    <main class="main-wrapper">
+        <!-- HEADER -->
+        <header>
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn border-0 p-0 d-md-none text-dark fs-4" onclick="toggleMobileSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div>
+                    <h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Gestión de Contratación</h5>
+                    <p class="text-muted small m-0">Portal Administrativo</p>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-white px-3 py-2 rounded-pill shadow-sm d-flex gap-2 align-items-center">
+                    <button onclick="changeFontSize(-1)" class="btn btn-sm btn-link p-0 text-dark text-decoration-none fw-bold">A-</button>
+                    <span id="fontSizeLabel" class="small fw-bold px-1" style="min-width: 50px; text-align: center;">Normal</span>
+                    <button onclick="changeFontSize(1)" class="btn btn-sm btn-link p-0 text-dark text-decoration-none fw-bold">A+</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-area">
+            <div class="centered-container">
+                
+                <div class="breadcrumb-nav">
+                    <a href="#" onclick="history.back(); return false;" class="back-link"><i class="fa-solid fa-arrow-left"></i> Volver</a>
+                </div>
+
+                <!-- PAGE HEADER & STATUS CONTROL -->
+                <div class="page-header">
+                    <div>
+                        <h1 id="inv-nombre-curso">Cargando datos...</h1>
+                        <p id="inv-docente-nombre">Obteniendo docente...</p>
+                        <p class="text-muted small m-0 mt-1">ID Invitación: <span id="header-inv-id">-</span></p>
+                    </div>
+                    <div id="status-badge-container" class="d-flex align-items-center gap-2">
+                        <span id="badge-estado-actual" class="badge text-white px-3 py-2 shadow-sm" style="border-radius: 20px; font-size: 0.85rem; background: #64748b;">Estado: Cargando...</span>
+                        
+                        <!-- Dropdown para cambiar el estado manualmente -->
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle bg-white" style="border-radius: 20px; font-weight: 600;" type="button" data-bs-toggle="dropdown">
+                                Mover Etapa
+                            </button>
+                            <ul class="dropdown-menu shadow-sm border-0" style="border-radius: 12px; font-size: 0.85rem;">
+                                <li><h6 class="dropdown-header text-primary fw-bold">1. Emisión</h6></li>
+                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoInvitacion('Guardado')">Guardado / Por enviar</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoInvitacion('Enviado')">Enviado al docente</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoInvitacion('Respondido')">Respondido por docente</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoInvitacion('Aceptado')">Aceptado</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><h6 class="dropdown-header text-primary fw-bold">2. Generación</h6></li>
+                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoInvitacion('Documentos generados')">Documentos generados</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><h6 class="dropdown-header text-primary fw-bold">3. Firma Docente</h6></li>
+                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoInvitacion('Pendiente firma docente')">Pendiente firma docente</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoInvitacion('Firmado por docente')">Firmado por docente</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><h6 class="dropdown-header text-primary fw-bold">4. Formalización</h6></li>
+                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoInvitacion('Pendiente firma directores')">Pendiente firma directores</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoInvitacion('Completado')">Completado</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PIPELINE DE ETAPAS UX -->
+                <div class="pipeline-wrapper">
+                    <div class="pipeline-title">Flujo de Contratación del Curso</div>
+                    <div class="pipeline-stages" id="pipeline-container">
+                        <div class="stage-step step-gray" id="stage-1">1. Emisión de Invitación</div>
+                        <div class="stage-step step-gray" id="stage-2">2. Generación de Docs</div>
+                        <div class="stage-step step-gray" id="stage-3">3. Firma de Docente</div>
+                        <div class="stage-step step-gray" id="stage-4">4. Formalización (Directivos)</div>
+                    </div>
+                </div>
+
+                <!-- TABS -->
+                <ul class="nav nav-tabs" id="invTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-detalles">Detalles de Invitación</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-documentos">Documentos de Contrato</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    
+                    <!-- PESTAÑA 1: DETALLES -->
+                    <div class="tab-pane fade show active" id="tab-detalles" role="tabpanel">
+                        <div class="row g-4">
+                            <!-- DATOS DE LA INVITACIÓN -->
+                            <div class="col-lg-6">
+                                <div class="form-card">
+                                    <span class="section-badge"><i class="fa-solid fa-chalkboard-user me-2"></i>Datos de la Invitación</span>
+                                    <div class="row g-3">
+                                        <div class="col-12"><span class="info-label">Programa / Curso</span><div class="info-value fw-bold" id="ui-curso">-</div></div>
+                                        <div class="col-md-6"><span class="info-label">Período</span><div class="info-value" id="ui-periodo">-</div></div>
+                                        <div class="col-md-6"><span class="info-label">Cantidad de Sesiones</span><div class="info-value" id="ui-sesiones">-</div></div>
+                                        <div class="col-12">
+                                            <span class="info-label">Horario elegido por el docente</span>
+                                            <div class="info-value" id="ui-horario">-</div>
+                                        </div>
+                                        <div class="col-md-6"><span class="info-label">Pago Acordado</span><div class="info-value text-success fw-bold" id="ui-pago">-</div></div>
+                                        <div class="col-md-6">
+                                            <span class="info-label">Expediente (Contrato Base)</span>
+                                            <div class="info-value" id="ui-expediente">-</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- DATOS DEL DOCENTE -->
+                            <div class="col-lg-6">
+                                <div class="form-card">
+                                    <span class="section-badge"><i class="fa-solid fa-user me-2"></i>Información del Docente</span>
+                                    <div class="row g-3">
+                                        <div class="col-md-6"><span class="info-label">Identificación</span><div class="info-value" id="ui-dni">-</div></div>
+                                        <div class="col-md-6"><span class="info-label">Correo Electrónico</span><div class="info-value text-primary fw-bold" id="ui-correo">-</div></div>
+                                        <div class="col-md-6"><span class="info-label">Teléfono</span><div class="info-value" id="ui-telefono">-</div></div>
+                                        <div class="col-md-6"><span class="info-label">País de Residencia</span><div class="info-value" id="ui-pais">-</div></div>
+                                        <div class="col-12"><span class="info-label">Dirección Completa</span><div class="info-value" id="ui-direccion">-</div></div>
+                                        <div class="col-md-6"><span class="info-label">Banco Registrado</span><div class="info-value" id="ui-banco">-</div></div>
+                                        <div class="col-md-6"><span class="info-label">Cuenta / CCI</span><div class="info-value" id="ui-cuenta">-</div></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PESTAÑA 2: DOCUMENTOS -->
+                    <div class="tab-pane fade" id="tab-documentos">
+                        <div class="form-card" style="padding: 24px;">
+                            
+                            <!-- Barra de Acciones Dinámica -->
+                            <div class="action-toolbar" id="dynamic-action-toolbar">
+                                <!-- Botones inyectados por JS -->
+                            </div>
+
+                            <!-- Resumen Estadístico -->
+                            <div class="summary-stats">
+                                <div class="stat-card">
+                                    <div class="stat-number" id="ui-docs-total">4</div>
+                                    <div class="stat-label">Total Documentos</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number" id="ui-docs-generados">0</div>
+                                    <div class="stat-label">Generados</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number" id="ui-docs-firmados">0</div>
+                                    <div class="stat-label">Firmados</div>
+                                </div>
+                            </div>
+
+                            <!-- Tabla de Documentos -->
+                            <div class="table-wrapper">
+                                <table class="doc-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Documento</th>
+                                            <th>Versión</th>
+                                            <th>Estado Actual</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tablaDocumentosBody">
+                                        <!-- Filas generadas por JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>            
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL ÚNICO: GENERAR DOCUMENTOS -->
+    <div class="modal fade" id="modalSeleccionarDocs" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-header border-0 pb-0 pt-4 px-4">
+                    <h5 class="fw-bold text-dark fs-5"><i class="fa-solid fa-file-lines text-primary me-2"></i>Generar Documentos</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted small mb-4">Seleccione los documentos de la invitación a generar. Se autocompletarán con los datos del docente y el curso.</p>
+                    
+                    <div class="bg-light border rounded-4 p-1">
+                        <div class="form-check p-3 border-bottom m-0 d-flex align-items-center gap-2">
+                            <input class="form-check-input m-0" type="checkbox" id="checkAllDocs" onchange="toggleAllDocs(this)" style="cursor: pointer; width: 1.2rem; height: 1.2rem;">
+                            <label class="form-check-label fw-bold text-primary-dark w-100" for="checkAllDocs" style="cursor: pointer;">
+                                Seleccionar todos
+                            </label>
+                        </div>
+                        <!-- La lista se inyectará aquí dinámicamente -->
+                        <div class="p-3 d-flex flex-column gap-2" id="docsCheckboxList"></div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0 d-flex gap-2">
+                    <button type="button" class="btn btn-white border fw-bold px-4 flex-grow-1" style="border-radius: 12px; padding: 12px; color: var(--text-muted);" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary fw-bold px-4 flex-grow-1" style="border-radius: 12px; padding: 12px;" onclick="ejecutarGeneracionDocs()">
+                        <i class="fa-solid fa-wand-magic-sparkles me-2"></i>Generar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE ENVIAR NOTIFICACIÓN -->
+    <div class="modal fade" id="modalEnviarNotificacion" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-header border-0 pb-0 pt-4 px-4">
+                    <h5 class="fw-bold text-dark fs-5"><i class="fa-solid fa-bell text-primary me-2"></i>Enviar Notificación por Correo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+
+                    <span class="notif-section-label"><i class="fa-solid fa-users"></i> Destinatarios</span>
+                    <div class="dest-header">
+                        <div class="buscador-destinatarios flex-grow-1 me-2">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="buscadorDestinatarios" placeholder="Buscar por correo o rol..." oninput="filtrarDestinatarios(this.value)">
+                        </div>
+                        <span class="dest-contador" id="contadorDestinatarios">0 seleccionados</span>
+                    </div>
+                    <div class="lista-destinatarios mb-4" id="listaDestinatariosNotif">
+                        <div class="text-center text-muted py-3"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando usuarios...</div>
+                    </div>
+
+                    <span class="notif-section-label"><i class="fa-regular fa-envelope"></i> Asunto</span>
+                    <div class="mb-3">
+                        <input type="text" class="form-control input-modern" id="inputAsuntoNotif" placeholder="Ej. Actualización sobre tu invitación">
+                    </div>
+
+                    <span class="notif-section-label"><i class="fa-regular fa-pen-to-square"></i> Mensaje</span>
+                    <div class="mb-3">
+                        <div class="rte-toolbar">
+                            <button type="button" class="rte-btn" onclick="rteAplicar('bold')" title="Negrita"><i class="fa-solid fa-bold"></i></button>
+                            <button type="button" class="rte-btn" onclick="rteAplicar('italic')" title="Cursiva"><i class="fa-solid fa-italic"></i></button>
+                            <button type="button" class="rte-btn" onclick="rteAplicar('underline')" title="Subrayado"><i class="fa-solid fa-underline"></i></button>
+                            <div class="rte-sep"></div>
+                            <button type="button" class="rte-btn" onclick="rteAplicar('insertUnorderedList')" title="Lista con viñetas"><i class="fa-solid fa-list-ul"></i></button>
+                            <button type="button" class="rte-btn" onclick="rteAplicar('insertOrderedList')" title="Lista numerada"><i class="fa-solid fa-list-ol"></i></button>
+                            <div class="rte-sep"></div>
+                            <button type="button" class="rte-btn" onclick="rteAplicar('justifyLeft')" title="Alinear izquierda"><i class="fa-solid fa-align-left"></i></button>
+                            <button type="button" class="rte-btn" onclick="rteAplicar('justifyCenter')" title="Centrar"><i class="fa-solid fa-align-center"></i></button>
+                            <div class="rte-sep"></div>
+                            <button type="button" class="rte-btn" onclick="rteAplicar('removeFormat')" title="Quitar formato"><i class="fa-solid fa-text-slash"></i></button>
+                        </div>
+                        <div class="rte-body" id="rteMensajeNotif" contenteditable="true" data-placeholder="Escribe tu mensaje aquí..."></div>
+                    </div>
+
+                    <span class="notif-section-label"><i class="fa-solid fa-paperclip"></i> Adjuntos</span>
+                    <div class="mb-2">
+                        <input type="file" id="inputAdjuntosNotif" multiple hidden onchange="agregarAdjuntosUI(this.files)">
+                        <div class="adjuntar-mini-dropzone" id="dropzoneAdjuntosNotif" onclick="document.getElementById('inputAdjuntosNotif').click()">
+                            <button type="button" class="btn-adjuntar" style="border:none; padding:0; background:none;">
+                                <i class="fa-solid fa-paperclip"></i> Adjuntar Archivo(s) — o arrástralos aquí
+                            </button>
+                        </div>
+                        <div class="adjuntos-list" id="listaAdjuntosNotif"></div>
+                    </div>
+
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0 d-flex gap-2">
+                    <button type="button" class="btn btn-white border fw-bold px-4 flex-grow-1" style="border-radius: 12px; padding: 12px; color: var(--text-muted);" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary fw-bold px-4 flex-grow-1" id="btnEnviarNotifSubmit" style="border-radius: 12px; padding: 12px;" onclick="enviarNotificacionGlobal()">
+                        <i class="fa-solid fa-paper-plane me-2"></i>Enviar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-4" style="z-index: 1055;" id="toastContainer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const invId = urlParams.get('invId') || urlParams.get('inv');
+        
+        let docId = "";
+        let docenteCorreoActual = "";
+        let estadoActual = "";
+        let docsActuales = {};
+
+        // Base de documentos propios de una invitación (4 documentos)
+        const DOCS_INVITACION = [
+            "Letter of Appointment",
+            "Proposed Salary",
+            "Academic Preparation Evaluation Form",
+            "Job Description"
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const dzNotif = document.getElementById('dropzoneAdjuntosNotif');
+            if(dzNotif) activarDropzone(dzNotif, (files) => { agregarAdjuntosUI(files); });
+
+            if (invId) {
+                cargarInvitacion();
+            } else {
+                document.getElementById('inv-nombre-curso').innerText = "Error: Falta ID de invitación";
+                document.getElementById('inv-docente-nombre').innerText = "Indique un id de invitación válido en la URL";
+            }
+            
+            const name = sessionStorage.getItem('userName') || localStorage.getItem('userName') || "Admin User";
+            const elUser = document.getElementById('userName');
+            if(elUser) elUser.innerText = name;
+        });
+
+        // FORMATEADOR DE FECHAS ULTRA SEGURO (Evita RangeError con strings DD/MM/AAAA de Google Sheets)
+        function safeFormatDate(dateVal) {
+            if (!dateVal) return '-';
+            let str = String(dateVal).trim();
+            if (!str || str === '-') return '-';
+            
+            if (str.includes('/')) {
+                const parts = str.split('/');
+                if (parts.length === 3) {
+                    str = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                }
+            }
+            
+            const d = new Date(str);
+            if (isNaN(d.getTime())) return String(dateVal); // Si falla, devuelve la cadena original sin colapsar JS
+            
+            return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+
+        // ==================== CARGA PRINCIPAL ====================
+        async function cargarInvitacion() {
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_invitacion_data', idInvitacion: invId }) });
+                const json = await res.json();
+
+                if (json.status !== 'success') {
+                    document.getElementById('inv-nombre-curso').innerText = "Error: Invitación no encontrada";
+                    document.getElementById('inv-docente-nombre').innerText = json.message || "Verifica el ID en la URL";
+                    document.getElementById('badge-estado-actual').innerText = "Estado: No encontrado";
+                    document.getElementById('badge-estado-actual').style.background = "#ef4444";
+                    return;
+                }
+
+                const inv = json.invitacion || {};
+                const doc = json.docente || {};
+                docsActuales = json.documentos || {};
+
+                estadoActual = inv.estado || "Guardado";
+                docId = doc.id || "";
+                docenteCorreoActual = doc.correo || "";
+
+                // Header
+                document.getElementById('inv-nombre-curso').innerText = `${inv.curso || 'Curso'} - ${inv.programa || 'Programa'}`;
+                const docNombres = doc.nombres || '';
+                const docApellidos = doc.apellidos || '';
+                document.getElementById('inv-docente-nombre').innerText = `${docNombres} ${docApellidos}`.trim() || 'Docente no asignado';
+                document.getElementById('header-inv-id').innerText = inv.idInvitacion || invId;
+
+                // Datos Invitacion
+                document.getElementById('ui-curso').innerText = `${inv.curso || '-'} — ${inv.programa || '-'}`;
+                const fIni = safeFormatDate(inv.fechaInicio);
+                const fFin = safeFormatDate(inv.fechaFin);
+                document.getElementById('ui-periodo').innerText = `${fIni} al ${fFin}`;
+                document.getElementById('ui-sesiones').innerText = inv.clases || '-';
+
+                // Renderizado protegido de horarios
+                const elHorario = document.getElementById('ui-horario');
+                const horarioStr = inv.horario ? String(inv.horario).trim() : '';
+                const diasStr = inv.dias ? String(inv.dias).trim() : '';
+
+                if (horarioStr && horarioStr !== '-' && horarioStr.includes(':')) {
+                    let horariosHtml = '<div class="d-flex flex-wrap gap-1 mt-1">';
+                    const sesiones = horarioStr.split('|');
+                    sesiones.forEach(sesion => {
+                        if(sesion.trim()) {
+                            horariosHtml += `<span class="badge bg-light text-dark border me-1 mb-1" style="font-weight:600; font-size:0.75rem; padding:5px 10px;"><i class="fa-regular fa-calendar-check text-primary me-1"></i> ${sesion.trim()}</span>`;
+                        }
+                    });
+                    horariosHtml += '</div>';
+                    elHorario.innerHTML = horariosHtml;
+                } else if (diasStr || horarioStr) {
+                    elHorario.innerText = `${diasStr} ${horarioStr}`.trim();
+                } else {
+                    elHorario.innerHTML = '<span class="text-muted fst-italic">Aún no confirmado por el docente</span>';
+                }
+
+                document.getElementById('ui-pago').innerText = inv.pago || '-';
+                document.getElementById('ui-expediente').innerHTML = inv.idExpediente 
+                    ? `<a href="expediente.html?expId=${inv.idExpediente}" class="text-decoration-none fw-bold" style="color: var(--primary);"><i class="fa-regular fa-folder-open me-1"></i> ${inv.idExpediente}</a>` 
+                    : '<span class="text-muted">Sin contrato base vinculado</span>';
+
+                // Datos Docente protegidos
+                const docDni = doc.dni || '-';
+                const docTipoId = doc.tipo_id || 'ID';
+                document.getElementById('ui-dni').innerText = `${docDni} (${docTipoId})`;
+                document.getElementById('ui-correo').innerText = doc.correo || '-';
+                document.getElementById('ui-telefono').innerText = doc.celular || '-';
+                document.getElementById('ui-pais').innerText = doc.pais || '-';
+                document.getElementById('ui-direccion').innerText = doc.direccion || '-';
+                document.getElementById('ui-banco').innerText = `${doc.banco || '-'} (${doc.moneda || '-'})`;
+                document.getElementById('ui-cuenta').innerText = doc.cuenta || '-';
+
+                renderUI(estadoActual);
+
+            } catch (e) {
+                console.error("Error en cargarInvitacion:", e);
+                document.getElementById('inv-nombre-curso').innerText = "Error de carga";
+                document.getElementById('inv-docente-nombre').innerText = "Ocurrió un problema al procesar los datos.";
+                document.getElementById('badge-estado-actual').innerText = "Estado: Error";
+                document.getElementById('badge-estado-actual').style.background = "#ef4444";
+                showToast("Error de conexión o formato de datos.", "danger");
+            }
+        }
+
+        async function cambiarEstadoInvitacion(nuevoEstado) {
+            if(!confirm(`¿Seguro que deseas cambiar el estado de la invitación a "${nuevoEstado}"?`)) return;
+            showToast(`Cambiando estado a ${nuevoEstado}...`, 'info');
+            try {
+                const res = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'update_invitation_status', id: invId, estado: nuevoEstado })
+                });
+                const data = await res.json();
+                if(data.status === 'success') {
+                    showToast(`Estado actualizado exitosamente`, 'success');
+                    cargarInvitacion();
+                } else {
+                    showToast("Error al cambiar estado", "danger");
+                }
+            } catch(e) {
+                showToast("Error de conexión", "danger");
+            }
+        }
+
+        // ==================== RENDERING Y LÓGICA DE UI ====================
+        function renderUI(estado) {
+            const estadoLower = (estado || "Guardado").toLowerCase();
+
+            // 1. Badge Principal
+            let bgBadge = '#64748b'; // Default gris
+            if (['aceptado', 'respondido', 'documentos generados', 'firmado por docente', 'formalizado', 'completado'].includes(estadoLower)) bgBadge = '#10b981';
+            if (['enviado', 'pendiente firma docente', 'pendiente firma directores'].includes(estadoLower)) bgBadge = '#f59e0b'; // Amarillo/Naranja
+            if (['guardado', 'por enviar'].includes(estadoLower)) bgBadge = '#3b82f6'; // Azul
+            
+            const badge = document.getElementById('badge-estado-actual');
+            badge.style.background = bgBadge;
+            badge.innerText = `Estado: ${estado}`;
+
+            // 2. Colorear Pipeline
+            const stages = [
+                document.getElementById('stage-1'), document.getElementById('stage-2'),
+                document.getElementById('stage-3'), document.getElementById('stage-4')
+            ];
+            stages.forEach(s => s.className = 'stage-step step-gray'); // Limpiar
+            
+            if (['guardado', 'por enviar', 'enviado'].includes(estadoLower)) {
+                stages[0].classList.replace('step-gray', 'step-yellow');
+            } else if (['aceptado', 'respondido'].includes(estadoLower)) {
+                stages[0].classList.replace('step-gray', 'step-green');
+                stages[1].classList.replace('step-gray', 'step-yellow');
+            } else if (estadoLower === 'documentos generados') {
+                stages[0].classList.replace('step-gray', 'step-green');
+                stages[1].classList.replace('step-gray', 'step-green');
+            } else if (estadoLower === 'pendiente firma docente') {
+                stages[0].classList.replace('step-gray', 'step-green');
+                stages[1].classList.replace('step-gray', 'step-green');
+                stages[2].classList.replace('step-gray', 'step-yellow');
+            } else if (estadoLower === 'firmado por docente') {
+                stages[0].classList.replace('step-gray', 'step-green');
+                stages[1].classList.replace('step-gray', 'step-green');
+                stages[2].classList.replace('step-gray', 'step-green');
+            } else if (estadoLower === 'pendiente firma directores') {
+                stages[0].classList.replace('step-gray', 'step-green');
+                stages[1].classList.replace('step-gray', 'step-green');
+                stages[2].classList.replace('step-gray', 'step-green');
+                stages[3].classList.replace('step-gray', 'step-yellow');
+            } else if (estadoLower === 'formalizado' || estadoLower === 'completado') {
+                stages.forEach(s => s.classList.replace('step-gray', 'step-green'));
+            }
+
+            renderTablaDocumentos(estadoLower);
+            renderBotonesAccion(estadoLower);
+        }
+
+        function renderTablaDocumentos(estadoLower) {
+            const tbody = document.getElementById('tablaDocumentosBody');
+            let html = '';
+            let generados = 0;
+            let firmados = 0;
+            let tieneAlgunDocumento = false;
+
+            DOCS_INVITACION.forEach(docName => {
+                const docData = docsActuales[docName];
+                if (docData && docData.url) {
+                    tieneAlgunDocumento = true;
+                    generados++;
+                    
+                    let estDoc = docData.estado || "Generado";
+                    let classBadge = "badge-completed";
+                    let versionText = docData.version ? `v${docData.version}` : "v1";
+                    
+                    if (estDoc.toLowerCase().includes("pendiente firma")) classBadge = "badge-pending";
+                    if (estDoc.toLowerCase().includes("firmado por docente")) { classBadge = "badge-success"; firmados++; }
+                    if (estDoc.toLowerCase().includes("formalizado") || estDoc.toLowerCase().includes("completado") || estDoc.toLowerCase().includes("firmado por director")) { classBadge = "badge-success"; firmados++; }
+
+                    html += `<tr>
+                        <td><strong>${docName}</strong></td>
+                        <td><span class="badge bg-light text-dark border fw-bold" style="font-size:0.75rem;">${versionText}</span></td>
+                        <td><span class="badge-state ${classBadge}">${estDoc}</span></td>
+                        <td class="table-actions">
+                            <a href="${getDriveViewUrl(docData.url)}" target="_blank" title="Ver documento"><i class="fa-regular fa-eye"></i> Ver</a>
+                            <a href="${getDriveEditUrl(docData.url)}" target="_blank" title="Abrir para editar"><i class="fa-regular fa-pen-to-square"></i> Editar</a>
+                            <a href="${getDrivePdfDownloadUrl(docData.url)}" title="Descargar PDF"><i class="fa-solid fa-download"></i> Descargar</a>
+                        </td>
+                    </tr>`;
+                }
+            });
+
+            if (!tieneAlgunDocumento) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-5" style="border: 1px dashed #e2e8f0; border-radius: 12px; background: #f8fafc;">
+                    <i class="fa-regular fa-folder-open mb-2" style="font-size: 2rem; color: #cbd5e1;"></i><br>
+                    Los documentos se generan cuando el docente acepta la invitación.
+                </td></tr>`;
+            } else {
+                tbody.innerHTML = html;
+            }
+
+            const totalEl = document.getElementById('ui-docs-total');
+            if (totalEl) totalEl.innerText = DOCS_INVITACION.length;
+            document.getElementById('ui-docs-generados').innerText = generados;
+            document.getElementById('ui-docs-firmados').innerText = firmados;
+        }
+
+        function renderBotonesAccion(estadoLower) {
+            const toolbar = document.getElementById('dynamic-action-toolbar');
+            let html = '';
+
+            html += `<button class="action-btn" onclick="abrirModalNotificacion()"><i class="fa-regular fa-envelope"></i> Enviar correo</button>`;
+
+            const esAceptado = estadoLower === 'aceptado' || estadoLower === 'respondido';
+            const esGenerado = estadoLower === 'documentos generados' || docsActuales["Letter of Appointment"];
+
+            if (['guardado', 'por enviar', 'enviado', 'aceptado', 'respondido'].includes(estadoLower) && !esGenerado) {
+                const deshabilitado = !esAceptado;
+                const msg = deshabilitado ? "Esperando que el docente acepte la invitación." : "";
+                
+                html += `<button class="action-btn action-btn-primary" 
+                            ${deshabilitado ? 'disabled' : ''} 
+                            title="${msg}"
+                            onclick="generarDocumentos()">
+                            <i class="fa-solid fa-file-lines"></i> Generar Documentos
+                         </button>`;
+            } else if (esGenerado || estadoLower === 'documentos generados') {
+                html += `<button class="action-btn" onclick="generarDocumentos()"><i class="fa-solid fa-rotate"></i> Regenerar Documentos</button>`;
+            }
+
+            if (esGenerado && !['pendiente firma docente', 'firmado por docente', 'pendiente firma directores', 'formalizado', 'completado'].includes(estadoLower)) {
+                
+                html += `<button class="action-btn" style="background:#0284c7; color:white; border-color:#0284c7;" 
+                            onclick="enviarFirmaDocente()">
+                            <i class="fa-solid fa-pen-nib"></i> Enviar para firma (Docente)
+                         </button>`;
+                         
+            } else if (estadoLower === 'pendiente firma docente') {
+                html += `<button class="action-btn" disabled>
+                            <i class="fa-solid fa-hourglass-half"></i> Esperando firma del docente...
+                         </button>`;
+                html += `<button class="action-btn" onclick="simularAccionYCambiarEstado('Firmado por docente')"><i class="fa-solid fa-check"></i> Simular Firma Docente</button>`;
+            }
+
+            if (estadoLower === 'firmado por docente') {
+                html += `<button class="action-btn" style="background:#1e3a8a; color:white; border-color:#1e3a8a;" 
+                            onclick="solicitarFirmaDirectores()">
+                            <i class="fa-solid fa-user-tie"></i> Solicitar Firma (Directivos)
+                         </button>`;
+            } else if (estadoLower === 'pendiente firma directores') {
+                html += `<button class="action-btn action-btn-success" 
+                            onclick="simularAccionYCambiarEstado('Completado')">
+                            <i class="fa-solid fa-check-double"></i> Concluir y Completar
+                        </button>`;
+            } else if (estadoLower === 'formalizado' || estadoLower === 'completado') {
+                html += `<button class="action-btn" style="background:#10b981; color:white; border-color:#10b981;" disabled>
+                            <i class="fa-solid fa-award"></i> Invitación Completada Exitosamente
+                        </button>`;
+            }
+
+            toolbar.innerHTML = html;
+        }
+
+        async function simularAccionYCambiarEstado(nuevoEstado) {
+            await cambiarEstadoInvitacion(nuevoEstado);
+        }
+
+        async function enviarFirmaDocente() {
+            const confirm = await Swal.fire({
+                title: '¿Enviar a Firma del Docente?',
+                text: "Se enviará un correo al docente con el enlace a sus contratos de la invitación (Letter of Appointment, Proposed Salary y Job Description).",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0284c7',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, enviar para firma',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (confirm.isConfirmed) {
+                showToast("Enviando correo y actualizando estado...", "info");
+                try {
+                    const res = await fetch(GAS_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'send_invitation_docs_to_teacher', idInvitacion: invId })
+                    });
+                    const result = await res.json();
+                    
+                    if(result.status === 'success') {
+                        showToast("Documentos enviados a firma exitosamente", "success");
+                        cargarInvitacion(); 
+                    } else {
+                        showToast(result.message || "Error al enviar los documentos.", "danger");
+                    }
+                } catch(e) {
+                    showToast("Error de conexión.", "danger");
+                }
+            }
+        }
+
+        async function solicitarFirmaDirectores() {
+            const confirm = await Swal.fire({
+                title: '¿Solicitar Firma a Directivos?',
+                text: "Se notificará por correo electrónico a los directores para que ingresen a firmar digitalmente los documentos de esta invitación.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#1e3a8a',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, notificar a directivos',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (confirm.isConfirmed) {
+                showToast("Notificando a directores...", "info");
+                try {
+                    const res = await fetch(GAS_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'send_invitation_to_directors', idInvitacion: invId })
+                    });
+                    const result = await res.json();
+                    if(result.status === 'success') {
+                        showToast("Notificación enviada a directivos exitosamente", "success");
+                        cargarInvitacion();
+                    } else { showToast(result.message || "Error al notificar.", "danger"); }
+                } catch(e) { showToast("Error de conexión.", "danger"); }
+            }
+        }
+
+        function generarDocumentos() {
+            let html = '';
+            DOCS_INVITACION.forEach((docName, index) => {
+                html += `
+                <div class="form-check d-flex align-items-center gap-2 mb-1">
+                    <input class="form-check-input doc-gen-cb m-0" type="checkbox" value="${docName}" id="doc_gen_${index}" style="cursor: pointer; width: 1.1rem; height: 1.1rem;"> 
+                    <label class="form-check-label text-dark fw-medium" for="doc_gen_${index}" style="cursor: pointer; font-size: 0.9rem;">${docName}</label>
+                </div>`;
+            });
+            document.getElementById('docsCheckboxList').innerHTML = html;
+            document.getElementById('checkAllDocs').checked = false;
+            
+            new bootstrap.Modal(document.getElementById('modalSeleccionarDocs')).show();
+        }
+
+        function toggleAllDocs(source) {
+            document.querySelectorAll('.doc-gen-cb').forEach(cb => cb.checked = source.checked);
+        }
+
+        async function ejecutarGeneracionDocs() {
+            const checkboxes = document.querySelectorAll('.doc-gen-cb:checked');
+            if(checkboxes.length === 0) { 
+                showToast("Selecciona al menos un documento para generar.", "danger"); 
+                return; 
+            }
+            
+            const selectedDocs = Array.from(checkboxes).map(cb => cb.value);
+
+            bootstrap.Modal.getInstance(document.getElementById('modalSeleccionarDocs')).hide();
+
+            const container = document.getElementById('toastContainer');
+            const loadingToast = document.createElement('div');
+            loadingToast.className = `toast align-items-center border-0 show shadow-lg rounded-4 mb-3`;
+            loadingToast.style.backgroundColor = "var(--primary-dark)"; 
+            loadingToast.style.color = "white";
+            loadingToast.innerHTML = `
+                <div class="d-flex p-3">
+                    <div class="toast-body fw-medium d-flex align-items-center" style="font-size: 0.95rem;">
+                        <i class="fa-solid fa-spinner fa-spin me-3" style="font-size: 1.2rem;"></i>
+                        <span>Generando ${selectedDocs.length} documento(s)... Por favor espera.</span>
+                    </div>
+                </div>`;
+            container.appendChild(loadingToast);
+
+            try {
+                const payload = {
+                    action: "generate_invitacion_documents",
+                    idInvitacion: invId,
+                    documentos: selectedDocs 
+                };
+
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const result = await res.json();
+
+                if (result.status === 'success') {
+                    showToast("¡Documentos generados exitosamente!", "success");
+                    cargarInvitacion();
+                } else {
+                    showToast(result.message || "Error al generar documentos.", "danger");
+                }
+            } catch (e) { 
+                showToast("Error de conexión con el servidor.", "danger"); 
+            } finally {
+                loadingToast.remove(); 
+            }
+        }
+
+        // ==================== MODAL DE ENVIAR NOTIFICACIÓN ====================
+        let adjuntosNotif = []; 
+        let listaUsuariosNotifGlobal = [];
+
+        async function abrirModalNotificacion() {
+            const modal = new bootstrap.Modal(document.getElementById('modalEnviarNotificacion'));
+            modal.show();
+
+            document.getElementById('inputAsuntoNotif').value = '';
+            document.getElementById('rteMensajeNotif').innerHTML = '';
+            adjuntosNotif = [];
+            renderAdjuntosNotifUI();
+
+            await cargarDestinatariosNotificacion();
+        }
+
+        async function cargarDestinatariosNotificacion() {
+            const cont = document.getElementById('listaDestinatariosNotif');
+            cont.innerHTML = '<div class="text-center text-muted py-3"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando usuarios...</div>';
+            document.getElementById('buscadorDestinatarios').value = '';
+
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_all_users_emails' }) });
+                const result = await res.json();
+
+                if (result.status !== 'success' || !result.data || result.data.length === 0) {
+                    cont.innerHTML = '<p class="text-muted text-center m-0 py-3">No se encontraron usuarios.</p>';
+                    return;
+                }
+
+                listaUsuariosNotifGlobal = [...result.data].sort((a, b) => {
+                    if (a.correo === docenteCorreoActual) return -1;
+                    if (b.correo === docenteCorreoActual) return 1;
+                    return 0;
+                });
+
+                renderListaDestinatarios(listaUsuariosNotifGlobal, docenteCorreoActual);
+            } catch (e) {
+                cont.innerHTML = '<p class="text-danger text-center m-0 py-3">Error al cargar los usuarios.</p>';
+            }
+        }
+
+        function renderListaDestinatarios(lista, correoPreseleccionado) {
+            const cont = document.getElementById('listaDestinatariosNotif');
+            const marcadosPrevios = new Set(Array.from(document.querySelectorAll('#listaDestinatariosNotif input[type="checkbox"]:checked')).map(c => c.value));
+
+            if (lista.length === 0) {
+                cont.innerHTML = '<p class="text-muted text-center m-0 py-3" style="font-size:0.85rem;">Ningún usuario coincide con la búsqueda.</p>';
+                return;
+            }
+
+            cont.innerHTML = lista.map(u => {
+                const marcado = marcadosPrevios.has(u.correo) || u.correo === correoPreseleccionado;
+                return `
+                <label class="destinatario-item">
+                    <input type="checkbox" value="${u.correo}" ${marcado ? 'checked' : ''} onchange="actualizarContadorDestinatarios()">
+                    <div class="dest-info">
+                        <span class="dest-correo">${u.correo}</span>
+                        <span class="dest-rol">${u.rol || 'Usuario'}</span>
+                    </div>
+                </label>`;
+            }).join('');
+
+            actualizarContadorDestinatarios();
+        }
+
+        function filtrarDestinatarios(texto) {
+            const q = texto.trim().toLowerCase();
+            const filtrados = !q ? listaUsuariosNotifGlobal : listaUsuariosNotifGlobal.filter(u =>
+                u.correo.toLowerCase().includes(q) || (u.rol || '').toLowerCase().includes(q)
+            );
+            renderListaDestinatarios(filtrados, null);
+        }
+
+        function actualizarContadorDestinatarios() {
+            const marcados = new Set(Array.from(document.querySelectorAll('#listaDestinatariosNotif input[type="checkbox"]:checked')).map(c => c.value));
+            const el = document.getElementById('contadorDestinatarios');
+            if (el) el.innerText = `${marcados.size} seleccionado${marcados.size === 1 ? '' : 's'}`;
+        }
+
+        function rteAplicar(comando) { document.execCommand(comando, false, null); document.getElementById('rteMensajeNotif').focus(); }
+
+        function agregarAdjuntosUI(fileList) {
+            Array.from(fileList).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    adjuntosNotif.push({
+                        name: file.name, type: file.type || 'application/octet-stream', size: file.size,
+                        base64: e.target.result.split(',')[1]
+                    });
+                    renderAdjuntosNotifUI();
+                };
+                reader.readAsDataURL(file);
+            });
+            document.getElementById('inputAdjuntosNotif').value = ''; 
+        }
+
+        function quitarAdjuntoUI(idx) { adjuntosNotif.splice(idx, 1); renderAdjuntosNotifUI(); }
+
+        function renderAdjuntosNotifUI() {
+            const cont = document.getElementById('listaAdjuntosNotif');
+            cont.innerHTML = adjuntosNotif.map((a, idx) => {
+                const esImagen = a.type.startsWith('image/');
+                return `
+                <div class="adjunto-item">
+                    <i class="adjunto-icon fa-solid ${esImagen ? 'fa-image' : 'fa-file'}"></i>
+                    <span class="adjunto-nombre">${a.name}</span>
+                    <span class="adjunto-peso">${formatearPeso(a.size)}</span>
+                    <button type="button" class="btn-quitar-adjunto" onclick="quitarAdjuntoUI(${idx})" title="Quitar"><i class="fa-solid fa-xmark"></i></button>
+                </div>`;
+            }).join('');
+        }
+
+        async function enviarNotificacionGlobal() {
+            const correosSeleccionados = Array.from(document.querySelectorAll('#listaDestinatariosNotif input[type="checkbox"]:checked')).map(c => c.value);
+            const asunto = document.getElementById('inputAsuntoNotif').value.trim();
+            const mensajeHtml = document.getElementById('rteMensajeNotif').innerHTML.trim();
+
+            if (correosSeleccionados.length === 0) { Swal.fire('Falta un destinatario', 'Selecciona al menos un usuario para enviar.', 'warning'); return; }
+            if (!asunto) { Swal.fire('Falta el asunto', 'Escribe un asunto para el correo.', 'warning'); return; }
+            if (!mensajeHtml) { Swal.fire('Falta el mensaje', 'Escribe el contenido del mensaje.', 'warning'); return; }
+
+            const btn = document.getElementById('btnEnviarNotifSubmit');
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Enviando...`;
+
+            try {
+                const res = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'send_bulk_notification',
+                        destinatarios: correosSeleccionados,
+                        asunto: asunto,
+                        mensajeHtml: mensajeHtml,
+                        adjuntos: adjuntosNotif.map(a => ({ name: a.name, type: a.type, base64: a.base64 }))
+                    })
+                });
+                const result = await res.json();
+
+                if (result.status === 'success') {
+                    bootstrap.Modal.getInstance(document.getElementById('modalEnviarNotificacion')).hide();
+                    showToast(`Notificación enviada a ${correosSeleccionados.length} destinatario(s).`, "success");
+                } else {
+                    Swal.fire('Error', result.message || 'No se pudo enviar.', 'error');
+                }
+            } catch (e) {
+                Swal.fire('Error de conexión', 'No se pudo contactar al servidor.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+        }
+
+        // ==================== UTILS ====================
+        function getDriveViewUrl(downloadUrl) {
+            if (!downloadUrl || typeof downloadUrl !== 'string') return "#";
+            const match = downloadUrl.match(/[-\w]{25,}/);
+            return match && match[0] ? `https://drive.google.com/file/d/${match[0]}/preview` : downloadUrl;
+        }
+
+        function getDriveEditUrl(downloadUrl) {
+            if (!downloadUrl || typeof downloadUrl !== 'string') return "#";
+            const match = downloadUrl.match(/[-\w]{25,}/);
+            return match && match[0] ? `https://docs.google.com/document/d/${match[0]}/edit` : downloadUrl;
+        }
+
+        function getDrivePdfDownloadUrl(downloadUrl) {
+            if (!downloadUrl || typeof downloadUrl !== 'string') return "#";
+            const match = downloadUrl.match(/[-\w]{25,}/);
+            return match && match[0] ? `https://docs.google.com/document/d/${match[0]}/export?format=pdf` : downloadUrl;
+        }
+
+        function formatearPeso(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        function activarDropzone(zonaEl, onFilesDropped) {
+            if (!zonaEl) return;
+            ['dragenter', 'dragover'].forEach(evt => { zonaEl.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); zonaEl.classList.add('dragover'); }); });
+            ['dragleave', 'drop'].forEach(evt => { zonaEl.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); zonaEl.classList.remove('dragover'); }); });
+            zonaEl.addEventListener('drop', (e) => { const files = e.dataTransfer.files; if (files && files.length > 0) onFilesDropped(files); });
+        }
+
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+        function toggleMobileSidebar() { document.getElementById('sidebar').classList.toggle('show-mobile'); document.getElementById('sidebarOverlay').classList.toggle('active'); }
+        function logout() { if(confirm("¿Cerrar sesión?")) { localStorage.clear(); window.location.href = "../index.html"; } }
+        function changeFontSize(dir) {
+            let currentSize = parseFloat(document.documentElement.style.getPropertyValue('--dynamic-font-size')) || 1;
+            let newSize = dir === 1 ? currentSize + 0.05 : currentSize - 0.05;
+            if(newSize >= 0.8 && newSize <= 1.3) {
+                document.documentElement.style.setProperty('--dynamic-font-size', newSize + 'rem');
+                document.getElementById('fontSizeLabel').innerText = newSize === 1 ? 'Normal' : (newSize > 1 ? 'Grande' : 'Pequeño');
+            }
+        }
+        function showToast(mensaje, tipo = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const bgClass = tipo === 'success' ? 'text-bg-success' : (tipo === 'info' ? 'text-bg-info text-white' : 'text-bg-danger');
+            toast.className = `toast align-items-center ${bgClass} border-0 show shadow-lg rounded-4 mb-3`;
+            toast.innerHTML = `<div class="d-flex p-1"><div class="toast-body fw-medium" style="font-size: 0.95rem;">${mensaje}</div><button type="button" class="btn-close btn-close-white me-3 m-auto" data-bs-dismiss="toast" onclick="this.parentElement.parentElement.remove()"></button></div>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
+        }
+    </script>
+</body>
+</html>

@@ -1345,7 +1345,15 @@
 
 
         function formatToMonthInput(dateString) {
-            if (!dateString || dateString.toLowerCase().includes('actual')) return "";
+            // FIX: esto asumía que dateString SIEMPRE era texto. Si la celda de la hoja trae un
+            // número, un objeto Date, o cualquier otra cosa, dateString.toLowerCase() truena con
+            // "dateString.toLowerCase is not a function" — y como esto se llama dentro de un
+            // forEach() (en renderExperienciaYCompetencias), el error detiene el bucle entero,
+            // dejando sin procesar todo lo que venga después (por eso las Competencias, que se
+            // guardan después de las Experiencias, dejaban de listarse).
+            if (!dateString) return "";
+            const texto = String(dateString);
+            if (texto.toLowerCase().includes('actual')) return "";
             const date = new Date(dateString);
             if (isNaN(date.getTime())) return "";
             const year = date.getFullYear();
@@ -1419,6 +1427,24 @@
                     <option value="Otro">Otro país...</option>
                 `;
             }
+        }
+
+        const TIPOS_COMPETENCIA = ['CTecnologica', 'CLinguistica', 'CHBlandas'];
+
+        function renderExperienciaYCompetencias(lista) {
+            if (!lista || lista.length === 0) return;
+            lista.forEach(exp => {
+                // FIX: si un registro (ej. una fecha rara) hace tronar addExpField/addSkillField,
+                // antes esto detenía TODO el forEach y los registros siguientes (competencias
+                // incluidas) nunca se llegaban a pintar. Ahora un registro fallido solo se salta.
+                try {
+                    const esCompetencia = exp.tipo && String(exp.tipo).trim().startsWith('C');
+                    if (esCompetencia) addSkillField(exp);
+                    else addExpField(exp);
+                } catch (e) {
+                    console.error('Error al pintar un registro de experiencia/competencia:', exp, e);
+                }
+            });
         }
 
         function addSkillField(data = {}) {
@@ -1663,7 +1689,7 @@
                 
                 if (btnNext) btnNext.disabled = false;
 
-                if (result.status === 'success') {
+                if (result.status === 'success' || result.status === 'partial') {
                     const d = result.data;
                     window.docsSolicitadosGlobal = result.documentosSolicitados || "";
 
@@ -1706,10 +1732,14 @@
                     if(d.moneda) document.getElementById('reg-moneda').value = d.moneda;
                     if(d.cuenta) document.getElementById('reg-cuenta').value = d.cuenta;
 
-                    // Rellenar Competencias (Paso 6)
-                    if(d.tecnologia) document.getElementById('skill-tech').value = d.tecnologia;
-                    if(d.idiomas) document.getElementById('skill-lang').value = d.idiomas;
-                    if(d.sociales) document.getElementById('skill-social').value = d.sociales;
+                    // Rellenar Competencias (Paso 6 con validación segura)
+                    const elTech = document.getElementById('skill-tech');
+                    const elLang = document.getElementById('skill-lang');
+                    const elSoc = document.getElementById('skill-social');
+
+                    if(d.tecnologia && elTech) elTech.value = d.tecnologia;
+                    if(d.idiomas && elLang) elLang.value = d.idiomas;
+                    if(d.sociales && elSoc) elSoc.value = d.sociales;
                     
                     // PASO 1: Evaluación Independiente (Fricción Cero)
                     document.getElementById('step1-upload-mode').style.display = 'block';
@@ -1806,6 +1836,7 @@
                     evaluarDesbloqueoPaso6();
                     iniciarPollingProcesamiento(); // Vigila en segundo plano si hay documentos "Subido" pendientes de procesar
 
+                    // ✅ REEMPLAZAR ESTE BLOQUE EN cargarDatosPrevios():
                     if (result.drafts) {
                         const eduCont = document.getElementById('ai-education-container');
                         const expCont = document.getElementById('ai-experience-container');
@@ -1814,12 +1845,13 @@
                         if (expCont) expCont.innerHTML = '';
                         if (skillCont) skillCont.innerHTML = '';
                         
-                        if (result.drafts.educacion && result.drafts.educacion.length > 0) { result.drafts.educacion.forEach(edu => addEduReviewField(edu)); }
-                        if (result.drafts.experiencia && result.drafts.experiencia.length > 0) { 
-                            result.drafts.experiencia.forEach(exp => {
-                                if (exp.tipo && exp.tipo.startsWith('C')) addSkillField(exp);
-                                else addExpField(exp);
-                            });
+                        if (result.drafts.educacion && result.drafts.educacion.length > 0) { 
+                            result.drafts.educacion.forEach(edu => addEduReviewField(edu)); 
+                        }
+                        
+                        // USAR LA FUNCIÓN UNIFICADA QUE VALIDA esCompetencia Y TIPOS_COMPETENCIA
+                        if (result.drafts.experiencia && result.drafts.experiencia.length > 0) {
+                            renderExperienciaYCompetencias(result.drafts.experiencia);
                         }
                     }
                     setTimeout(() => {
@@ -1834,7 +1866,7 @@
                     if (loaderInicial2) loaderInicial2.style.display = 'none';
 
                     document.getElementById('step1-upload-mode').style.display = 'block'; 
-                    addDiplomaEdit(); 
+                    addDiplomaEdit();
                 }
             } catch(e) { 
                 console.error("Error en cargarDatosPrevios:", e);
@@ -1869,7 +1901,7 @@
                 // Devuelve el formato de vista nativa de Drive
                 return `https://drive.google.com/file/d/${match[1]}/view`;
             }
-            return downloadUrl; // Retorna la original si no es de Drive
+            return downloadUrl;
         }
 
         // --- LÓGICA VISUAL DE DIPLOMAS (Paso 2) ---
@@ -1980,7 +2012,7 @@
             viewMode.style.display = (!isEditingCV || !isEditingHb) ? 'block' : 'none';
             
             // Actualizar Candado y Pasos
-            if (!isEditingCV && !isEditingHb) { marcarTabComoCompletada(1); } 
+           if (urlCVGlobal || urlHbGlobal) { marcarTabComoCompletada(1); } 
             else {
                 const tab1 = document.getElementById('tab-1');
                 tab1.classList.remove('completed');
@@ -2424,12 +2456,11 @@
                     const hbFile = document.getElementById('hbFile').files[0];
                     
                     // 1. Validaciones
-                    if (isEditingCV && !urlCVGlobal && !cvFile) {
-                        Swal.fire({ toast: true, position: 'top-end', icon: 'warning', title: 'Por favor, selecciona tu Curriculum Vitae.', showConfirmButton: false, timer: 3500 });
-                        btnNext.disabled = false; btnNext.innerHTML = originalHTML; return; 
-                    }
-                    if (isEditingHb && !urlHbGlobal && !hbFile) {
-                        Swal.fire({ toast: true, position: 'top-end', icon: 'warning', title: 'Por favor, selecciona tu Faculty Handbook.', showConfirmButton: false, timer: 3500 });
+                    const tieneCV = (!isEditingCV && urlCVGlobal) || cvFile;
+                    const tieneHB = (!isEditingHb && urlHbGlobal) || hbFile;
+
+                    if (!tieneCV && !tieneHB) {
+                        Swal.fire({ toast: true, position: 'top-end', icon: 'warning', title: 'Por favor, selecciona al menos un documento (CV o Faculty Handbook).', showConfirmButton: false, timer: 3500 });
                         btnNext.disabled = false; btnNext.innerHTML = originalHTML; return; 
                     }
 
@@ -2476,12 +2507,12 @@
                         await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
                     }
 
-                    // Forzamos a modo lectura y refrescamos la pantalla
-                    isEditingCV = false;
-                    isEditingHb = false;
-                    document.getElementById('view-link-cv').href = getDriveViewUrl(urlCVGlobal);
-                    document.getElementById('view-link-hb').href = getDriveViewUrl(urlHbGlobal);
-                    actualizarVistaPaso1(); 
+                    // Forzamos a modo lectura y refrescamos la pantalla¿
+                    isEditingCV = !urlCVGlobal;
+                    isEditingHb = !urlHbGlobal;
+                    if (urlCVGlobal) document.getElementById('view-link-cv').href = getDriveViewUrl(urlCVGlobal);
+                    if (urlHbGlobal) document.getElementById('view-link-hb').href = getDriveViewUrl(urlHbGlobal);
+                    actualizarVistaPaso1();
 
                     cambiarUI(1, pasoOrigen); 
                     iniciarPollingProcesamiento(); // Empezamos a vigilar en segundo plano cuándo n8n termine de procesar
@@ -2494,34 +2525,38 @@
                     if (diplomaItems.length === 0) { alert("Sube al menos un Diploma."); btnNext.disabled=false; btnNext.innerHTML=originalHTML; return; }
 
                     // --- NUEVA LÓGICA DE VALIDACIÓN OBLIGATORIA (MAESTRÍA / DOCTORADO) ---
-                    let hasMaster = false;
-                    let hasDoctorate = false;
+                    const modeParamP2 = new URLSearchParams(window.location.search).get('mode');
+                    if (modeParamP2 !== 'admin') { // 👈 Omite la validación obligatoria si es modo admin
+                        let hasMaster = false;
+                        let hasDoctorate = false;
 
-                    for (let item of diplomaItems) {
-                        let gradoStr = "";
-                        if (item.classList.contains('edit-mode-dip')) {
-                            gradoStr = item.querySelector('.dip-grado').value.toLowerCase();
+                        for (let item of diplomaItems) {
+                            let gradoStr = "";
+                            if (item.classList.contains('edit-mode-dip')) {
+                                gradoStr = item.querySelector('.dip-grado').value.toLowerCase();
+                            } else {
+                                gradoStr = (item.dataset.grado || "").toLowerCase();
+                            }
+                            if (gradoStr.includes('master') || gradoStr.includes('maestría') || gradoStr.includes('magister') || gradoStr.includes('magíster')) hasMaster = true;
+                            if (gradoStr.includes('doctor') || gradoStr.includes('phd')) hasDoctorate = true;
+                        }
+
+                        const reqDocs = window.docsSolicitadosGlobal || "";
+                        const pideDoctorado = reqDocs.includes("Especialmente Doctorado");
+
+                        if (pideDoctorado) {
+                            if (!hasDoctorate) {
+                                Swal.fire({ title: 'Grado Requerido', html: 'Para este expediente es obligatorio adjuntar al menos un diploma de <b>Doctorado</b>.', icon: 'warning', confirmButtonColor: '#2563eb' });
+                                btnNext.disabled = false; btnNext.innerHTML = originalHTML; return;
+                            }
                         } else {
-                            gradoStr = (item.dataset.grado || "").toLowerCase();
-                        }
-                        if (gradoStr.includes('master') || gradoStr.includes('maestría') || gradoStr.includes('magister') || gradoStr.includes('magíster')) hasMaster = true;
-                        if (gradoStr.includes('doctor') || gradoStr.includes('phd')) hasDoctorate = true;
-                    }
-
-                    const reqDocs = window.docsSolicitadosGlobal || "";
-                    const pideDoctorado = reqDocs.includes("Especialmente Doctorado");
-
-                    if (pideDoctorado) {
-                        if (!hasDoctorate) {
-                            Swal.fire({ title: 'Grado Requerido', html: 'Para este expediente es obligatorio adjuntar al menos un diploma de <b>Doctorado</b>.', icon: 'warning', confirmButtonColor: '#2563eb' });
-                            btnNext.disabled = false; btnNext.innerHTML = originalHTML; return;
-                        }
-                    } else {
-                        if (!hasMaster) {
-                            Swal.fire({ title: 'Grado Requerido', html: 'Para este expediente es obligatorio adjuntar al menos un diploma de <b>Maestría / Master</b>.', icon: 'warning', confirmButtonColor: '#2563eb' });
-                            btnNext.disabled = false; btnNext.innerHTML = originalHTML; return;
+                            if (!hasMaster) {
+                                Swal.fire({ title: 'Grado Requerido', html: 'Para este expediente es obligatorio adjuntar al menos un diploma de <b>Maestría / Master</b>.', icon: 'warning', confirmButtonColor: '#2563eb' });
+                                btnNext.disabled = false; btnNext.innerHTML = originalHTML; return;
+                            }
                         }
                     }
+
                     // --- FIN NUEVA LÓGICA ---
 
                     let hayNuevosOEditados = false;  // Control para saber si usamos Google Sheets
@@ -2812,20 +2847,13 @@
                 if (pasoActual === 5) {
                     try {
                         const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: userId, id_expediente: idExpedienteUrl }) }).then(r=>r.json());
-                        if(res.status === 'success' && res.drafts) {
+                        if((res.status === 'success' || res.status === 'partial') && res.drafts) {
                             document.getElementById('ai-education-container').innerHTML = '';
                             document.getElementById('ai-experience-container').innerHTML = '';
                             document.getElementById('ai-skills-container').innerHTML = ''; // FIX: también se limpia, antes no se limpiaba y podía duplicar competencias visibles
                             if(res.drafts.educacion) res.drafts.educacion.forEach(edu => addEduReviewField(edu));
-                            // FIX: antes esto llamaba addExpField(exp) para TODO, incluyendo los registros de
-                            // Competencias (tipo "CTecnologica"/"CLinguistica"/"CHBlandas"), que viven en la misma
-                            // hoja "Experiencias". Al no filtrar por tipo, una competencia terminaba renderizada
-                            // como si fuera una Experiencia Laboral (con su propio botón "Añadir Competencia"
-                            // en paralelo mostrando la misma correctamente) — de ahí la duplicación visual.
-                            if(res.drafts.experiencia) res.drafts.experiencia.forEach(exp => {
-                                if (exp.tipo && exp.tipo.startsWith('C')) addSkillField(exp);
-                                else addExpField(exp);
-                            });
+                        
+                            if (res.drafts.experiencia) renderExperienciaYCompetencias(res.drafts.experiencia);
                         }
                     } catch(e) {}
                 }
@@ -2922,7 +2950,12 @@
             try {
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: userId, id_expediente: idExpedienteUrl }) });
                 const result = await res.json();
-                if (result.status !== 'success' || !result.drafts) return;
+                // FIX: esta función solo aceptaba 'success', a diferencia de las otras 3 rutas que
+                // pintan Educación/Experiencia/Competencias (carga inicial, transición Paso5->6, y
+                // el bloque de abajo), que sí aceptan 'success' o 'partial'. Como 'partial' es el
+                // status que tu backend usa cuando profileData viene vacío (pero drafts sí trae
+                // datos), esta función se salía sin pintar nada justo al entrar al Paso 6.
+                if ((result.status !== 'success' && result.status !== 'partial') || !result.drafts) return;
 
                 let seAgregoAlgo = false;
 
@@ -2944,11 +2977,17 @@
                     );
                     result.drafts.experiencia.forEach(exp => {
                         const idExp = exp.id_experiencia ? String(exp.id_experiencia) : null;
-                        if (idExp && idsExistentes.has(idExp)) return; // ya está en pantalla, no duplicar
+                        if (idExp && idsExistentes.has(idExp)) return; // ya está en pantalla
 
-                        if (exp.tipo && exp.tipo.startsWith('C')) addSkillField(exp);
-                        else addExpField(exp);
-                        seAgregoAlgo = true;
+                        // FIX: un registro fallido ya no detiene el resto del forEach.
+                        try {
+                            const esCompetencia = exp.tipo && String(exp.tipo).trim().startsWith('C');
+                            if (esCompetencia) addSkillField(exp);
+                            else addExpField(exp);
+                            seAgregoAlgo = true;
+                        } catch (e) {
+                            console.error('Error al pintar un registro de experiencia/competencia:', exp, e);
+                        }
                     });
                 }
 
@@ -3332,10 +3371,6 @@
             return esValido;
         }
 
-        // --- POLLING ASÍNCRONO: revisa en segundo plano si n8n ya terminó de procesar el CV/Diplomas ---
-        // Antes, el estado "Subido" -> "Procesado" solo se veía al refrescar la página. Ahora se
-        // consulta cada 8s en silencio y, si algo cambió, se repinta la tarjeta y se reevalúa el
-        // desbloqueo del Paso 6 sin recargar nada.
         let pollingProcesamiento = null;
 
         function iniciarPollingProcesamiento() {
@@ -3357,9 +3392,6 @@
 
                     let huboCambios = false;
 
-                    // NUEVO: si algún diploma sigue "a medio convertir" (recién guardado, en modo edición),
-                    // esto lo convierte a tarjeta de solo-lectura con el estado real — antes esto solo
-                    // pasaba si el usuario volvía manualmente al Paso 2.
                     await refrescarDiplomasIA();
 
                     // --- Estado del CV ---
@@ -3403,7 +3435,8 @@
                         });
                     }
 
-                    // --- Paso 6: rellenar educación/experiencia si n8n ya las extrajo (sin duplicar lo ya mostrado) ---
+                    // --- Paso 6: rellenar educación/experiencia si n8n ya las extrajo ---
+                    // --- Paso 6: rellenar educación/experiencia si n8n ya las extrajo ---
                     if (result.drafts) {
                         if (result.drafts.educacion && result.drafts.educacion.length > 0) {
                             const idsEduExistentes = new Set(Array.from(document.querySelectorAll('.ai-edu-record')).map(el => el.dataset.id));
@@ -3422,9 +3455,15 @@
                                 const idExp = exp.id_experiencia ? String(exp.id_experiencia) : null;
                                 if (idExp && idsExpExistentes.has(idExp)) return; // ya está en pantalla
 
-                                if (exp.tipo && exp.tipo.startsWith('C')) addSkillField(exp);
-                                else addExpField(exp);
-                                huboCambios = true;
+                                // FIX: un registro fallido ya no detiene el resto del forEach.
+                                try {
+                                    const esCompetencia = exp.tipo && String(exp.tipo).trim().startsWith('C');
+                                    if (esCompetencia) addSkillField(exp);
+                                    else addExpField(exp);
+                                    huboCambios = true;
+                                } catch (e) {
+                                    console.error('Error al pintar un registro de experiencia/competencia:', exp, e);
+                                }
                             });
                         }
                     }

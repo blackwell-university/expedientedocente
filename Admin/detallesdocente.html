@@ -604,11 +604,14 @@
                     </form>                    
                 </div>
                 <div class="modal-footer" style="justify-content: flex-end;">
-                    <button type="button" class="btn btn-light border px-4 fw-semibold text-secondary" style="border-radius: 8px; font-size: 0.9rem;" id="btnGuardarSistema" onclick="guardarInvitacion()">
-                        Guardar Invitación
+                    <button type="button" class="btn-step step-1" data-bs-dismiss="modal" style="flex: 0 0 auto; padding: 12px 22px; margin-right: auto;">
+                        Cancelar
                     </button>
-                    <button type="button" class="btn btn-primary px-4 fw-semibold d-none" style="border-radius: 8px; font-size: 0.9rem;" id="btnEnviarCorreo" onclick="enviarCorreoInvitacion()">
-                        <i class="fa-regular fa-paper-plane me-2"></i>Enviar Correo
+                    <button type="button" class="btn-step step-2" id="btnGuardarSistema" onclick="guardarInvitacion()" style="flex: 0 0 auto; padding: 12px 22px;">
+                        <i class="fa-regular fa-floppy-disk"></i> Guardar Invitación
+                    </button>
+                    <button type="button" class="btn-step step-2 d-none" id="btnEnviarCorreo" onclick="enviarCorreoInvitacion()" style="flex: 0 0 auto; padding: 12px 22px;">
+                        <i class="fa-regular fa-paper-plane"></i> Enviar Correo
                     </button>
                 </div>
             </div>
@@ -652,7 +655,17 @@
             if(docenteId) { 
                 cargarPerfilDocente(docenteId);
                 cargarExpedientes();
+                cargarCursosAsignados();
             } 
+
+            // NUEVO: cada vez que se entra a una de estas pestañas, se refresca con datos
+            // frescos del servidor — así, si acabas de crear un Expediente o asignar un
+            // curso, ya aparece sin necesitar F5.
+            const tabInvitaciones = document.querySelector('button[data-bs-target="#invitaciones"]');
+            if (tabInvitaciones) tabInvitaciones.addEventListener('shown.bs.tab', cargarExpedientes);
+
+            const tabCursos = document.querySelector('button[data-bs-target="#cursos"]');
+            if (tabCursos) tabCursos.addEventListener('shown.bs.tab', cargarCursosAsignados);
         });
 
         async function cargarPerfilDocente(id) {
@@ -895,7 +908,7 @@
             const btnEnviar = document.getElementById('btnEnviarCorreo');
             
             btnGuardar.style.display = 'block'; 
-            btnGuardar.innerHTML = 'Guardar Invitación';
+            btnGuardar.innerHTML = '<i class="fa-regular fa-floppy-disk"></i> Guardar Invitación';
             btnGuardar.disabled = false;
             
             btnEnviar.classList.add('d-none'); 
@@ -904,12 +917,14 @@
             if(modo === 'expediente') {
                 title.innerHTML = '<i class="fa-solid fa-folder-plus me-2 text-primary"></i>Crear Expediente e Invitación';
                 docsDiv.style.display = 'block';
+                btnEnviar.innerHTML = '<i class="fa-regular fa-paper-plane"></i> Enviar Correo';
             } else {
                 // NUEVO: modo "curso" — asigna un curso adicional (nueva invitación) sobre el
                 // Expediente (contrato anual) que ya existe para este docente. No se piden
                 // documentos porque esos se solicitan una única vez, al crear el Expediente.
                 title.innerHTML = '<i class="fa-solid fa-calendar-plus me-2 text-primary"></i>Asignar Nuevo Curso al Docente';
                 docsDiv.style.display = 'none'; 
+                btnEnviar.innerHTML = '<i class="fa-regular fa-paper-plane"></i> Enviar Invitación';
             }
 
             const modalElement = document.getElementById('modalInvitacion');
@@ -990,18 +1005,23 @@
 
                     btnGuardar.style.display = 'none'; 
                     btnEnviar.classList.remove('d-none'); 
+
+                    // NUEVO: refrescamos de una vez, así el registro ya aparece en las
+                    // pestañas aunque el correo se envíe más tarde.
+                    cargarExpedientes();
+                    cargarCursosAsignados();
                 } else {
                     // NUEVO: antes un error del backend (ej. "este docente no tiene Expediente
                     // creado aún" al usar 'Asignar Curso') se quedaba en silencio y el botón
                     // parecía trabado en "Guardando...". Ahora se muestra el motivo real.
                     Swal.fire('No se pudo guardar', result.message || 'Ocurrió un error al guardar la invitación.', 'warning');
                     btnGuardar.disabled = false;
-                    btnGuardar.innerHTML = 'Guardar Invitación';
+                    btnGuardar.innerHTML = '<i class="fa-regular fa-floppy-disk"></i> Guardar Invitación';
                 }
             } catch(e) { 
                 showToast("Error al guardar.", "danger"); 
                 btnGuardar.disabled = false;
-                btnGuardar.innerHTML = 'Guardar Invitación';
+                btnGuardar.innerHTML = '<i class="fa-regular fa-floppy-disk"></i> Guardar Invitación';
             } 
         }
 
@@ -1037,6 +1057,7 @@
                     Swal.fire('¡Correo Enviado!', 'El docente ha recibido las instrucciones y sus credenciales.', 'success');
                     bootstrap.Modal.getInstance(document.getElementById('modalInvitacion')).hide(); 
                     cargarExpedientes(); 
+                    cargarCursosAsignados();
                 }
             } catch(e) { 
                 showToast("Error al enviar", "danger"); 
@@ -1163,6 +1184,100 @@
                 } else {
                     contenedor.innerHTML = '<p class="text-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i> Error al cargar los expedientes.</p>';
                 }
+            } catch (e) {
+                console.error(e);
+                contenedor.innerHTML = '<p class="text-danger"><i class="fa-solid fa-wifi me-1"></i> Error de conexión con el servidor.</p>';
+            }
+        }
+
+        // NUEVO: pinta la pestaña "Cursos Asignados" — el listado de todas las
+        // invitaciones (cursos) que este docente tiene, sin importar si nacieron junto
+        // con un Expediente o fueron asignadas después con "Asignar Curso". Diseño
+        // minimalista consistente con las cards de "Expedientes & Invitaciones".
+        async function cargarCursosAsignados() {
+            const contenedor = document.getElementById('contenedor-cursos-asignados');
+            contenedor.innerHTML = '<p class="text-muted"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando cursos asignados...</p>';
+
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_assigned_courses', docenteId: docenteId }) });
+                const json = await res.json();
+
+                if (json.status !== 'success') {
+                    contenedor.innerHTML = '<p class="text-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i> Error al cargar los cursos asignados.</p>';
+                    return;
+                }
+
+                if (json.data.length === 0) {
+                    contenedor.innerHTML = '<div class="p-4 bg-light border rounded-4 text-center text-muted" style="border-style: dashed !important;">Aún no se le ha asignado ningún curso a este docente.</div>';
+                    return;
+                }
+
+                const badgeEstadoCurso = (estado) => {
+                    const e = (estado || 'Pendiente').toString().trim().toLowerCase();
+                    if (e === 'guardado' || e === 'pendiente') return { texto: 'Por enviar', clase: 'bg-warning bg-opacity-10 text-warning border border-warning' };
+                    if (e === 'enviado') return { texto: 'Enviado', clase: 'bg-info bg-opacity-10 text-info border border-info' };
+                    if (e === 'aceptado' || e === 'respondido') return { texto: 'Confirmado', clase: 'bg-success bg-opacity-10 text-success border border-success' };
+                    return { texto: estado || 'Pendiente', clase: 'bg-secondary bg-opacity-10 text-secondary border border-secondary' };
+                };
+
+                let html = '';
+                json.data.forEach(curso => {
+                    const fIni = curso.fechaInicio ? new Date(curso.fechaInicio).toLocaleDateString('es-ES', {day: '2-digit', month: 'short', year:'numeric'}) : '-';
+                    const fFin = curso.fechaFin ? new Date(curso.fechaFin).toLocaleDateString('es-ES', {day: '2-digit', month: 'short', year:'numeric'}) : '-';
+                    const est = badgeEstadoCurso(curso.estado);
+                    const linkExp = curso.idExpediente ? `<a href="expediente.html?expId=${curso.idExpediente}" class="text-decoration-none fw-medium" style="font-size:0.75rem; color: var(--primary);"><i class="fa-regular fa-folder-open me-1"></i>${curso.idExpediente}</a>` : '';
+
+                    // NUEVO: cuando el docente ya eligió varias sesiones puntuales, el campo
+                    // "horario" viene como "17/07/2026: 19:00 a 20:30 | 21/07/2026: 19:00 a 20:30 | ..."
+                    // Antes se mostraba ese texto crudo pegado a "dias" (ilegible). Ahora lo
+                    // partimos en pastillas, una por sesión.
+                    let horarioHtml;
+                    if (curso.horario && curso.horario.includes('|')) {
+                        const sesiones = curso.horario.split('|').map(s => s.trim()).filter(Boolean);
+                        horarioHtml = `<div class="d-flex flex-wrap gap-2">` + sesiones.map(s =>
+                            `<span class="badge bg-light text-dark border" style="font-weight: 600; font-size: 0.72rem; padding: 5px 10px;"><i class="fa-regular fa-clock me-1 text-primary"></i>${s}</span>`
+                        ).join('') + `</div>`;
+                    } else {
+                        horarioHtml = `<div style="font-size: 0.85rem; color: #1e293b; font-weight: 600;"><i class="fa-regular fa-clock text-primary opacity-75 me-1"></i>${curso.dias || 'Pendiente'} · ${curso.horario || 'Pendiente'}</div>`;
+                    }
+
+                    html += `
+                    <div class="p-3 mb-3" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+                        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="icon-box shadow-sm" style="width: 36px; height: 36px; background: #fff7ed; color: #c2410c; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                                    <i class="fa-solid fa-chalkboard-user"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold m-0 text-dark" style="font-size: 0.95rem; letter-spacing: -0.01em;">${curso.nombreCurso}</h6>
+                                    <span class="text-muted" style="font-size: 0.75rem; font-weight: 500;">${curso.programa || ''} ${linkExp ? '· ' + linkExp : ''}</span>
+                                </div>
+                            </div>
+                            <span class="badge ${est.clase} px-2 py-1" style="border-radius: 6px; font-size: 0.7rem; letter-spacing: 0.5px; text-transform: uppercase;">${est.texto}</span>
+                        </div>
+                        <div class="row g-3 pt-1">
+                            <div class="col-12 col-md-3">
+                                <span style="display: block; font-size: 0.7rem; color: #64748b; margin-bottom: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Período</span>
+                                <div style="font-size: 0.85rem; color: #1e293b; font-weight: 600;"><i class="fa-regular fa-calendar text-primary opacity-75 me-1"></i>${fIni} al ${fFin}</div>
+                            </div>
+                            <div class="col-12 col-md-5">
+                                <span style="display: block; font-size: 0.7rem; color: #64748b; margin-bottom: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Horario</span>
+                                ${horarioHtml}
+                            </div>
+                            <div class="col-12 col-md-2">
+                                <span style="display: block; font-size: 0.7rem; color: #64748b; margin-bottom: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Pago</span>
+                                <div style="font-size: 0.85rem; color: #15803d; font-weight: 700;"><i class="fa-solid fa-money-bill-wave opacity-75 me-1"></i>${curso.pago || '-'}</div>
+                            </div>
+                            <div class="col-12 col-md-2 d-flex align-items-end justify-content-md-end">
+                                <a href="invitacion.html?invId=${curso.idInvitacion}" class="btn btn-sm w-100" style="background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; font-weight: 600; padding: 6px 12px; border-radius: 8px;">
+                                    <i class="fa-regular fa-eye me-1"></i>Ver Detalles
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                });
+                contenedor.innerHTML = html;
             } catch (e) {
                 console.error(e);
                 contenedor.innerHTML = '<p class="text-danger"><i class="fa-solid fa-wifi me-1"></i> Error de conexión con el servidor.</p>';
