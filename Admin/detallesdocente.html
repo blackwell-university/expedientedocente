@@ -844,16 +844,18 @@
                     });
 
                     try {
-                        // Enviamos la petición utilizando un nuevo endpoint exclusivo o enviando un payload específico
-                        // Reutilizamos send_invitation_email o creamos una petición compatible
+                        // FIX: esto estaba llamando a "send_invitation_email" — la acción que arma
+                        // el correo COMPLETO de invitación a curso (con programa, curso, pago, etc.),
+                        // ninguno de los cuales se envía aquí. Por eso llegaba el correo de
+                        // invitación con puros "undefined". La acción correcta para esto ya existe
+                        // en tu backend: "send_credentials_only", que solo busca el usuario/clave
+                        // en la hoja "Usuarios" y manda ÚNICAMENTE el correo de credenciales.
                         const response = await fetch(GAS_URL, {
                             method: 'POST',
                             body: JSON.stringify({
-                                action: 'send_invitation_email', // Reutiliza el endpoint actual que ya dispara correos de credenciales si el usuario tiene acceso 0
+                                action: 'send_credentials_only',
                                 docenteId: docenteId,
-                                docenteCorreo: correoDocente,
-                                docenteNombre: nombreDocente.split(' ')[0],
-                                deManeraDirectaAccesos: true // Flag opcional por seguridad
+                                docenteCorreo: correoDocente
                             })
                         });
 
@@ -867,17 +869,19 @@
                                 confirmButtonColor: '#10b981'
                             });
                         } else {
-                            throw new Error("No se pudo completar el envío.");
+                            throw new Error(resData.message || "No se pudo completar el envío.");
                         }
 
                     } catch(error) {
                         console.error(error);
-                        // En caso de que no reconozca acción directa de accesos en su backend de manera aislada, forzamos un envío exitoso descriptivo
+                        // FIX: antes esto mostraba un falso "¡Enviado!" incluso cuando el envío
+                        // realmente había fallado (ej. si el docente no tiene un usuario creado en
+                        // la hoja "Usuarios"). Ahora sí se avisa que algo salió mal.
                         Swal.fire({
-                            title: '¡Enviado!',
-                            text: 'El correo de accesos ha sido despachado a la cola de envío de Google.',
-                            icon: 'success',
-                            confirmButtonColor: '#2563eb'
+                            title: 'No se pudo enviar',
+                            text: error.message || 'Ocurrió un error al enviar las credenciales. Intenta de nuevo.',
+                            icon: 'error',
+                            confirmButtonColor: '#ef4444'
                         });
                     }
                 }
