@@ -285,6 +285,9 @@
                     </div>
                 </div>
 
+                <!-- NUEVO: aviso sobre si el docente puede ver esta invitación en su portal -->
+                <div id="aviso-visibilidad-docente"></div>
+
                 <!-- TABS -->
                 <ul class="nav nav-tabs" id="invTabs" role="tablist">
                     <li class="nav-item">
@@ -501,6 +504,10 @@
         let estadoActual = "";
         let docsActuales = {};
 
+        // NUEVO: guardamos estos datos para poder armar el correo de "Enviar Invitación al Docente"
+        let cursoActual = "", programaActual = "", docenteNombreActual = "";
+        let franjasActual = "", clasesActual = "", pagoActual = "", idDocenteActual = "";
+
         // Base de documentos propios de una invitación (4 documentos)
         const DOCS_INVITACION = [
             "Letter of Appointment",
@@ -565,6 +572,15 @@
                 estadoActual = inv.estado || "Guardado";
                 docId = doc.id || "";
                 docenteCorreoActual = doc.correo || "";
+
+                // NUEVO: datos que necesita el botón "Enviar Invitación al Docente"
+                cursoActual = inv.curso || "";
+                programaActual = inv.programa || "";
+                docenteNombreActual = `${doc.nombres || ''} ${doc.apellidos || ''}`.trim();
+                franjasActual = inv.franjas || "";
+                clasesActual = inv.clases || "";
+                pagoActual = inv.pago || "";
+                idDocenteActual = inv.idDocente || doc.id || "";
 
                 // Header
                 document.getElementById('inv-nombre-curso').innerText = `${inv.curso || 'Curso'} - ${inv.programa || 'Programa'}`;
@@ -695,8 +711,44 @@
                 stages.forEach(s => s.classList.replace('step-gray', 'step-green'));
             }
 
+            renderAvisoVisibilidadDocente(estadoLower);
             renderTablaDocumentos(estadoLower);
             renderBotonesAccion(estadoLower);
+        }
+
+        // NUEVO: le explica a la ejecutiva, en lenguaje simple, si el docente puede o no ver esta
+        // invitación en su portal (misexpedientes.html oculta a propósito todo lo que siga en
+        // "Guardado" — para el docente, eso significa que la invitación no existe todavía).
+        function renderAvisoVisibilidadDocente(estadoLower) {
+            const cont = document.getElementById('aviso-visibilidad-docente');
+            if (!cont) return;
+
+            if (['guardado', 'por enviar', ''].includes(estadoLower)) {
+                cont.innerHTML = `
+                <div class="mb-3 d-flex align-items-start gap-3" style="background:#fffbeb; border:1px solid #fde68a; border-radius:12px; padding:16px 20px;">
+                    <i class="fa-regular fa-eye-slash mt-1" style="color:#b45309; font-size:1.1rem;"></i>
+                    <div>
+                        <div style="font-weight:700; color:#92400e; font-size:0.92rem;">El docente todavía no puede ver esta invitación</div>
+                        <div style="color:#78350f; font-size:0.85rem; margin-top:2px;">
+                            Mientras el estado sea <b>Guardado</b>, esta invitación no aparece en su portal — todavía no se le ha enviado el correo.
+                            Usa el botón <b>"Enviar Invitación al Docente"</b> para notificarlo y que pueda aceptarla.
+                        </div>
+                    </div>
+                </div>`;
+            } else if (estadoLower === 'enviado') {
+                cont.innerHTML = `
+                <div class="mb-3 d-flex align-items-start gap-3" style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:12px; padding:16px 20px;">
+                    <i class="fa-regular fa-circle-check mt-1" style="color:#2563eb; font-size:1.1rem;"></i>
+                    <div>
+                        <div style="font-weight:700; color:#1e3a8a; font-size:0.92rem;">Ya se le envió la invitación al docente</div>
+                        <div style="color:#1e40af; font-size:0.85rem; margin-top:2px;">
+                            Ya puede verla en su portal y está pendiente de que la acepte y elija su horario.
+                        </div>
+                    </div>
+                </div>`;
+            } else {
+                cont.innerHTML = '';
+            }
         }
 
         function renderTablaDocumentos(estadoLower) {
@@ -754,6 +806,16 @@
 
             html += `<button class="action-btn" onclick="abrirModalNotificacion()"><i class="fa-regular fa-envelope"></i> Enviar correo</button>`;
 
+            // NUEVO: si la invitación nunca se envió al docente (sigue en "Guardado"/"Por enviar"),
+            // el docente NO la ve en misexpedientes.html (esa vista oculta a propósito todo lo que
+            // esté en "Guardado", por ser un borrador). Faltaba un botón real para enviarla — antes
+            // solo existía "Enviar correo" (una notificación libre, no la invitación formal).
+            if (['guardado', 'por enviar', ''].includes(estadoLower)) {
+                html += `<button class="action-btn action-btn-primary" onclick="confirmarEnviarInvitacionDocente()">
+                            <i class="fa-solid fa-paper-plane"></i> Enviar Invitación al Docente
+                         </button>`;
+            }
+
             const esAceptado = estadoLower === 'aceptado' || estadoLower === 'respondido';
             const esGenerado = estadoLower === 'documentos generados' || docsActuales["Letter of Appointment"];
 
@@ -806,6 +868,53 @@
 
         async function simularAccionYCambiarEstado(nuevoEstado) {
             await cambiarEstadoInvitacion(nuevoEstado);
+        }
+
+        // NUEVO: envía el correo REAL de invitación (mismo que se usa para el curso génesis, pero
+        // sin el bloque de "Formalización y Documentación" — eso ya lo maneja send_invitation_email
+        // según el modo). Esto es lo que mueve el estado de "Guardado" a "Enviado" y hace que
+        // misexpedientes.html deje de ocultarla.
+        function confirmarEnviarInvitacionDocente() {
+            if (!confirm(`¿Enviar esta invitación a ${docenteNombreActual || 'el docente'} ahora? Se le notificará por correo para que la acepte y elija su horario.`)) return;
+            enviarInvitacionDocente();
+        }
+
+        async function enviarInvitacionDocente() {
+            showToast("Enviando invitación al docente...", "info");
+            try {
+                // El campo "pago" viene combinado como "MONEDA COSTO" (ej. "$ 360").
+                // Lo separamos porque el backend espera monedaSimbolo y costo por separado.
+                const partes = (pagoActual || '').trim().split(' ');
+                const costoVal = partes.pop() || '';
+                const monedaVal = partes.join(' ') || '$';
+
+                const res = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'send_invitation_email',
+                        modo: 'curso',
+                        idInvitacion: invId,
+                        docenteId: idDocenteActual,
+                        docenteCorreo: docenteCorreoActual,
+                        docenteNombre: docenteNombreActual,
+                        programa: programaActual,
+                        curso: cursoActual,
+                        cantidadClases: clasesActual,
+                        horario: franjasActual,
+                        monedaSimbolo: monedaVal,
+                        costo: costoVal
+                    })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    showToast("¡Invitación enviada! El docente ya puede verla y aceptarla.", "success");
+                    cargarInvitacion();
+                } else {
+                    showToast(data.message || "No se pudo enviar la invitación.", "danger");
+                }
+            } catch (e) {
+                showToast("Error de conexión al enviar la invitación.", "danger");
+            }
         }
 
         async function enviarFirmaDocente() {
