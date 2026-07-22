@@ -379,9 +379,9 @@
                         <div class="col-md-4">
                             <select id="statusFilter" class="form-select form-control-custom" style="padding-left: 18px; cursor: pointer;">
                                 <option value="all">Todos los estados</option>
-                                <option value="Pendiente">Pendiente</option>
+                                <option value="Pendiente">Registro Pendiente</option>
                                 <option value="Respondido">Respondido</option>
-                                <option value="Aprobado">Aprobado</option>
+                                <option value="Aprobado">Registro Completo</option>
                             </select>
                         </div>
                     </div>
@@ -395,7 +395,7 @@
                                 <tr>
                                     <th>Docente</th>
                                     <th>Información de Contacto</th>
-                                    <th>Estado Aprobación</th>
+                                    <th>Estado de Registro</th>
                                     <th class="text-center">Cursos</th>
                                     <th class="text-center">Acciones</th>
                                 </tr>
@@ -537,6 +537,12 @@
                 const estado = (d.estado || "Pendiente").trim();
                 const statusClass = `status-${estado.toLowerCase()}`;
 
+                // NUEVO: "Aprobación" confundía a la ejecutiva — el docente no fue "aprobado" por
+                // nadie del equipo, solo terminó de llenar su información (registroexpediente.html).
+                // Este mapeo solo cambia el TEXTO que se ve; el valor interno (d.estado) sigue
+                // siendo "Aprobado"/"Pendiente" tal cual lo guarda el backend.
+                const textoEstado = estado.toLowerCase() === 'aprobado' ? 'Registro Completo' : 'Registro Pendiente';
+
                 return `
                 <tr>
                     <td>
@@ -554,7 +560,7 @@
                         <div style="font-size: 0.85rem;"><i class="fa-regular fa-envelope me-2 text-muted"></i>${d.correo}</div>
                     </td>
                     <td>
-                        <span class="badge-status ${statusClass}">${estado}</span>
+                        <span class="badge-status ${statusClass}">${textoEstado}</span>
                     </td>
                     <td class="text-center">
                         <div style="background: #eff6ff; border-radius: 8px; padding: 4px 10px; display: inline-block; min-width: 45px;">

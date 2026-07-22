@@ -338,7 +338,7 @@
                 <ul class="nav nav-tabs" id="teacherTabs" role="tablist">
                     <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#general">Información General</button></li>
                     <li class="nav-item">
-                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#invitaciones" type="button">Expedientes & Invitaciones</button>
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#invitaciones" type="button">Expedientes Anuales</button>
                     </li>
                     <li class="nav-item">
                         <button class="nav-link" data-bs-toggle="tab" data-bs-target="#cursos" type="button">Cursos Asignados</button>
@@ -823,7 +823,7 @@
 
             Swal.fire({
                 title: '¿Enviar accesos al docente?',
-                text: `Se enviarán las credenciales de acceso (Usuario y Contraseña temporal) al correo institucional: ${correoDocente}. ¿Estás seguro de continuar?`,
+                text: `Se enviarán las credenciales de acceso (Usuario y Contraseña) al correo institucional: ${correoDocente}. ¿Estás seguro de continuar?`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#2563eb',
@@ -874,9 +874,6 @@
 
                     } catch(error) {
                         console.error(error);
-                        // FIX: antes esto mostraba un falso "¡Enviado!" incluso cuando el envío
-                        // realmente había fallado (ej. si el docente no tiene un usuario creado en
-                        // la hoja "Usuarios"). Ahora sí se avisa que algo salió mal.
                         Swal.fire({
                             title: 'No se pudo enviar',
                             text: error.message || 'Ocurrió un error al enviar las credenciales. Intenta de nuevo.',
@@ -891,12 +888,6 @@
         let catalogoCursos =[], currentInvitacionId = null;
         let modoAccionActual = 'expediente'; 
 
-        // NUEVO: abre el mismo asistente paso a paso, pero SIN ningún expediente de por medio —
-        // solo para que la ejecutiva registre CV, educación, datos personales y bancarios del
-        // docente antes de que exista un curso asignado. La creación del expediente sigue
-        // ocurriendo únicamente junto con la invitación ("Crear Expediente + Invitación").
-        // Como esos datos se guardan a nivel del docente (no del expediente), cuando en el futuro
-        // sí se le asigne un curso, ya aparecerán pre-llenados en el asistente.
         function subirInformacionSinCurso() {
             window.open(`../registroexpediente.html?doc=${docenteId}&mode=admin`, '_blank');
         }
@@ -923,9 +914,6 @@
                 docsDiv.style.display = 'block';
                 btnEnviar.innerHTML = '<i class="fa-regular fa-paper-plane"></i> Enviar Correo';
             } else {
-                // NUEVO: modo "curso" — asigna un curso adicional (nueva invitación) sobre el
-                // Expediente (contrato anual) que ya existe para este docente. No se piden
-                // documentos porque esos se solicitan una única vez, al crear el Expediente.
                 title.innerHTML = '<i class="fa-solid fa-calendar-plus me-2 text-primary"></i>Asignar Nuevo Curso al Docente';
                 docsDiv.style.display = 'none'; 
                 btnEnviar.innerHTML = '<i class="fa-regular fa-paper-plane"></i> Enviar Invitación';
@@ -1194,10 +1182,7 @@
             }
         }
 
-        // NUEVO: pinta la pestaña "Cursos Asignados" — el listado de todas las
-        // invitaciones (cursos) que este docente tiene, sin importar si nacieron junto
-        // con un Expediente o fueron asignadas después con "Asignar Curso". Diseño
-        // minimalista consistente con las cards de "Expedientes & Invitaciones".
+
         async function cargarCursosAsignados() {
             const contenedor = document.getElementById('contenedor-cursos-asignados');
             contenedor.innerHTML = '<p class="text-muted"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando cursos asignados...</p>';
@@ -1241,10 +1226,6 @@
                         ? `<span class="badge bg-primary bg-opacity-10 text-primary border border-primary" style="font-size: 0.65rem; font-weight: 700; margin-left: 6px;">Curso inicial del contrato</span>`
                         : '';
 
-                    // NUEVO: cuando el docente ya eligió varias sesiones puntuales, el campo
-                    // "horario" viene como "17/07/2026: 19:00 a 20:30 | 21/07/2026: 19:00 a 20:30 | ..."
-                    // Antes se mostraba ese texto crudo pegado a "dias" (ilegible). Ahora lo
-                    // partimos en pastillas, una por sesión.
                     let horarioHtml;
                     if (curso.horario && curso.horario.includes('|')) {
                         const sesiones = curso.horario.split('|').map(s => s.trim()).filter(Boolean);
