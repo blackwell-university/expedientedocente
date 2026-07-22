@@ -646,7 +646,19 @@
         }
 
         async function cambiarEstadoInvitacion(nuevoEstado) {
-            if(!confirm(`¿Seguro que deseas cambiar el estado de la invitación a "${nuevoEstado}"?`)) return;
+            const confirmacion = await Swal.fire({
+                title: '¿Cambiar el estado de la invitación?',
+                html: `Se cambiará a: <b>"${nuevoEstado}"</b>`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, cambiar',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            });
+            if (!confirmacion.isConfirmed) return;
+
             showToast(`Cambiando estado a ${nuevoEstado}...`, 'info');
             try {
                 const res = await fetch(GAS_URL, {
@@ -844,7 +856,6 @@
                 html += `<button class="action-btn" disabled>
                             <i class="fa-solid fa-hourglass-half"></i> Esperando firma del docente...
                          </button>`;
-                html += `<button class="action-btn" onclick="simularAccionYCambiarEstado('Firmado por docente')"><i class="fa-solid fa-check"></i> Simular Firma Docente</button>`;
             }
 
             if (estadoLower === 'firmado por docente') {
@@ -875,8 +886,19 @@
         // según el modo). Esto es lo que mueve el estado de "Guardado" a "Enviado" y hace que
         // misexpedientes.html deje de ocultarla.
         function confirmarEnviarInvitacionDocente() {
-            if (!confirm(`¿Enviar esta invitación a ${docenteNombreActual || 'el docente'} ahora? Se le notificará por correo para que la acepte y elija su horario.`)) return;
-            enviarInvitacionDocente();
+            Swal.fire({
+                title: '¿Enviar esta invitación?',
+                html: `Se le notificará a <b>${docenteNombreActual || 'el docente'}</b> por correo para que la acepte y elija su horario.`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: '<i class="fa-solid fa-paper-plane me-1"></i> Sí, enviar',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) enviarInvitacionDocente();
+            });
         }
 
         async function enviarInvitacionDocente() {
@@ -1233,7 +1255,23 @@
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
         function toggleMobileSidebar() { document.getElementById('sidebar').classList.toggle('show-mobile'); document.getElementById('sidebarOverlay').classList.toggle('active'); }
-        function logout() { if(confirm("¿Cerrar sesión?")) { localStorage.clear(); window.location.href = "../index.html"; } }
+        function logout() {
+            Swal.fire({
+                title: '¿Cerrar sesión?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, cerrar sesión',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    localStorage.clear();
+                    window.location.href = "../index.html";
+                }
+            });
+        }
         function changeFontSize(dir) {
             let currentSize = parseFloat(document.documentElement.style.getPropertyValue('--dynamic-font-size')) || 1;
             let newSize = dir === 1 ? currentSize + 0.05 : currentSize - 0.05;

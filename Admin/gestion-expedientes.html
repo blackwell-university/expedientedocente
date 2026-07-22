@@ -257,6 +257,7 @@
     <div class="toast-container position-fixed bottom-0 end-0 p-4" style="z-index: 1055;" id="toastContainer"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
         let todosExpedientes = [];
@@ -559,8 +560,19 @@
         // NUEVO: elimina una invitación (con confirmación). Nunca se puede eliminar la invitación
         // génesis de un Expediente — esa se elimina (si aplica) junto con todo el Expediente.
         function confirmarEliminarInvitacion(idInvitacion, nombreCurso) {
-            if (!confirm(`¿Eliminar la invitación "${nombreCurso}" (${idInvitacion})? Esta acción no se puede deshacer.`)) return;
-            eliminarInvitacion(idInvitacion);
+            Swal.fire({
+                title: '¿Eliminar esta invitación?',
+                html: `Vas a eliminar <b>"${nombreCurso}"</b> (${idInvitacion}). Esta acción no se puede deshacer.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: '<i class="fa-regular fa-trash-can me-1"></i> Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) eliminarInvitacion(idInvitacion);
+            });
         }
 
         async function eliminarInvitacion(idInvitacion) {
@@ -570,11 +582,18 @@
                 if (result.status === 'success') {
                     todasInvitaciones = todasInvitaciones.filter(inv => inv.id !== idInvitacion);
                     filtrar();
+                    Swal.fire({
+                        title: 'Invitación eliminada',
+                        icon: 'success',
+                        confirmButtonColor: '#2563eb',
+                        timer: 2000,
+                        timerProgressBar: true
+                    });
                 } else {
-                    alert(result.message || 'No se pudo eliminar la invitación.');
+                    Swal.fire('No se pudo eliminar', result.message || 'No se pudo eliminar la invitación.', 'error');
                 }
             } catch (e) {
-                alert('Error de conexión al eliminar la invitación.');
+                Swal.fire('Error de conexión', 'No se pudo eliminar la invitación. Intenta de nuevo.', 'error');
             }
         }
 
