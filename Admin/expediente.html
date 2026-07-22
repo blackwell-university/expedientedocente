@@ -539,7 +539,7 @@
         <div class="content-area">
             <div class="centered-container">
                 <div class="breadcrumb-nav">
-                    <a href="gestion-expedientes.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Volver a Revisión de Expedientes</a>
+                    <a href="gestion-expedientes.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Volver a Revisión de Documentos</a>
                 </div>
 
 
@@ -595,7 +595,7 @@
                         <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#datos">Datos del Expediente</button>
                     </li>
                     <li class="nav-item">
-                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#generados">Documentos de Expediente</button>
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#generados">Documentos de Contrato</button>
                     </li>
                 </ul>
 
@@ -629,10 +629,10 @@
                                 </button>
                             </div>
                             <div class="row g-3">
-                                <div class="col-md-3"><span class="info-label">Estado</span><div id="view-estado" class="info-value fw-bold text-primary">-</div></div>
-                                <div class="col-md-3"><span class="info-label">Curso Propuesto</span><div id="view-curso" class="info-value">-</div></div>
-                                <div class="col-md-3"><span class="info-label">Día / Horario Elegido</span><div id="view-horario" class="info-value">-</div></div>
-                                <div class="col-md-3"><span class="info-label">Pago Acordado</span><div id="view-pago" class="info-value text-success fw-bold">-</div></div>
+                                <div class="col-12"><span class="info-label">Programa / Curso</span><div id="view-curso" class="info-value fw-bold">-</div></div>
+                                <div class="col-md-4"><span class="info-label">Estado</span><div id="view-estado" class="info-value fw-bold text-primary">-</div></div>
+                                <div class="col-md-4"><span class="info-label">Día / Horario Elegido</span><div id="view-horario" class="info-value">-</div></div>
+                                <div class="col-md-4"><span class="info-label">Pago Acordado</span><div id="view-pago" class="info-value text-success fw-bold">-</div></div>
                             </div>
                         </div>
 
@@ -1470,7 +1470,11 @@
 
                     // Datos de invitación
                     document.getElementById('view-estado').innerText = exp.estado;
-                    document.getElementById('view-curso').innerText = inv.curso || "No especificado";
+                    // FIX: antes esto mostraba el ID crudo del curso (ej. "CUR-00092"), porque el
+                    // backend nunca lo cruzaba contra la hoja "Cursos". Ahora sí llega el nombre.
+                    document.getElementById('view-curso').innerText = inv.curso
+                        ? (inv.programa ? `${inv.curso} — ${inv.programa}` : inv.curso)
+                        : "No especificado";
                     
                     // --- NUEVO: FORMATEO AESTHETIC DE HORARIOS ---
                     if (inv.horario && inv.horario.trim() !== '-' && inv.horario.includes(':')) {
