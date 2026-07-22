@@ -235,6 +235,7 @@
                                     <th>Período (Inicio - Fin)</th>
                                     <th>Expediente Vinculado</th>
                                     <th>Estado</th>
+                                    <th class="text-center">Acción</th>
                                 </tr>
                             </thead>
                             <tbody id="lista-invitaciones">
@@ -498,7 +499,7 @@
         function renderTablaInvitaciones(datos) {
             const tbody = document.getElementById('lista-invitaciones');
             if (datos.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted"><i class="fa-solid fa-chalkboard-user fs-2 mb-2 opacity-50"></i><br>No se encontraron invitaciones.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted"><i class="fa-solid fa-chalkboard-user fs-2 mb-2 opacity-50"></i><br>No se encontraron invitaciones.</td></tr>';
                 return;
             }
 
@@ -509,6 +510,16 @@
                     ? `<a href="expediente.html?expId=${inv.idExpediente}" class="btn-revisar-link"><i class="fa-regular fa-folder-open"></i> ${inv.idExpediente}</a>`
                     : '<span class="text-muted">Sin vincular</span>';
 
+                // NUEVO: el curso inicial (el que nació junto con el Expediente) se sigue
+                // listando aquí, pero "Revisar" debe llevar al Expediente — ahí es donde viven
+                // sus documentos. Los demás cursos (Asignar Curso) llevan a invitacion.html.
+                const badgeGenesis = inv.esInvitacionInicial
+                    ? `<span class="badge bg-primary bg-opacity-10 text-primary border border-primary" style="font-size: 0.65rem; font-weight: 700; margin-left: 6px;">Curso inicial del contrato</span>`
+                    : '';
+                const linkRevisar = inv.esInvitacionInicial
+                    ? `expediente.html?expId=${inv.idExpediente}`
+                    : `invitacion.html?invId=${inv.id}`;
+
                 return `
                 <tr>
                     <td>
@@ -516,7 +527,7 @@
                         <div class="text-muted" style="font-size: 0.75rem;">Docente: <span class="fw-medium">${inv.docenteId}</span> <br> Inv: <span class="text-dark fw-medium">${inv.id}</span></div>
                     </td>
                     <td>
-                        <div class="fw-bold" style="font-size: 0.85rem;">${inv.curso}</div>
+                        <div class="fw-bold" style="font-size: 0.85rem;">${inv.curso}${badgeGenesis}</div>
                         <div class="text-muted" style="font-size: 0.75rem;">${inv.programa || ''}</div>
                     </td>
                     <td>
@@ -526,8 +537,45 @@
                     </td>
                     <td>${expHtml}</td>
                     <td><span class="badge-status status-Completado">${inv.estado || 'Pendiente'}</span></td>
+                    <td class="text-center">
+                        <div class="d-flex gap-2 justify-content-center">
+                            <a href="${linkRevisar}" class="btn-revisar-link">
+                                <i class="fa-regular fa-folder-open"></i> Revisar
+                            </a>
+                            ${inv.esInvitacionInicial
+                                ? `<button class="btn btn-sm" disabled title="La invitación inicial no se puede eliminar por separado — está ligada al Expediente." style="background:#f1f5f9; color:#94a3b8; border:1px solid #e2e8f0; border-radius:8px; font-weight:600; font-size:0.8rem; padding:6px 12px;">
+                                       <i class="fa-regular fa-trash-can"></i>
+                                   </button>`
+                                : `<button class="btn btn-sm" onclick="confirmarEliminarInvitacion('${inv.id}', '${(inv.curso || '').replace(/'/g, "\\'")}')" title="Eliminar esta invitación" style="background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:8px; font-weight:600; font-size:0.8rem; padding:6px 12px;">
+                                       <i class="fa-regular fa-trash-can"></i>
+                                   </button>`
+                            }
+                        </div>
+                    </td>
                 </tr>`;
             }).join('');
+        }
+
+        // NUEVO: elimina una invitación (con confirmación). Nunca se puede eliminar la invitación
+        // génesis de un Expediente — esa se elimina (si aplica) junto con todo el Expediente.
+        function confirmarEliminarInvitacion(idInvitacion, nombreCurso) {
+            if (!confirm(`¿Eliminar la invitación "${nombreCurso}" (${idInvitacion})? Esta acción no se puede deshacer.`)) return;
+            eliminarInvitacion(idInvitacion);
+        }
+
+        async function eliminarInvitacion(idInvitacion) {
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'delete_invitation', idInvitacion }) });
+                const result = await res.json();
+                if (result.status === 'success') {
+                    todasInvitaciones = todasInvitaciones.filter(inv => inv.id !== idInvitacion);
+                    filtrar();
+                } else {
+                    alert(result.message || 'No se pudo eliminar la invitación.');
+                }
+            } catch (e) {
+                alert('Error de conexión al eliminar la invitación.');
+            }
         }
 
         function resetFilters() {

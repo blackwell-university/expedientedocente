@@ -1227,6 +1227,16 @@
                     const est = badgeEstadoCurso(curso.estado);
                     const linkExp = curso.idExpediente ? `<a href="expediente.html?expId=${curso.idExpediente}" class="text-decoration-none fw-medium" style="font-size:0.75rem; color: var(--primary);"><i class="fa-regular fa-folder-open me-1"></i>${curso.idExpediente}</a>` : '';
 
+                    // NUEVO: la invitación "génesis" (la que nació junto con el Expediente) no
+                    // tiene documentos propios en Invitaciones — esos viven en el Expediente. Así
+                    // que su "Ver Detalles" debe llevar al Expediente, no a invitacion.html.
+                    const linkDetalle = curso.esInvitacionInicial
+                        ? `expediente.html?expId=${curso.idExpediente}`
+                        : `invitacion.html?invId=${curso.idInvitacion}`;
+                    const badgeGenesis = curso.esInvitacionInicial
+                        ? `<span class="badge bg-primary bg-opacity-10 text-primary border border-primary" style="font-size: 0.65rem; font-weight: 700; margin-left: 6px;">Curso inicial del contrato</span>`
+                        : '';
+
                     // NUEVO: cuando el docente ya eligió varias sesiones puntuales, el campo
                     // "horario" viene como "17/07/2026: 19:00 a 20:30 | 21/07/2026: 19:00 a 20:30 | ..."
                     // Antes se mostraba ese texto crudo pegado a "dias" (ilegible). Ahora lo
@@ -1249,7 +1259,7 @@
                                     <i class="fa-solid fa-chalkboard-user"></i>
                                 </div>
                                 <div>
-                                    <h6 class="fw-bold m-0 text-dark" style="font-size: 0.95rem; letter-spacing: -0.01em;">${curso.nombreCurso}</h6>
+                                    <h6 class="fw-bold m-0 text-dark" style="font-size: 0.95rem; letter-spacing: -0.01em;">${curso.nombreCurso}${badgeGenesis}</h6>
                                     <span class="text-muted" style="font-size: 0.75rem; font-weight: 500;">${curso.programa || ''} ${linkExp ? '· ' + linkExp : ''}</span>
                                 </div>
                             </div>
@@ -1269,7 +1279,7 @@
                                 <div style="font-size: 0.85rem; color: #15803d; font-weight: 700;"><i class="fa-solid fa-money-bill-wave opacity-75 me-1"></i>${curso.pago || '-'}</div>
                             </div>
                             <div class="col-12 col-md-2 d-flex align-items-end justify-content-md-end">
-                                <a href="invitacion.html?invId=${curso.idInvitacion}" class="btn btn-sm w-100" style="background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; font-weight: 600; padding: 6px 12px; border-radius: 8px;">
+                                <a href="${linkDetalle}" class="btn btn-sm w-100" style="background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; font-weight: 600; padding: 6px 12px; border-radius: 8px;">
                                     <i class="fa-regular fa-eye me-1"></i>Ver Detalles
                                 </a>
                             </div>
