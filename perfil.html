@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script>
+        if (localStorage.getItem('isLoggedIn') !== 'true' || localStorage.getItem('userRole') !== 'Docente') {
+            // window.location.href = "index.html";
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mi Perfil | Blackwell University</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,300,0,0" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            --primary: #1e40af;
+            --primary-light: #eff6ff;
+            --bg-body: #f4f7fa;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --primary-dark: #1e3a8a;
+            --card-radius: 24px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --dynamic-font-size: 1rem;
+        }
+
+        html { font-size: 16px; transition: font-size 0.3s ease; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding-top: 70px;
+            padding-bottom: 90px;
+            overflow-x: hidden;
+        }
+
+        .top-nav {
+            position: fixed; top: 0; left: 0; right: 0; height: 70px;
+            background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 40px; z-index: 1000;
+        }
+        .nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .logo-box { width: 38px; height: 38px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; }
+        .brand-text { font-weight: 800; font-size: 1.2rem; color: var(--primary); letter-spacing: -0.5px; }
+
+        .nav-links-desktop { display: flex; gap: 8px; position: absolute; left: 50%; transform: translateX(-50%); }
+        .nav-item { text-decoration: none; color: var(--text-muted); font-weight: 600; font-size: 0.9rem; padding: 10px 20px; border-radius: 12px; transition: var(--transition); display: flex; align-items: center; gap: 8px; }
+        .nav-item:hover, .nav-item.active { background: #eff6ff; color: var(--primary); }
+
+        .nav-user { position: relative; cursor: pointer; }
+        .user-trigger { display: flex; align-items: center; gap: 12px; padding: 6px 6px 6px 15px; background: #fff; border: 1px solid var(--border-color); border-radius: 50px; }
+        .user-trigger span { font-weight: 700; font-size: 0.85rem; }
+        .user-avatar { width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem; overflow: hidden; }
+        .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .user-dropdown { position: absolute; top: calc(100% + 10px); right: 0; width: 220px; background: white; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 8px; opacity: 0; visibility: hidden; transform: translateY(10px); transition: var(--transition); }
+        .user-dropdown.show { opacity: 1; visibility: visible; transform: translateY(0); }
+        .dropdown-link { display: flex; align-items: center; gap: 12px; padding: 12px 15px; text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 0.85rem; border-radius: 10px; transition: 0.2s; }
+        .dropdown-link:hover { background: #eff6ff; color: var(--primary); }
+        .dropdown-link.logout { color: #ef4444; } .dropdown-link.logout:hover { background: #fef2f2; color: #ef4444; }
+
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 80px;
+            background: #ffffff; border-radius: 30px 30px 0 0;
+            box-shadow: 0 -4px 25px rgba(0,0,0,0.06);
+            display: none; justify-content: space-between; align-items: center;
+            padding: 0 25px; padding-bottom: env(safe-area-inset-bottom); z-index: 1000;
+        }
+        .bottom-item { display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; color: #94a3b8; transition: 0.3s ease; flex: 1; position: relative; }
+        .bottom-item span:last-child { font-size: 0.65rem; font-weight: 550; }
+        .bottom-item.active { color: var(--primary); }
+        .bottom-item .material-symbols-rounded { font-size: 1.5rem; transition: transform 0.2s; font-variation-settings: 'FILL' 1, 'wght' 400; }
+        .bottom-item.active .material-symbols-rounded { transform: translateY(-2px); }
+        .bottom-item.active::after { content: ''; position: absolute; bottom: -10px; width: 5px; height: 5px; background: var(--primary); border-radius: 50%; }
+
+        .page-header { margin-bottom: 25px; }
+        .page-header h1 { font-weight: 800 !important; font-size: 2.2rem; margin-bottom: 8px; letter-spacing: -0.03em; color: var(--primary-dark); }
+        .page-header p { color: var(--text-muted); font-size: 1.05rem; margin: 0; }
+
+        .font-controls { display: flex; align-items: center; background: white; border: 1px solid var(--border-color); border-radius: 20px; height: 40px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .btn-font-action { background: transparent; border: none; height: 100%; padding: 0 14px; color: var(--text-main); font-weight: 800; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+        .btn-font-action:hover { background: #eff6ff; color: var(--primary); }
+        .font-separator { width: 1px; height: 20px; background: var(--border-color); }
+
+        .mobile-header { display: none; margin-bottom: 25px; align-items: center; justify-content: space-between; }
+        .mh-profile { display: flex; align-items: center; gap: 14px; }
+        .mh-avatar { width: 50px; height: 50px; background-color: var(--border-color); border-radius: 50%; display: flex; justify-content: center; align-items: center; overflow: hidden; font-weight: 700; color: var(--primary-dark); font-size: 1.2rem; }
+        .mh-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .mh-text h1 { font-size: 1.3rem; font-weight: 800; letter-spacing: -1px; color: var(--primary-dark); margin: 0; }
+        .mh-text p { font-size: 0.85rem; color: var(--text-muted); margin: 0; margin-top: 2px; }
+
+        .main-wrapper { flex-grow: 1; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; }
+        .content-area { padding: 40px 30px; display: flex; flex-direction: column; align-items: center; width: 100%; font-size: var(--dynamic-font-size); }
+        .centered-container { width: 100%; max-width: 1100px; text-align: left; }
+
+        .form-card { background: white; border-radius: var(--card-radius); padding: 28px; border: 1px solid rgba(0,0,0,0.04); box-shadow: 0 10px 30px rgba(0,0,0,0.02); }
+        .section-badge { background: #eff6ff; color: var(--primary); padding: 6px 14px; border-radius: 8px; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; margin-bottom: 22px; }
+
+        .info-label { display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 4px; font-weight: 600; }
+        .info-value { font-size: 0.95rem; color: #0f172a; font-weight: 500; }
+
+        /* --- FOTO DE PERFIL --- */
+        .profile-photo-wrap { position: relative; width: 120px; height: 120px; flex-shrink: 0; }
+        .profile-photo { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; background: #eff6ff; color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 800; border: 4px solid white; box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+        .profile-photo img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+        .btn-change-photo { position: absolute; bottom: 2px; right: 2px; width: 38px; height: 38px; border-radius: 50%; background: var(--primary); color: white; border: 3px solid white; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+        .btn-change-photo:hover { background: var(--primary-dark); transform: scale(1.05); }
+        .btn-change-photo input { display: none; }
+
+        /* --- ACORDEÓN (mismo estilo que usa la ejecutiva en detallesdocente.html) --- */
+        .accordion-item { border: 1px solid var(--border-color); border-radius: 12px !important; margin-bottom: 10px; overflow: hidden; }
+        .accordion-button { font-weight: 700; font-size: 0.9rem; color: var(--text-main); background: #fafbfc; }
+        .accordion-button:not(.collapsed) { background: #eff6ff; color: var(--primary-dark); box-shadow: none; }
+        .accordion-button:focus { box-shadow: none; }
+        .badge-campo-ok { background: #dcfce7; color: #15803d; font-size: 0.7rem; font-weight: 700; }
+        .badge-campo-falta { background: #fee2e2; color: #b91c1c; font-size: 0.7rem; font-weight: 700; }
+        .dato-campo { margin-bottom: 10px; }
+        .dato-campo .info-label { margin-bottom: 2px; }
+        .dato-campo .dato-valor { font-size: 0.88rem; color: #0f172a; }
+        .dato-campo .dato-valor.dato-falta { color: #b91c1c; font-style: italic; font-size: 0.82rem; }
+        .diploma-mini-card { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; padding: 16px 18px; margin-bottom: 12px; }
+
+        @media (max-width: 768px) {
+            .nav-links-desktop { display: none; }
+            .top-nav { display: none !important; }
+            .bottom-nav { display: flex; }
+            .content-area { padding: 20px; }
+            .mobile-header { display: flex; }
+            .profile-photo-wrap, .profile-photo { width: 90px; height: 90px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVEGACIÓN SUPERIOR -->
+    <nav class="top-nav d-none d-md-flex">
+        <a href="#" class="nav-brand">
+            <div class="logo-box"><span class="material-symbols-rounded">school</span></div>
+            <span class="brand-text">Blackwell</span>
+        </a>
+        <div class="nav-links-desktop">
+            <a href="dashboard-docente.html" class="nav-item"><span class="material-symbols-rounded">home</span> Dashboard</a>
+            <a href="misexpedientes.html" class="nav-item"><span class="material-symbols-rounded">folder_open</span> Expedientes</a>
+            <a href="miscursos.html" class="nav-item"><span class="material-symbols-rounded">co_present</span> Mis Clases</a>
+        </div>
+        <div class="nav-user d-flex gap-3 align-items-center">
+            <div class="font-controls">
+                <button class="btn-font-action a-minus" onclick="changeFontSize(-1)" title="Reducir letra">A-</button>
+                <div class="font-separator"></div>
+                <button class="btn-font-action a-plus" onclick="changeFontSize(1)" title="Aumentar letra">A+</button>
+            </div>
+            <div class="user-trigger" id="userDropdownTrigger">
+                <span id="userNameNav">Cargando...</span>
+                <div class="user-avatar" id="userInitialNav">DC</div>
+            </div>
+            <div class="user-dropdown" id="userDropdownMenu">
+                <a href="perfil.html" class="dropdown-link"><span class="material-symbols-rounded">person</span> Ver mi Perfil</a>
+                <a href="#" class="dropdown-link"><span class="material-symbols-rounded">settings</span> Configuración</a>
+                <div style="border-top: 1px solid var(--border-color); margin: 5px 0;"></div>
+                <a href="#" onclick="logout()" class="dropdown-link logout"><span class="material-symbols-rounded">logout</span> Cerrar Sesión</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- NAVEGACIÓN INFERIOR (MÓVIL) -->
+    <nav class="bottom-nav">
+        <a href="dashboard-docente.html" class="bottom-item">
+            <span class="material-symbols-rounded">home</span><span>Inicio</span>
+        </a>
+        <a href="misexpedientes.html" class="bottom-item">
+            <span class="material-symbols-rounded">folder_open</span><span>Expedientes</span>
+        </a>
+        <a href="miscursos.html" class="bottom-item">
+            <span class="material-symbols-rounded">co_present</span><span>Mis Clases</span>
+        </a>
+        <a href="perfil.html" class="bottom-item active">
+            <span class="material-symbols-rounded">person</span><span>Perfil</span>
+        </a>
+    </nav>
+
+    <main class="main-wrapper">
+        <div class="content-area">
+            <div class="centered-container">
+
+                <!-- HEADER MÓVIL -->
+                <div class="mobile-header">
+                    <div class="mh-profile">
+                        <div class="mh-avatar" id="fotoMobile">DC</div>
+                        <div class="mh-text">
+                            <h1>Mi Perfil</h1>
+                            <p>Tus datos como docente</p>
+                        </div>
+                    </div>
+                    <div class="font-controls">
+                        <button class="btn-font-action a-minus" onclick="changeFontSize(-1)">A-</button>
+                        <div class="font-separator"></div>
+                        <button class="btn-font-action a-plus" onclick="changeFontSize(1)">A+</button>
+                    </div>
+                </div>
+
+                <div class="page-header d-none d-md-block">
+                    <h1>Mi Perfil</h1>
+                    <p>Aquí puedes ver un resumen de todos tus datos registrados y cambiar tu foto de perfil.</p>
+                </div>
+
+                <!-- TARJETA DE FOTO + RESUMEN -->
+                <div class="form-card mb-4 d-flex align-items-center gap-4 flex-wrap">
+                    <div class="profile-photo-wrap">
+                        <div class="profile-photo" id="fotoPerfilGrande">DC</div>
+                        <label class="btn-change-photo" title="Cambiar foto de perfil">
+                            <span class="material-symbols-rounded" style="font-size: 1.1rem;">photo_camera</span>
+                            <input type="file" id="inputFotoPerfil" accept="image/png, image/jpeg, image/jpg" onchange="subirFotoPerfil(this)">
+                        </label>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold m-0" id="nombreCompletoPerfil" style="color: var(--primary-dark);">Cargando...</h4>
+                        <p class="text-muted m-0" id="correoPerfil">-</p>
+                        <p class="text-muted m-0" style="font-size: 0.8rem;">ID Docente: <span id="idDocentePerfil">-</span></p>
+                    </div>
+                </div>
+
+                <!-- ACORDEÓN CON TODOS LOS DATOS -->
+                <div class="form-card">
+                    <span class="section-badge"><i class="fa-solid fa-list-check me-2"></i>Todos mis Datos</span>
+                    <p class="text-muted" style="font-size: 0.85rem; margin-top: -12px;">Despliega cada sección para ver, a simple vista, qué campos ya llenaste y cuáles te faltan.</p>
+                    <div class="accordion" id="accordionDatosDocente">
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accPersonales">
+                                    <i class="fa-solid fa-id-card me-2 text-primary"></i>&nbsp;Datos Personales
+                                    <span class="badge rounded-pill ms-2" id="badge-personales">-</span>
+                                </button>
+                            </h2>
+                            <div id="accPersonales" class="accordion-collapse collapse" data-bs-parent="#accordionDatosDocente">
+                                <div class="accordion-body row g-3" id="cont-datos-personales">
+                                    <p class="text-muted m-0"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accEducacion">
+                                    <i class="fa-solid fa-graduation-cap me-2 text-primary"></i>&nbsp;Educación (Grados Académicos)
+                                    <span class="badge rounded-pill ms-2" id="badge-educacion">-</span>
+                                </button>
+                            </h2>
+                            <div id="accEducacion" class="accordion-collapse collapse" data-bs-parent="#accordionDatosDocente">
+                                <div class="accordion-body" id="cont-educacion">
+                                    <p class="text-muted m-0"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accExperiencia">
+                                    <i class="fa-solid fa-briefcase me-2 text-primary"></i>&nbsp;Experiencia Laboral
+                                    <span class="badge rounded-pill ms-2" id="badge-experiencia">-</span>
+                                </button>
+                            </h2>
+                            <div id="accExperiencia" class="accordion-collapse collapse" data-bs-parent="#accordionDatosDocente">
+                                <div class="accordion-body" id="cont-experiencia">
+                                    <p class="text-muted m-0"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accBancarios">
+                                    <i class="fa-solid fa-building-columns me-2 text-primary"></i>&nbsp;Datos Bancarios
+                                    <span class="badge rounded-pill ms-2" id="badge-bancarios">-</span>
+                                </button>
+                            </h2>
+                            <div id="accBancarios" class="accordion-collapse collapse" data-bs-parent="#accordionDatosDocente">
+                                <div class="accordion-body row g-3" id="cont-datos-bancarios">
+                                    <p class="text-muted m-0"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <a href="registroexpediente.html" class="btn btn-primary fw-bold px-4" style="border-radius: 12px;">
+                            <i class="fa-solid fa-pen me-2"></i>Editar mis Datos
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
+        let docenteIdGlobal = localStorage.getItem('userId');
+
+        let currentSizeLevel = 0;
+        const fontSizes = ["16px", "18px", "20px", "22px"];
+        function changeFontSize(step) {
+            currentSizeLevel += step;
+            if (currentSizeLevel < 0) currentSizeLevel = 0;
+            else if (currentSizeLevel >= fontSizes.length) currentSizeLevel = fontSizes.length - 1;
+            document.documentElement.style.setProperty('--dynamic-font-size', fontSizes[currentSizeLevel]);
+        }
+
+        const dropdownTrigger = document.getElementById('userDropdownTrigger');
+        const dropdownMenu = document.getElementById('userDropdownMenu');
+        if (dropdownTrigger && dropdownMenu) {
+            dropdownTrigger.addEventListener('click', function (e) {
+                e.stopPropagation();
+                dropdownMenu.classList.toggle('show');
+            });
+            document.addEventListener('click', function () { dropdownMenu.classList.remove('show'); });
+        }
+
+        function logout() { localStorage.clear(); window.location.href = "index.html"; }
+
+        // ==================== ACORDEÓN "TODOS MIS DATOS" (mismo componente que usa la ejecutiva) ====================
+        function campoDato(label, valor) {
+            const tieneValor = valor !== undefined && valor !== null && String(valor).trim() !== '';
+            return `
+            <div class="col-md-4 dato-campo">
+                <span class="info-label">${label}</span>
+                <div class="dato-valor ${tieneValor ? '' : 'dato-falta'}">${tieneValor ? valor : 'Sin llenar'}</div>
+            </div>`;
+        }
+
+        const MESES_CORTOS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+        function formatFechaMesAnio(valor) {
+            if (!valor) return '';
+            const str = String(valor).trim();
+            if (/actualidad|presente/i.test(str)) return 'Actualidad';
+            let m = str.match(/^(\d{4})-(\d{2})-\d{2}T/);
+            if (m) return `${MESES_CORTOS[parseInt(m[2], 10) - 1]} ${m[1]}`;
+            m = str.match(/^(\d{4})-(\d{2})$/);
+            if (m) return `${MESES_CORTOS[parseInt(m[2], 10) - 1]} ${m[1]}`;
+            return str;
+        }
+        function formatFechaCompleta(valor) {
+            if (!valor) return '';
+            const str = String(valor).trim();
+            const m = str.match(/^(\d{4})-(\d{2})-(\d{2})T/);
+            if (m) return `${m[3]}/${m[2]}/${m[1]}`;
+            return str;
+        }
+
+        function actualizarBadgeSeccion(idBadge, llenos, total) {
+            const badge = document.getElementById(idBadge);
+            if (!badge) return;
+            badge.textContent = `${llenos}/${total}`;
+            badge.className = 'badge rounded-pill ms-2 ' + (llenos === total ? 'badge-campo-ok' : 'badge-campo-falta');
+        }
+
+        function llenarAcordeonDatosDocente(d, drafts) {
+            const paisEsEEUU = /estados unidos|united states|^usa$/i.test((d.pais || '').trim());
+            const camposPersonales = [
+                ['DNI / Pasaporte', d.dni], ['Tipo de Documento', d.tipo_id], ['Nombres', d.nombres], ['Apellidos', d.apellidos],
+                ['Correo', d.correo], ['Celular', d.celular], ['Fecha de Nacimiento', formatFechaCompleta(d.fecha_nacimiento)], ['Código Postal', d.cp],
+                ['País', d.pais], ['Ciudad', d.ciudad], ['Dirección', d.direccion]
+            ];
+            let htmlPersonales = camposPersonales.map(([l, v]) => campoDato(l, v)).join('');
+            let llenosPersonales = camposPersonales.filter(([, v]) => v && String(v).trim() !== '').length;
+            let totalPersonales = camposPersonales.length;
+
+            if (paisEsEEUU) {
+                htmlPersonales += campoDato('Estado/Región', d.estado_region);
+                totalPersonales += 1;
+                if (d.estado_region && String(d.estado_region).trim() !== '') llenosPersonales += 1;
+            } else {
+                htmlPersonales += `
+                <div class="col-md-4 dato-campo">
+                    <span class="info-label">Estado/Región</span>
+                    <div class="dato-valor text-muted" style="font-style:italic;">No aplica (solo EE. UU.)</div>
+                </div>`;
+            }
+            document.getElementById('cont-datos-personales').innerHTML = htmlPersonales;
+            actualizarBadgeSeccion('badge-personales', llenosPersonales, totalPersonales);
+
+            const camposBancarios = [
+                ['Banco', d.banco], ['Moneda', d.moneda], ['Tipo de Cuenta', d.tipo_cuenta], ['Cuenta Bancaria', d.cuenta],
+                ['CCI / Interbancaria', d.cci], ['Tipo de Ruta (ACH)', d.tipo_ruta], ['Código de Ruta', d.codigo_ruta]
+            ];
+            document.getElementById('cont-datos-bancarios').innerHTML = camposBancarios.map(([l, v]) => campoDato(l, v)).join('');
+            actualizarBadgeSeccion('badge-bancarios', camposBancarios.filter(([,v]) => v && String(v).trim() !== '').length, camposBancarios.length);
+
+            const eduList = drafts.educacion || [];
+            if (eduList.length === 0) {
+                document.getElementById('cont-educacion').innerHTML = '<p class="text-danger m-0" style="font-size:0.85rem;"><i class="fa-solid fa-triangle-exclamation me-1"></i>Aún no has subido ningún diploma.</p>';
+            } else {
+                document.getElementById('cont-educacion').innerHTML = eduList.map(edu => `
+                    <div class="diploma-mini-card">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <b style="font-size:0.9rem;">${edu.grado || 'Grado'}</b>
+                            <span class="badge" style="background:#f1f5f9; color:#334155; font-size:0.7rem;">${edu.estado || 'Subido'}</span>
+                        </div>
+                        <div class="row g-2">
+                            ${campoDato('Carrera / Especialidad', edu.rama)}
+                            ${campoDato('Institución', edu.instituto)}
+                            ${campoDato('Ubicación', edu.ubicacion)}
+                            ${campoDato('Inicio', formatFechaMesAnio(edu.inicio))}
+                            ${campoDato('Fin', formatFechaMesAnio(edu.fin))}
+                        </div>
+                    </div>`).join('');
+            }
+            const camposEduLlenos = eduList.reduce((acc, e) => acc + ['rama','instituto','ubicacion','inicio','fin'].filter(k => e[k] && String(e[k]).trim() !== '').length, 0);
+            actualizarBadgeSeccion('badge-educacion', camposEduLlenos, eduList.length * 5 || 1);
+
+            const expList = (drafts.experiencia || []).filter(e => !e.tipo || !e.tipo.startsWith('C'));
+            if (expList.length === 0) {
+                document.getElementById('cont-experiencia').innerHTML = '<p class="text-danger m-0" style="font-size:0.85rem;"><i class="fa-solid fa-triangle-exclamation me-1"></i>Aún no has registrado experiencia laboral.</p>';
+            } else {
+                document.getElementById('cont-experiencia').innerHTML = expList.map(exp => `
+                    <div class="diploma-mini-card">
+                        <b style="font-size:0.9rem;">${exp.empresa || 'Empresa sin nombre'}</b>
+                        <div class="row g-2 mt-1">
+                            ${campoDato('Cargo', exp.cargo)}
+                            ${campoDato('Área', exp.area)}
+                            ${campoDato('Dirección', exp.direccion)}
+                            ${campoDato('Inicio', formatFechaMesAnio(exp.inicio))}
+                            ${campoDato('Fin', formatFechaMesAnio(exp.fin))}
+                        </div>
+                    </div>`).join('');
+            }
+            actualizarBadgeSeccion('badge-experiencia', expList.length, expList.length || 1);
+        }
+
+        // ==================== FOTO DE PERFIL ====================
+        function pintarFoto(url, iniciales) {
+            const grande = document.getElementById('fotoPerfilGrande');
+            const nav = document.getElementById('userInitialNav');
+            const mobile = document.getElementById('fotoMobile');
+            if (url) {
+                grande.innerHTML = `<img src="${url}" alt="Foto de perfil">`;
+                if (nav) nav.innerHTML = `<img src="${url}" alt="">`;
+                if (mobile) mobile.innerHTML = `<img src="${url}" alt="">`;
+            } else {
+                grande.innerText = iniciales;
+                if (nav) nav.innerText = iniciales;
+                if (mobile) mobile.innerText = iniciales;
+            }
+        }
+
+        async function subirFotoPerfil(input) {
+            if (!input.files || input.files.length === 0) return;
+            const f = input.files[0];
+
+            if (f.size > 5 * 1024 * 1024) {
+                Swal.fire('Archivo muy pesado', 'La foto debe pesar menos de 5 MB.', 'warning');
+                input.value = '';
+                return;
+            }
+
+            Swal.fire({ title: 'Subiendo foto...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
+
+            const reader = new FileReader();
+            reader.readAsDataURL(f);
+            reader.onload = async () => {
+                const base64 = reader.result.split(',')[1];
+                try {
+                    const res = await fetch(GAS_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'upload_profile_photo',
+                            docenteId: docenteIdGlobal,
+                            fileBase64: base64,
+                            fileName: f.name,
+                            mimeType: f.type || 'image/jpeg'
+                        })
+                    }).then(r => r.json());
+
+                    if (res.status === 'success') {
+                        pintarFoto(res.url, (document.getElementById('nombreCompletoPerfil').innerText || 'DC').substring(0, 2).toUpperCase());
+                        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Foto actualizada', showConfirmButton: false, timer: 2500 });
+                    } else {
+                        Swal.fire('Error', res.message || 'No se pudo subir la foto.', 'error');
+                    }
+                } catch (e) {
+                    Swal.fire('Error', 'No se pudo subir la foto. Intenta de nuevo.', 'error');
+                }
+                input.value = '';
+            };
+        }
+
+        // ==================== CARGA INICIAL ====================
+        document.addEventListener('DOMContentLoaded', async () => {
+            const fullName = localStorage.getItem('userName') || "Docente";
+            document.getElementById('userNameNav').innerText = fullName.split(' ')[0];
+
+            if (!docenteIdGlobal) {
+                Swal.fire('Sesión no encontrada', 'Vuelve a iniciar sesión.', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: docenteIdGlobal }) });
+                const result = await res.json();
+
+                if (result.status !== 'success' && result.status !== 'partial') {
+                    Swal.fire('Error', 'No se pudo cargar tu perfil.', 'error');
+                    return;
+                }
+
+                const d = result.data || {};
+                const nombreCompleto = `${d.nombres || ''} ${d.apellidos || ''}`.trim() || fullName;
+
+                document.getElementById('nombreCompletoPerfil').innerText = nombreCompleto;
+                document.getElementById('correoPerfil').innerText = d.correo || '-';
+                document.getElementById('idDocentePerfil').innerText = docenteIdGlobal;
+
+                const iniciales = nombreCompleto.substring(0, 2).toUpperCase();
+                pintarFoto(d.fotoPerfil || '', iniciales);
+
+                llenarAcordeonDatosDocente(d, result.drafts || {});
+
+            } catch (e) {
+                console.error(e);
+                Swal.fire('Error de conexión', 'No se pudo cargar tu perfil.', 'error');
+            }
+        });
+    </script>
+</body>
+</html>
