@@ -281,7 +281,7 @@
     </main>
 
     <script>
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec"
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
 
         // --- 1. LÓGICA DE TAMAÑO DE LETRA ACCESIBLE ---
         let currentSizeLevel = 0;
@@ -461,9 +461,17 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
                 const vigencia = exp.fechaVencimiento ? `Vence: ${new Date(exp.fechaVencimiento).toLocaleDateString('es-ES')}` : "Periodo actual";
 
+              const estadoInvLower = (exp.estadoInvitacion || '').toString().trim().toLowerCase();
+                const invitacionPendiente = exp.idInvitacion && !['aceptado', 'respondido'].includes(estadoInvLower);
+                const avisoInvitacion = invitacionPendiente ? `
+                    <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:8px 12px; margin-bottom:10px; font-size:0.78rem; color:#92400e; display:flex; align-items:center; gap:6px;">
+                        <span class="material-symbols-rounded" style="font-size:1rem;">error</span>
+                        Aún debes aceptar tu invitación de curso para terminar tu contrato.
+                    </div>` : '';
+
                 html += `
                 <div class="col-md-6 col-xl-4">
-                    <a href="${actionLink}" class="tramite-card">
+                    <a href="${invitacionPendiente ? 'registroinvitacion.html?inv=' + exp.idInvitacion : actionLink}" class="tramite-card">
                         <div class="card-accent ${accentClass}"></div>
                         <div class="card-header-flex">
                             <div class="card-icon"><span class="material-symbols-rounded">folder_shared</span></div>
@@ -475,6 +483,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         <h3 class="t-title">Contrato Anual Docente</h3>
                         <p class="t-subtitle"><span class="material-symbols-rounded" style="font-size: 1rem;">event_available</span> ${vigencia}</p>
                         
+                        ${avisoInvitacion}
+
                         <div class="t-details" style="grid-template-columns: 1fr;">
                             <div class="t-detail-item">
                                 <span>Fecha de Creación</span>
@@ -484,8 +494,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         
                         <div class="docs-container">
                             <span class="text-muted" style="font-size: 0.8rem;">ID: ${exp.idExpediente}</span>
-                            <span class="btn-text-action" style="color: ${color};">
-                                ${actionText} <span class="material-symbols-rounded">arrow_forward</span>
+                            <span class="btn-text-action" style="color: ${invitacionPendiente ? '#b45309' : color};">
+                                ${invitacionPendiente ? 'Completar invitación' : actionText} <span class="material-symbols-rounded">arrow_forward</span>
                             </span>
                         </div>
                     </a>

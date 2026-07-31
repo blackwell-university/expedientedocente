@@ -843,32 +843,25 @@
                                 <span class="step-badge">Pendiente</span>
                             </div>
                         </div>
-                        <!-- Paso 4 -->
-                        <div class="step-tab" id="tab-4" onclick="irAPaso(4)">
-                            <div class="step-connector"></div>
-                            <div class="step-circle"><i class="fa-solid fa-chalkboard-user default-icon"></i><i class="fa-solid fa-check completed-icon"></i></div>
-                            <div class="step-details">
-                                <span class="step-label">Paso 4</span>
-                                <span class="step-title-text">Asignación</span>
-                                <span class="step-badge">Pendiente</span>
-                            </div>
-                        </div>
-                        <!-- Paso 5 -->
+                        <!-- Paso 4 visual (internamente sigue siendo el paso 5 — datos bancarios.
+                             Se mantiene el id/onclick internos en 5 para no romper el guardado
+                             en el backend, que identifica cada paso por ese número; solo se
+                             renumera la ETIQUETA que ve el docente. -->
                         <div class="step-tab" id="tab-5" onclick="irAPaso(5)">
                             <div class="step-connector"></div>
                             <div class="step-circle"><i class="fa-solid fa-building-columns default-icon"></i><i class="fa-solid fa-check completed-icon"></i></div>
                             <div class="step-details">
-                                <span class="step-label">Paso 5</span>
+                                <span class="step-label">Paso 4</span>
                                 <span class="step-title-text">Facturación</span>
                                 <span class="step-badge">Pendiente</span>
                             </div>
                         </div>
-                        <!-- Paso 6 -->
+                        <!-- Paso 5 visual (internamente paso 6 — verificación final) -->
                         <div class="step-tab step-locked" id="tab-6" onclick="irAPaso(6)">
                             <div class="step-connector"></div>
                             <div class="step-circle"><i class="fa-solid fa-lock default-icon"></i><i class="fa-solid fa-check completed-icon"></i></div>
                             <div class="step-details">
-                                <span class="step-label">Paso 6</span>
+                                <span class="step-label">Paso 5</span>
                                 <span class="step-title-text">Verificación</span>
                                 <span class="step-badge">Pendiente</span>
                             </div>
@@ -1088,78 +1081,6 @@
                         </div>
 
                         
-                        <!-- PASO 4: ASIGNACIÓN -->
-                        <div class="step-content" id="step-4">
-                            <h2 class="step-title">Asignación de Curso</h2>
-                            <p class="step-subtitle">Revise el curso propuesto y defina la disponibilidad de días y horarios para impartir sus clases.</p>
-                            
-                            <div class="section-label">Curso Propuesto</div>
-                            <div id="lista-invitaciones" class="mb-4"></div>
-                            
-                            <div id="horario-container" style="display: none;">
-                                <div class="section-label mt-2">Definir Disponibilidad</div>
-                                <div class="p-4 rounded-4 bg-white border" style="border-color: var(--border-color);">
-                                    
-                                    <!-- Encabezado Informativo Dinámico Adaptable -->
-                                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 pb-3 border-bottom" style="border-color: var(--border-color);">
-                                        <div>
-                                            <h6 class="fw-bold m-0 text-primary-dark"><i class="fa-regular fa-calendar-days me-2"></i>Programación de Clases</h6>
-                                            <p class="text-muted small m-0 mt-1">Seleccione las fechas exactas dentro del rango de su curso.</p>
-                                        </div>
-                                        <div class="w-100 text-md-end" style="max-width: 200px;">
-                                            <div class="badge rounded-pill fw-bold text-primary w-100 p-2" style="background: var(--primary-light); font-size: 0.85rem;" id="txtSessionsCounter">0 de 4 Agendadas</div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Paso 1: Carrusel de Días Reales (SaaS Slider) -->
-                                    <label class="form-label small fw-bold text-uppercase text-muted" style="letter-spacing: 0.5px;">1. Seleccione un día del calendario</label>
-                                    
-                                    <div class="carousel-wrapper mb-4">
-                                        <!-- Botón Izquierda -->
-                                        <button type="button" class="carousel-nav-btn" onclick="scrollCarousel('left')" title="Desplazar a la izquierda">
-                                            <i class="fa-solid fa-chevron-left"></i>
-                                        </button>
-                                        
-                                        <!-- Carrusel -->
-                                        <div class="day-carousel" id="carouselDays">
-                                            <!-- Se inyecta dinámicamente el rango de fechas de calendario -->
-                                        </div>
-                                        
-                                        <!-- Botón Derecha -->
-                                        <button type="button" class="carousel-nav-btn" onclick="scrollCarousel('right')" title="Desplazar a la derecha">
-                                            <i class="fa-solid fa-chevron-right"></i>
-                                        </button>
-                                    </div>
-
-                                    <!-- Paso 2: Horarios del Día Seleccionado -->
-                                    <label class="form-label small fw-bold text-uppercase text-muted" style="letter-spacing: 0.5px;">2. Elija la franja horaria para el día elegido</label>
-                                    <div id="wrapperTimeSlots">
-                                        <div class="time-slot-grid" id="gridTimeSlots">
-                                            <!-- Se inyecta dinámicamente -->
-                                        </div>
-                                        
-                                        <!-- NOTA CONDICIONAL EXCLUSIVA PARA LOS SÁBADOS -->
-                                        <div id="saturdayNotice" class="alert-aesthetic-warning d-none">
-                                            <i class="fa-solid fa-circle-exclamation"></i>
-                                            <div>
-                                                <h6 class="fw-bold m-0" style="font-size:0.9rem;">Día de Gestión Especial Académica</h6>
-                                                <p class="m-0 mt-1" style="font-size:0.8rem; line-height:1.4;">Este día se gestionará con el área académica para saber si se puede o no, porque normalmente las clases se dictan de lunes a viernes. Los sábados son casos especiales a gestionar.</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Resumen de Sesiones Agendadas -->
-                                    <div id="wrapperBookedSessions" style="display: none; margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--border-color);">
-                                        <label class="form-label small fw-bold text-uppercase text-muted" style="letter-spacing: 0.5px; margin-bottom: 12px;">Mis Fechas Seleccionadas</label>
-                                        <div id="listBookedSessions">
-                                            <!-- Se listan las clases agendadas -->
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </div>
-                        </div>
-
                         <!-- PASO 5: BANCO -->
                         <div class="step-content" id="step-5">
                             <h2 class="step-title">Datos de Facturación</h2>
@@ -1241,7 +1162,7 @@
 
                         <!-- NAVEGACIÓN -->
                         <div class="d-flex justify-content-between align-items-center mt-5 pt-4 border-top">
-                            <span class="text-muted fw-bold" style="letter-spacing: 1px; font-size: 0.85rem;" id="step-counter">PASO 1 DE 6</span>
+                            <span class="text-muted fw-bold" style="letter-spacing: 1px; font-size: 0.85rem;" id="step-counter">PASO 1 DE 5</span>
                             <div class="d-flex gap-3">
                                 <button type="button" class="btn-cancel" id="btnPrev" onclick="cambiarUI(-1)" style="display: none;">Volver atrás</button>
                                 <button type="button" class="btn-continue" id="btnNext" onclick="guardarYAvanzar()" disabled>
@@ -1266,11 +1187,29 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         const N8N_URL = "https://n8n.balticec.com/webhook/ad08f4fd-2709-460a-9368-238395ad8533";
         
         let pasoActual = 1; const totalPasos = 6;
+
+        // CAMBIO: como internamente el Paso 4 (Curso) desapareció pero el backend sigue
+        // identificando "Facturación" como paso 5 y "Verificación" como paso 6 (para no
+        // romper el guardado), esta función traduce el número INTERNO al número que
+        // realmente debe VER el docente en el contador y en las etiquetas (1,2,3,4,5).
+        function pasoVisual(p) { return p >= 5 ? p - 1 : p; }
+        const totalPasosVisual = 5;
+
+        // NUEVO: si la ejecutiva fue quien cargó los diplomas/transcripts del docente (modo
+        // admin), el docente ya no debe poder tocar el Paso 2 desde su propio portal.
+        let diplomasBloqueadosPorEjecutiva = false;
         let idExpedienteUrl = new URLSearchParams(window.location.search).get('exp');
 
-        // NUEVO: si no hay ningún expediente (?exp=...), es porque estamos en el modo
-        // "solo registrar datos del docente" — en ese caso el Paso 4 (Asignación de Curso)
-        // no aplica en absoluto y se oculta por completo del asistente.
+        // CAMBIO: el Paso 4 (Asignación de Curso) ya NO se usa nunca en este asistente —
+        // esa función ahora vive por completo en registroinvitacion.html (donde el docente
+        // acepta la invitación y elige día/horario del curso). Este formulario ahora sirve
+        // ÚNICAMENTE para subir/editar la información del docente (documentos, educación,
+        // perfil, datos bancarios), sin importar si viene con un Expediente (?exp=...) o no.
+        const pasoAsignacionOculto = true;
+
+        // "soloDatosMode" ahora solo indica si hay o no un Expediente real (?exp=...) que
+        // finalizar al terminar el Paso 6 — ya NO decide si se muestra el Paso 4 (eso lo
+        // controla "pasoAsignacionOculto" de arriba, que siempre está activo).
         const soloDatosMode = !idExpedienteUrl;
         
         // Si viene un ID de docente por la URL (modo administrativo), lo cargamos prioritariamente
@@ -1564,8 +1503,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
         document.addEventListener('DOMContentLoaded', () => {
             
-            // NUEVO: en modo "solo datos" (sin expediente), el Paso 4 no aplica y se oculta del stepper
-            if (soloDatosMode) {
+            // El Paso 4 (Asignación de Curso) ya no existe en este asistente — siempre oculto.
+            if (pasoAsignacionOculto) {
                 const tab4El = document.getElementById('tab-4');
                 if (tab4El) tab4El.style.display = 'none';
             }
@@ -1692,6 +1631,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 if (result.status === 'success' || result.status === 'partial') {
                     const d = result.data;
                     window.docsSolicitadosGlobal = result.documentosSolicitados || "";
+                    diplomasBloqueadosPorEjecutiva = !!result.diplomasBloqueados;
 
                     // Adaptación estética de títulos para Administradores
                     const modeParam = new URLSearchParams(window.location.search).get('mode');
@@ -1781,6 +1721,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     } else {
                         addDiplomaEdit(); 
                     }
+                    aplicarBloqueoPaso2();
 
                     // Asignar campos del paso 3 
                     if(d.correo) document.getElementById('reg-correo').value = d.correo;
@@ -1905,6 +1846,37 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         }
 
         // --- LÓGICA VISUAL DE DIPLOMAS (Paso 2) ---
+        // NUEVO: si diplomasBloqueadosPorEjecutiva es true Y no estamos en modo admin, el
+        // docente no puede editar ni añadir diplomas — solo puede verlos. Si el docente fue
+        // quien subió sus propios datos originalmente, esto nunca se activa y sigue pudiendo
+        // editar como siempre.
+        function aplicarBloqueoPaso2() {
+            const modeParam = new URLSearchParams(window.location.search).get('mode');
+            if (!diplomasBloqueadosPorEjecutiva || modeParam === 'admin') return;
+
+            // Ocultamos el botón de "Añadir Grado Adicional"
+            const btnAgregar = document.querySelector('#step2-content > .btn-add-dynamic');
+            if (btnAgregar) btnAgregar.style.display = 'none';
+
+            // Deshabilitamos el botón "Editar" de cada diploma ya guardado
+            document.querySelectorAll('#diplomas-container .diploma-item.view-mode-dip button').forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('disabled');
+                btn.title = 'Estos datos fueron cargados por administración';
+            });
+
+            // Insertamos un aviso explicativo arriba de las tarjetas
+            const cont = document.getElementById('step2-content');
+            if (cont && !document.getElementById('aviso-paso2-bloqueado')) {
+                const aviso = document.createElement('div');
+                aviso.id = 'aviso-paso2-bloqueado';
+                aviso.className = 'mb-3';
+                aviso.style.cssText = 'background:#fffbeb; border:1px solid #fde68a; border-radius:10px; padding:14px 18px; font-size:0.85rem; color:#92400e; display:flex; align-items:flex-start; gap:10px;';
+                aviso.innerHTML = `<i class="fa-solid fa-lock mt-1"></i><div><b>Esta información fue cargada por administración.</b><br>Si necesitas corregir algún dato de tus diplomas o transcripts, contacta a tu asesora académica.</div>`;
+                cont.insertBefore(aviso, cont.firstChild);
+            }
+        }
+
         function renderDiplomaReadonly(data) {
             const container = document.getElementById('diplomas-container');
             const div = document.createElement('div');
@@ -2447,7 +2419,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             // donde el usuario terminó parado, no en el paso que realmente se guardó.
             const pasoOrigen = pasoActual;
 
-            let payload = { action: "save_expediente_step", step: pasoActual, idDocente: userId, idExpediente: idExpedienteUrl, idInvitacion: selectedInvitationId };
+            let payload = { action: "save_expediente_step", step: pasoActual, idDocente: userId, idExpediente: idExpedienteUrl, idInvitacion: selectedInvitationId, modoAdmin: (new URLSearchParams(window.location.search).get('mode') === 'admin') };
 
             try {
                 // PASO 1
@@ -2754,8 +2726,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         if (!document.getElementById('tab-1').classList.contains('completed')) pasosFaltantes.push("1 (Docs)");
                         if (!document.getElementById('tab-2').classList.contains('completed')) pasosFaltantes.push("2 (Grados)");
                         if (!validarPaso3Completo()) pasosFaltantes.push("3 (Perfil)");
-                        // NUEVO: el Paso 4 (Curso) no aplica en modo solo-datos, así que no se exige
-                        if (!soloDatosMode && !validarPaso4Completo()) pasosFaltantes.push("4 (Curso)");
+                        // El Paso 4 (Curso) ya no existe en este asistente — nunca se exige aquí
+                        if (!pasoAsignacionOculto && !validarPaso4Completo()) pasosFaltantes.push("4 (Curso)");
                         if (!validarPaso5Completo()) pasosFaltantes.push("5 (Banco)");
                         if (!validarPaso6Completo(true)) pasosFaltantes.push("6 (Datos vacíos)"); 
 
@@ -3104,7 +3076,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
             // 3. ACTUALIZAR UI DE BOTONES
             document.getElementById('btnPrev').style.display = pasoActual === 1 ? 'none' : 'block';
-            document.getElementById('step-counter').innerText = `PASO ${pasoActual} DE ${totalPasos}`;
+            document.getElementById('step-counter').innerText = `PASO ${pasoVisual(pasoActual)} DE ${totalPasosVisual}`;
             
             const btnNext = document.getElementById('btnNext');
             if(pasoActual === totalPasos) { 
@@ -3145,9 +3117,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             const pasoBase = (pasoOrigen !== undefined && pasoOrigen !== null) ? pasoOrigen : pasoActual;
             let nuevoPaso = pasoBase + direccion;
 
-            // NUEVO: en modo "solo datos" el Paso 4 está oculto, así que la navegación lo salta
-            // por completo (de 3 se va directo a 5, y de 5 hacia atrás se va directo a 3)
-            if (soloDatosMode && nuevoPaso === 4) {
+            // El Paso 4 está oculto siempre, así que la navegación lo salta por completo
+            // (de 3 se va directo a 5, y de 5 hacia atrás se va directo a 3)
+            if (pasoAsignacionOculto && nuevoPaso === 4) {
                 nuevoPaso = direccion === 1 ? 5 : 3;
             }
             
@@ -3511,7 +3483,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             const p1 = document.getElementById('tab-1').classList.contains('completed');
             const p2 = document.getElementById('tab-2').classList.contains('completed');
             const p3 = validarPaso3Completo();
-            const p4 = soloDatosMode ? true : validarPaso4Completo(); // El Paso 4 no aplica en modo solo-datos
+            const p4 = pasoAsignacionOculto ? true : validarPaso4Completo(); // El Paso 4 ya no existe en este asistente
             const p5 = validarPaso5Completo();
             const p6 = validarPaso6Completo(false); // false para que evalúe sin pintar de rojo
 
