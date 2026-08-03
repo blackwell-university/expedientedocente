@@ -1187,29 +1187,14 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         const N8N_URL = "https://n8n.balticec.com/webhook/ad08f4fd-2709-460a-9368-238395ad8533";
         
         let pasoActual = 1; const totalPasos = 6;
-
-        // CAMBIO: como internamente el Paso 4 (Curso) desapareció pero el backend sigue
-        // identificando "Facturación" como paso 5 y "Verificación" como paso 6 (para no
-        // romper el guardado), esta función traduce el número INTERNO al número que
-        // realmente debe VER el docente en el contador y en las etiquetas (1,2,3,4,5).
         function pasoVisual(p) { return p >= 5 ? p - 1 : p; }
         const totalPasosVisual = 5;
 
-        // NUEVO: si la ejecutiva fue quien cargó los diplomas/transcripts del docente (modo
-        // admin), el docente ya no debe poder tocar el Paso 2 desde su propio portal.
         let diplomasBloqueadosPorEjecutiva = false;
         let idExpedienteUrl = new URLSearchParams(window.location.search).get('exp');
 
-        // CAMBIO: el Paso 4 (Asignación de Curso) ya NO se usa nunca en este asistente —
-        // esa función ahora vive por completo en registroinvitacion.html (donde el docente
-        // acepta la invitación y elige día/horario del curso). Este formulario ahora sirve
-        // ÚNICAMENTE para subir/editar la información del docente (documentos, educación,
-        // perfil, datos bancarios), sin importar si viene con un Expediente (?exp=...) o no.
         const pasoAsignacionOculto = true;
 
-        // "soloDatosMode" ahora solo indica si hay o no un Expediente real (?exp=...) que
-        // finalizar al terminar el Paso 6 — ya NO decide si se muestra el Paso 4 (eso lo
-        // controla "pasoAsignacionOculto" de arriba, que siempre está activo).
         const soloDatosMode = !idExpedienteUrl;
         
         // Si viene un ID de docente por la URL (modo administrativo), lo cargamos prioritariamente
@@ -1284,12 +1269,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
 
         function formatToMonthInput(dateString) {
-            // FIX: esto asumía que dateString SIEMPRE era texto. Si la celda de la hoja trae un
-            // número, un objeto Date, o cualquier otra cosa, dateString.toLowerCase() truena con
-            // "dateString.toLowerCase is not a function" — y como esto se llama dentro de un
-            // forEach() (en renderExperienciaYCompetencias), el error detiene el bucle entero,
-            // dejando sin procesar todo lo que venga después (por eso las Competencias, que se
-            // guardan después de las Experiencias, dejaban de listarse).
             if (!dateString) return "";
             const texto = String(dateString);
             if (texto.toLowerCase().includes('actual')) return "";
@@ -1373,9 +1352,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         function renderExperienciaYCompetencias(lista) {
             if (!lista || lista.length === 0) return;
             lista.forEach(exp => {
-                // FIX: si un registro (ej. una fecha rara) hace tronar addExpField/addSkillField,
-                // antes esto detenía TODO el forEach y los registros siguientes (competencias
-                // incluidas) nunca se llegaban a pintar. Ahora un registro fallido solo se salta.
                 try {
                     const esCompetencia = exp.tipo && String(exp.tipo).trim().startsWith('C');
                     if (esCompetencia) addSkillField(exp);
@@ -1566,9 +1542,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 </div>
             `;
 
-            // NUEVO: antes solo se cargaban los datos previos si había un expediente (?exp=...).
-            // Ahora también se cargan cuando solo tenemos el docente (modo "solo datos", sin curso
-            // asignado todavía) — así el CV/diplomas/perfil ya guardados aparecen pre-llenados.
             if(idExpedienteUrl || userId) cargarDatosPrevios();
             cargarCursosPendientes();
 
@@ -1845,11 +1818,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             return downloadUrl;
         }
 
-        // --- LÓGICA VISUAL DE DIPLOMAS (Paso 2) ---
-        // NUEVO: si diplomasBloqueadosPorEjecutiva es true Y no estamos en modo admin, el
-        // docente no puede editar ni añadir diplomas — solo puede verlos. Si el docente fue
-        // quien subió sus propios datos originalmente, esto nunca se activa y sigue pudiendo
-        // editar como siempre.
         function aplicarBloqueoPaso2() {
             const modeParam = new URLSearchParams(window.location.search).get('mode');
             if (!diplomasBloqueadosPorEjecutiva || modeParam === 'admin') return;
@@ -2298,9 +2266,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     return est !== 'cancelado'; 
                 });
                 
-                if(pendientes.length === 0) { 
-                    // NUEVO: si este expediente se creó para solo recolectar los datos del docente
-                    // (sin asignar curso todavía), dejamos avanzar sin bloquear en este paso.
+                if(pendientes.length === 0) {
                     lista.innerHTML = `
                         <div class="p-4 bg-light border rounded text-center">
                             <i class="fa-regular fa-calendar-xmark mb-2" style="font-size:1.8rem; color:#94a3b8;"></i>
@@ -2551,10 +2517,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                             const transFile = item.querySelector('.dip-transcript').files[0];
                             const currentGrado = item.querySelector('.dip-grado').value;
 
-                            // FIX: generamos (o reutilizamos) un ID único de diploma ANTES de guardar,
-                            // así el backend nunca tiene que "adivinar" un ID nuevo y n8n puede
-                            // devolver la extracción exactamente a esta fila (no por "grado", que puede
-                            // repetirse si hay 2 diplomas del mismo nivel).
                             const idDipGenerado = item.dataset.id || ("DIP-" + new Date().getTime().toString().slice(-6) + Math.floor(Math.random() * 100));
                             item.dataset.id = idDipGenerado;
 
@@ -2713,11 +2675,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 
                 else if (pasoActual === 6) {
                     const intencion = document.getElementById('btnNext').dataset.intencion;
-                    payload.esFinalizar = false; // Por defecto es solo un borrador
-
-                    // NUEVO: en modo "solo datos" (sin expediente) nunca se marca como "finalizar" —
-                    // aquí solo se guardan los datos del docente, nunca se actualiza ningún estado
-                    // de expediente (porque no existe ninguno en este modo).
+                    payload.esFinalizar = false; // Por defecto es solo un borrado
+                    
                     if (intencion === "finalizar" && !soloDatosMode) {
                         payload.esFinalizar = true; 
                     } else {
