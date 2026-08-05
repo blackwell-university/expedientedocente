@@ -438,14 +438,29 @@
         }
 
         // ==================== FOTO DE PERFIL ====================
+        // NUEVO: la URL que se guarda en la hoja ("docs.google.com/uc?export=download") está
+        // pensada para DESCARGAR el archivo, no para mostrarlo como <img> — muchos navegadores
+        // no la renderizan bien ahí. La convertimos a un formato de imagen confiable solo al
+        // momento de pintarla (la URL guardada en la hoja no se toca).
+        function convertirAUrlImagenDirecta(url) {
+            if (!url) return '';
+            const match = url.match(/[-\w]{25,}/); // extrae el ID del archivo de Drive
+            if (!match) return url;
+            return `https://lh3.googleusercontent.com/d/${match[0]}=s300`;
+        }
+
         function pintarFoto(url, iniciales) {
             const grande = document.getElementById('fotoPerfilGrande');
             const nav = document.getElementById('userInitialNav');
             const mobile = document.getElementById('fotoMobile');
             if (url) {
-                grande.innerHTML = `<img src="${url}" alt="Foto de perfil">`;
-                if (nav) nav.innerHTML = `<img src="${url}" alt="">`;
-                if (mobile) mobile.innerHTML = `<img src="${url}" alt="">`;
+                const urlImagen = convertirAUrlImagenDirecta(url);
+                // NUEVO: onerror — si por lo que sea la imagen no carga, mostramos las
+                // iniciales en vez de dejar el ícono roto o el texto del "alt" a la vista.
+                const imgTag = (elId) => `<img src="${urlImagen}" alt="" onerror="document.getElementById('${elId}').innerText='${iniciales}'">`;
+                grande.innerHTML = imgTag('fotoPerfilGrande');
+                if (nav) nav.innerHTML = imgTag('userInitialNav');
+                if (mobile) mobile.innerHTML = imgTag('fotoMobile');
             } else {
                 grande.innerText = iniciales;
                 if (nav) nav.innerText = iniciales;
@@ -503,6 +518,13 @@
                 Swal.fire('Sesión no encontrada', 'Vuelve a iniciar sesión.', 'error');
                 return;
             }
+
+            // NUEVO: mostramos de una vez lo que ya tenemos guardado en el navegador (nombre e ID),
+            // sin esperar al servidor — así la pantalla no se siente vacía/lenta mientras carga
+            // el resto (correo, foto, acordeón de datos).
+            document.getElementById('nombreCompletoPerfil').innerText = fullName;
+            document.getElementById('idDocentePerfil').innerText = docenteIdGlobal;
+            pintarFoto('', fullName.substring(0, 2).toUpperCase());
 
             try {
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: docenteIdGlobal }) });
