@@ -227,10 +227,30 @@
                     </div>
                 </div>
 
+                <!-- NUEVO: TARJETA DE MI CV -->
+                <div class="form-card mb-4">
+                    <span class="section-badge"><i class="fa-solid fa-file-pdf me-2"></i>Mi CV</span>
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                        <div>
+                            <div class="fw-bold" id="cvNombreArchivo" style="font-size:0.95rem;">Cargando...</div>
+                            <div class="text-muted" id="cvEstadoTexto" style="font-size:0.82rem;">-</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a href="#" id="cvVerLink" target="_blank" class="btn btn-sm" style="background:#f8fafc; color:#475569; border:1px solid var(--border-color); border-radius:8px; font-weight:600;">
+                                <i class="fa-regular fa-eye me-1"></i>Ver
+                            </a>
+                            <label class="btn btn-sm btn-primary" style="border-radius:8px; font-weight:600; cursor:pointer;">
+                                <i class="fa-solid fa-arrow-up-from-bracket me-1"></i>Actualizar CV
+                                <input type="file" id="inputCV" accept=".pdf,.doc,.docx" style="display:none;" onchange="subirCV(this)">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- ACORDEÓN CON TODOS LOS DATOS -->
                 <div class="form-card">
                     <span class="section-badge"><i class="fa-solid fa-list-check me-2"></i>Todos mis Datos</span>
-                    <p class="text-muted" style="font-size: 0.85rem; margin-top: -12px;">Despliega cada sección para ver, a simple vista, qué campos ya llenaste y cuáles te faltan.</p>
+                    <p class="text-muted" style="font-size: 0.85rem; margin-top: -12px;">Despliega cada sección para ver, a simple vista, qué campos ya llenaste y cuáles te faltan. Datos Personales y Datos Bancarios los puedes editar aquí mismo.</p>
                     <div class="accordion" id="accordionDatosDocente">
 
                         <div class="accordion-item">
@@ -292,8 +312,8 @@
                     </div>
 
                     <div class="text-center mt-4">
-                        <a href="registroexpediente.html" class="btn btn-primary fw-bold px-4" style="border-radius: 12px;">
-                            <i class="fa-solid fa-pen me-2"></i>Editar mis Datos
+                        <a href="registroexpediente.html" class="btn btn-sm" style="background:#f8fafc; color:#475569; border:1px solid var(--border-color); border-radius: 12px; font-weight:600;">
+                            <i class="fa-solid fa-graduation-cap me-2"></i>Editar Educación y Experiencia Laboral
                         </a>
                     </div>
                 </div>
@@ -306,6 +326,8 @@
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
         let docenteIdGlobal = localStorage.getItem('userId');
+        // NUEVO: si la ejecutiva ya cargó los diplomas del docente, no se pueden editar aquí
+        let diplomasBloqueadosPorEjecutiva = false;
 
         let currentSizeLevel = 0;
         const fontSizes = ["16px", "18px", "20px", "22px"];
@@ -357,6 +379,20 @@
             return str;
         }
 
+        // NUEVO: convierte cualquier valor de fecha a formato "yyyy-MM" para <input type="month">
+        function toMonthInputValue(valor) {
+            if (!valor) return '';
+            const str = String(valor).trim();
+            if (/actualidad|presente/i.test(str)) return '';
+            let m = str.match(/^(\d{4})-(\d{2})/);
+            if (m) return `${m[1]}-${m[2]}`;
+            const d = new Date(str);
+            if (!isNaN(d.getTime())) return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+            return '';
+        }
+
+        function esActualidad(valor) { return /actualidad|presente/i.test(String(valor || '').trim()); }
+
         function actualizarBadgeSeccion(idBadge, llenos, total) {
             const badge = document.getElementById(idBadge);
             if (!badge) return;
@@ -364,56 +400,105 @@
             badge.className = 'badge rounded-pill ms-2 ' + (llenos === total ? 'badge-campo-ok' : 'badge-campo-falta');
         }
 
+        // NUEVO: input editable para Datos Personales / Bancarios (mismo estilo visual que campoDato)
+        function campoInput(label, id, valor, tipo = 'text') {
+            const v = (valor === undefined || valor === null) ? '' : valor;
+            return `
+            <div class="col-md-4 dato-campo">
+                <span class="info-label">${label}</span>
+                <input type="${tipo}" class="form-control form-control-sm" id="${id}" value="${String(v).replace(/"/g, '&quot;')}" style="font-size:0.85rem; border-radius:8px;">
+            </div>`;
+        }
+
+        // ==================== EDUCACIÓN (DIPLOMAS) — SOLO LECTURA ====================
+        function tarjetaDiplomaSoloLectura(edu) {
+            return `
+            <div class="diploma-mini-card">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <b style="font-size:0.9rem;">${edu.grado || 'Grado'}</b>
+                    <span class="badge" style="background:#f1f5f9; color:#334155; font-size:0.7rem;">${edu.estado || 'Subido'}</span>
+                </div>
+                <div class="row g-2">
+                    ${campoDato('Carrera / Especialidad', edu.rama)}
+                    ${campoDato('Institución', edu.instituto)}
+                    ${campoDato('Ubicación', edu.ubicacion)}
+                    ${campoDato('Inicio', formatFechaMesAnio(edu.inicio))}
+                    ${campoDato('Fin', formatFechaMesAnio(edu.fin))}
+                </div>
+            </div>`;
+        }
+
         function llenarAcordeonDatosDocente(d, drafts) {
             const paisEsEEUU = /estados unidos|united states|^usa$/i.test((d.pais || '').trim());
-            const camposPersonales = [
-                ['DNI / Pasaporte', d.dni], ['Tipo de Documento', d.tipo_id], ['Nombres', d.nombres], ['Apellidos', d.apellidos],
-                ['Correo', d.correo], ['Celular', d.celular], ['Fecha de Nacimiento', formatFechaCompleta(d.fecha_nacimiento)], ['Código Postal', d.cp],
-                ['País', d.pais], ['Ciudad', d.ciudad], ['Dirección', d.direccion]
-            ];
-            let htmlPersonales = camposPersonales.map(([l, v]) => campoDato(l, v)).join('');
-            let llenosPersonales = camposPersonales.filter(([, v]) => v && String(v).trim() !== '').length;
-            let totalPersonales = camposPersonales.length;
 
-            if (paisEsEEUU) {
-                htmlPersonales += campoDato('Estado/Región', d.estado_region);
-                totalPersonales += 1;
-                if (d.estado_region && String(d.estado_region).trim() !== '') llenosPersonales += 1;
-            } else {
-                htmlPersonales += `
+            // --- DATOS PERSONALES (editable) ---
+            let htmlPersonales = `
+                ${campoInput('DNI / Pasaporte', 'inp-dni', d.dni)}
+                ${campoInput('Tipo de Documento', 'inp-tipo_id', d.tipo_id)}
+                ${campoInput('Nombres', 'inp-nombres', d.nombres)}
+                ${campoInput('Apellidos', 'inp-apellidos', d.apellidos)}
                 <div class="col-md-4 dato-campo">
-                    <span class="info-label">Estado/Región</span>
-                    <div class="dato-valor text-muted" style="font-style:italic;">No aplica (solo EE. UU.)</div>
+                    <span class="info-label">Correo (no editable aquí)</span>
+                    <div class="dato-valor">${d.correo || 'Sin llenar'}</div>
+                </div>
+                ${campoInput('Celular', 'inp-celular', d.celular)}
+                ${campoInput('Fecha de Nacimiento', 'inp-fecha_nacimiento', d.fecha_nacimiento ? String(d.fecha_nacimiento).split('T')[0] : '', 'date')}
+                ${campoInput('Código Postal', 'inp-cp', d.cp)}
+                ${campoInput('País', 'inp-pais', d.pais)}
+                ${campoInput('Ciudad', 'inp-ciudad', d.ciudad)}
+                ${campoInput('Dirección', 'inp-direccion', d.direccion)}
+                ${campoInput('Estado/Región (solo EE. UU.)', 'inp-estado_region', d.estado_region)}
+            `;
+            document.getElementById('cont-datos-personales').innerHTML = htmlPersonales + `
+                <div class="col-12 text-end mt-2">
+                    <button class="btn btn-primary btn-sm fw-bold" style="border-radius:8px;" onclick="guardarDatosPersonales()">
+                        <i class="fa-regular fa-floppy-disk me-1"></i>Guardar Datos Personales
+                    </button>
                 </div>`;
-            }
-            document.getElementById('cont-datos-personales').innerHTML = htmlPersonales;
-            actualizarBadgeSeccion('badge-personales', llenosPersonales, totalPersonales);
 
-            const camposBancarios = [
-                ['Banco', d.banco], ['Moneda', d.moneda], ['Tipo de Cuenta', d.tipo_cuenta], ['Cuenta Bancaria', d.cuenta],
-                ['CCI / Interbancaria', d.cci], ['Tipo de Ruta (ACH)', d.tipo_ruta], ['Código de Ruta', d.codigo_ruta]
-            ];
-            document.getElementById('cont-datos-bancarios').innerHTML = camposBancarios.map(([l, v]) => campoDato(l, v)).join('');
-            actualizarBadgeSeccion('badge-bancarios', camposBancarios.filter(([,v]) => v && String(v).trim() !== '').length, camposBancarios.length);
+            const camposPersonalesConteo = [d.dni, d.tipo_id, d.nombres, d.apellidos, d.celular, d.fecha_nacimiento, d.cp, d.pais, d.ciudad, d.direccion];
+            actualizarBadgeSeccion('badge-personales', camposPersonalesConteo.filter(v => v && String(v).trim() !== '').length, camposPersonalesConteo.length);
+
+            // --- DATOS BANCARIOS (editable) ---
+            const htmlBancarios = `
+                ${campoInput('Banco', 'inp-banco', d.banco)}
+                ${campoInput('Moneda', 'inp-moneda', d.moneda)}
+                ${campoInput('Tipo de Cuenta', 'inp-tipo_cuenta', d.tipo_cuenta)}
+                ${campoInput('Cuenta Bancaria', 'inp-cuenta', d.cuenta)}
+                ${campoInput('CCI / Interbancaria', 'inp-cci', d.cci)}
+                ${campoInput('Tipo de Ruta (ACH)', 'inp-tipo_ruta', d.tipo_ruta)}
+                ${campoInput('Código de Ruta', 'inp-codigo_ruta', d.codigo_ruta)}
+            `;
+            document.getElementById('cont-datos-bancarios').innerHTML = htmlBancarios + `
+                <div class="col-12 text-end mt-2">
+                    <button class="btn btn-primary btn-sm fw-bold" style="border-radius:8px;" onclick="guardarDatosBancarios()">
+                        <i class="fa-regular fa-floppy-disk me-1"></i>Guardar Datos Bancarios
+                    </button>
+                </div>`;
+
+            const camposBancariosConteo = [d.banco, d.moneda, d.tipo_cuenta, d.cuenta, d.cci, d.tipo_ruta, d.codigo_ruta];
+            actualizarBadgeSeccion('badge-bancarios', camposBancariosConteo.filter(v => v && String(v).trim() !== '').length, camposBancariosConteo.length);
+
+            // --- MI CV ---
+            const cvNombre = document.getElementById('cvNombreArchivo');
+            const cvEstado = document.getElementById('cvEstadoTexto');
+            const cvVerLink = document.getElementById('cvVerLink');
+            if (d.url_cv) {
+                cvNombre.innerText = 'Curriculum Vitae';
+                cvEstado.innerHTML = `Estado: <b>${d.estado_cv || 'Subido'}</b>`;
+                cvVerLink.href = d.url_cv;
+                cvVerLink.classList.remove('d-none');
+            } else {
+                cvNombre.innerText = 'Aún no has subido tu CV';
+                cvEstado.innerText = '';
+                cvVerLink.classList.add('d-none');
+            }
 
             const eduList = drafts.educacion || [];
             if (eduList.length === 0) {
                 document.getElementById('cont-educacion').innerHTML = '<p class="text-danger m-0" style="font-size:0.85rem;"><i class="fa-solid fa-triangle-exclamation me-1"></i>Aún no has subido ningún diploma.</p>';
             } else {
-                document.getElementById('cont-educacion').innerHTML = eduList.map(edu => `
-                    <div class="diploma-mini-card">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <b style="font-size:0.9rem;">${edu.grado || 'Grado'}</b>
-                            <span class="badge" style="background:#f1f5f9; color:#334155; font-size:0.7rem;">${edu.estado || 'Subido'}</span>
-                        </div>
-                        <div class="row g-2">
-                            ${campoDato('Carrera / Especialidad', edu.rama)}
-                            ${campoDato('Institución', edu.instituto)}
-                            ${campoDato('Ubicación', edu.ubicacion)}
-                            ${campoDato('Inicio', formatFechaMesAnio(edu.inicio))}
-                            ${campoDato('Fin', formatFechaMesAnio(edu.fin))}
-                        </div>
-                    </div>`).join('');
+                document.getElementById('cont-educacion').innerHTML = eduList.map(edu => tarjetaDiplomaSoloLectura(edu)).join('');
             }
             const camposEduLlenos = eduList.reduce((acc, e) => acc + ['rama','instituto','ubicacion','inicio','fin'].filter(k => e[k] && String(e[k]).trim() !== '').length, 0);
             actualizarBadgeSeccion('badge-educacion', camposEduLlenos, eduList.length * 5 || 1);
@@ -468,6 +553,115 @@
             }
         }
 
+        // ==================== GUARDAR DATOS PERSONALES / BANCARIOS ====================
+        function valorInput(id) {
+            const el = document.getElementById(id);
+            return el ? el.value.trim() : '';
+        }
+
+        async function guardarDatosPersonales() {
+            const payload = {
+                action: 'update_docente_perfil_directo',
+                docenteId: docenteIdGlobal,
+                personales: {
+                    dni: valorInput('inp-dni'),
+                    tipo_id: valorInput('inp-tipo_id'),
+                    nombres: valorInput('inp-nombres'),
+                    apellidos: valorInput('inp-apellidos'),
+                    celular: valorInput('inp-celular'),
+                    fecha_nacimiento: valorInput('inp-fecha_nacimiento'),
+                    cp: valorInput('inp-cp'),
+                    pais: valorInput('inp-pais'),
+                    ciudad: valorInput('inp-ciudad'),
+                    direccion: valorInput('inp-direccion'),
+                    estado_region: valorInput('inp-estado_region')
+                }
+            };
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }).then(r => r.json());
+                if (res.status === 'success') {
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Datos personales guardados', showConfirmButton: false, timer: 2500 });
+                    document.getElementById('nombreCompletoPerfil').innerText = `${payload.personales.nombres} ${payload.personales.apellidos}`.trim();
+                } else {
+                    Swal.fire('Error', res.message || 'No se pudo guardar.', 'error');
+                }
+            } catch (e) {
+                Swal.fire('Error de conexión', 'No se pudo guardar. Intenta de nuevo.', 'error');
+            }
+        }
+
+        async function guardarDatosBancarios() {
+            const payload = {
+                action: 'update_docente_perfil_directo',
+                docenteId: docenteIdGlobal,
+                bancarios: {
+                    banco: valorInput('inp-banco'),
+                    moneda: valorInput('inp-moneda'),
+                    tipo_cuenta: valorInput('inp-tipo_cuenta'),
+                    cuenta: valorInput('inp-cuenta'),
+                    cci: valorInput('inp-cci'),
+                    tipo_ruta: valorInput('inp-tipo_ruta'),
+                    codigo_ruta: valorInput('inp-codigo_ruta')
+                }
+            };
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }).then(r => r.json());
+                if (res.status === 'success') {
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Datos bancarios guardados', showConfirmButton: false, timer: 2500 });
+                } else {
+                    Swal.fire('Error', res.message || 'No se pudo guardar.', 'error');
+                }
+            } catch (e) {
+                Swal.fire('Error de conexión', 'No se pudo guardar. Intenta de nuevo.', 'error');
+            }
+        }
+
+        // ==================== ACTUALIZAR CV (sin pasar por n8n) ====================
+        async function subirCV(input) {
+            if (!input.files || input.files.length === 0) return;
+            const f = input.files[0];
+
+            if (f.size > 10 * 1024 * 1024) {
+                Swal.fire('Archivo muy pesado', 'Tu CV debe pesar menos de 10 MB.', 'warning');
+                input.value = '';
+                return;
+            }
+
+            Swal.fire({ title: 'Actualizando tu CV...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
+
+            const reader = new FileReader();
+            reader.readAsDataURL(f);
+            reader.onload = async () => {
+                const base64 = reader.result.split(',')[1];
+                try {
+                    const res = await fetch(GAS_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'update_docente_cv_directo',
+                            docenteId: docenteIdGlobal,
+                            fileBase64: base64,
+                            fileName: f.name,
+                            mimeType: f.type || 'application/pdf'
+                        })
+                    }).then(r => r.json());
+
+                    if (res.status === 'success') {
+                        document.getElementById('cvNombreArchivo').innerText = 'Curriculum Vitae';
+                        document.getElementById('cvEstadoTexto').innerHTML = `Estado: <b>${res.estado || 'Actualizado - Pendiente de Procesar'}</b>`;
+                        const cvVerLink = document.getElementById('cvVerLink');
+                        cvVerLink.href = res.url;
+                        cvVerLink.classList.remove('d-none');
+                        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'CV actualizado', showConfirmButton: false, timer: 2500 });
+                    } else {
+                        Swal.fire('Error', res.message || 'No se pudo actualizar tu CV.', 'error');
+                    }
+                } catch (e) {
+                    Swal.fire('Error de conexión', 'No se pudo actualizar tu CV. Intenta de nuevo.', 'error');
+                }
+                input.value = '';
+            };
+        }
+
         async function subirFotoPerfil(input) {
             if (!input.files || input.files.length === 0) return;
             const f = input.files[0];
@@ -510,7 +704,7 @@
         }
 
         // ==================== CARGA INICIAL ====================
-        document.addEventListener('DOMContentLoaded', async () => {
+        async function cargarPerfil() {
             const fullName = localStorage.getItem('userName') || "Docente";
             document.getElementById('userNameNav').innerText = fullName.split(' ')[0];
 
@@ -518,13 +712,6 @@
                 Swal.fire('Sesión no encontrada', 'Vuelve a iniciar sesión.', 'error');
                 return;
             }
-
-            // NUEVO: mostramos de una vez lo que ya tenemos guardado en el navegador (nombre e ID),
-            // sin esperar al servidor — así la pantalla no se siente vacía/lenta mientras carga
-            // el resto (correo, foto, acordeón de datos).
-            document.getElementById('nombreCompletoPerfil').innerText = fullName;
-            document.getElementById('idDocentePerfil').innerText = docenteIdGlobal;
-            pintarFoto('', fullName.substring(0, 2).toUpperCase());
 
             try {
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: docenteIdGlobal }) });
@@ -534,6 +721,8 @@
                     Swal.fire('Error', 'No se pudo cargar tu perfil.', 'error');
                     return;
                 }
+
+                diplomasBloqueadosPorEjecutiva = !!result.diplomasBloqueados;
 
                 const d = result.data || {};
                 const nombreCompleto = `${d.nombres || ''} ${d.apellidos || ''}`.trim() || fullName;
@@ -551,6 +740,20 @@
                 console.error(e);
                 Swal.fire('Error de conexión', 'No se pudo cargar tu perfil.', 'error');
             }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const fullName = localStorage.getItem('userName') || "Docente";
+            document.getElementById('userNameNav').innerText = fullName.split(' ')[0];
+
+            // NUEVO: mostramos de una vez lo que ya tenemos guardado en el navegador (nombre e ID),
+            // sin esperar al servidor — así la pantalla no se siente vacía/lenta mientras carga
+            // el resto (correo, foto, acordeón de datos).
+            document.getElementById('nombreCompletoPerfil').innerText = fullName;
+            document.getElementById('idDocentePerfil').innerText = docenteIdGlobal || '-';
+            pintarFoto('', fullName.substring(0, 2).toUpperCase());
+
+            cargarPerfil();
         });
     </script>
 </body>

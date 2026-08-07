@@ -60,13 +60,35 @@
         .agenda-badge { background: var(--primary-light); color: var(--primary); font-weight: 800; font-size: 0.7rem; padding: 3px 8px; border-radius: 6px; flex-shrink: 0; }
         .agenda-time { color: var(--text-muted); font-size: 0.8rem; display: flex; align-items: center; gap: 6px; }
 
-        /* Sesiones dinámicas */
-        .session-card { background: #f8fafc; border: 1px solid var(--gray-border); border-radius: 12px; padding: 20px; margin-bottom: 15px; transition: 0.3s;}
-        .session-card.realizada { border-left: 4px solid #10b981; }
-        .session-card.reprogramada { border-left: 4px solid #f59e0b; }
-        .session-card.pendiente { border-left: 4px solid var(--text-muted); }
-        .session-card-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
-        .session-badge-num { background: var(--primary-dark); color: white; font-weight: 700; font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; }
+        /* Sesiones dinámicas — REDISEÑADAS */
+        .session-card { background: #ffffff; border: 1px solid var(--gray-border); border-radius: 14px; padding: 18px 20px; margin-bottom: 14px; transition: 0.25s; box-shadow: 0 2px 8px rgba(0,0,0,0.015); }
+        .session-card:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.05); }
+        .session-card.realizada { border-color: #bbf7d0; background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 60px); }
+        .session-card.reprogramada { border-color: #fde68a; background: linear-gradient(180deg, #fffbeb 0%, #ffffff 60px); }
+        .session-card.pendiente { border-color: var(--gray-border); }
+        .session-card-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+        .session-num-circle { width: 34px; height: 34px; border-radius: 50%; background: var(--primary-dark); color: white; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .session-card.realizada .session-num-circle { background: #16a34a; }
+        .session-card.reprogramada .session-num-circle { background: #d97706; }
+        .session-title-wrap { display: flex; align-items: center; gap: 12px; }
+        .session-badge-num { display: none; } /* legado, reemplazado por session-num-circle */
+
+        .session-date-block { display: flex; align-items: center; gap: 10px; background: #f8fafc; border-radius: 10px; padding: 10px 14px; }
+        .session-date-block i { color: var(--primary); font-size: 1rem; }
+        .session-date-label { font-size: 0.68rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 1px; }
+        .session-date-value { font-size: 0.88rem; color: #0f172a; font-weight: 700; }
+
+        .reprogramacion-box { background: #fffbeb; border: 1px dashed #fde68a; border-radius: 10px; padding: 16px; }
+
+        /* NUEVO: Material del Curso subido por el docente */
+        .material-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: #f8fafc; border: 1px solid var(--gray-border); border-radius: 12px; margin-bottom: 10px; }
+        .material-icon { width: 40px; height: 40px; border-radius: 10px; background: #eef2ff; color: #4338ca; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+        .material-info { flex-grow: 1; min-width: 0; }
+        .material-nombre { font-weight: 700; font-size: 0.87rem; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .material-meta { font-size: 0.76rem; color: var(--text-muted); }
+        .material-categoria { background: #eef2ff; color: #4338ca; font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; }
+        .btn-gestionar { background: #eff6ff; color: var(--primary); font-weight: 700; font-size: 0.8rem; border: none; padding: 8px 16px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: 0.2s; white-space: nowrap; }
+        .btn-gestionar:hover { background: var(--primary); color: white; }
 
         .form-control, .form-select { border-radius: 8px; border-color: #cbd5e1; font-size: 0.9rem; }
         .form-control:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
@@ -124,6 +146,10 @@
 
             .session-card { padding: 16px; }
             .session-badge-num { font-size: 0.68rem; }
+
+            .material-item { flex-wrap: wrap; }
+            .material-info { flex-basis: 100%; order: 1; }
+            .btn-gestionar { order: 2; margin-left: 52px; }
         }
     </style>
 </head>
@@ -225,6 +251,15 @@
 
                     </div>
                 </div>
+
+                <!-- NUEVO: MATERIAL DEL CURSO SUBIDO POR EL DOCENTE (SOLO LECTURA) -->
+                <div class="form-card">
+                    <span class="section-badge"><i class="fa-solid fa-folder-open me-2"></i>Material del Curso</span>
+                    <p class="text-muted small mb-3" style="margin-top: -12px;">Documentos que el docente subió para este curso (PPT, separatas, etc.). Solo puedes verlos y descargarlos.</p>
+                    <div id="contenedorMaterial">
+                        <p class="text-muted m-0"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando material del curso...</p>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -242,6 +277,31 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             if(!invId) { Swal.fire('Error', 'Faltan parámetros de clase.', 'error'); return; }
             cargarDetalleClase();
         });
+
+        // --- MATERIAL DEL CURSO (SOLO LECTURA — la asesora nunca puede eliminar) ---
+        function renderMaterialCurso(archivos) {
+            const cont = document.getElementById('contenedorMaterial');
+            if (!archivos || archivos.length === 0) {
+                cont.innerHTML = '<p class="text-muted m-0">El docente aún no ha subido material para este curso.</p>';
+                return;
+            }
+            const iconoPorNombre = (nombre) => {
+                const ext = (nombre || '').split('.').pop().toLowerCase();
+                if (['ppt', 'pptx'].includes(ext)) return 'fa-solid fa-file-powerpoint';
+                if (['doc', 'docx'].includes(ext)) return 'fa-solid fa-file-word';
+                if (ext === 'pdf') return 'fa-solid fa-file-pdf';
+                return 'fa-solid fa-file-lines';
+            };
+            cont.innerHTML = archivos.map(arch => `
+                <div class="material-item">
+                    <div class="material-icon"><i class="${iconoPorNombre(arch.nombre)}"></i></div>
+                    <div class="material-info">
+                        <div class="material-nombre">${arch.nombre || 'Archivo'}</div>
+                        <div class="material-meta"><span class="material-categoria">${arch.categoria || 'Material del Curso'}</span> · Subido el ${arch.fecha || '—'}</div>
+                    </div>
+                    <a href="${arch.url}" target="_blank" class="btn-gestionar" style="flex-shrink:0;"><i class="fa-solid fa-download"></i> Descargar</a>
+                </div>`).join('');
+        }
 
         // Convertidor inteligente para mostrar PNG y JPG de Google Drive
         function getSafeImgUrl(url) {
@@ -335,6 +395,12 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     }
                     renderSesionesUI();
 
+                    // NUEVO: Material del Curso (Columna O de Invitaciones) — solo lectura
+                    let archivosDocente = [];
+                    try { archivosDocente = JSON.parse(inv.archivos || '[]'); } catch (e) { archivosDocente = []; }
+                    if (!Array.isArray(archivosDocente)) archivosDocente = [];
+                    renderMaterialCurso(archivosDocente);
+
                 } else {
                     Swal.fire('Error', 'No se encontró la información de la clase.', 'error');
                 }
@@ -419,7 +485,10 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 html += `
                 <div class="session-card ${claseClp} ses-row" data-index="${idx}">
                     <div class="session-card-header">
-                        <h6 class="fw-bold m-0"><span class="session-badge-num me-2">Sesión ${ses.num}</span> Programación Original</h6>
+                        <div class="session-title-wrap">
+                            <div class="session-num-circle">${ses.num}</div>
+                            <h6 class="fw-bold m-0">Sesión ${ses.num}</h6>
+                        </div>
                         <select class="form-select form-select-sm fw-bold w-auto sel-estado estado-${claseClp}" onchange="cambiarEstadoSesion(${idx}, this)">
                             <option value="Pendiente" ${ses.estado === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
                             <option value="Realizada" ${ses.estado === 'Realizada' ? 'selected' : ''}>Realizada</option>
@@ -427,19 +496,29 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         </select>
                     </div>
                     
-                    <div class="row g-3">
+                    <div class="row g-2">
                         <div class="col-md-6">
-                            <div class="small text-muted fw-bold">Fecha Original</div>
-                            <div class="fw-medium">${ses.fechaBase || '—'}</div>
+                            <div class="session-date-block">
+                                <i class="fa-regular fa-calendar"></i>
+                                <div>
+                                    <div class="session-date-label">Fecha Original</div>
+                                    <div class="session-date-value">${ses.fechaBase || '—'}</div>
+                                </div>
+                            </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="small text-muted fw-bold">Horario Original</div>
-                            <div class="fw-medium">${ses.horaBase || '—'}</div>
+                            <div class="session-date-block">
+                                <i class="fa-regular fa-clock"></i>
+                                <div>
+                                    <div class="session-date-label">Horario Original</div>
+                                    <div class="session-date-value">${ses.horaBase || '—'}</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Campos de Reprogramación (Con Selector de Hora) -->
-                    <div class="reprogramacion-box mt-3 pt-3 border-top" style="display: ${mostrarRepro};">
+                    <div class="reprogramacion-box mt-3" style="display: ${mostrarRepro};">
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label small fw-bold text-primary">Nueva Fecha *</label>
