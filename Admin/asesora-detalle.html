@@ -89,6 +89,8 @@
         .material-categoria { background: #eef2ff; color: #4338ca; font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; }
         .btn-gestionar { background: #eff6ff; color: var(--primary); font-weight: 700; font-size: 0.8rem; border: none; padding: 8px 16px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: 0.2s; white-space: nowrap; }
         .btn-gestionar:hover { background: var(--primary); color: white; }
+        .btn-material-ver { background: #f8fafc; color: var(--text-main); border: 1px solid var(--gray-border); font-weight: 700; font-size: 0.8rem; padding: 8px 16px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: 0.2s; white-space: nowrap; }
+        .btn-material-ver:hover { background: #f1f5f9; color: var(--text-main); }
 
         .form-control, .form-select { border-radius: 8px; border-color: #cbd5e1; font-size: 0.9rem; }
         .form-control:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
@@ -149,7 +151,7 @@
 
             .material-item { flex-wrap: wrap; }
             .material-info { flex-basis: 100%; order: 1; }
-            .btn-gestionar { order: 2; margin-left: 52px; }
+            .material-item > .d-flex { order: 2; margin-left: 52px; }
         }
     </style>
 </head>
@@ -264,6 +266,8 @@
         </div>
     </main>
 
+    <div class="toast-container position-fixed bottom-0 end-0 p-4" id="toastContainer" style="z-index: 1055;"></div>
+
     <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec"
         const urlParams = new URLSearchParams(window.location.search);
@@ -292,6 +296,11 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 if (ext === 'pdf') return 'fa-solid fa-file-pdf';
                 return 'fa-solid fa-file-lines';
             };
+            // NUEVO: enlace de previsualización de Drive (para "Ver" sin descargar)
+            const getViewUrl = (url) => {
+                const match = (url || '').match(/[-\w]{25,}/);
+                return match ? `https://drive.google.com/file/d/${match[0]}/view` : url;
+            };
             cont.innerHTML = archivos.map(arch => `
                 <div class="material-item">
                     <div class="material-icon"><i class="${iconoPorNombre(arch.nombre)}"></i></div>
@@ -299,7 +308,10 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         <div class="material-nombre">${arch.nombre || 'Archivo'}</div>
                         <div class="material-meta"><span class="material-categoria">${arch.categoria || 'Material del Curso'}</span> · Subido el ${arch.fecha || '—'}</div>
                     </div>
-                    <a href="${arch.url}" target="_blank" class="btn-gestionar" style="flex-shrink:0;"><i class="fa-solid fa-download"></i> Descargar</a>
+                    <div class="d-flex gap-2" style="flex-shrink:0;">
+                        <a href="${getViewUrl(arch.url)}" target="_blank" class="btn-material-ver"><i class="fa-regular fa-eye"></i> Ver</a>
+                        <a href="${arch.url}" target="_blank" class="btn-gestionar"><i class="fa-solid fa-download"></i> Descargar</a>
+                    </div>
                 </div>`).join('');
         }
 
@@ -634,7 +646,25 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             setTimeout(() => toast.remove(), 4000);
         }
 
-        function logout() { localStorage.clear(); window.location.href = "../index.html"; }
+        function logout() {
+            Swal.fire({
+                title: '¿Cerrar sesión?',
+                text: 'Vas a salir del portal de asesoría.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary-dark)',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, cerrar sesión',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true,
+                customClass: { popup: 'rounded-4' }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    localStorage.clear();
+                    window.location.href = "../index.html";
+                }
+            });
+        }
         function toggleMobileSidebar() {
             document.getElementById('sidebar').classList.toggle('show-mobile');
             document.getElementById('sidebarOverlay').classList.toggle('active');
