@@ -267,6 +267,7 @@
         @media (max-width: 992px) {
             .nav-links-desktop { display: none; }
             .top-nav { padding: 0 20px; }
+            .bottom-nav { display: flex; } /* FIX: antes solo aparecía debajo de 768px, dejando un hueco sin menú entre 769px y 992px */
         }
 
         @media (max-width: 768px) {
@@ -314,6 +315,35 @@
             transform: translateY(-2px) !important;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
         }
+    
+        /* --- REDISEÑO DEL MENÚ INFERIOR (más dinámico) --- */
+        .bottom-nav {
+            left: 16px !important; right: 16px !important; bottom: 14px !important; height: 72px !important;
+            background: rgba(255,255,255,0.92) !important;
+            -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+            border-radius: 26px !important;
+            box-shadow: 0 12px 32px rgba(15,23,42,0.14), 0 2px 8px rgba(15,23,42,0.05) !important;
+            border: 1px solid rgba(226,232,240,0.8);
+            justify-content: space-around !important;
+            padding: 0 8px !important;
+        }
+        .bottom-item { gap: 3px !important; height: 56px; }
+        .bottom-item .icon-wrap {
+            width: 42px; height: 30px; display: flex; align-items: center; justify-content: center;
+            border-radius: 15px; background: transparent;
+            transition: background 0.35s cubic-bezier(.34,1.56,.64,1), transform 0.35s cubic-bezier(.34,1.56,.64,1);
+        }
+        .bottom-item .material-symbols-rounded {
+            font-variation-settings: 'FILL' 0, 'wght' 400 !important;
+            transition: font-variation-settings 0.25s ease !important;
+            transform: none !important;
+        }
+        .bottom-item.active .icon-wrap { background: var(--primary-light, #eff6ff); transform: translateY(-3px); }
+        .bottom-item.active .material-symbols-rounded { font-variation-settings: 'FILL' 1, 'wght' 500 !important; }
+        .bottom-item.active::after { display: none !important; }
+        .bottom-item span:last-child { font-weight: 600 !important; transition: font-weight 0.2s ease; }
+        .bottom-item.active span:last-child { font-weight: 800 !important; }
+        .bottom-item:active .icon-wrap { transform: scale(0.88); }
     </style>
 </head>
 <body>
@@ -351,19 +381,19 @@
     <!-- NAVEGACIÓN INFERIOR (MÓVIL) -->
     <nav class="bottom-nav">
         <a href="dashboard-docente.html" class="bottom-item">
-            <span class="material-symbols-rounded">home</span>
+            <span class="icon-wrap"><span class="material-symbols-rounded">home</span></span>
             <span>Inicio</span>
         </a>
         <a href="misexpedientes.html" class="bottom-item">
-            <span class="material-symbols-rounded">folder_open</span>
+            <span class="icon-wrap"><span class="material-symbols-rounded">folder_open</span></span>
             <span>Expedientes</span>
         </a>
         <a href="miscursos.html" class="bottom-item active">
-            <span class="material-symbols-rounded">co_present</span>
+            <span class="icon-wrap"><span class="material-symbols-rounded">co_present</span></span>
             <span>Mis Clases</span>
         </a>
         <a href="perfil.html" class="bottom-item"> 
-            <span class="material-symbols-rounded">person</span>
+            <span class="icon-wrap"><span class="material-symbols-rounded">person</span></span>
             <span>Perfil</span>
         </a>
     </nav>
@@ -655,8 +685,22 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         }
 
         function logout() { 
-            localStorage.clear(); 
-            window.location.href = "index.html"; 
+            Swal.fire({
+                title: '¿Cerrar sesión?',
+                text: 'Vas a salir del portal del docente.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, cerrar sesión',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    localStorage.clear(); 
+                    window.location.href = "index.html"; 
+                }
+            });
         }
 
         document.addEventListener('DOMContentLoaded', () => {
