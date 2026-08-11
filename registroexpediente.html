@@ -39,25 +39,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Íconos Minimalistas y delgados (Weight 300) -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,300,0,0" />
-    <style>
-        /* FIX: sin esta regla, .material-symbols-rounded no usa la fuente de íconos
-           y el navegador renderiza el nombre del ícono como texto plano */
-        .material-symbols-rounded {
-            font-family: 'Material Symbols Rounded';
-            font-weight: normal;
-            font-style: normal;
-            font-size: 24px;
-            line-height: 1;
-            letter-spacing: normal;
-            text-transform: none;
-            display: inline-block;
-            white-space: nowrap;
-            word-wrap: normal;
-            direction: ltr;
-            -webkit-font-feature-settings: 'liga';
-            -webkit-font-smoothing: antialiased;
-        }
-    </style>
     
     <!-- Intl-Tel-Input (Selector de País para Celular) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@24.5.0/build/css/intlTelInput.css">
@@ -176,7 +157,7 @@
             transition: font-variation-settings 0.25s ease;
             transform: none;
         }
-        .bottom-item > span:last-child {
+        .bottom-item span:last-child {
             font-size: 0; max-width: 0; opacity: 0; overflow: hidden; white-space: nowrap;
             font-weight: 800; margin-left: 0; line-height: 1;
             transition: font-size 0.25s ease, max-width 0.3s ease, opacity 0.25s ease, margin-left 0.25s ease;
@@ -188,7 +169,7 @@
         }
         .bottom-item.active .material-symbols-rounded,
         .bottom-item.active i { font-variation-settings: 'FILL' 1, 'wght' 500; }
-        .bottom-item.active > span:last-child { font-size: 0.78rem; max-width: 120px; opacity: 1; margin-left: 7px; }
+        .bottom-item.active span:last-child { font-size: 0.78rem; max-width: 120px; opacity: 1; margin-left: 7px; }
         .bottom-item:active { transform: scale(0.94); }
         
 
@@ -1645,6 +1626,30 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 if (dataExp && dataExp.status === 'success' && dataExp.expediente) {
                     expEstadoReal = dataExp.expediente.estado || ""; 
                     expedienteCompleto = dataExp.expediente;
+                }
+
+                // NUEVO: bloqueo de edición — una vez que el expediente terminó la etapa
+                // de Recopilación (ya no está en "", "Por enviar", "Enviado" o "En proceso"),
+                // el docente ya no puede seguir editando desde aquí. Esto no aplica cuando
+                // lo abre la ejecutiva con ?mode=admin (botón "Completar formulario del docente").
+                const esModoAdmin = new URLSearchParams(window.location.search).get('mode') === 'admin';
+                const estadosEditables = ['', 'Por enviar', 'Enviado', 'En proceso'];
+                if (idExpedienteUrl && expEstadoReal && !estadosEditables.includes(expEstadoReal) && !esModoAdmin) {
+                    const loaderInicial0 = document.getElementById('loaderInicial');
+                    if (loaderInicial0) loaderInicial0.style.display = 'none';
+                    const mainWizardCard0 = document.getElementById('mainWizardCard');
+                    if (mainWizardCard0) {
+                        mainWizardCard0.style.display = 'block';
+                        mainWizardCard0.innerHTML = `
+                            <div class="text-center py-5">
+                                <i class="fa-solid fa-circle-check fa-3x mb-3" style="color:#10b981;"></i>
+                                <h4 class="fw-bold">Tu registro ya fue enviado</h4>
+                                <p class="text-muted">Tu expediente se encuentra actualmente en estado <b>"${expEstadoReal}"</b> y ya no se puede editar desde aquí.</p>
+                                <a href="misexpedientes.html" class="btn btn-primary mt-2">Volver a mis expedientes</a>
+                            </div>`;
+                    }
+                    if (btnNext) btnNext.disabled = true;
+                    return;
                 }
 
                 const wizardCard = document.getElementById('mainWizardCard');

@@ -17,25 +17,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Íconos Minimalistas y delgados -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,300,0,0" />
-    <style>
-        /* FIX: sin esta regla, .material-symbols-rounded no usa la fuente de íconos
-           y el navegador renderiza el nombre del ícono como texto plano */
-        .material-symbols-rounded {
-            font-family: 'Material Symbols Rounded';
-            font-weight: normal;
-            font-style: normal;
-            font-size: 24px;
-            line-height: 1;
-            letter-spacing: normal;
-            text-transform: none;
-            display: inline-block;
-            white-space: nowrap;
-            word-wrap: normal;
-            direction: ltr;
-            -webkit-font-feature-settings: 'liga';
-            -webkit-font-smoothing: antialiased;
-        }
-    </style>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
@@ -96,7 +77,7 @@
             transition: font-variation-settings 0.25s ease;
             transform: none;
         }
-        .bottom-item > span:last-child {
+        .bottom-item span:last-child {
             font-size: 0; max-width: 0; opacity: 0; overflow: hidden; white-space: nowrap;
             font-weight: 800; margin-left: 0; line-height: 1;
             transition: font-size 0.25s ease, max-width 0.3s ease, opacity 0.25s ease, margin-left 0.25s ease;
@@ -108,7 +89,7 @@
         }
         .bottom-item.active .material-symbols-rounded,
         .bottom-item.active i { font-variation-settings: 'FILL' 1, 'wght' 500; }
-        .bottom-item.active > span:last-child { font-size: 0.78rem; max-width: 120px; opacity: 1; margin-left: 7px; }
+        .bottom-item.active span:last-child { font-size: 0.78rem; max-width: 120px; opacity: 1; margin-left: 7px; }
         .bottom-item:active { transform: scale(0.94); }
 
         /* --- CONTENEDOR PRINCIPAL SPLIT --- */
@@ -369,6 +350,24 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             cargarDetallesFirma();
         });
 
+        // NUEVO: pantalla de bloqueo cuando el expediente/invitación aún no llegó
+        // a la etapa en la que el sistema espera la firma del docente
+        function mostrarNoListoParaFirma(mensaje) {
+            const wrapper = document.getElementById('docCarousel');
+            if (wrapper) {
+                wrapper.innerHTML = `
+                    <div class="text-center text-muted py-4 w-100">
+                        <i class="fa-solid fa-lock fa-2x mb-3" style="color:#f59e0b;"></i>
+                        <p class="fw-bold mb-1" style="color:#1e293b;">Todavía no puedes firmar</p>
+                        <p class="small mb-0">${mensaje}</p>
+                    </div>`;
+            }
+            const dots = document.getElementById('docDots');
+            if (dots) dots.innerHTML = '';
+            const panelFirma = document.getElementById('panelFirmaContenido');
+            if (panelFirma) panelFirma.style.display = 'none';
+        }
+
         function inicializarSignaturePad() {
             canvas = document.getElementById('signature-pad-canvas');
             if (!canvas) return;
@@ -395,6 +394,15 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
                         document.getElementById('txtDocenteNombre').innerText = `Hola, ${doc.nombres}`;
                         document.getElementById('txtExpDetails').innerText = `Invitación N°: ${inv.idInvitacion} • ${inv.curso}`;
+
+                        // NUEVO: solo se puede firmar cuando la universidad ya envió estos
+                        // documentos de invitación a firma (o etapas posteriores, para poder
+                        // ver el estado aunque ya no queden pendientes)
+                        const estadosListoFirmaInv = ['Pendiente firma docente', 'Firmado por docente', 'Pendiente firma directores', 'Completado'];
+                        if (!estadosListoFirmaInv.includes(inv.estado)) {
+                            mostrarNoListoParaFirma(`Esta invitación todavía está en estado "${inv.estado || 'Pendiente'}". Podrás firmar cuando la universidad te envíe los documentos.`);
+                            return;
+                        }
 
                         // LOS ÚNICOS 3 DOCUMENTOS QUE EL DOCENTE FIRMA EN UNA INVITACIÓN
                         const docsFirmablesInvitacion = [
@@ -429,6 +437,14 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
                         document.getElementById('txtDocenteNombre').innerText = `Hola, ${doc.nombres}`;
                         document.getElementById('txtExpDetails').innerText = `Expediente Anual N°: ${exp.idExpediente}`;
+
+                        // NUEVO: solo se puede firmar cuando el expediente ya está en la
+                        // fase de Contratación y la universidad envió el contrato para firma
+                        const estadosListoFirmaExp = ['Contrato enviado', 'Firmado', 'Contratado'];
+                        if (!estadosListoFirmaExp.includes(exp.estado)) {
+                            mostrarNoListoParaFirma(`Tu expediente todavía está en estado "${exp.estado || 'Pendiente'}". Podrás firmar tu contrato cuando la universidad te lo envíe.`);
+                            return;
+                        }
 
                         const docsFirmablesExpediente = [
                             "Letter of Appointment", "Resume", "Reference Check Forms", "Proposed Salary",
