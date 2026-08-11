@@ -487,6 +487,43 @@
         }
         .archivo-preview-item .btn-quitar-archivo:hover { background: #ef4444; color: white; }
         .btn-adjuntar:hover { border-color: var(--primary); color: var(--primary); background: #eff6ff; }
+    
+        /* --- REDISEÑO DE SWEETALERT2 (UI Corporativa) --- */
+        div:where(.swal2-container) div:where(.swal2-popup) {
+            border-radius: 16px !important;
+            padding: 24px !important;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
+            font-family: 'Inter', sans-serif !important;
+            border: 1px solid rgba(0,0,0,0.05) !important;
+        }
+        div:where(.swal2-container) h2:where(.swal2-title) {
+            font-size: 1.35rem !important;
+            color: var(--primary-dark) !important;
+            font-weight: 700 !important;
+            padding: 0 !important;
+        }
+        div:where(.swal2-container) div:where(.swal2-html-container) {
+            font-size: 0.95rem !important;
+            color: var(--text-muted) !important;
+            margin: 16px 0 0 0 !important;
+            line-height: 1.5 !important;
+        }
+        div:where(.swal2-container) .swal2-actions {
+            margin-top: 24px !important;
+            gap: 12px !important;
+        }
+        div:where(.swal2-container) button:where(.swal2-styled) {
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            padding: 10px 24px !important;
+            font-size: 0.9rem !important;
+            transition: all 0.2s ease !important;
+            box-shadow: none !important;
+        }
+        div:where(.swal2-container) button:where(.swal2-styled):hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+        }
     </style>
 </head>
 <body>
@@ -539,7 +576,7 @@
         <div class="content-area">
             <div class="centered-container">
                 <div class="breadcrumb-nav">
-|                    <a href="gestion-expedientes.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Volver a Revisión de Expedientes</a>
+                    <a href="gestion-expedientes.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Volver a Revisión de Expedientes</a>
                 </div>
 
 
@@ -1197,12 +1234,13 @@
                 const confirmacion = await Swal.fire({
                     title: '¿Volver a generar la traducción?',
                     html: `Estos documentos <b>ya tienen</b> una versión en inglés generada. Si continúas, se reemplazará por una nueva traducción:<ul style="text-align:left; margin-top:10px;">${listaHtml}</ul>`,
-                    icon: 'question',
+                    icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#2563eb',
                     cancelButtonColor: '#64748b',
                     confirmButtonText: 'Sí, volver a generar',
-                    cancelButtonText: tareasNuevas.length > 0 ? 'No, solo los nuevos' : 'Cancelar'
+                    cancelButtonText: tareasNuevas.length > 0 ? 'No, solo los nuevos' : 'Cancelar',
+                    reverseButtons: true
                 });
                 if (confirmacion.isConfirmed) {
                     tareasFinales = tareasFinales.concat(tareasExistentes);
@@ -1797,12 +1835,13 @@
             const res1 = await Swal.fire({
                 title: 'Verificación de Documentos',
                 html: '¿Confirma que ha revisado detalladamente y <b>aprueba</b> los documentos generados de este docente?',
-                icon: 'question',
+                icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#15803d', 
+                confirmButtonColor: '#2563eb', 
                 cancelButtonColor: '#64748b',
                 confirmButtonText: '<i class="fa-solid fa-check me-2"></i> Sí, documentos verificados',
-                cancelButtonText: 'Aún estoy revisando'
+                cancelButtonText: 'Aún estoy revisando',
+                reverseButtons: true
             });
 
             if (res1.isConfirmed) {
@@ -1814,12 +1853,13 @@
                 const res2 = await Swal.fire({
                     title: 'Derivar a Evaluación',
                     html: 'El expediente ha sido verificado. ¿Desea enviarlo ahora al área de <b>Evaluación de Credenciales</b> (Sara)?',
-                    icon: 'info',
+                    icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#2563eb',
                     cancelButtonColor: '#64748b',
                     confirmButtonText: '<i class="fa-solid fa-paper-plane me-2"></i> Sí, derivar a evaluación',
-                    cancelButtonText: 'Enviar más tarde'
+                    cancelButtonText: 'Enviar más tarde',
+                reverseButtons: true
                 });
 
                 if (res2.isConfirmed) {
@@ -2162,12 +2202,13 @@
             const confirm = await Swal.fire({
                 title: '¿Confirmar Evaluación Académica?',
                 text: "Al confirmar, el expediente pasará formalmente a la fase de Contratación (Por contratar) para iniciar la formalización de sus documentos contractuales.",
-                icon: 'question',
+                icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#10b981',
+                confirmButtonColor: '#2563eb',
                 cancelButtonColor: '#64748b',
                 confirmButtonText: 'Sí, confirmar y avanzar',
-                cancelButtonText: 'Cancelar'
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
             });
 
             if (confirm.isConfirmed) {
@@ -2475,12 +2516,13 @@
             const confirm = await Swal.fire({
                 title: '¿Enviar Contrato al Docente?',
                 text: "Se notificará automáticamente al docente por correo electrónico con acceso directo para que revise y estampe su firma digital.",
-                icon: 'question',
+                icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#0284c7',
+                confirmButtonColor: '#2563eb',
                 cancelButtonColor: '#64748b',
                 confirmButtonText: 'Sí, enviar contrato',
-                cancelButtonText: 'Cancelar'
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
             });
 
             if (confirm.isConfirmed) {
@@ -2507,12 +2549,13 @@
             const confirm = await Swal.fire({
                 title: '¿Enviar Contrato a Directores?',
                 text: "Se notificará por correo a los directores para que accedan a firmar el contrato del docente.",
-                icon: 'question',
+                icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#1e3a8a',
+                confirmButtonColor: '#2563eb',
                 cancelButtonColor: '#64748b',
                 confirmButtonText: 'Sí, enviar a directivos',
-                cancelButtonText: 'Cancelar'
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
             });
 
             if (confirm.isConfirmed) {

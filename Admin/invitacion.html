@@ -181,6 +181,43 @@
             .sidebar-overlay.active { display: block; opacity: 1; }
             .collapse-btn { display: none; }
         }
+    
+        /* --- REDISEÑO DE SWEETALERT2 (UI Corporativa) --- */
+        div:where(.swal2-container) div:where(.swal2-popup) {
+            border-radius: 16px !important;
+            padding: 24px !important;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
+            font-family: 'Inter', sans-serif !important;
+            border: 1px solid rgba(0,0,0,0.05) !important;
+        }
+        div:where(.swal2-container) h2:where(.swal2-title) {
+            font-size: 1.35rem !important;
+            color: var(--primary-dark) !important;
+            font-weight: 700 !important;
+            padding: 0 !important;
+        }
+        div:where(.swal2-container) div:where(.swal2-html-container) {
+            font-size: 0.95rem !important;
+            color: var(--text-muted) !important;
+            margin: 16px 0 0 0 !important;
+            line-height: 1.5 !important;
+        }
+        div:where(.swal2-container) .swal2-actions {
+            margin-top: 24px !important;
+            gap: 12px !important;
+        }
+        div:where(.swal2-container) button:where(.swal2-styled) {
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            padding: 10px 24px !important;
+            font-size: 0.9rem !important;
+            transition: all 0.2s ease !important;
+            box-shadow: none !important;
+        }
+        div:where(.swal2-container) button:where(.swal2-styled):hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+        }
     </style>
 </head>
 <body>
@@ -494,7 +531,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec"
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
         
         const urlParams = new URLSearchParams(window.location.search);
         const invId = urlParams.get('invId') || urlParams.get('inv');
@@ -649,7 +686,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             const confirmacion = await Swal.fire({
                 title: '¿Cambiar el estado de la invitación?',
                 html: `Se cambiará a: <b>"${nuevoEstado}"</b>`,
-                icon: 'question',
+                icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#2563eb',
                 cancelButtonColor: '#64748b',
@@ -881,15 +918,11 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             await cambiarEstadoInvitacion(nuevoEstado);
         }
 
-        // NUEVO: envía el correo REAL de invitación (mismo que se usa para el curso génesis, pero
-        // sin el bloque de "Formalización y Documentación" — eso ya lo maneja send_invitation_email
-        // según el modo). Esto es lo que mueve el estado de "Guardado" a "Enviado" y hace que
-        // misexpedientes.html deje de ocultarla.
         function confirmarEnviarInvitacionDocente() {
             Swal.fire({
                 title: '¿Enviar esta invitación?',
                 html: `Se le notificará a <b>${docenteNombreActual || 'el docente'}</b> por correo para que la acepte y elija su horario.`,
-                icon: 'question',
+                icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#2563eb',
                 cancelButtonColor: '#64748b',
@@ -943,12 +976,13 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             const confirm = await Swal.fire({
                 title: '¿Enviar a Firma del Docente?',
                 text: "Se enviará un correo al docente con el enlace a sus contratos de la invitación (Letter of Appointment, Proposed Salary y Job Description).",
-                icon: 'question',
+                icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#0284c7',
+                confirmButtonColor: '#2563eb',
                 cancelButtonColor: '#64748b',
                 confirmButtonText: 'Sí, enviar para firma',
-                cancelButtonText: 'Cancelar'
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
             });
 
             if (confirm.isConfirmed) {
@@ -976,12 +1010,13 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             const confirm = await Swal.fire({
                 title: '¿Solicitar Firma a Directivos?',
                 text: "Se notificará por correo electrónico a los directores para que ingresen a firmar digitalmente los documentos de esta invitación.",
-                icon: 'question',
+                icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#1e3a8a',
+                confirmButtonColor: '#2563eb',
                 cancelButtonColor: '#64748b',
                 confirmButtonText: 'Sí, notificar a directivos',
-                cancelButtonText: 'Cancelar'
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
             });
 
             if (confirm.isConfirmed) {
@@ -1258,7 +1293,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         function logout() {
             Swal.fire({
                 title: '¿Cerrar sesión?',
-                icon: 'question',
+                icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#2563eb',
                 cancelButtonColor: '#64748b',

@@ -623,7 +623,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec" 
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec"; 
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
         function logout() { if(confirm("¿Cerrar sesión?")) { sessionStorage.clear(); window.location.href = "../index.html"; } }
@@ -861,7 +861,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                                 title: '¡Credenciales Enviadas!',
                                 text: `Se han despachado las credenciales exitosamente al correo ${correoDocente}.`,
                                 icon: 'success',
-                                confirmButtonColor: '#10b981'
+                                confirmButtonColor: '#2563eb'
                             });
                         } else {
                             throw new Error(resData.message || "No se pudo completar el envío.");
@@ -873,7 +873,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                             title: 'No se pudo enviar',
                             text: error.message || 'Ocurrió un error al enviar las credenciales. Intenta de nuevo.',
                             icon: 'error',
-                            confirmButtonColor: '#ef4444'
+                            confirmButtonColor: '#dc2626'
                         });
                     }
                 }
@@ -1211,9 +1211,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     const est = badgeEstadoCurso(curso.estado);
                     const linkExp = curso.idExpediente ? `<a href="expediente.html?expId=${curso.idExpediente}" class="text-decoration-none fw-medium" style="font-size:0.75rem; color: var(--primary);"><i class="fa-regular fa-folder-open me-1"></i>${curso.idExpediente}</a>` : '';
 
-                    // NUEVO: la invitación "génesis" (la que nació junto con el Expediente) no
-                    // tiene documentos propios en Invitaciones — esos viven en el Expediente. Así
-                    // que su "Ver Detalles" debe llevar al Expediente, no a invitacion.html.
                     const linkDetalle = curso.esInvitacionInicial
                         ? `expediente.html?expId=${curso.idExpediente}`
                         : `invitacion.html?invId=${curso.idInvitacion}`;
@@ -1221,6 +1218,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         ? `<span class="badge bg-primary bg-opacity-10 text-primary border border-primary" style="font-size: 0.65rem; font-weight: 700; margin-left: 6px;">Curso inicial del contrato</span>`
                         : '';
 
+                  
                     let horarioHtml;
                     if (curso.horario && curso.horario.includes('|')) {
                         const sesiones = curso.horario.split('|').map(s => s.trim()).filter(Boolean);
@@ -1278,12 +1276,13 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             Swal.fire({
                 title: '¿Enviar Invitación al Docente?',
                 text: "Se enviará el correo oficial y el estado de la invitación cambiará a 'Enviado'.",
-                icon: 'question',
+                icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#2563eb',
                 cancelButtonColor: '#64748b',
                 confirmButtonText: '<i class="fa-regular fa-paper-plane me-1"></i> Sí, enviar',
-                cancelButtonText: 'Cancelar'
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
             }).then(async (result) => {
                 if (result.isConfirmed) {
                     showToast("Recopilando datos y enviando correo...", "success");

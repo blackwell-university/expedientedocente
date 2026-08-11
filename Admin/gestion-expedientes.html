@@ -117,6 +117,43 @@
         .badge-vigencia-vencido { background: #fef2f2; color: #b91c1c; }
 
         @media (max-width: 768px) { .sidebar { display: none; } header, .content-area { padding: 20px; } }
+    
+        /* --- REDISEÑO DE SWEETALERT2 (UI Corporativa) --- */
+        div:where(.swal2-container) div:where(.swal2-popup) {
+            border-radius: 16px !important;
+            padding: 24px !important;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
+            font-family: 'Inter', sans-serif !important;
+            border: 1px solid rgba(0,0,0,0.05) !important;
+        }
+        div:where(.swal2-container) h2:where(.swal2-title) {
+            font-size: 1.35rem !important;
+            color: var(--primary-dark) !important;
+            font-weight: 700 !important;
+            padding: 0 !important;
+        }
+        div:where(.swal2-container) div:where(.swal2-html-container) {
+            font-size: 0.95rem !important;
+            color: var(--text-muted) !important;
+            margin: 16px 0 0 0 !important;
+            line-height: 1.5 !important;
+        }
+        div:where(.swal2-container) .swal2-actions {
+            margin-top: 24px !important;
+            gap: 12px !important;
+        }
+        div:where(.swal2-container) button:where(.swal2-styled) {
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            padding: 10px 24px !important;
+            font-size: 0.9rem !important;
+            transition: all 0.2s ease !important;
+            box-shadow: none !important;
+        }
+        div:where(.swal2-container) button:where(.swal2-styled):hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+        }
     </style>
 </head>
 <body>
@@ -259,7 +296,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec"
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
         let todosExpedientes = [];
         let todasInvitaciones = [];
         let vistaActual = 'expedientes'; // NUEVO: 'expedientes' (contratos anuales) o 'invitaciones' (cursos)
@@ -521,6 +558,10 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     ? `expediente.html?expId=${inv.idExpediente}`
                     : `invitacion.html?invId=${inv.id}`;
 
+                const estadoMostrado = inv.esInvitacionInicial
+                    ? (inv.estadoExpediente || inv.estado || 'Pendiente')
+                    : (inv.estado || 'Pendiente');
+
                 return `
                 <tr>
                     <td>
@@ -537,7 +578,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         </div>
                     </td>
                     <td>${expHtml}</td>
-                    <td><span class="badge-status status-Completado">${inv.estado || 'Pendiente'}</span></td>
+                    <td><span class="badge-status status-Completado">${estadoMostrado}</span></td>
                     <td class="text-center">
                         <div class="d-flex gap-2 justify-content-center">
                             <a href="${linkRevisar}" class="btn-revisar-link">
@@ -557,8 +598,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             }).join('');
         }
 
-        // NUEVO: elimina una invitación (con confirmación). Nunca se puede eliminar la invitación
-        // génesis de un Expediente — esa se elimina (si aplica) junto con todo el Expediente.
         function confirmarEliminarInvitacion(idInvitacion, nombreCurso) {
             Swal.fire({
                 title: '¿Eliminar esta invitación?',

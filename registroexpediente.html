@@ -720,6 +720,43 @@
             display: none !important;
         }
 
+    
+        /* --- REDISEÑO DE SWEETALERT2 (UI Corporativa) --- */
+        div:where(.swal2-container) div:where(.swal2-popup) {
+            border-radius: 16px !important;
+            padding: 24px !important;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
+            font-family: 'Inter', sans-serif !important;
+            border: 1px solid rgba(0,0,0,0.05) !important;
+        }
+        div:where(.swal2-container) h2:where(.swal2-title) {
+            font-size: 1.35rem !important;
+            color: var(--primary-dark) !important;
+            font-weight: 700 !important;
+            padding: 0 !important;
+        }
+        div:where(.swal2-container) div:where(.swal2-html-container) {
+            font-size: 0.95rem !important;
+            color: var(--text-muted) !important;
+            margin: 16px 0 0 0 !important;
+            line-height: 1.5 !important;
+        }
+        div:where(.swal2-container) .swal2-actions {
+            margin-top: 24px !important;
+            gap: 12px !important;
+        }
+        div:where(.swal2-container) button:where(.swal2-styled) {
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            padding: 10px 24px !important;
+            font-size: 0.9rem !important;
+            transition: all 0.2s ease !important;
+            box-shadow: none !important;
+        }
+        div:where(.swal2-container) button:where(.swal2-styled):hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+        }
     </style>
 </head>
 <body>
@@ -1889,7 +1926,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 confirmButtonColor: '#2563eb',
                 cancelButtonColor: '#64748b',
                 confirmButtonText: 'Sí, editar',
-                cancelButtonText: 'Cancelar'
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
             }).then((result) => {
                 if (result.isConfirmed) {
                     convertirAEdicion(btn.closest('.diploma-item'));
@@ -1967,12 +2005,13 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             Swal.fire({
                 title: '¿Actualizar documento?',
                 text: 'Podrás seleccionar un nuevo archivo. Si te arrepientes, solo guarda sin subir nada y se conservará el anterior.',
-                icon: 'info',
+                icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#2563eb',
                 cancelButtonColor: '#64748b',
                 confirmButtonText: 'Sí, editar',
-                cancelButtonText: 'Cancelar'
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
             }).then((result) => {
                 if (result.isConfirmed) {
                     if(tipo === 'cv') {
@@ -3588,9 +3627,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 html: `Se notificará a <b>${nombre}</b>:<br><br>
                        <div style="background:#f8fafc;border-radius:10px;padding:12px 16px;font-style:italic;color:#334155;text-align:left;">"${mensaje}"</div><br>
                        <span style="font-size:0.85rem;color:#64748b;">Tu consulta será atendida en un plazo máximo de <b>6 horas</b>, de lunes a viernes (8:00 a.m. – 5:45 p.m. EST). Fuera de ese horario, se responde el siguiente día hábil.</span>`,
-                icon: 'question',
+                icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#1e3a8a',
+                confirmButtonColor: '#2563eb',
                 cancelButtonColor: '#64748b',
                 confirmButtonText: 'Sí, enviar',
                 cancelButtonText: 'Cancelar',
@@ -3609,7 +3648,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         Swal.fire({
                             icon: 'success', title: '¡Mensaje enviado!',
                             text: `${nombre} recibirá tu solicitud y te contactará dentro del plazo indicado.`,
-                            confirmButtonColor: '#1e3a8a'
+                            confirmButtonColor: '#2563eb'
                         });
                         toggleSoporte();
                     } else {
