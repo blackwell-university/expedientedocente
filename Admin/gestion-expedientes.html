@@ -358,9 +358,6 @@
             document.getElementById('userName').innerText = name;
             document.getElementById('userRoleLabel').innerText = rol;
             document.getElementById('userInitial').innerText = name.trim().substring(0, 2).toUpperCase();
-            
-            const roleSpan = document.querySelector('.user-meta span');
-            if(roleSpan) roleSpan.innerText = role;
 
             cargarTodosExpedientes();
             cargarTodasInvitaciones();
