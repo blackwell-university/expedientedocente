@@ -86,6 +86,16 @@
 
         .btn-sign { background-color: var(--primary-dark); color: white; width: 100%; padding: 14px; border-radius: 12px; font-weight: 700; border: none; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15); }
         .btn-sign:hover { background-color: var(--primary); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(37, 99, 235, 0.2); }
+
+        /* NUEVO: esta página no usa sidebar (es un layout dividido pdf/formulario), así que el
+           "responsive" equivalente aquí es apilar los dos paneles en vertical en vez de partir
+           el ancho 45/55 — a ese ancho el visor de PDF quedaría inutilizable en un celular. */
+        @media (max-width: 900px) {
+            body { overflow-y: auto; height: auto; min-height: 100vh; }
+            .main-container { flex-direction: column; height: auto; min-height: 100vh; }
+            .pdf-panel { width: 100%; height: 45vh; padding: 1.25rem; }
+            .form-panel { width: 100%; height: auto; padding: 1.75rem 1.25rem; box-shadow: none; }
+        }
     </style>
 </head>
 <body>

@@ -73,11 +73,35 @@
 
         .btn-firmar { background: #eff6ff; color: var(--primary); font-weight: 700; font-size: 0.8rem; border: none; padding: 8px 16px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; text-decoration: none; }
         .btn-firmar:hover { background: var(--primary); color: white; }
+
+        /* NUEVO: overlay oscuro + menú lateral flotante en móvil (mismo patrón que asesora-dashboard.html) */
+        .sidebar-overlay {
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.4);
+            z-index: 999; backdrop-filter: blur(3px); opacity: 0; transition: opacity 0.3s ease;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed; left: -280px; top: 0;
+                height: 100vh; z-index: 1000; width: 260px !important;
+                box-shadow: 10px 0 30px rgba(0,0,0,0.15); transition: left 0.3s ease;
+            }
+            .sidebar.show-mobile { left: 0; }
+            .sidebar-overlay.active { display: block; opacity: 1; }
+            header { padding: 15px 20px; }
+            .content-area { padding: 20px 15px; }
+            .page-header h1 { font-size: 1.6rem; }
+            .filter-card { padding: 16px; }
+            .table-wrapper { overflow-x: auto; }
+            .custom-table { min-width: 560px; }
+        }
     </style>
 </head>
 <body>
 
-    <aside class="sidebar">
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
+
+    <aside class="sidebar" id="sidebar">
         <a href="#" class="brand-section">
             <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div>
             <span class="brand-text">Blackwell</span>
@@ -96,9 +120,14 @@
 
     <main class="main-wrapper">
         <header>
-            <div>
-                <h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Área de Directores</h5>
-                <p class="text-muted small m-0">Portal de Aprobación de Contratos</p>
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn border-0 p-0 d-md-none text-dark fs-4" onclick="toggleMobileSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div>
+                    <h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Área de Directores</h5>
+                    <p class="text-muted small m-0">Portal de Aprobación de Contratos</p>
+                </div>
             </div>
         </header>
 
@@ -265,6 +294,11 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         function logout() {
             localStorage.clear();
             window.location.href = "../index.html";
+        }
+
+        function toggleMobileSidebar() {
+            document.getElementById('sidebar').classList.toggle('show-mobile');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
         }
     </script>
 </body>

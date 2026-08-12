@@ -128,7 +128,7 @@
             <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div><span class="brand-text">Blackwell</span>
         </a>
         <div class="user-preview">
-            <div class="avatar">AA</div><div class="user-meta"><b>Asesora Académica</b><span>Gestión de Cursos</span></div>
+            <div class="avatar" id="userInitial">AA</div><div class="user-meta"><b id="userName">Asesora Académica</b><span id="userRoleLabel">Gestión de Cursos</span></div>
         </div>
         <ul class="nav-list">
             <li><a href="#" class="nav-link active"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Gestión de Clases</span></a></li>
@@ -200,7 +200,12 @@
         let paginaActual = 1;
         const FILAS_POR_PAGINA = 10;
 
-        document.addEventListener('DOMContentLoaded', cargarClases);
+        document.addEventListener('DOMContentLoaded', () => {
+            const name = localStorage.getItem('userName') || "Asesora Académica";
+            document.getElementById('userName').innerText = name;
+            document.getElementById('userInitial').innerText = name.trim().substring(0, 2).toUpperCase();
+            cargarClases();
+        });
 
         // NUEVO: color por estado, para identificar de un vistazo si el docente ya aceptó,
         // sigue esperando respuesta, o ya está en proceso de firma
@@ -216,29 +221,65 @@
             return `<span class="badge-estado ${clase}">${estadoRaw}</span>`;
         }
 
-        async function cargarClases() {
+        // NUEVO: mismo patrón de caché "stale-while-revalidate" que ya usa gestion-expedientes.html —
+        // muestra al instante lo último guardado en localStorage mientras llega la respuesta fresca
+        // del servidor, y solo vuelve a dibujar si los datos realmente cambiaron.
+        async function cargarDatosOptimizadosAdmin(actionName, payload, callbackRenderizado) {
+            const cacheKey = `cache_${actionName}_global`;
+            
+            const cachedData = localStorage.getItem(cacheKey);
+            if (cachedData) {
+                callbackRenderizado(JSON.parse(cachedData), false); 
+            } else {
+                callbackRenderizado(null, true); // Loading state
+            }
+
             try {
-                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_all_invitations_global' }) });
-                const response = await res.json();
-                if (response.status === 'success') {
-                    // Filtramos los que no estén vacíos ni en borrador "Guardado"
-                    clasesGlobal = response.data.filter(inv => {
-                        const est = inv.estado.toLowerCase();
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: actionName, ...payload })
+                });
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    if (JSON.stringify(result.data) !== cachedData) {
+                        localStorage.setItem(cacheKey, JSON.stringify(result.data));
+                        callbackRenderizado(result.data, false);
+                    }
+                } else if (!cachedData) {
+                    document.getElementById('tablaClasesBody').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error al cargar datos.</td></tr>';
+                }
+            } catch (error) {
+                console.error("Error actualizando datos:", error);
+                if (!cachedData) document.getElementById('tablaClasesBody').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error al cargar datos.</td></tr>';
+            }
+        }
+
+        function cargarClases() {
+            cargarDatosOptimizadosAdmin(
+                'get_all_invitations_global',
+                {},
+                (data, isLoading) => {
+                    if (isLoading || !data) return; // el spinner del HTML inicial ya cubre este caso
+                    clasesGlobal = data.filter(inv => {
+                        const est = (inv.estado || '').toLowerCase();
                         return est !== 'guardado' && est !== 'cancelado';
                     });
                     poblarFiltros();
                     aplicarFiltros();
                 }
-            } catch (e) { document.getElementById('tablaClasesBody').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error al cargar datos.</td></tr>'; }
+            );
         }
 
         // NUEVO: llena los selects de Estado y Programa con los valores que realmente existen
         function poblarFiltros() {
             const selEstado = document.getElementById('filtroEstado');
+            selEstado.innerHTML = '<option value="">Todos los estados</option>';
             const estadosUnicos = [...new Set(clasesGlobal.map(c => c.estado))].sort();
             estadosUnicos.forEach(est => selEstado.insertAdjacentHTML('beforeend', `<option value="${est}">${est}</option>`));
 
             const selPrograma = document.getElementById('filtroPrograma');
+            selPrograma.innerHTML = '<option value="">Todos los programas</option>';
             const programasUnicos = [...new Set(clasesGlobal.map(c => c.programa).filter(Boolean))].sort();
             programasUnicos.forEach(p => selPrograma.insertAdjacentHTML('beforeend', `<option value="${p}">${p}</option>`));
         }

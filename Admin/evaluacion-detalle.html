@@ -49,6 +49,24 @@
         .nav-link { display: flex; align-items: center; gap: 16px; padding: 12px 14px; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 6px; transition: var(--transition); }
         .nav-link:hover, .nav-link.active { background: #eff6ff; color: var(--primary); font-weight: 600; }
 
+        /* NUEVO: overlay oscuro + menú lateral flotante en móvil */
+        .sidebar-overlay {
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.4);
+            z-index: 999; backdrop-filter: blur(3px); opacity: 0; transition: opacity 0.3s ease;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed; left: -280px; top: 0;
+                height: 100vh; z-index: 1000; width: 260px !important;
+                box-shadow: 10px 0 30px rgba(0,0,0,0.15); transition: left 0.3s ease;
+            }
+            .sidebar.show-mobile { left: 0; }
+            .sidebar-overlay.active { display: block; opacity: 1; }
+            header { padding: 15px 20px; }
+            .content-area { padding: 20px 15px; }
+        }
+
         /* --- CONTENT AREA --- */
         .main-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; }
         header { padding: 20px 48px; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 5; border-bottom: 1px solid var(--gray-border); }
@@ -108,7 +126,9 @@
 </head>
 <body>
 
-    <aside class="sidebar">
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
+
+    <aside class="sidebar" id="sidebar">
         <a href="#" class="brand-section">
             <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div>
             <span class="brand-text">Blackwell</span>
@@ -127,9 +147,14 @@
 
     <main class="main-wrapper">
         <header>
-            <div>
-                <h5 class="fw-bold mb-0" id="headerTitle">Área de Credenciales</h5>
-                <p class="text-muted small m-0" id="headerSubtitle">Revisión Profesional</p>
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn border-0 p-0 d-md-none text-dark fs-4" onclick="toggleMobileSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div>
+                    <h5 class="fw-bold mb-0" id="headerTitle">Área de Credenciales</h5>
+                    <p class="text-muted small m-0" id="headerSubtitle">Revisión Profesional</p>
+                </div>
             </div>
         </header>
 
@@ -244,6 +269,10 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         const isMaria = role === 'Ejecutivo Licenciamiento';
 
         document.addEventListener('DOMContentLoaded', () => {
+            const name = localStorage.getItem('userName') || "Usuario";
+            document.getElementById('userName').innerText = name;
+            document.getElementById('avatarIcon').innerText = name.trim().substring(0, 2).toUpperCase();
+
             if(!expId) {
                 Swal.fire('Error', 'Faltan parámetros de expediente en la URL.', 'error');
                 return;
@@ -251,8 +280,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             
             // Adaptar interfaz si es María (Licenciamiento)
             if (isMaria) {
-                document.getElementById('avatarIcon').innerText = "MB";
-                document.getElementById('userName').innerText = "María Blackwell";
                 document.getElementById('userRoleTxt').innerText = "Licenciamiento";
                 document.getElementById('headerTitle').innerText = "Área de Licenciamiento";
                 document.getElementById('headerSubtitle').innerText = "Fase de Firma y Contratos";
@@ -263,6 +290,11 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             
             cargarDetalleEvaluacion();
         });
+
+        function toggleMobileSidebar() {
+            document.getElementById('sidebar').classList.toggle('show-mobile');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+        }
 
         async function cargarDetalleEvaluacion() {
             try {

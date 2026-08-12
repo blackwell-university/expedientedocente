@@ -14,6 +14,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root { --primary: #2563eb; --primary-light: #eff6ff; --primary-dark: #1e3a8a; --bg-body: #f8fafc; --sidebar-bg: #ffffff; --text-main: #1e293b; --text-muted: #64748b; --gray-border: #e2e8f0; --card-radius: 20px; --sidebar-width: 260px; }
@@ -94,6 +95,23 @@
 
         .form-control, .form-select { border-radius: 8px; border-color: #cbd5e1; font-size: 0.9rem; }
         .form-control:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+
+        /* NUEVO: pestañas para ordenar la gestión del curso (Enlaces/Sesiones vs Material) */
+        .custom-tabs { border-bottom: 1px solid var(--gray-border); gap: 4px; }
+        .custom-tabs .nav-link { border: none; color: var(--text-muted); font-weight: 700; font-size: 0.85rem; padding: 10px 16px; border-radius: 10px 10px 0 0; }
+        .custom-tabs .nav-link:hover { color: var(--primary); background: #f8fafc; }
+        .custom-tabs .nav-link.active { color: var(--primary); background: var(--primary-light); border-bottom: 2px solid var(--primary); }
+
+        /* NUEVO: botón para ver el sílabo del curso, junto al título */
+        .btn-silabo { background: white; color: var(--primary-dark); border: 1px solid var(--gray-border); font-weight: 700; font-size: 0.82rem; padding: 9px 16px; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; transition: 0.2s; white-space: nowrap; }
+        .btn-silabo:hover { background: var(--primary-light); color: var(--primary-dark); border-color: var(--primary); }
+
+        /* NUEVO: acciones sobre la foto del docente (descargar / copiar enlace) */
+        .foto-acciones { display: flex; gap: 6px; margin-top: 8px; }
+        .btn-foto-accion { background: #f8fafc; color: var(--text-muted); border: 1px solid var(--gray-border); font-size: 0.72rem; font-weight: 700; padding: 5px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; transition: 0.2s; text-decoration: none; }
+        .btn-foto-accion:hover { background: var(--primary-light); color: var(--primary); border-color: #bfdbfe; }
+        .profile-avatar { position: relative; }
+        .profile-avatar-wrap { display: flex; flex-direction: column; align-items: flex-start; }
 
         /* NUEVO: select de estado más minimalista (antes tenía emojis y look genérico de bootstrap) */
         .sel-estado { border-radius: 8px; font-weight: 700; font-size: 0.8rem; padding: 6px 30px 6px 12px; border: 1px solid var(--gray-border); background-color: #f1f5f9; color: var(--text-muted); cursor: pointer; }
@@ -200,7 +218,7 @@
             <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div><span class="brand-text">Blackwell</span>
         </a>
         <div class="user-preview">
-            <div class="avatar">AA</div><div class="user-meta"><b>Asesora Académica</b><span>Gestión de Cursos</span></div>
+            <div class="avatar" id="userInitial">AA</div><div class="user-meta"><b id="userName">Asesora Académica</b><span id="userRoleLabel">Gestión de Cursos</span></div>
         </div>
         <ul class="nav-list">
             <li><a href="asesora-dashboard.html" class="nav-link active"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Gestión de Clases</span></a></li>
@@ -224,9 +242,14 @@
                     <a href="asesora-dashboard.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Volver al listado de clases</a>
                 </div>
 
-                <div class="page-header mb-4">
-                    <h1 id="txtCursoNombre">Cargando Curso...</h1>
-                    <p id="txtPrograma">Obteniendo programa...</p>
+                <div class="page-header mb-4 d-flex justify-content-between align-items-start flex-wrap gap-3">
+                    <div>
+                        <h1 id="txtCursoNombre">Cargando Curso...</h1>
+                        <p id="txtPrograma">Obteniendo programa...</p>
+                    </div>
+                    <a href="#" id="btnVerSilabo" class="btn-silabo" target="_blank" style="display:none;">
+                        <i class="fa-solid fa-book-open"></i> Ver Sílabo del Curso
+                    </a>
                 </div>
 
                 <div class="row g-4">
@@ -236,7 +259,10 @@
                             <span class="section-badge"><i class="fa-solid fa-user-tie me-2"></i>Docente a Cargo</span>
                             
                             <div class="profile-header">
-                                <div id="avatarContainer" class="profile-avatar">...</div>
+                                <div class="profile-avatar-wrap">
+                                    <div id="avatarContainer" class="profile-avatar">...</div>
+                                    <div class="foto-acciones" id="fotoAccionesContainer"></div>
+                                </div>
                                 <div>
                                     <h6 class="fw-bold text-dark m-0" id="txtNombresDocente">Cargando...</h6>
                                     <div class="small text-muted mt-1" id="txtCorreoDocente">—</div>
@@ -254,49 +280,69 @@
                         </div>
                     </div>
 
-                    <!-- COLUMNA DERECHA: GESTIÓN DE ENLACES Y SESIONES CON GUARDADO CONTEXTUAL -->
+                    <!-- COLUMNA DERECHA: GESTIÓN ORDENADA EN PESTAÑAS -->
                     <div class="col-lg-8">
-                        
-                        <!-- ENLACES DE CLASE (GUARDADO CONTEXTUAL) -->
-                        <div class="form-card">
-                            <div class="form-card-header">
-                                <span class="section-badge m-0" style="background:#fef3c7; color:#b45309;"><i class="fa-solid fa-link me-2"></i>Enlaces Virtuales de la Clase</span>
-                                <button type="button" class="btn-save-local" id="btnSaveLinks" onclick="guardarEnlaces()">
-                                    <i class="fa-solid fa-floppy-disk"></i> Guardar Enlaces
+
+                        <ul class="nav custom-tabs mb-3" id="gestionTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="tab-btn-gestion" data-bs-toggle="tab" data-bs-target="#tab-gestion" type="button" role="tab">
+                                    <i class="fa-solid fa-link me-1"></i> Enlaces y Sesiones
                                 </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tab-btn-material" data-bs-toggle="tab" data-bs-target="#tab-material" type="button" role="tab">
+                                    <i class="fa-solid fa-folder-open me-1"></i> Material del Curso
+                                </button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content" id="gestionTabsContent">
+                            <div class="tab-pane fade show active" id="tab-gestion" role="tabpanel">
+
+                                <!-- ENLACES DE CLASE (GUARDADO CONTEXTUAL) -->
+                                <div class="form-card">
+                                    <div class="form-card-header">
+                                        <span class="section-badge m-0" style="background:#fef3c7; color:#b45309;"><i class="fa-solid fa-link me-2"></i>Enlaces Virtuales de la Clase</span>
+                                        <button type="button" class="btn-save-local" id="btnSaveLinks" onclick="guardarEnlaces()">
+                                            <i class="fa-solid fa-floppy-disk"></i> Guardar Enlaces
+                                        </button>
+                                    </div>
+                                    <p class="text-muted small mb-4">Añada los enlaces de videoconferencia para que estén disponibles en el portal del profesor.</p>
+                                    
+                                    <div id="contenedorEnlaces" class="d-flex flex-column gap-3 mb-3">
+                                        <!-- Enlaces dinámicos -->
+                                    </div>
+                                    <button class="btn-add" onclick="agregarEnlaceUI()"><i class="fa-solid fa-plus me-1"></i> Añadir Nuevo Enlace</button>
+                                </div>
+
+                                <!-- CONTROL DE SESIONES (GUARDADO CONTEXTUAL) -->
+                                <div class="form-card">
+                                    <div class="form-card-header">
+                                        <span class="section-badge m-0" style="background:#e0e7ff; color:#3730a3;"><i class="fa-solid fa-calendar-check me-2"></i>Asistencias y Reprogramaciones</span>
+                                        <button type="button" class="btn-save-local" id="btnSaveSessions" onclick="guardarSesiones()">
+                                            <i class="fa-solid fa-floppy-disk"></i> Guardar Asistencias
+                                        </button>
+                                    </div>
+                                    <p class="text-muted small mb-4">Actualice el dictado de cada sesión o configure una fecha y horario alternativo si se solicita una reprogramación.</p>
+                                    
+                                    <div id="contenedorSesiones">
+                                        <!-- Sesiones dinámicas -->
+                                    </div>
+                                </div>
+
                             </div>
-                            <p class="text-muted small mb-4">Añada los enlaces de videoconferencia para que estén disponibles en el portal del profesor.</p>
-                            
-                            <div id="contenedorEnlaces" class="d-flex flex-column gap-3 mb-3">
-                                <!-- Enlaces dinámicos -->
+
+                            <div class="tab-pane fade" id="tab-material" role="tabpanel">
+                                <div class="form-card">
+                                    <span class="section-badge"><i class="fa-solid fa-folder-open me-2"></i>Material del Curso</span>
+                                    <p class="text-muted small mb-3" style="margin-top: -12px;">Documentos que el docente subió para este curso (PPT, separatas, etc.). Solo puedes verlos y descargarlos.</p>
+                                    <div id="contenedorMaterial">
+                                        <p class="text-muted m-0"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando material del curso...</p>
+                                    </div>
+                                </div>
                             </div>
-                            <button class="btn-add" onclick="agregarEnlaceUI()"><i class="fa-solid fa-plus me-1"></i> Añadir Nuevo Enlace</button>
                         </div>
 
-                        <!-- CONTROL DE SESIONES (GUARDADO CONTEXTUAL) -->
-                        <div class="form-card">
-                            <div class="form-card-header">
-                                <span class="section-badge m-0" style="background:#e0e7ff; color:#3730a3;"><i class="fa-solid fa-calendar-check me-2"></i>Asistencias y Reprogramaciones</span>
-                                <button type="button" class="btn-save-local" id="btnSaveSessions" onclick="guardarSesiones()">
-                                    <i class="fa-solid fa-floppy-disk"></i> Guardar Asistencias
-                                </button>
-                            </div>
-                            <p class="text-muted small mb-4">Actualice el dictado de cada sesión o configure una fecha y horario alternativo si se solicita una reprogramación.</p>
-                            
-                            <div id="contenedorSesiones">
-                                <!-- Sesiones dinámicas -->
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- NUEVO: MATERIAL DEL CURSO SUBIDO POR EL DOCENTE (SOLO LECTURA) -->
-                <div class="form-card">
-                    <span class="section-badge"><i class="fa-solid fa-folder-open me-2"></i>Material del Curso</span>
-                    <p class="text-muted small mb-3" style="margin-top: -12px;">Documentos que el docente subió para este curso (PPT, separatas, etc.). Solo puedes verlos y descargarlos.</p>
-                    <div id="contenedorMaterial">
-                        <p class="text-muted m-0"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando material del curso...</p>
                     </div>
                 </div>
             </div>
@@ -315,6 +361,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         let availableSlots = [];
 
         document.addEventListener('DOMContentLoaded', () => {
+            const name = localStorage.getItem('userName') || "Asesora Académica";
+            document.getElementById('userName').innerText = name;
+            document.getElementById('userInitial').innerText = name.trim().substring(0, 2).toUpperCase();
             if(!invId) { Swal.fire('Error', 'Faltan parámetros de clase.', 'error'); return; }
             cargarDetalleClase();
         });
@@ -372,35 +421,83 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             return ["19:00 a 20:30", "20:30 a 22:00"];
         }
 
-        async function cargarDetalleClase() {
-            try {
-                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_asesora_course_detail', idInvitacion: invId }) });
-                const response = await res.json();
+        function cargarDetalleClase() {
+            // NUEVO: mismo patrón de caché instantáneo que gestion-expedientes.html / asesora-dashboard.html.
+            // Acá la clave incluye el invId porque cada clase tiene su propio detalle (no es una lista global).
+            const cacheKey = `cache_asesora_course_detail_${invId}`;
+            const cachedData = localStorage.getItem(cacheKey);
 
-                if (response.status === 'success') {
-                    const inv = response.invitacion;
-                    const doc = response.docente;
+            if (cachedData) {
+                renderDetalleClase(JSON.parse(cachedData));
+            }
+
+            fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_asesora_course_detail', idInvitacion: invId }) })
+                .then(res => res.json())
+                .then(response => {
+                    if (response.status === 'success') {
+                        const fresh = { invitacion: response.invitacion, docente: response.docente };
+                        const freshStr = JSON.stringify(fresh);
+                        if (freshStr !== cachedData) {
+                            localStorage.setItem(cacheKey, freshStr);
+                            renderDetalleClase(fresh);
+                        }
+                    } else if (!cachedData) {
+                        Swal.fire('Error', 'No se encontró la información de la clase.', 'error');
+                    }
+                })
+                .catch(error => {
+                    if (!cachedData) Swal.fire('Error', 'Problema de conexión con el servidor.', 'error');
+                });
+        }
+
+        function renderDetalleClase(datos) {
+            try {
+                {
+                    const inv = datos.invitacion;
+                    const doc = datos.docente;
 
                     // Datos Cabecera y Perfil
                     document.getElementById('txtCursoNombre').innerText = inv.cursoNombre;
                     document.getElementById('txtPrograma').innerText = inv.programa;
                     
+                    // NUEVO: botón de sílabo — solo se muestra si el curso tiene un URL de sílabo
+                    const btnSilabo = document.getElementById('btnVerSilabo');
+                    if (inv.urlSilabo && inv.urlSilabo.trim() !== '') {
+                        btnSilabo.href = inv.urlSilabo;
+                        btnSilabo.style.display = 'inline-flex';
+                    } else {
+                        btnSilabo.style.display = 'none';
+                    }
+
                     document.getElementById('txtNombresDocente').innerText = `${doc.nombres} ${doc.apellidos}`;
                     document.getElementById('txtCorreoDocente').innerText = doc.correo || '—';
                     document.getElementById('txtCelularDocente').innerText = doc.celular || '—';
 
-                    // Cargar imagen con soporte .PNG y .JPG de Google Drive
+                    // Foto del docente con botones de descarga y copia de enlace
+                    const avatarEl = document.getElementById('avatarContainer');
+                    const fotoAcciones = document.getElementById('fotoAccionesContainer');
                     if (doc.url_foto) {
-                        const safeFotoUrl = getSafeImgUrl(doc.url_foto);
-                        document.getElementById('avatarContainer').innerHTML = `<img src="${safeFotoUrl}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" onerror="this.parentElement.innerText='${doc.nombres.substring(0,2).toUpperCase()}'">`;
+                        const safeUrl = getSafeImgUrl(doc.url_foto);
+                        const initials = doc.nombres ? doc.nombres.substring(0,2).toUpperCase() : 'DOC';
+                        avatarEl.innerHTML = `<img src="${safeUrl}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" onerror="this.parentElement.innerText='${initials}'">`;
+                        
+                        // NUEVO: botones bajo la foto — descargar directamente o copiar enlace
+                        fotoAcciones.innerHTML = `
+                            <a href="${safeUrl}" download class="btn-foto-accion" title="Descargar foto del docente">
+                                <i class="fa-solid fa-download"></i> Descargar
+                            </a>
+                            <button class="btn-foto-accion" onclick="copiarEnlaceFoto('${safeUrl}')" title="Copiar enlace de la foto para compartir">
+                                <i class="fa-solid fa-copy"></i> Copiar enlace
+                            </button>`;
                     } else {
-                        document.getElementById('avatarContainer').innerText = doc.nombres ? doc.nombres.substring(0,2).toUpperCase() : 'DOC';
+                        avatarEl.innerText = doc.nombres ? doc.nombres.substring(0,2).toUpperCase() : 'DOC';
+                        fotoAcciones.innerHTML = '<span class="btn-foto-accion" style="cursor:default; opacity:.5;"><i class="fa-solid fa-image-slash"></i> Sin foto</span>';
                     }
 
                     // Parsear franjas horarias originales para alimentar los selectores
                     availableSlots = extractTimeSlots(inv.franjas);
 
-                    // Rediseño estético: Construir Agenda Compacta
+                    // Agenda Compacta
                     const diasArr = inv.diasElegidos ? inv.diasElegidos.split(',').map(s=>s.trim()) : [];
                     const horasArr = inv.horasElegidas ? inv.horasElegidas.split('|').map(s=>s.trim()) : [];
                     
@@ -427,11 +524,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     // Parsear Sesiones (Columna Q)
                     try { arraySesiones = JSON.parse(inv.sesiones); } catch(e) { arraySesiones = []; }
                     if (!Array.isArray(arraySesiones) || arraySesiones.length === 0) {
-                        // Inicialización inteligente basada en lo agendado originalmente
                         diasArr.forEach((dia, idx) => {
                             let horaStr = horasArr[idx] || "";
                             if(horaStr.includes(': ')) horaStr = horaStr.split(/:\s*(.*)/s)[1].trim();
-                            
                             arraySesiones.push({
                                 num: idx + 1,
                                 fechaBase: dia,
@@ -444,18 +539,31 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     }
                     renderSesionesUI();
 
-                    // NUEVO: Material del Curso (Columna O de Invitaciones) — solo lectura
+                    // Material del Curso (Columna O de Invitaciones) — solo lectura
                     let archivosDocente = [];
                     try { archivosDocente = JSON.parse(inv.archivos || '[]'); } catch (e) { archivosDocente = []; }
                     if (!Array.isArray(archivosDocente)) archivosDocente = [];
                     renderMaterialCurso(archivosDocente);
-
-                } else {
-                    Swal.fire('Error', 'No se encontró la información de la clase.', 'error');
                 }
             } catch (error) {
-                Swal.fire('Error', 'Problema de conexión con el servidor.', 'error');
+                console.error("Error renderizando detalle de clase:", error);
             }
+        }
+
+        // NUEVO: copiar el enlace de la foto del docente al portapapeles
+        function copiarEnlaceFoto(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                showToast('Enlace de la foto copiado al portapapeles.', 'success');
+            }).catch(() => {
+                // Fallback para navegadores sin permisos de clipboard
+                const tmp = document.createElement('input');
+                tmp.value = url;
+                document.body.appendChild(tmp);
+                tmp.select();
+                document.execCommand('copy');
+                document.body.removeChild(tmp);
+                showToast('Enlace de la foto copiado.', 'success');
+            });
         }
 
         // --- LÓGICA DE ENLACES (COL P) ---
