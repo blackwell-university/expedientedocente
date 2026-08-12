@@ -30,7 +30,7 @@
         .nav-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
         .nav-link { display: flex; align-items: center; gap: 16px; padding: 12px 14px; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 6px; transition: 0.2s; }
         .nav-link:hover, .nav-link.active { background: #eff6ff; color: var(--primary); font-weight: 600; }
-        .main-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        .main-wrapper { flex-grow: 1; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; }
         header { padding: 20px 48px; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 5; border-bottom: 1px solid var(--gray-border); }
         .content-area { padding: 40px; display: flex; flex-direction: column; align-items: center; width: 100%; }
         .centered-container { width: 100%; max-width: 1300px; text-align: left; }
@@ -45,10 +45,19 @@
         .form-card { background: white; border-radius: var(--card-radius); padding: 28px; border: 1px solid rgba(0,0,0,0.04); box-shadow: 0 10px 30px rgba(0,0,0,0.01); margin-bottom: 24px; }
         .section-badge { background: #eff6ff; color: var(--primary); padding: 6px 14px; border-radius: 8px; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; display: inline-flex; align-items: center; margin-bottom: 20px; }
         
-        .profile-header { display: flex; align-items: center; gap: 20px; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid var(--gray-border); }
-        .profile-avatar { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; border: 2px solid var(--gray-border); overflow: hidden; }
+        .profile-header { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 22px; padding-bottom: 20px; border-bottom: 1px solid var(--gray-border); flex-wrap: wrap; }
+        .profile-avatar { width: 68px; height: 68px; border-radius: 50%; object-fit: cover; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: bold; border: 2px solid var(--gray-border); overflow: hidden; }
         .info-label { display: block; font-size: 0.75rem; color: #64748b; margin-bottom: 6px; font-weight: 600; text-transform: uppercase;}
         .info-value { font-size: 0.95rem; color: #0f172a; font-weight: 600; margin-bottom: 15px;}
+
+        /* FIX: sin min-width:0 el texto (sobre todo el correo, que es largo y sin espacios)
+           no se encogía dentro del flex y quedaba cortado feo contra el borde de la card */
+        .profile-info { min-width: 170px; flex: 1 1 170px; padding-top: 2px; }
+        .profile-info h6 { font-size: 1rem; overflow-wrap: anywhere; }
+        .profile-contact { display: flex; align-items: center; gap: 7px; font-size: 0.82rem; color: var(--text-muted); margin-top: 7px; overflow-wrap: anywhere; }
+        .profile-contact i { color: var(--primary); opacity: .7; font-size: .8em; flex-shrink: 0; width: 14px; text-align: center; }
+        .profile-contact a { color: inherit; text-decoration: none; }
+        .profile-contact a:hover { color: var(--primary); text-decoration: underline; }
 
         /* Agenda Original */
         .agenda-list { display: flex; flex-direction: column; gap: 10px; background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid var(--gray-border); }
@@ -102,16 +111,27 @@
         .custom-tabs .nav-link:hover { color: var(--primary); background: #f8fafc; }
         .custom-tabs .nav-link.active { color: var(--primary); background: var(--primary-light); border-bottom: 2px solid var(--primary); }
 
-        /* NUEVO: botón para ver el sílabo del curso, junto al título */
-        .btn-silabo { background: white; color: var(--primary-dark); border: 1px solid var(--gray-border); font-weight: 700; font-size: 0.82rem; padding: 9px 16px; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; transition: 0.2s; white-space: nowrap; }
-        .btn-silabo:hover { background: var(--primary-light); color: var(--primary-dark); border-color: var(--primary); }
+        /* .btn-silabo eliminada: el sílabo ahora vive en su propia sección (.silabo-card) más visible */
 
         /* NUEVO: acciones sobre la foto del docente (descargar / copiar enlace) */
-        .foto-acciones { display: flex; gap: 6px; margin-top: 8px; }
+        .foto-acciones { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
         .btn-foto-accion { background: #f8fafc; color: var(--text-muted); border: 1px solid var(--gray-border); font-size: 0.72rem; font-weight: 700; padding: 5px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; transition: 0.2s; text-decoration: none; }
         .btn-foto-accion:hover { background: var(--primary-light); color: var(--primary); border-color: #bfdbfe; }
         .profile-avatar { position: relative; }
-        .profile-avatar-wrap { display: flex; flex-direction: column; align-items: flex-start; }
+        .profile-avatar-wrap { display: flex; flex-direction: column; align-items: flex-start; flex-shrink: 0; }
+
+        /* NUEVO: tarjeta destacada para el sílabo del curso, en su propia sección */
+        .silabo-card {
+            display: flex; align-items: center; gap: 14px; padding: 14px 16px;
+            background: linear-gradient(135deg, var(--primary-light) 0%, #eef2ff 100%);
+            border: 1px solid #bfdbfe; border-radius: 14px; text-decoration: none; transition: 0.2s;
+        }
+        .silabo-card:hover { border-color: var(--primary); box-shadow: 0 6px 16px rgba(37,99,235,0.12); transform: translateY(-1px); }
+        .silabo-icon { width: 42px; height: 42px; border-radius: 12px; background: white; color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+        .silabo-title { font-weight: 700; font-size: 0.88rem; color: var(--primary-dark); }
+        .silabo-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 1px; }
+        .silabo-arrow { margin-left: auto; color: var(--primary); opacity: .55; font-size: 0.82rem; flex-shrink: 0; }
+        .silabo-empty { display: flex; align-items: center; gap: 10px; padding: 14px 16px; background: #f8fafc; border: 1px dashed var(--gray-border); border-radius: 14px; color: var(--text-muted); font-size: 0.83rem; }
 
         /* NUEVO: select de estado más minimalista (antes tenía emojis y look genérico de bootstrap) */
         .sel-estado { border-radius: 8px; font-weight: 700; font-size: 0.8rem; padding: 6px 30px 6px 12px; border: 1px solid var(--gray-border); background-color: #f1f5f9; color: var(--text-muted); cursor: pointer; }
@@ -242,19 +262,14 @@
                     <a href="asesora-dashboard.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Volver al listado de clases</a>
                 </div>
 
-                <div class="page-header mb-4 d-flex justify-content-between align-items-start flex-wrap gap-3">
-                    <div>
-                        <h1 id="txtCursoNombre">Cargando Curso...</h1>
-                        <p id="txtPrograma">Obteniendo programa...</p>
-                    </div>
-                    <a href="#" id="btnVerSilabo" class="btn-silabo" target="_blank" style="display:none;">
-                        <i class="fa-solid fa-book-open"></i> Ver Sílabo del Curso
-                    </a>
+                <div class="page-header mb-4">
+                    <h1 id="txtCursoNombre">Cargando Curso...</h1>
+                    <p id="txtPrograma">Obteniendo programa...</p>
                 </div>
 
                 <div class="row g-4">
                     <!-- COLUMNA IZQUIERDA: PERFIL DOCENTE Y AGENDA ORIGINAL REDISEÑADA -->
-                    <div class="col-lg-4">
+                    <div class="col-xl-4">
                         <div class="form-card">
                             <span class="section-badge"><i class="fa-solid fa-user-tie me-2"></i>Docente a Cargo</span>
                             
@@ -263,14 +278,18 @@
                                     <div id="avatarContainer" class="profile-avatar">...</div>
                                     <div class="foto-acciones" id="fotoAccionesContainer"></div>
                                 </div>
-                                <div>
+                                <div class="profile-info">
                                     <h6 class="fw-bold text-dark m-0" id="txtNombresDocente">Cargando...</h6>
-                                    <div class="small text-muted mt-1" id="txtCorreoDocente">—</div>
+                                    <div class="profile-contact">
+                                        <i class="fa-regular fa-envelope"></i>
+                                        <a href="#" id="txtCorreoDocente" target="_blank">—</a>
+                                    </div>
+                                    <div class="profile-contact">
+                                        <i class="fa-solid fa-phone"></i>
+                                        <a href="#" id="txtCelularDocente">—</a>
+                                    </div>
                                 </div>
                             </div>
-                            
-                            <span class="info-label">Teléfono / Celular</span>
-                            <div class="info-value mb-4" id="txtCelularDocente">—</div>
 
                             <span class="info-label mb-2 d-block">Agenda Original del Docente</span>
                             <div class="agenda-list" id="contenedorAgendaOriginal">
@@ -278,10 +297,26 @@
                                 <div class="text-center text-muted py-2"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando agenda...</div>
                             </div>
                         </div>
+
+                        <!-- NUEVO: sección propia para el sílabo del curso -->
+                        <div class="form-card">
+                            <span class="section-badge" style="background:#eef2ff; color:#4338ca;"><i class="fa-solid fa-book-open me-2"></i>Sílabo del Curso</span>
+                            <a href="#" id="btnVerSilabo" class="silabo-card" target="_blank" style="display:none;">
+                                <div class="silabo-icon"><i class="fa-solid fa-file-lines"></i></div>
+                                <div>
+                                    <div class="silabo-title">Ver Sílabo Oficial</div>
+                                    <div class="silabo-sub">Abre el documento en una pestaña nueva</div>
+                                </div>
+                                <i class="fa-solid fa-arrow-up-right-from-square silabo-arrow"></i>
+                            </a>
+                            <div class="silabo-empty" id="silaboVacioMsg" style="display:none;">
+                                <i class="fa-regular fa-circle-question"></i> Este curso todavía no tiene un sílabo cargado.
+                            </div>
+                        </div>
                     </div>
 
                     <!-- COLUMNA DERECHA: GESTIÓN ORDENADA EN PESTAÑAS -->
-                    <div class="col-lg-8">
+                    <div class="col-xl-8">
 
                         <ul class="nav custom-tabs mb-3" id="gestionTabs" role="tablist">
                             <li class="nav-item" role="presentation">
@@ -460,18 +495,29 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     document.getElementById('txtCursoNombre').innerText = inv.cursoNombre;
                     document.getElementById('txtPrograma').innerText = inv.programa;
                     
-                    // NUEVO: botón de sílabo — solo se muestra si el curso tiene un URL de sílabo
+                    // NUEVO: tarjeta de sílabo — solo se muestra si el curso tiene un URL de sílabo,
+                    // si no hay, se muestra el estado vacío en su lugar
                     const btnSilabo = document.getElementById('btnVerSilabo');
+                    const silaboVacioMsg = document.getElementById('silaboVacioMsg');
                     if (inv.urlSilabo && inv.urlSilabo.trim() !== '') {
                         btnSilabo.href = inv.urlSilabo;
-                        btnSilabo.style.display = 'inline-flex';
+                        btnSilabo.style.display = 'flex';
+                        silaboVacioMsg.style.display = 'none';
                     } else {
                         btnSilabo.style.display = 'none';
+                        silaboVacioMsg.style.display = 'flex';
                     }
 
                     document.getElementById('txtNombresDocente').innerText = `${doc.nombres} ${doc.apellidos}`;
-                    document.getElementById('txtCorreoDocente').innerText = doc.correo || '—';
-                    document.getElementById('txtCelularDocente').innerText = doc.celular || '—';
+
+                    // NUEVO: correo y celular ahora son enlaces reales (mailto: / tel:), no solo texto
+                    const elCorreo = document.getElementById('txtCorreoDocente');
+                    elCorreo.innerText = doc.correo || '—';
+                    elCorreo.href = doc.correo ? `mailto:${doc.correo}` : '#';
+
+                    const elCelular = document.getElementById('txtCelularDocente');
+                    elCelular.innerText = doc.celular || '—';
+                    elCelular.href = doc.celular ? `tel:${String(doc.celular).replace(/\s+/g, '')}` : '#';
 
                     // Foto del docente con botones de descarga y copia de enlace
                     const avatarEl = document.getElementById('avatarContainer');
