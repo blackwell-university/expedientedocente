@@ -238,28 +238,90 @@
             /* Ajuste de tarjetas de dos columnas a una sola en móvil */
             .tab-content .row { --bs-gutter-y: 1.5rem; }
 
-            /* 3. Arreglar el descuadre de las tarjetas de expedientes */
-            .expediente-card { padding: 20px !important; }
-            
-            /* Acomodar el título y la etiqueta (Badge) para que no se aprieten */
-            .expediente-card .d-flex.justify-content-between.border-bottom {
-                flex-direction: column; align-items: flex-start !important; gap: 12px;
-            }
-            .expediente-card .d-flex.justify-content-between.border-bottom .badge {
-                align-self: flex-start;
-            }
-            
-            /* Mejorar el espaciado de los datos (Periodo, Fecha, etc) */
-            .expediente-card .row.g-3 > div { margin-bottom: 8px; }
-            
-            /* Botones full-width (ocupan todo el ancho) en móviles para fácil toque */
-            .expediente-card .gap-2.justify-content-end {
-                flex-direction: column; width: 100%; gap: 10px !important; margin-top: 10px;
-            }
-            .expediente-card .gap-2.justify-content-end a, 
-            .expediente-card .gap-2.justify-content-end button {
-                width: 100%; justify-content: center; padding: 12px; font-size: 0.95rem;
-            }
+            /* Tarjetas de registro se reordenan solas vía grid — ver .record-card más abajo */
+        }
+
+        /* ===================================================================
+           SISTEMA DE TARJETAS "record-card" — Expedientes Anuales y Cursos Asignados
+           Diseño minimalista: peso de fuente más liviano, badges discretos,
+           grid que se auto-acomoda en cualquier ancho sin depender de breakpoints
+           fijos de Bootstrap, y botones compactos y consistentes.
+           =================================================================== */
+        .record-card {
+            background: #ffffff;
+            border: 1px solid #e6e9ee;
+            border-radius: 14px;
+            padding: 18px 20px;
+            margin-bottom: 12px;
+            transition: border-color .2s ease, box-shadow .2s ease;
+        }
+        .record-card:hover { border-color: #cbd5e1; box-shadow: 0 2px 12px rgba(15,23,42,0.05); }
+
+        .record-banner {
+            display: flex; align-items: center; gap: 8px;
+            font-size: .76rem; font-weight: 500; border-radius: 8px;
+            padding: 8px 12px; margin-bottom: 12px;
+        }
+        .record-banner-danger { background: #fef2f2; color: #b91c1c; }
+        .record-banner-warn { background: #fffbeb; color: #b45309; }
+
+        .record-card-top {
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
+            gap: 10px; padding-bottom: 14px; margin-bottom: 14px; border-bottom: 1px solid #f1f5f9;
+        }
+        .record-card-id { display: flex; align-items: center; gap: 12px; min-width: 0; }
+        .record-icon {
+            width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; font-size: .92rem;
+        }
+        .record-title { font-size: .87rem; font-weight: 600; color: #0f172a; margin: 0; line-height: 1.35; }
+        .record-subtitle { font-size: .72rem; color: #94a3b8; font-weight: 400; }
+        .record-subtitle a { font-weight: 500; }
+
+        .record-badge {
+            font-size: .63rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+            padding: 4px 10px; border-radius: 20px; white-space: nowrap; border: 1px solid transparent;
+        }
+        .badge-warn    { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+        .badge-info    { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+        .badge-success { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+        .badge-primary { background: #eef2ff; color: #4338ca; border-color: #c7d2fe; }
+        .badge-neutral { background: #f8fafc; color: #64748b; border-color: #e2e8f0; }
+
+        .record-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 14px 20px;
+            align-items: end;
+        }
+        .record-meta-label {
+            display: block; font-size: .63rem; color: #94a3b8; font-weight: 600;
+            text-transform: uppercase; letter-spacing: .04em; margin-bottom: 4px;
+        }
+        .record-meta-value { font-size: .8rem; color: #334155; font-weight: 500; }
+        .record-meta-value i { color: var(--primary); opacity: .65; font-size: .85em; margin-right: 4px; }
+
+        .record-actions { display: flex; gap: 8px; justify-content: flex-end; align-items: center; }
+
+        .btn-record {
+            font-size: .78rem; font-weight: 500; padding: 7px 14px; border-radius: 8px;
+            display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+            border: 1px solid transparent; transition: all .15s ease; text-decoration: none; line-height: 1.2;
+            cursor: pointer;
+        }
+        .btn-record-ghost { background: #f8fafc; color: #475569; border-color: #e2e8f0; }
+        .btn-record-ghost:hover { background: #f1f5f9; color: #334155; }
+        .btn-record-primary { background: var(--primary); color: #fff; }
+        .btn-record-primary:hover { background: var(--primary-dark); color: #fff; }
+        .btn-record-outline { background: #fff; color: var(--primary); border-color: #bfdbfe; }
+        .btn-record-outline:hover { background: #eff6ff; }
+
+        @media (max-width: 640px) {
+            .record-card { padding: 16px; }
+            .record-card-top { flex-direction: column; align-items: flex-start; }
+            .record-meta { grid-template-columns: 1fr 1fr; }
+            .record-actions { grid-column: 1 / -1; width: 100%; }
+            .btn-record { flex: 1; justify-content: center; padding: 9px 12px; }
         }
 
         /* --- NUEVO: ACORDEÓN "VER TODOS LOS DATOS DEL FORMULARIO" (igual que en expediente.html) --- */
@@ -1073,19 +1135,19 @@
                     json.data.forEach(exp => {
                         const estExp = (exp.estado || "Pendiente").toString().trim().toLowerCase();
                         let estadoTextoExp = exp.estado || 'Pendiente';
-                        let badgeClass = 'bg-secondary bg-opacity-10 text-secondary border border-secondary';
+                        let badgeClass = 'badge-neutral';
 
                         if (estExp === 'pendiente' || estExp === 'guardado' || estExp === 'por enviar') {
-                            badgeClass = 'bg-warning bg-opacity-10 text-warning border border-warning';
+                            badgeClass = 'badge-warn';
                         } else if (estExp === 'enviado') {
-                            badgeClass = 'bg-info bg-opacity-10 text-info border border-info'; 
+                            badgeClass = 'badge-info';
                         }
-                        else if (estExp === 'completado') badgeClass = 'bg-success bg-opacity-10 text-success border border-success';
-                        else if (estExp === 'aprobado') { badgeClass = 'bg-primary bg-opacity-10 text-primary border border-primary'; estadoTextoExp = "Aprobado"; }
+                        else if (estExp === 'completado') badgeClass = 'badge-success';
+                        else if (estExp === 'aprobado') { badgeClass = 'badge-primary'; estadoTextoExp = "Aprobado"; }
 
                         const estInv = (exp.estadoInvitacion || "Pendiente").toString().trim().toLowerCase();
                         let iconInv = 'fa-solid fa-envelope-open-text';
-                        let colorInv = '#f59e0b'; 
+                        let colorInv = '#b45309'; 
                         
                         // Evalúa si viene "guardado", lo cambia visualmente a "Por enviar"
                         let textoInv = exp.estadoInvitacion || 'Pendiente';
@@ -1095,11 +1157,12 @@
 
                         let btnEnviar = '';
                         if (estInv === 'pendiente' || estInv === 'guardado') {
-                            // Botón más compacto y ajustado para móviles y web
-                            btnEnviar = `<button class="btn btn-sm btn-primary fw-bold shadow-sm w-100" style="border-radius: 8px; padding: 6px 12px; transition: 0.2s; white-space: nowrap;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'" onclick="enviarExpediente('${exp.idExpediente}')"><i class="fa-regular fa-paper-plane me-1"></i>Enviar Invitación</button>`;
+                            btnEnviar = `<button class="btn-record btn-record-primary" onclick="enviarExpediente('${exp.idExpediente}')"><i class="fa-regular fa-paper-plane"></i>Enviar Invitación</button>`;
                         } else {
-                            colorInv = '#10b981'; 
+                            colorInv = '#15803d'; 
                             iconInv = 'fa-solid fa-check-double';
+                            // NUEVO: reenviar por si el docente eliminó el correo o no lo recibió
+                            btnEnviar = `<button class="btn-record btn-record-outline" onclick="enviarExpediente('${exp.idExpediente}', true)"><i class="fa-solid fa-rotate-right"></i>Reenviar</button>`;
                         }
 
                         // ---> ESTAS 3 LÍNEAS DE FECHAS FALTABAN EN MI CÓDIGO ANTERIOR <---
@@ -1112,54 +1175,44 @@
                         const fVencimiento = exp.fechaVencimiento ? new Date(exp.fechaVencimiento).toLocaleDateString('es-ES', {day: '2-digit', month: 'short', year:'numeric'}) : null;
                         let bannerVencimiento = '';
                         if (exp.vencido) {
-                            bannerVencimiento = `<div class="mb-2 px-3 py-2" style="background:#fef2f2; color:#b91c1c; border-radius:8px; font-size:0.78rem; font-weight:700;"><i class="fa-solid fa-triangle-exclamation me-2"></i>Este contrato venció el ${fVencimiento}. Genera un nuevo Expediente para renovarlo.</div>`;
+                            bannerVencimiento = `<div class="record-banner record-banner-danger"><i class="fa-solid fa-triangle-exclamation"></i>Este contrato venció el ${fVencimiento}. Genera un nuevo Expediente para renovarlo.</div>`;
                         } else if (exp.porVencer) {
-                            bannerVencimiento = `<div class="mb-2 px-3 py-2" style="background:#fffbeb; color:#b45309; border-radius:8px; font-size:0.78rem; font-weight:700;"><i class="fa-solid fa-clock me-2"></i>Este contrato está por vencer (${fVencimiento}). Considera generar un nuevo Expediente.</div>`;
+                            bannerVencimiento = `<div class="record-banner record-banner-warn"><i class="fa-solid fa-clock"></i>Este contrato está por vencer (${fVencimiento}). Considera generar un nuevo Expediente.</div>`;
                         }
 
-                        // NUEVO DISEÑO DE CARD: Más compacta, 4 columnas integradas y paddings reducidos
+                        // NUEVO DISEÑO DE CARD: minimalista, con grid auto-responsivo
                         html += `
-                        <div class="expediente-card p-3 mb-3" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+                        <div class="record-card">
                             ${bannerVencimiento}
-                            <!-- Header de la Card (Reducido) -->
-                            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="icon-box shadow-sm" style="width: 36px; height: 36px; background: #eff6ff; color: #2563eb; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                            <div class="record-card-top">
+                                <div class="record-card-id">
+                                    <div class="record-icon" style="background:#eff6ff; color:#2563eb;">
                                         <i class="fa-solid fa-folder-open"></i>
                                     </div>
                                     <div>
-                                        <h6 class="fw-bold m-0 text-dark" style="font-size: 0.95rem; letter-spacing: -0.01em;">${exp.idExpediente}</h6>
-                                        <span class="text-muted" style="font-size: 0.75rem; font-weight: 500;">Expediente de Registro${fVencimiento ? ' · Vigente hasta ' + fVencimiento : ''}</span>
+                                        <h6 class="record-title">${exp.idExpediente}</h6>
+                                        <span class="record-subtitle">Expediente de Registro${fVencimiento ? ' · Vigente hasta ' + fVencimiento : ''}</span>
                                     </div>
                                 </div>
-                                <span class="badge ${badgeClass} px-2 py-1" style="border-radius: 6px; font-size: 0.7rem; letter-spacing: 0.5px; text-transform: uppercase;" title="Estado del Expediente">${estadoTextoExp}</span>
+                                <span class="record-badge ${badgeClass}" title="Estado del Expediente">${estadoTextoExp}</span>
                             </div>
 
-                            <!-- Cuerpo y Botones en la misma línea (Grid) -->
-                            <div class="row g-2 align-items-center pt-1">
-                                <div class="col-12 col-md-3">
-                                    <span style="display: block; font-size: 0.7rem; color: #64748b; margin-bottom: 2px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Periodo Asignado</span>
-                                    <div style="font-size: 0.85rem; color: #1e293b; font-weight: 600;">
-                                        <i class="fa-regular fa-calendar text-primary opacity-75 me-1"></i>${fInicio} al ${fFin}
-                                    </div>
+                            <div class="record-meta">
+                                <div>
+                                    <span class="record-meta-label">Periodo Asignado</span>
+                                    <div class="record-meta-value"><i class="fa-regular fa-calendar"></i>${fInicio} al ${fFin}</div>
                                 </div>
-                                <div class="col-12 col-md-3">
-                                    <span style="display: block; font-size: 0.7rem; color: #64748b; margin-bottom: 2px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Creación</span>
-                                    <div style="font-size: 0.85rem; color: #1e293b; font-weight: 600;">
-                                        <i class="fa-solid fa-clock-rotate-left text-primary opacity-75 me-1"></i>${fCreacion}
-                                    </div>
+                                <div>
+                                    <span class="record-meta-label">Creación</span>
+                                    <div class="record-meta-value"><i class="fa-solid fa-clock-rotate-left"></i>${fCreacion}</div>
                                 </div>
-                                <div class="col-12 col-md-3">
-                                    <span style="display: block; font-size: 0.7rem; color: #64748b; margin-bottom: 2px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Correo Invitación</span>
-                                    <div style="font-size: 0.85rem; font-weight: 700; color: ${colorInv};">
-                                        <i class="${iconInv} me-1"></i>${textoInv}
-                                    </div>
+                                <div>
+                                    <span class="record-meta-label">Correo Invitación</span>
+                                    <div class="record-meta-value" style="color:${colorInv}; font-weight:600;"><i class="${iconInv}" style="color:${colorInv}; opacity:1;"></i>${textoInv}</div>
                                 </div>
-                                
-                                <!-- Botones integrados como la 4ta columna -->
-                                <div class="col-12 col-md-3 mt-3 mt-md-0 d-flex gap-2 justify-content-md-end">
-                                    <a href="expediente.html?expId=${exp.idExpediente}" class="btn btn-sm w-100" style="background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; font-weight: 600; padding: 6px 12px; border-radius: 8px; transition: 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
-                                        <i class="fa-regular fa-eye me-1"></i>Detalles
+                                <div class="record-actions">
+                                    <a href="expediente.html?expId=${exp.idExpediente}" class="btn-record btn-record-ghost">
+                                        <i class="fa-regular fa-eye"></i>Detalles
                                     </a>
                                     ${btnEnviar}
                                 </div>
@@ -1198,10 +1251,10 @@
 
                 const badgeEstadoCurso = (estado) => {
                     const e = (estado || 'Pendiente').toString().trim().toLowerCase();
-                    if (e === 'guardado' || e === 'pendiente') return { texto: 'Por enviar', clase: 'bg-warning bg-opacity-10 text-warning border border-warning' };
-                    if (e === 'enviado') return { texto: 'Enviado', clase: 'bg-info bg-opacity-10 text-info border border-info' };
-                    if (e === 'aceptado' || e === 'respondido') return { texto: 'Confirmado', clase: 'bg-success bg-opacity-10 text-success border border-success' };
-                    return { texto: estado || 'Pendiente', clase: 'bg-secondary bg-opacity-10 text-secondary border border-secondary' };
+                    if (e === 'guardado' || e === 'pendiente') return { texto: 'Por enviar', clase: 'badge-warn' };
+                    if (e === 'enviado') return { texto: 'Enviado', clase: 'badge-info' };
+                    if (e === 'aceptado' || e === 'respondido') return { texto: 'Confirmado', clase: 'badge-success' };
+                    return { texto: estado || 'Pendiente', clase: 'badge-neutral' };
                 };
 
                 let html = '';
@@ -1209,13 +1262,13 @@
                     const fIni = curso.fechaInicio ? new Date(curso.fechaInicio).toLocaleDateString('es-ES', {day: '2-digit', month: 'short', year:'numeric'}) : '-';
                     const fFin = curso.fechaFin ? new Date(curso.fechaFin).toLocaleDateString('es-ES', {day: '2-digit', month: 'short', year:'numeric'}) : '-';
                     const est = badgeEstadoCurso(curso.estado);
-                    const linkExp = curso.idExpediente ? `<a href="expediente.html?expId=${curso.idExpediente}" class="text-decoration-none fw-medium" style="font-size:0.75rem; color: var(--primary);"><i class="fa-regular fa-folder-open me-1"></i>${curso.idExpediente}</a>` : '';
+                    const linkExp = curso.idExpediente ? `<a href="expediente.html?expId=${curso.idExpediente}" style="color: var(--primary);"><i class="fa-regular fa-folder-open me-1"></i>${curso.idExpediente}</a>` : '';
 
                     const linkDetalle = curso.esInvitacionInicial
                         ? `expediente.html?expId=${curso.idExpediente}`
                         : `invitacion.html?invId=${curso.idInvitacion}`;
                     const badgeGenesis = curso.esInvitacionInicial
-                        ? `<span class="badge bg-primary bg-opacity-10 text-primary border border-primary" style="font-size: 0.65rem; font-weight: 700; margin-left: 6px;">Curso inicial del contrato</span>`
+                        ? `<span class="record-badge badge-primary" style="margin-left: 6px;">Curso inicial</span>`
                         : '';
 
                   
@@ -1223,42 +1276,42 @@
                     if (curso.horario && curso.horario.includes('|')) {
                         const sesiones = curso.horario.split('|').map(s => s.trim()).filter(Boolean);
                         horarioHtml = `<div class="d-flex flex-wrap gap-2">` + sesiones.map(s =>
-                            `<span class="badge bg-light text-dark border" style="font-weight: 600; font-size: 0.72rem; padding: 5px 10px;"><i class="fa-regular fa-clock me-1 text-primary"></i>${s}</span>`
+                            `<span class="record-badge badge-neutral" style="font-weight: 500;"><i class="fa-regular fa-clock" style="color:var(--primary); opacity:.65; margin-right:4px;"></i>${s}</span>`
                         ).join('') + `</div>`;
                     } else {
-                        horarioHtml = `<div style="font-size: 0.85rem; color: #1e293b; font-weight: 600;"><i class="fa-regular fa-clock text-primary opacity-75 me-1"></i>${curso.dias || 'Pendiente'} · ${curso.horario || 'Pendiente'}</div>`;
+                        horarioHtml = `<div class="record-meta-value"><i class="fa-regular fa-clock"></i>${curso.dias || 'Pendiente'} · ${curso.horario || 'Pendiente'}</div>`;
                     }
 
                     html += `
-                    <div class="p-3 mb-3" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
-                        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-box shadow-sm" style="width: 36px; height: 36px; background: #fff7ed; color: #c2410c; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                    <div class="record-card">
+                        <div class="record-card-top">
+                            <div class="record-card-id">
+                                <div class="record-icon" style="background:#fff7ed; color:#c2410c;">
                                     <i class="fa-solid fa-chalkboard-user"></i>
                                 </div>
                                 <div>
-                                    <h6 class="fw-bold m-0 text-dark" style="font-size: 0.95rem; letter-spacing: -0.01em;">${curso.nombreCurso}${badgeGenesis}</h6>
-                                    <span class="text-muted" style="font-size: 0.75rem; font-weight: 500;">${curso.programa || ''} ${linkExp ? '· ' + linkExp : ''}</span>
+                                    <h6 class="record-title">${curso.nombreCurso}${badgeGenesis}</h6>
+                                    <span class="record-subtitle">${curso.programa || ''} ${linkExp ? '· ' + linkExp : ''}</span>
                                 </div>
                             </div>
-                            <span class="badge ${est.clase} px-2 py-1" style="border-radius: 6px; font-size: 0.7rem; letter-spacing: 0.5px; text-transform: uppercase;">${est.texto}</span>
+                            <span class="record-badge ${est.clase}">${est.texto}</span>
                         </div>
-                        <div class="row g-3 pt-1">
-                            <div class="col-12 col-md-3">
-                                <span style="display: block; font-size: 0.7rem; color: #64748b; margin-bottom: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Período</span>
-                                <div style="font-size: 0.85rem; color: #1e293b; font-weight: 600;"><i class="fa-regular fa-calendar text-primary opacity-75 me-1"></i>${fIni} al ${fFin}</div>
+                        <div class="record-meta">
+                            <div>
+                                <span class="record-meta-label">Período</span>
+                                <div class="record-meta-value"><i class="fa-regular fa-calendar"></i>${fIni} al ${fFin}</div>
                             </div>
-                            <div class="col-12 col-md-5">
-                                <span style="display: block; font-size: 0.7rem; color: #64748b; margin-bottom: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Horario</span>
+                            <div style="grid-column: span 2;">
+                                <span class="record-meta-label">Horario</span>
                                 ${horarioHtml}
                             </div>
-                            <div class="col-12 col-md-2">
-                                <span style="display: block; font-size: 0.7rem; color: #64748b; margin-bottom: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Pago</span>
-                                <div style="font-size: 0.85rem; color: #15803d; font-weight: 700;"><i class="fa-solid fa-money-bill-wave opacity-75 me-1"></i>${curso.pago || '-'}</div>
+                            <div>
+                                <span class="record-meta-label">Pago</span>
+                                <div class="record-meta-value" style="color:#15803d; font-weight:600;"><i class="fa-solid fa-money-bill-wave" style="color:#15803d; opacity:1;"></i>${curso.pago || '-'}</div>
                             </div>
-                            <div class="col-12 col-md-2 d-flex align-items-end justify-content-md-end">
-                                <a href="${linkDetalle}" class="btn btn-sm w-100" style="background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; font-weight: 600; padding: 6px 12px; border-radius: 8px;">
-                                    <i class="fa-regular fa-eye me-1"></i>Ver Detalles
+                            <div class="record-actions">
+                                <a href="${linkDetalle}" class="btn-record btn-record-ghost">
+                                    <i class="fa-regular fa-eye"></i>Ver Detalles
                                 </a>
                             </div>
                         </div>
@@ -1272,20 +1325,22 @@
             }
         }
 
-        async function enviarExpediente(idExp) {
+        async function enviarExpediente(idExp, esReenvio = false) {
             Swal.fire({
-                title: '¿Enviar Invitación al Docente?',
-                text: "Se enviará el correo oficial y el estado de la invitación cambiará a 'Enviado'.",
+                title: esReenvio ? '¿Reenviar Invitación al Docente?' : '¿Enviar Invitación al Docente?',
+                text: esReenvio
+                    ? "Se volverá a enviar el correo con el contrato, por si el docente lo eliminó o no lo recibió."
+                    : "Se enviará el correo oficial y el estado de la invitación cambiará a 'Enviado'.",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#2563eb',
                 cancelButtonColor: '#64748b',
-                confirmButtonText: '<i class="fa-regular fa-paper-plane me-1"></i> Sí, enviar',
+                confirmButtonText: esReenvio ? '<i class="fa-solid fa-rotate-right me-1"></i> Sí, reenviar' : '<i class="fa-regular fa-paper-plane me-1"></i> Sí, enviar',
                 cancelButtonText: 'Cancelar',
                 reverseButtons: true
             }).then(async (result) => {
                 if (result.isConfirmed) {
-                    showToast("Recopilando datos y enviando correo...", "success");
+                    showToast(esReenvio ? "Reenviando correo..." : "Recopilando datos y enviando correo...", "success");
                     
                     try {
                         const expData = window.listaExpedientesGlobal.find(e => e.idExpediente === idExp);
@@ -1322,7 +1377,7 @@
                         const jsonEmail = await resEmail.json();
 
                         if (jsonEmail.status === 'success') {
-                            showToast("¡Correo enviado exitosamente!", "success");
+                            showToast(esReenvio ? "¡Correo reenviado exitosamente!" : "¡Correo enviado exitosamente!", "success");
                             cargarExpedientes(); 
                         } else {
                             showToast("Error del servidor al enviar el correo.", "danger");
