@@ -233,7 +233,7 @@
         </a>
         <div class="user-preview">
             <div class="avatar" id="userInitial">AD</div>
-            <div class="user-meta"><b id="userName">Admin User</b><span>Ejecutivo Asignado</span></div>
+            <div class="user-meta"><b id="userName">Admin User</b><span id="userRoleLabel">Ejecutivo Asignado</span></div>
         </div>
         <ul class="nav-list">
             <li><a href="administrativo.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
@@ -564,9 +564,14 @@
                 document.getElementById('inv-docente-nombre').innerText = "Indique un id de invitación válido en la URL";
             }
             
-            const name = sessionStorage.getItem('userName') || localStorage.getItem('userName') || "Admin User";
+            const name = localStorage.getItem('userName') || "Admin User";
+            const rol = localStorage.getItem('userRole') || "Ejecutivo Asignado";
             const elUser = document.getElementById('userName');
             if(elUser) elUser.innerText = name;
+            const elRol = document.getElementById('userRoleLabel');
+            if(elRol) elRol.innerText = rol;
+            const elInicial = document.getElementById('userInitial');
+            if(elInicial) elInicial.innerText = name.trim().substring(0, 2).toUpperCase();
         });
 
         // FORMATEADOR DE FECHAS ULTRA SEGURO (Evita RangeError con strings DD/MM/AAAA de Google Sheets)

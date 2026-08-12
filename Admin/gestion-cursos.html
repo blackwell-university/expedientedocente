@@ -171,7 +171,7 @@
             <div class="avatar" id="userInitial">AD</div>
             <div class="user-meta">
                 <b id="userName">Admin User</b>
-                <span>Administrador</span>
+                <span id="userRoleLabel">Administrador</span>
             </div>
         </div>
 
@@ -365,9 +365,11 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         function logout() { if(confirm("¿Cerrar sesión?")) { sessionStorage.clear(); localStorage.clear(); window.location.href = "../index.html"; } }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const name = localStorage.getItem('userName') || "Administrador";
+            const name = localStorage.getItem('userName') || "Admin";
+            const rol = localStorage.getItem('userRole') || "Administrador";
             document.getElementById('userName').innerText = name;
-            document.getElementById('userInitial').innerText = name.substring(0,2).toUpperCase();
+            document.getElementById('userRoleLabel').innerText = rol;
+            document.getElementById('userInitial').innerText = name.trim().substring(0, 2).toUpperCase();
             
             cargarCursos();
         });

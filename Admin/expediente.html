@@ -539,7 +539,7 @@
         </a>
         <div class="user-preview">
             <div class="avatar" id="userInitial">AD</div>
-            <div class="user-meta"><b id="userName">Admin User</b><span>Administrador</span></div>
+            <div class="user-meta"><b id="userName">Admin User</b><span id="userRoleLabel">Administrador</span></div>
         </div>
         <ul class="nav-list">
             <li><a href="administrativo.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
@@ -1033,9 +1033,6 @@
         let documentTrace = []; // { nombre, version, estado, asignadoA, fechaEnvio, fechaAprobacion, url }
         let pollingTraducciones = null;
 
-        // ==================== NUEVO: PERFIL COMPLETO (ACORDEÓN + DOCUMENTOS) ====================
-        // Trae TODOS los campos que el docente llena en su formulario (registroexpediente.html)
-        // para que la ejecutiva pueda ver de un vistazo qué falta, sin tener que abrir el asistente.
         let perfilCompletoGlobal = null;
 
         function campoDato(label, valor) {
@@ -1047,9 +1044,6 @@
             </div>`;
         }
 
-        // --- NUEVO: Formateo de fechas legibles (antes se mostraba el ISO crudo tipo "2025-03-01T05:00:00.000Z") ---
-        // Google Sheets a veces guarda estas celdas como fecha real (no como texto "YYYY-MM"), y Apps Script
-        // las devuelve como ISO completo. Estas funciones limpian eso para mostrar algo legible.
         const MESES_CORTOS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
         function formatFechaMesAnio(valor) {
@@ -1191,7 +1185,7 @@
         }
 
         // ==================== NUEVO: GENERAR DOCUMENTOS EN INGLÉS (vía n8n) ====================
-        // Lista de traducciones enviadas y aún no confirmadas por el poller: [{tipo, idDiploma, urlAnterior}]
+
         let pendientesTraduccion = [];
 
         async function generarDocumentosIngles() {
@@ -1200,8 +1194,6 @@
             const d = perfilCompletoGlobal.data || {};
             const eduList = (perfilCompletoGlobal.drafts || {}).educacion || [];
 
-            // Separamos en: documentos SIN traducción (se generan directo) y documentos que YA tienen
-            // traducción (requieren confirmación, porque se reemplazará la que ya existe).
             let tareasNuevas = [];
             let tareasExistentes = [];
 
@@ -1252,8 +1244,6 @@
                 return;
             }
 
-            // Guardamos la URL "anterior" de cada tarea para que el poller detecte cuándo cambia
-            // (esto es lo que permite que también funcione al REGENERAR, no solo la primera vez)
             pendientesTraduccion = tareasFinales.map(t => {
                 let urlAnterior = '';
                 if (t.tipo === 'cv') urlAnterior = d.url_cv_en || '';
@@ -1303,10 +1293,6 @@
             }
         }
 
-        // Revisa en segundo plano si n8n ya terminó de generar las versiones en inglés,
-        // y va agregando los enlaces "EN" a la lista de documentos sin recargar la página.
-        // Compara contra la "urlAnterior" guardada en pendientesTraduccion, así también detecta
-        // cuando se está REGENERANDO una traducción que ya existía (no solo la primera vez).
         function iniciarPollingTraducciones() {
             if (pollingTraducciones) return;
             pollingTraducciones = setInterval(async () => {
@@ -1402,8 +1388,11 @@
 
         // ==================== CARGA DEL EXPEDIENTE ====================
         document.addEventListener('DOMContentLoaded', () => {
-            const name = sessionStorage.getItem('userName') || "Admin";
+            const name = localStorage.getItem('userName') || "Admin";
+            const rol = localStorage.getItem('userRole') || "Administrador";
             document.getElementById('userName').innerText = name;
+            document.getElementById('userRoleLabel').innerText = rol;
+            document.getElementById('userInitial').innerText = name.trim().substring(0, 2).toUpperCase();
             if(!expId) {
                 document.getElementById('det-nombre-curso').innerText = "Error: Faltan datos";
                 return;
@@ -1529,10 +1518,6 @@
                     
                     document.getElementById('view-pago').innerText = inv.pago || "-";
 
-                    // NUEVO: el Expediente está atado a un curso (su invitación génesis). Si el
-                    // docente ya está avanzado en su registro pero todavía no aceptó esa
-                    // invitación (no eligió día/horario), el contrato no está realmente
-                    // completo — se lo señalamos a la ejecutiva aquí mismo.
                     const avisoInvAdmin = document.getElementById('aviso-invitacion-pendiente-admin');
                     const sinHorarioElegido = !inv.horario || inv.horario.trim() === '' || inv.horario.trim() === '-';
                     if (avisoInvAdmin) {
@@ -1551,12 +1536,7 @@
                             avisoInvAdmin.innerHTML = '';
                         }
                     }
-                    
-                    // Datos del docente
-                    // NUEVO: Cargar el perfil completo (todos los campos del formulario) para el acordeón
-                    // (esta función ahora también construye la lista de "Documentos Subidos", incluyendo
-                    // transcripts y, si existen, sus versiones en inglés — antes esta lista se armaba aquí
-                    // mismo pero con datos incompletos, sin transcripts)
+
                     cargarPerfilCompletoDocente(docId, exp.idExpediente);
                     
                     // Actualizar URLs de documentos generados
@@ -1776,10 +1756,7 @@
 
         function getDriveViewUrl(downloadUrl) {
             if (!downloadUrl) return "#";
-            // FIX: antes usaba drive.google.com/.../view — ese endpoint, para Google Docs NATIVOS
-            // (no PDFs sueltos), redirige automáticamente al editor completo, por eso "Ver" abría
-            // en modo edición. "/preview" sí muestra una vista de solo lectura real, tanto para
-            // Google Docs como para PDFs subidos por el docente.
+            
             const match = downloadUrl.match(/[-\w]{25,}/);
             if (match && match[0]) {
                 return `https://drive.google.com/file/d/${match[0]}/preview`;

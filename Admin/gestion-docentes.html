@@ -353,7 +353,7 @@
             <div class="avatar" id="userInitial">AD</div>
             <div class="user-meta">
                 <b id="userName">Admin User</b>
-                <span>Administrador</span>
+                <span id="userRoleLabel">Administrador</span>
             </div>
         </div>
 
@@ -573,11 +573,6 @@
             tbody.innerHTML = paginatedItems.map(d => {
                 const estado = (d.estado || "Pendiente").trim();
                 const statusClass = `status-${estado.toLowerCase()}`;
-
-                // NUEVO: "Aprobación" confundía a la ejecutiva — el docente no fue "aprobado" por
-                // nadie del equipo, solo terminó de llenar su información (registroexpediente.html).
-                // Este mapeo solo cambia el TEXTO que se ve; el valor interno (d.estado) sigue
-                // siendo "Aprobado"/"Pendiente" tal cual lo guarda el backend.
                 const textoEstado = estado.toLowerCase() === 'aprobado' ? 'Registro Completo' : 'Registro Pendiente';
 
                 return `
@@ -762,12 +757,12 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // FIX: antes leía de sessionStorage, pero el login guarda el nombre en localStorage —
-            // por eso siempre caía al texto de respaldo "Administrador" sin importar quién entrara.
-            const name = localStorage.getItem('userName') || "Administrador";
+            const name = localStorage.getItem('userName') || "Admin";
+            const rol = localStorage.getItem('userRole') || "Administrador";
             document.getElementById('userName').innerText = name;
-            document.getElementById('userInitial').innerText = name.substring(0,2).toUpperCase();
-
+            document.getElementById('userRoleLabel').innerText = rol;
+            document.getElementById('userInitial').innerText = name.trim().substring(0, 2).toUpperCase();
+            
             // Verificar si hay mensaje de éxito pendiente desde registrodocente.html
             const toastMsg = sessionStorage.getItem('toastMessage');
             if (toastMsg) {

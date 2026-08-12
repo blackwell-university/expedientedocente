@@ -166,7 +166,7 @@
         </a>
         <div class="user-preview">
             <div class="avatar" id="userInitial">AD</div>
-            <div class="user-meta"><b id="userName">Admin User</b><span>Administrador</span></div>
+            <div class="user-meta"><b id="userName">Admin User</b><span id="userRoleLabel">Administrador</span></div>
         </div>
         <ul class="nav-list">
             <li><a href="administrativo.html" class="nav-link "><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
@@ -353,12 +353,11 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // CORRECCIÓN: Leer el nombre de localStorage
-            const name = localStorage.getItem('userName') || "Usuario";
-            const role = localStorage.getItem('userRole') || "Personal Blackwell";
-            
+            const name = localStorage.getItem('userName') || "Admin";
+            const rol = localStorage.getItem('userRole') || "Administrador";
             document.getElementById('userName').innerText = name;
-            document.getElementById('userInitial').innerText = name.substring(0,2).toUpperCase();
+            document.getElementById('userRoleLabel').innerText = rol;
+            document.getElementById('userInitial').innerText = name.trim().substring(0, 2).toUpperCase();
             
             const roleSpan = document.querySelector('.user-meta span');
             if(roleSpan) roleSpan.innerText = role;
