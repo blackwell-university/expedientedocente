@@ -403,7 +403,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             cargarDetalleClase();
         });
 
-        // --- MATERIAL DEL CURSO (SOLO LECTURA — la asesora nunca puede eliminar) ---
         function renderMaterialCurso(archivos) {
             const cont = document.getElementById('contenedorMaterial');
             if (!archivos || archivos.length === 0) {
@@ -417,7 +416,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 if (ext === 'pdf') return 'fa-solid fa-file-pdf';
                 return 'fa-solid fa-file-lines';
             };
-            // NUEVO: enlace de previsualización de Drive (para "Ver" sin descargar)
+
             const getViewUrl = (url) => {
                 const match = (url || '').match(/[-\w]{25,}/);
                 return match ? `https://drive.google.com/file/d/${match[0]}/view` : url;
@@ -436,7 +435,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 </div>`).join('');
         }
 
-        // Convertidor inteligente para mostrar PNG y JPG de Google Drive
         function getSafeImgUrl(url) {
             if (!url) return "";
             const match = url.match(/[-\w]{25,}/);
@@ -445,7 +443,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             }
             return url;
         }
-        // Función para extraer horarios legibles desde GSheets (Añadir esta función)
+
         function extractTimeSlots(franjasStr) {
             if (!franjasStr) return ["19:00 a 20:30", "20:30 a 22:00"];
             const regex = /(\d{2}:\d{2}\s*(?:a|to|-)\s*\d{2}:\d{2})/gi;
@@ -457,8 +455,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         }
 
         function cargarDetalleClase() {
-            // NUEVO: mismo patrón de caché instantáneo que gestion-expedientes.html / asesora-dashboard.html.
-            // Acá la clave incluye el invId porque cada clase tiene su propio detalle (no es una lista global).
             const cacheKey = `cache_asesora_course_detail_${invId}`;
             const cachedData = localStorage.getItem(cacheKey);
 
@@ -491,12 +487,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     const inv = datos.invitacion;
                     const doc = datos.docente;
 
-                    // Datos Cabecera y Perfil
                     document.getElementById('txtCursoNombre').innerText = inv.cursoNombre;
                     document.getElementById('txtPrograma').innerText = inv.programa;
                     
-                    // NUEVO: tarjeta de sílabo — solo se muestra si el curso tiene un URL de sílabo,
-                    // si no hay, se muestra el estado vacío en su lugar
                     const btnSilabo = document.getElementById('btnVerSilabo');
                     const silaboVacioMsg = document.getElementById('silaboVacioMsg');
                     if (inv.urlSilabo && inv.urlSilabo.trim() !== '') {
@@ -510,7 +503,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
                     document.getElementById('txtNombresDocente').innerText = `${doc.nombres} ${doc.apellidos}`;
 
-                    // NUEVO: correo y celular ahora son enlaces reales (mailto: / tel:), no solo texto
                     const elCorreo = document.getElementById('txtCorreoDocente');
                     elCorreo.innerText = doc.correo || '—';
                     elCorreo.href = doc.correo ? `mailto:${doc.correo}` : '#';
@@ -519,7 +511,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     elCelular.innerText = doc.celular || '—';
                     elCelular.href = doc.celular ? `tel:${String(doc.celular).replace(/\s+/g, '')}` : '#';
 
-                    // Foto del docente con botones de descarga y copia de enlace
                     const avatarEl = document.getElementById('avatarContainer');
                     const fotoAcciones = document.getElementById('fotoAccionesContainer');
                     if (doc.url_foto) {
@@ -527,7 +518,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         const initials = doc.nombres ? doc.nombres.substring(0,2).toUpperCase() : 'DOC';
                         avatarEl.innerHTML = `<img src="${safeUrl}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" onerror="this.parentElement.innerText='${initials}'">`;
                         
-                        // NUEVO: botones bajo la foto — descargar directamente o copiar enlace
                         fotoAcciones.innerHTML = `
                             <a href="${safeUrl}" download class="btn-foto-accion" title="Descargar foto del docente">
                                 <i class="fa-solid fa-download"></i> Descargar
@@ -540,10 +530,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         fotoAcciones.innerHTML = '<span class="btn-foto-accion" style="cursor:default; opacity:.5;"><i class="fa-solid fa-image-slash"></i> Sin foto</span>';
                     }
 
-                    // Parsear franjas horarias originales para alimentar los selectores
                     availableSlots = extractTimeSlots(inv.franjas);
 
-                    // Agenda Compacta
                     const diasArr = inv.diasElegidos ? inv.diasElegidos.split(',').map(s=>s.trim()) : [];
                     const horasArr = inv.horasElegidas ? inv.horasElegidas.split('|').map(s=>s.trim()) : [];
                     
@@ -562,12 +550,10 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     });
                     document.getElementById('contenedorAgendaOriginal').innerHTML = htmlAgenda || '<p class="text-muted m-0">No se encontraron clases agendadas.</p>';
 
-                    // Parsear Enlaces (Columna P)
                     try { arrayEnlaces = JSON.parse(inv.enlaces); } catch(e) { arrayEnlaces = []; }
                     if (!Array.isArray(arrayEnlaces)) arrayEnlaces = [];
                     renderEnlacesUI();
 
-                    // Parsear Sesiones (Columna Q)
                     try { arraySesiones = JSON.parse(inv.sesiones); } catch(e) { arraySesiones = []; }
                     if (!Array.isArray(arraySesiones) || arraySesiones.length === 0) {
                         diasArr.forEach((dia, idx) => {
@@ -585,7 +571,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     }
                     renderSesionesUI();
 
-                    // Material del Curso (Columna O de Invitaciones) — solo lectura
                     let archivosDocente = [];
                     try { archivosDocente = JSON.parse(inv.archivos || '[]'); } catch (e) { archivosDocente = []; }
                     if (!Array.isArray(archivosDocente)) archivosDocente = [];
@@ -596,12 +581,10 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             }
         }
 
-        // NUEVO: copiar el enlace de la foto del docente al portapapeles
         function copiarEnlaceFoto(url) {
             navigator.clipboard.writeText(url).then(() => {
                 showToast('Enlace de la foto copiado al portapapeles.', 'success');
             }).catch(() => {
-                // Fallback para navegadores sin permisos de clipboard
                 const tmp = document.createElement('input');
                 tmp.value = url;
                 document.body.appendChild(tmp);
@@ -612,7 +595,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             });
         }
 
-        // --- LÓGICA DE ENLACES (COL P) ---
         function renderEnlacesUI() {
             const container = document.getElementById('contenedorEnlaces');
             let html = "";
@@ -654,7 +636,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             });
         }
 
-        // --- LÓGICA DE SESIONES (COL Q) ---
         function renderSesionesUI() {
             const container = document.getElementById('contenedorSesiones');
             let html = "";
@@ -678,7 +659,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     }
                 }
 
-                // Generar selectores dinámicos con las horas configuradas
                 let selectOptionsHtml = `<option value="" ${!ses.nuevaHora ? 'selected' : ''}>Seleccione...</option>`;
                 availableSlots.forEach(slot => {
                     const isSelected = slot === ses.nuevaHora ? 'selected' : '';
@@ -747,7 +727,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             card.classList.remove('pendiente', 'realizada', 'reprogramada');
             card.classList.add(selectEl.value.toLowerCase());
 
-            // NUEVO: recolorear el select para que combine con el estado elegido
             selectEl.classList.remove('estado-pendiente', 'estado-realizada', 'estado-reprogramada');
             selectEl.classList.add('estado-' + selectEl.value.toLowerCase());
 
@@ -783,7 +762,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             });
         }
 
-        // --- ENVIAR DATOS INTEGRADOS A GSHEETS (BOTONES LOCALES) ---
         async function ejecutarGuardadoLocal(btn, actionText) {
             const originalHTML = btn.innerHTML;
             btn.disabled = true;
@@ -802,7 +780,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
                 if (result.status === 'success') {
                     showToast(`Se han guardado los ${actionText} exitosamente.`, 'success');
-                    cargarDetalleClase(); // Recargamos para repintar limpiamente
+                    cargarDetalleClase();
                 } else {
                     Swal.fire('Error', 'No se pudieron guardar los datos.', 'error');
                 }

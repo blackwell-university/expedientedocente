@@ -10,7 +10,6 @@
             'Asesora Academica', 'Ejecutiva Credenciales'
         ];
         
-        // Verifica si NO está logueado, o si el rol NO está en la lista permitida
         if (isLoggedIn !== 'true' || !rolesPermitidos.some(rol => userRole && userRole.toLowerCase() === rol.toLowerCase())) {
             window.location.href = "../index.html";
         }
@@ -424,7 +423,6 @@
             }
         }
 
-        // Carga de datos de sesión en el UI
         document.addEventListener('DOMContentLoaded', () => {
             const name = localStorage.getItem('userName') || "Usuario";
             const role = localStorage.getItem('userRole') || "Personal Blackwell";
@@ -432,14 +430,12 @@
             document.getElementById('userName').innerText = name;
             document.getElementById('userInitial').innerText = name.substring(0,2).toUpperCase();
             
-            // Actualizar el texto del rol en el sidebar (para que no todos digan "Administrador")
             const roleSpan = document.querySelector('.user-meta span');
             if(roleSpan) roleSpan.innerText = role;
 
             cargarEstadisticasReales();
         });
 
-        // NUEVO: trae los datos reales del sistema (antes las 3 tarjetas y el panel de pendientes eran fijos/de ejemplo)
         async function cargarEstadisticasReales() {
             try {
                 const [resDocentes, resExpedientes] = await Promise.all([
@@ -454,7 +450,6 @@
                 if (resExpedientes.status === 'success') {
                     const expedientes = resExpedientes.data || [];
                     const aprobados = expedientes.filter(e => e.estado === 'Aprobado').length;
-                    // "Pendientes de Revisión" = el docente ya completó su expediente y está listo para que lo revisen
                     const pendientes = expedientes.filter(e => e.estado === 'Completado');
 
                     pintarValor('statExpedientesAprobados', aprobados);
@@ -478,7 +473,6 @@
             el.innerText = valor;
         }
 
-        // Calcula hace cuántos días se creó el expediente, a partir de fechaCreacion (formato dd/mm/yyyy o ISO)
         function calcularDiasDesde(fechaStr) {
             if (!fechaStr) return null;
             let fecha;
@@ -502,7 +496,6 @@
                 return;
             }
 
-            // Los más antiguos primero (los que más tiempo llevan esperando)
             const ordenados = [...lista].sort((a, b) => (calcularDiasDesde(b.fechaCreacion) || 0) - (calcularDiasDesde(a.fechaCreacion) || 0));
 
             cont.innerHTML = ordenados.slice(0, 5).map(exp => {
@@ -539,7 +532,6 @@
             document.documentElement.style.setProperty('--dynamic-font-size', sizes[currentSize]);
         }
 
-        // FUNCIÓN UX/UI: Abre y cierra el menú lateral en dispositivos móviles
         function toggleMobileSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');

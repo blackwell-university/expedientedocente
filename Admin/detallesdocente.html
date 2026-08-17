@@ -691,7 +691,6 @@
         function logout() { if(confirm("¿Cerrar sesión?")) { sessionStorage.clear(); window.location.href = "../index.html"; } }
         function changeFontSize(dir) { /* Logica de fuente */ }
 
-        // NUEVA FUNCIÓN PARA MENÚ MÓVIL (COHERENCIA DE SISTEMA)
         function toggleMobileSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
@@ -741,19 +740,16 @@
                     document.getElementById('det-correo').innerText = d.correo || "-";
                     document.getElementById('det-banco').innerText = d.banco || "-";
                     document.getElementById('det-cuenta').innerText = d.cuenta || "-";
-                    // Añadir celular y pais si existen en los elementos correspondientes
+
                     if (document.getElementById('det-telefono')) document.getElementById('det-telefono').innerText = d.celular || "-";
                     if (document.getElementById('det-pais')) document.getElementById('det-pais').innerText = d.pais || "-";
                     if (document.getElementById('det-direccion')) document.getElementById('det-direccion').innerText = d.direccion || "-";
 
-                    // NUEVO: llenar el acordeón "Ver Todos los Datos del Formulario" con la misma respuesta
                     llenarAcordeonDatosDocente(d, json.drafts || { educacion: [], experiencia: [] });
                 }
             } catch(e) { console.error(e); }
         }
 
-        // ==================== NUEVO: ACORDEÓN "VER TODOS LOS DATOS DEL FORMULARIO" ====================
-        // (Misma lógica que ya usa expediente.html, adaptada a esta página)
         function campoDato(label, valor) {
             const tieneValor = valor !== undefined && valor !== null && String(valor).trim() !== '';
             return `
@@ -792,7 +788,6 @@
         }
 
         function llenarAcordeonDatosDocente(d, drafts) {
-            // --- DATOS PERSONALES (Estado/Región solo aplica si el país es Estados Unidos) ---
             const paisEsEEUU = /estados unidos|united states|^usa$/i.test((d.pais || '').trim());
             const camposPersonales = [
                 ['DNI / Pasaporte', d.dni], ['Tipo de Documento', d.tipo_id], ['Nombres', d.nombres], ['Apellidos', d.apellidos],
@@ -817,7 +812,6 @@
             document.getElementById('cont-datos-personales').innerHTML = htmlPersonales;
             actualizarBadgeSeccion('badge-personales', llenosPersonales, totalPersonales);
 
-            // --- DATOS BANCARIOS ---
             const camposBancarios = [
                 ['Banco', d.banco], ['Moneda', d.moneda], ['Tipo de Cuenta', d.tipo_cuenta], ['Cuenta Bancaria', d.cuenta],
                 ['CCI / Interbancaria', d.cci], ['Tipo de Ruta (ACH)', d.tipo_ruta], ['Código de Ruta', d.codigo_ruta]
@@ -825,7 +819,6 @@
             document.getElementById('cont-datos-bancarios').innerHTML = camposBancarios.map(([l, v]) => campoDato(l, v)).join('');
             actualizarBadgeSeccion('badge-bancarios', camposBancarios.filter(([,v]) => v && String(v).trim() !== '').length, camposBancarios.length);
 
-            // --- EDUCACIÓN ---
             const eduList = drafts.educacion || [];
             if (eduList.length === 0) {
                 document.getElementById('cont-educacion').innerHTML = '<p class="text-danger m-0" style="font-size:0.85rem;"><i class="fa-solid fa-triangle-exclamation me-1"></i>El docente aún no ha subido ningún diploma.</p>';
@@ -848,7 +841,6 @@
             const camposEduLlenos = eduList.reduce((acc, e) => acc + ['rama','instituto','ubicacion','inicio','fin'].filter(k => e[k] && String(e[k]).trim() !== '').length, 0);
             actualizarBadgeSeccion('badge-educacion', camposEduLlenos, eduList.length * 5 || 1);
 
-            // --- EXPERIENCIA LABORAL ---
             const expList = (drafts.experiencia || []).filter(e => !e.tipo || !e.tipo.startsWith('C'));
             if (expList.length === 0) {
                 document.getElementById('cont-experiencia').innerHTML = '<p class="text-danger m-0" style="font-size:0.85rem;"><i class="fa-solid fa-triangle-exclamation me-1"></i>El docente aún no ha registrado experiencia laboral.</p>';
@@ -868,7 +860,6 @@
             actualizarBadgeSeccion('badge-experiencia', expList.length, expList.length || 1);
         }
 
-        // NUEVO: FUNCIÓN PARA ENVIAR ACCESOS AL DOCENTE CON SWAL INTERACTIVO
         async function enviarAccesosDocente() {
             const correoDocente = document.getElementById('det-correo').innerText;
             const nombreDocente = document.getElementById('det-nombre').innerText;
@@ -895,7 +886,6 @@
                 reverseButtons: true
             }).then(async (result) => {
                 if (result.isConfirmed) {
-                    // Animación del loading minimalista de Swal
                     Swal.fire({
                         title: 'Enviando accesos...',
                         text: 'Por favor, no cierres esta ventana.',
@@ -1055,14 +1045,9 @@
                     btnGuardar.style.display = 'none'; 
                     btnEnviar.classList.remove('d-none'); 
 
-                    // NUEVO: refrescamos de una vez, así el registro ya aparece en las
-                    // pestañas aunque el correo se envíe más tarde.
                     cargarExpedientes();
                     cargarCursosAsignados();
                 } else {
-                    // NUEVO: antes un error del backend (ej. "este docente no tiene Expediente
-                    // creado aún" al usar 'Asignar Curso') se quedaba en silencio y el botón
-                    // parecía trabado en "Guardando...". Ahora se muestra el motivo real.
                     Swal.fire('No se pudo guardar', result.message || 'Ocurrió un error al guardar la invitación.', 'warning');
                     btnGuardar.disabled = false;
                     btnGuardar.innerHTML = '<i class="fa-regular fa-floppy-disk"></i> Guardar Invitación';
@@ -1149,7 +1134,6 @@
                         let iconInv = 'fa-solid fa-envelope-open-text';
                         let colorInv = '#b45309'; 
                         
-                        // Evalúa si viene "guardado", lo cambia visualmente a "Por enviar"
                         let textoInv = exp.estadoInvitacion || 'Pendiente';
                         if (estInv === 'guardado') {
                             textoInv = 'Por enviar';
@@ -1161,17 +1145,13 @@
                         } else {
                             colorInv = '#15803d'; 
                             iconInv = 'fa-solid fa-check-double';
-                            // NUEVO: reenviar por si el docente eliminó el correo o no lo recibió
                             btnEnviar = `<button class="btn-record btn-record-outline" onclick="enviarExpediente('${exp.idExpediente}', true)"><i class="fa-solid fa-rotate-right"></i>Reenviar</button>`;
                         }
 
-                        // ---> ESTAS 3 LÍNEAS DE FECHAS FALTABAN EN MI CÓDIGO ANTERIOR <---
                         const fInicio = exp.fechaInicio ? new Date(exp.fechaInicio).toLocaleDateString('es-ES', {day: '2-digit', month: 'short', year:'numeric'}) : '-';
                         const fFin = exp.fechaFin ? new Date(exp.fechaFin).toLocaleDateString('es-ES', {day: '2-digit', month: 'short', year:'numeric'}) : '-';
                         const fCreacion = exp.fechaCreacion ? new Date(exp.fechaCreacion).toLocaleDateString('es-ES', {day: '2-digit', month: 'short', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '-';
 
-                        // NUEVO: aviso de vencimiento del Expediente (contrato anual). El backend
-                        // ya calcula si está vencido o próximo a vencer (30 días o menos).
                         const fVencimiento = exp.fechaVencimiento ? new Date(exp.fechaVencimiento).toLocaleDateString('es-ES', {day: '2-digit', month: 'short', year:'numeric'}) : null;
                         let bannerVencimiento = '';
                         if (exp.vencido) {
@@ -1180,7 +1160,6 @@
                             bannerVencimiento = `<div class="record-banner record-banner-warn"><i class="fa-solid fa-clock"></i>Este contrato está por vencer (${fVencimiento}). Considera generar un nuevo Expediente.</div>`;
                         }
 
-                        // NUEVO DISEÑO DE CARD: minimalista, con grid auto-responsivo
                         html += `
                         <div class="record-card">
                             ${bannerVencimiento}

@@ -207,8 +207,6 @@
             cargarClases();
         });
 
-        // NUEVO: color por estado, para identificar de un vistazo si el docente ya aceptó,
-        // sigue esperando respuesta, o ya está en proceso de firma
         function badgeEstado(estadoRaw) {
             const e = (estadoRaw || '').toLowerCase().trim();
             let clase = 'badge-default';
@@ -221,9 +219,6 @@
             return `<span class="badge-estado ${clase}">${estadoRaw}</span>`;
         }
 
-        // NUEVO: mismo patrón de caché "stale-while-revalidate" que ya usa gestion-expedientes.html —
-        // muestra al instante lo último guardado en localStorage mientras llega la respuesta fresca
-        // del servidor, y solo vuelve a dibujar si los datos realmente cambiaron.
         async function cargarDatosOptimizadosAdmin(actionName, payload, callbackRenderizado) {
             const cacheKey = `cache_${actionName}_global`;
             
@@ -231,7 +226,7 @@
             if (cachedData) {
                 callbackRenderizado(JSON.parse(cachedData), false); 
             } else {
-                callbackRenderizado(null, true); // Loading state
+                callbackRenderizado(null, true);
             }
 
             try {
@@ -260,7 +255,7 @@
                 'get_all_invitations_global',
                 {},
                 (data, isLoading) => {
-                    if (isLoading || !data) return; // el spinner del HTML inicial ya cubre este caso
+                    if (isLoading || !data) return;
                     clasesGlobal = data.filter(inv => {
                         const est = (inv.estado || '').toLowerCase();
                         return est !== 'guardado' && est !== 'cancelado';
@@ -271,7 +266,6 @@
             );
         }
 
-        // NUEVO: llena los selects de Estado y Programa con los valores que realmente existen
         function poblarFiltros() {
             const selEstado = document.getElementById('filtroEstado');
             selEstado.innerHTML = '<option value="">Todos los estados</option>';
@@ -284,7 +278,6 @@
             programasUnicos.forEach(p => selPrograma.insertAdjacentHTML('beforeend', `<option value="${p}">${p}</option>`));
         }
 
-        // NUEVO: combina búsqueda + estado + programa, y reinicia a la página 1
         function aplicarFiltros() {
             const busqueda = document.getElementById('searchInput').value.toLowerCase().trim();
             const estado = document.getElementById('filtroEstado').value;
@@ -328,7 +321,6 @@
             renderPaginacion(totalPaginas);
         }
 
-        // NUEVO: barra de paginación (Anterior / números / Siguiente)
         function renderPaginacion(totalPaginas) {
             const bar = document.getElementById('paginationBar');
             if (totalPaginas <= 1) { bar.innerHTML = `<span class="text-muted small">Mostrando ${clasesFiltradas.length} de ${clasesFiltradas.length} registros</span>`; return; }

@@ -189,8 +189,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         let expedientesGlobal = [];
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Nombre real del usuario logueado (columna J de Usuarios); la personalización
-            // por rol (Sara vs María) se conserva solo para adaptar textos de la página
             const name = localStorage.getItem('userName') || "Usuario";
             const role = localStorage.getItem('userRole');
             const isMaria = role === 'Ejecutivo Licenciamiento';
@@ -220,7 +218,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 const response = await res.json();
                 
                 if (response.status === 'success') {
-                // Ampliamos el filtro para incluir todos los estados posteriores a la evaluación
                 const estadosPermitidos = ["por evaluar", "en evaluación", "evaluado", "por contratar", "firmado", "contrato enviado", "contratado"];
                 expedientesGlobal = response.data.filter(exp => 
                     estadosPermitidos.includes(exp.estado.toLowerCase())
@@ -247,11 +244,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 let badgeClass = "status-por-evaluar";
                 if(exp.estado.toLowerCase() === "en evaluación") badgeClass = "status-en-evaluacion";
                 
-                // Agrupamos todos los estados concluidos bajo la etiqueta verde (Evaluado)
                 const estadosConcluidos = ["evaluado", "por contratar", "firmado", "contrato enviado", "contratado"];
                 if(estadosConcluidos.includes(exp.estado.toLowerCase())) badgeClass = "status-evaluado";
 
-                // Formateo de fechas bonitas
 
                 const fInicio = exp.fechaInicio ? formatearFecha(exp.fechaInicio) : "Por definir";
                 const fFin = exp.fechaFin ? formatearFecha(exp.fechaFin) : "Por definir";
@@ -297,7 +292,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 if (estado === 'TODOS') {
                     cumpleEstado = true;
                 } else if (estado === 'EVALUADO') {
-                    // Si se selecciona "Evaluado", muestra todos los que ya pasaron por las manos de Sara
                     cumpleEstado = ["EVALUADO", "POR CONTRATAR", "FIRMADO", "CONTRATO ENVIADO", "CONTRATADO"].includes(rowEstado);
                 } else {
                     cumpleEstado = rowEstado === estado;

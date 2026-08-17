@@ -281,7 +281,7 @@
             .btn-action { width: 100%; text-align: center; }
             .documents-table th, .documents-table td { padding: 10px 8px; font-size: 0.7rem; }
 
-            /* NUEVO: menú lateral flotante (off-canvas) en móvil — esta página no lo tenía */
+            /* Menú lateral flotante (off-canvas) en móvil — esta página no lo tenía */
             .sidebar {
                 position: fixed; left: -280px; top: 0;
                 height: 100vh; z-index: 1000; width: 260px !important;
@@ -292,7 +292,7 @@
             .collapse-btn { display: none; }
             .sidebar-overlay.active { display: block; opacity: 1; }
 
-            /* NUEVO: otros elementos que se veían apretados en pantallas angostas */
+            /* otros elementos que se veían apretados en pantallas angostas */
             .breadcrumb-nav { margin-bottom: 16px; font-size: 13px; }
             .section-badge { font-size: 0.68rem; padding: 5px 10px; }
             .accordion-button { font-size: 0.82rem; padding: 12px 14px; }
@@ -302,7 +302,7 @@
             .nav-tabs .nav-link { padding: 10px 14px; font-size: 0.85rem; }
         }
 
-        /* NUEVO: overlay oscuro para el menú móvil (antes esta página no tenía versión móvil del sidebar) */
+        /* overlay oscuro para el menú móvil (antes esta página no tenía versión móvil del sidebar) */
         .sidebar-overlay {
             display: none; position: fixed; top: 0; left: 0;
             width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.4);
@@ -362,7 +362,7 @@
         .step-yellow { background: #fef08a; color: #854d0e; } /* Actual Fase 2 */
         .step-red { background: #fecdd3; color: #9f1239; }    /* Actual Fase 3 */
         .step-gray { background: #f1f5f9; color: #64748b; }   /* Pendiente */
-        /* --- NUEVO: ACORDEÓN DE DATOS DEL DOCENTE --- */
+        /* --- ACORDEÓN DE DATOS DEL DOCENTE --- */
         .accordion-item { border: 1px solid var(--gray-border); border-radius: 12px !important; margin-bottom: 10px; overflow: hidden; }
         .accordion-button { font-weight: 700; font-size: 0.9rem; color: var(--text-main); background: #fafbfc; }
         .accordion-button:not(.collapsed) { background: #eff6ff; color: var(--primary-dark); box-shadow: none; }
@@ -380,7 +380,7 @@
         .btn-ver-file.btn-ver-file-en { background: #dbeafe; color: #1e3a8a; }
         .badge-en-pendiente { background: #fef3c7; color: #b45309; font-size: 0.65rem; font-weight: 700; padding: 3px 8px; border-radius: 20px; margin-left: 8px; }
 
-        /* ==================== NUEVO: MODAL DE ENVIAR NOTIFICACIÓN ==================== */
+        /* ==================== MODAL DE ENVIAR NOTIFICACIÓN ==================== */
         .notif-section-label {
             display: inline-flex; align-items: center; gap: 6px; font-size: 0.7rem; font-weight: 700;
             text-transform: uppercase; letter-spacing: 0.04em; color: var(--primary); background: #eff6ff;
@@ -460,7 +460,7 @@
         }
         .btn-adjuntar:hover { border-color: var(--primary); color: var(--primary); background: #eff6ff; }
 
-        /* ==================== NUEVO: ZONA DE ARRASTRAR Y SOLTAR ARCHIVOS ==================== */
+        /* ==================== ZONA DE ARRASTRAR Y SOLTAR ARCHIVOS ==================== */
         .dropzone {
             border: 2px dashed #cbd5e1; border-radius: 14px; padding: 28px 16px; text-align: center;
             background: #f8fafc; cursor: pointer; transition: 0.2s;
@@ -528,7 +528,7 @@
 </head>
 <body>
 
-    <!-- NUEVO: Overlay oscuro para menú móvil -->
+    <!-- Overlay oscuro para menú móvil -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
 
     <aside class="sidebar" id="sidebar">
@@ -555,7 +555,7 @@
     <main class="main-wrapper">
         <header>
             <div class="d-flex align-items-center gap-3">
-                <!-- NUEVO: Botón hamburguesa, solo visible en móvil -->
+                <!-- Botón hamburguesa, solo visible en móvil -->
                 <button class="btn border-0 p-0 d-md-none text-dark fs-4" onclick="toggleMobileSidebar()">
                     <i class="fa-solid fa-bars"></i>
                 </button>
@@ -641,7 +641,7 @@
                     <!-- PESTAÑA 1: DATOS DEL EXPEDIENTE -->
                     <div class="tab-pane fade show active" id="datos" role="tabpanel">
                         
-                        <!-- NUEVO: BLOQUE EXPLICATIVO DEL ASISTENTE (antes solo era un botón sin contexto) -->
+                        <!-- BLOQUE EXPLICATIVO DEL ASISTENTE (antes solo era un botón sin contexto) -->
                         <div class="form-card mb-4" style="background: #eff6ff; border: 1px dashed #93c5fd;">
                             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                                 <div>
@@ -674,7 +674,7 @@
                             <div id="aviso-invitacion-pendiente-admin"></div>
                         </div>
 
-                        <!-- NUEVO: ACORDEÓN CON TODOS LOS DATOS QUE EL DOCENTE VA LLENANDO EN SU FORMULARIO -->
+                        <!-- ACORDEÓN CON TODOS LOS DATOS QUE EL DOCENTE VA LLENANDO EN SU FORMULARIO -->
                         <div class="form-card mb-4">
                             <span class="section-badge"><i class="fa-solid fa-list-check me-2"></i>Ver Todos los Datos del Formulario</span>
                             <p class="text-muted" style="font-size: 0.85rem; margin-top: -12px;">Despliega cada sección para ver, a simple vista, qué campos ya llenó el docente y cuáles faltan.</p>
@@ -840,7 +840,7 @@
         </div>
     </div>
 
-    <!-- NUEVO: MODAL DE ENVIAR NOTIFICACIÓN (correo a uno o varios usuarios, con texto enriquecido y adjuntos) -->
+    <!-- MODAL DE ENVIAR NOTIFICACIÓN (correo a uno o varios usuarios, con texto enriquecido y adjuntos) -->
     <div class="modal fade" id="modalEnviarNotificacion" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
@@ -908,7 +908,7 @@
     </div>
 
   
-    <!-- NUEVO: MODAL EXCLUSIVO PARA ACTUALIZAR EL FORM 402 (cuando el docente lo devuelve ya notariado) -->
+    <!-- MODAL EXCLUSIVO PARA ACTUALIZAR EL FORM 402 (cuando el docente lo devuelve ya notariado) -->
     <div class="modal fade" id="modalActualizarForm402" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
@@ -938,7 +938,7 @@
         </div>
     </div>
 
-    <!-- NUEVO: MODAL PARA EDITAR LOS DATOS DE LA INVITACIÓN (curso, fechas, horario y pago) -->
+    <!-- MODAL PARA EDITAR LOS DATOS DE LA INVITACIÓN (curso, fechas, horario y pago) -->
     <div class="modal fade" id="modalEditarInvitacion" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
@@ -1025,7 +1025,7 @@
         const expId = urlParams.get('expId');
         let docId = "";
 
-        // --- NUEVO: Estado para el modal de Editar Invitación ---
+        // --- Estado para el modal de Editar Invitación ---
         let idInvitacionActual = "";
         let docenteNombreActual = "";
         let docenteCorreoActual = "";
@@ -1051,15 +1051,12 @@
             const str = String(valor).trim();
             if (/actualidad|presente/i.test(str)) return 'Actualidad';
 
-            // Caso: ISO completo (la celda se guardó como fecha real)
             let m = str.match(/^(\d{4})-(\d{2})-\d{2}T/);
             if (m) return `${MESES_CORTOS[parseInt(m[2], 10) - 1]} ${m[1]}`;
 
-            // Caso: "YYYY-MM"
             m = str.match(/^(\d{4})-(\d{2})$/);
             if (m) return `${MESES_CORTOS[parseInt(m[2], 10) - 1]} ${m[1]}`;
 
-            // Caso: solo año, o cualquier otro formato ya legible -> lo dejamos tal cual
             return str;
         }
 
@@ -1090,7 +1087,6 @@
                 const drafts = result.drafts || { educacion: [], experiencia: [] };
 
                 // --- SECCIÓN: DATOS PERSONALES ---
-                // NUEVO: "Estado/Región" solo aplica si el país es Estados Unidos; si no, no cuenta como campo faltante.
                 const paisEsEEUU = /estados unidos|united states|^usa$/i.test((d.pais || '').trim());
 
                 const camposPersonales = [
@@ -1184,7 +1180,7 @@
             }
         }
 
-        // ==================== NUEVO: GENERAR DOCUMENTOS EN INGLÉS (vía n8n) ====================
+        // ==================== GENERAR DOCUMENTOS EN INGLÉS (vía n8n) ====================
 
         let pendientesTraduccion = [];
 
@@ -1220,7 +1216,6 @@
 
             let tareasFinales = [...tareasNuevas];
 
-            // NUEVO: si hay documentos que ya tienen traducción, pedimos confirmación antes de regenerarlos
             if (tareasExistentes.length > 0) {
                 const listaHtml = tareasExistentes.map(t => `<li>${t.nombre}</li>`).join('');
                 const confirmacion = await Swal.fire({
@@ -1254,7 +1249,6 @@
                 return { tipo: t.tipo, idDiploma: t.idDiploma, urlAnterior };
             });
 
-            // Marcamos visualmente los documentos en cola como "Traduciendo..."
             document.querySelectorAll('#contenedor-adjuntos-revision .file-item').forEach(item => {
                 const enCola = pendientesTraduccion.find(p => p.tipo === item.dataset.tipo && String(p.idDiploma) === String(item.dataset.iddiploma));
                 if (enCola) {
@@ -1330,9 +1324,9 @@
                                 }
                             });
                             huboCambios = true;
-                            return false; // ya no está pendiente
+                            return false;
                         }
-                        return true; // sigue pendiente
+                        return true;
                     });
 
                     if (huboCambios) {
@@ -1344,7 +1338,7 @@
                         pollingTraducciones = null;
                     }
                 } catch (e) { console.log("Error en polling de traducciones:", e); }
-            }, 10000); // cada 10 segundos
+            }, 10000);
         }
 
         // ==================== FUNCIONES GENERALES ====================
@@ -1352,7 +1346,6 @@
             document.getElementById('sidebar').classList.toggle('collapsed');
         }
 
-        // NUEVO: abre/cierra el menú lateral flotante en móvil
         function toggleMobileSidebar() {
             document.getElementById('sidebar').classList.toggle('show-mobile');
             document.getElementById('sidebarOverlay').classList.toggle('active');
@@ -1367,7 +1360,6 @@
 
 
         function changeFontSize(dir) {
-            // Tu lógica existente de cambio de fuente
             let currentSize = parseFloat(document.documentElement.style.getPropertyValue('--dynamic-font-size')) || 1;
             let newSize = dir === 1 ? currentSize + 0.05 : currentSize - 0.05;
             if(newSize >= 0.8 && newSize <= 1.3) {
@@ -1386,7 +1378,6 @@
             setTimeout(() => toast.remove(), 4000);
         }
 
-        // ==================== CARGA DEL EXPEDIENTE ====================
         document.addEventListener('DOMContentLoaded', () => {
             const name = localStorage.getItem('userName') || "Admin";
             const rol = localStorage.getItem('userRole') || "Administrador";
@@ -1400,7 +1391,6 @@
             cargarExpediente();
             cargarTrazabilidad();
 
-            // NUEVO: conectar arrastrar-y-soltar en las dos zonas de subida de archivos
             activarDropzone(document.getElementById('dropzoneForm402'), (files) => {
                 if (files[0]) manejarArchivoForm402(files[0]);
             });
@@ -1409,7 +1399,6 @@
             });
         });
 
-        // NUEVO: conecta eventos de arrastrar-y-soltar a cualquier zona (dropzone) y ejecuta un callback con los archivos soltados
         function activarDropzone(zonaEl, onFilesDropped) {
             if (!zonaEl) return;
             ['dragenter', 'dragover'].forEach(evt => {
@@ -1444,23 +1433,18 @@
                     const inv = response.invitacion;
                     docId = d.id;
 
-                    // NUEVO: Guardamos referencias para el modal de Editar Invitación
                     idInvitacionActual = exp.idInvitacion || "";
                     docenteNombreActual = `${d.nombres || ''} ${d.apellidos || ''}`.trim();
                     docenteCorreoActual = d.correo || "";
                     
-                    // Header
                     document.getElementById('det-nombre-curso').innerText = `Expediente: ${exp.idExpediente}`;
                     document.getElementById('det-subtitle').innerHTML = `Docente: ${d.nombres} ${d.apellidos}`;
                     
-                    // Estado badge
-                    // --- LÓGICA DE ESTADOS, COLORES Y PIPELINE ---
                     const estadoExp = (exp.estado || '').trim();
                     
-                    // 1. Actualizar Badge Principal
-                    let bgBadge = '#ea580c'; // Naranja por defecto
-                    if(['Recibido', 'Verificado', 'Evaluado', 'Contratado', 'Firmado', 'Contrato enviado'].includes(estadoExp)) bgBadge = '#15803d'; // Verde
-                    if(['En proceso', 'En revisión', 'En evaluación'].includes(estadoExp)) bgBadge = '#2563eb'; // Azul
+                    let bgBadge = '#ea580c';
+                    if(['Recibido', 'Verificado', 'Evaluado', 'Contratado', 'Firmado', 'Contrato enviado'].includes(estadoExp)) bgBadge = '#15803d';
+                    if(['En proceso', 'En revisión', 'En evaluación'].includes(estadoExp)) bgBadge = '#2563eb';
                     
                     const badgeElement = document.getElementById('badge-estado-actual');
                     if(badgeElement) {
@@ -1468,24 +1452,23 @@
                         badgeElement.innerText = `Estado: ${estadoExp}`;
                     }
 
-                    // 2. Colorear el Pipeline (Estilo Acme)
                     const stages = [
                         document.getElementById('stage-1'),
                         document.getElementById('stage-2'),
                         document.getElementById('stage-3'),
                         document.getElementById('stage-4')
                     ];
-                    stages.forEach(s => s.className = 'stage-step step-gray'); // Limpiar todos
+                    stages.forEach(s => s.className = 'stage-step step-gray');
                     
                     if (['Por enviar', 'Enviado', 'En proceso', 'Recibido'].includes(estadoExp)) {
-                        stages[0].classList.replace('step-gray', 'step-green'); // Etapa 1 activa
+                        stages[0].classList.replace('step-gray', 'step-green');
                     } else if (['En revisión', 'Verificado'].includes(estadoExp)) {
                         stages[0].classList.replace('step-gray', 'step-green');
-                        stages[1].classList.replace('step-gray', 'step-yellow'); // Etapa 2 activa
+                        stages[1].classList.replace('step-gray', 'step-yellow');
                     } else if (['Por evaluar', 'En evaluación', 'Evaluado'].includes(estadoExp)) {
                         stages[0].classList.replace('step-gray', 'step-green');
                         stages[1].classList.replace('step-gray', 'step-green');
-                        stages[2].classList.replace('step-gray', 'step-red'); // Etapa 3 activa
+                        stages[2].classList.replace('step-gray', 'step-red');
                     } else if (['Por contratar', 'Firmado', 'Contrato enviado', 'Contratado'].includes(estadoExp)) {
                         stages[0].classList.replace('step-gray', 'step-green');
                         stages[1].classList.replace('step-gray', 'step-green');
@@ -1493,17 +1476,14 @@
                         stages[3].classList.replace('step-gray', estadoExp === 'Contratado' ? 'step-green' : 'step-yellow'); 
                     }
 
-                    // 3. Renderizar Botones Dinámicos
                     renderBotonesDinamicos(estadoExp);
 
-                    // Datos de invitación
                     document.getElementById('view-estado').innerText = exp.estado;
                     document.getElementById('view-curso').innerText = inv.curso || "No especificado";
                     
-                    // --- NUEVO: FORMATEO AESTHETIC DE HORARIOS ---
                     if (inv.horario && inv.horario.trim() !== '-' && inv.horario.includes(':')) {
                         let horariosHtml = '<div class="d-flex flex-column gap-1 mt-1">';
-                        const sesiones = inv.horario.split('|'); // Separamos las clases
+                        const sesiones = inv.horario.split('|');
                         sesiones.forEach(sesion => {
                             if(sesion.trim()) {
                                 horariosHtml += `<div style="font-size: 0.75rem; background: #f8fafc; border: 1px solid #e2e8f0; padding: 5px 8px; border-radius: 6px; color: #475569; line-height: 1.3; width: fit-content;"><i class="fa-regular fa-calendar-check text-primary me-1"></i> ${sesion.trim()}</div>`;
@@ -1514,7 +1494,6 @@
                     } else {
                         document.getElementById('view-horario').innerText = inv.dias || "-";
                     }
-                    // ---------------------------------------------
                     
                     document.getElementById('view-pago').innerText = inv.pago || "-";
 
@@ -1539,7 +1518,6 @@
 
                     cargarPerfilCompletoDocente(docId, exp.idExpediente);
                     
-                    // Actualizar URLs de documentos generados
                     if(exp.urls) actualizarUrlsDesdeBackend(exp.urls);
                 } else {
                     mostrarErrorDatos();
@@ -1562,7 +1540,6 @@
             const btnGuardar = document.getElementById('btnGuardarEdicionInv');
             const btnEnviar = document.getElementById('btnEnviarCorreoActualizacion');
 
-            // Reset de UI cada vez que se abre
             loadingDiv.classList.remove('d-none');
             form.classList.add('d-none');
             btnGuardar.classList.remove('d-none');
@@ -1573,7 +1550,6 @@
             new bootstrap.Modal(document.getElementById('modalEditarInvitacion')).show();
 
             try {
-                // 1. Cargar catálogo de programas/cursos (solo la primera vez)
                 if (catalogoCursosEdit.length === 0) {
                     const resCat = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_catalogs' }) });
                     const dataCat = await resCat.json();
@@ -1583,7 +1559,6 @@
                     (dataCat.programas || []).forEach(p => { selP.innerHTML += `<option value="${p.id}">${p.nombre}</option>`; });
                 }
 
-                // 2. Cargar los datos actuales de la invitación
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_invitation_details', idInvitacion: idInvitacionActual }) });
                 const result = await res.json();
 
@@ -1595,12 +1570,10 @@
 
                 const dInv = result.data;
 
-                // Preseleccionar Programa y disparar el filtrado de Cursos
                 const selP = document.getElementById('editSelPrograma');
                 selP.value = dInv.idPrograma || "";
                 filtrarCursosEdit();
 
-                // Preseleccionar Curso
                 const selC = document.getElementById('editSelCurso');
                 selC.value = dInv.idCurso || "";
 
@@ -1667,7 +1640,7 @@
                     showToast("Invitación actualizada correctamente.", "success");
                     btnGuardar.classList.add('d-none');
                     document.getElementById('btnEnviarCorreoActualizacion').classList.remove('d-none');
-                    cargarExpediente(); // Refrescamos la tarjeta con los nuevos datos
+                    cargarExpediente();
                 } else {
                     showToast(result.message || "No se pudo actualizar la invitación.", "danger");
                     btnGuardar.disabled = false;
@@ -1739,7 +1712,7 @@
                 
                 if(data.status === 'success') {
                     showToast(`Estado actualizado exitosamente`, 'success');
-                    cargarExpediente(); // Recarga toda la UI y repinta el Pipeline
+                    cargarExpediente();
                 } else {
                     showToast("Error al cambiar estado", "danger");
                 }
@@ -1764,7 +1737,6 @@
             return downloadUrl;
         }
 
-        // NUEVO: abre el documento generado en el editor real de Google Docs (para poder editarlo)
         function getDriveEditUrl(downloadUrl) {
             if (!downloadUrl) return "#";
             const match = downloadUrl.match(/[-\w]{25,}/);
@@ -1774,7 +1746,6 @@
             return downloadUrl;
         }
 
-        // NUEVO: descarga el documento generado directamente como PDF
         function getDrivePdfDownloadUrl(downloadUrl) {
             if (!downloadUrl) return "#";
             const match = downloadUrl.match(/[-\w]{25,}/);
@@ -1795,7 +1766,7 @@
                     <div class="d-flex align-items-center gap-2 file-actions">
                         <!-- Ahora usa getDriveViewUrl para abrir la vista previa -->
                         <a href="${getDriveViewUrl(url)}" target="_blank" class="btn-ver-file">Abrir</a>
-                        <!-- NUEVO: descarga directa del archivo original (ya es un link de descarga de Drive) -->
+                        <!-- Descarga directa del archivo original (ya es un link de descarga de Drive) -->
                         <a href="${url}" download class="btn-ver-file" title="Descargar"><i class="fa-solid fa-download"></i></a>
                         <span class="doc-en-slot">${urlEn ? `
                             <a href="${getDriveViewUrl(urlEn)}" target="_blank" class="btn-ver-file btn-ver-file-en" title="Ver versión en inglés">EN</a>
@@ -1822,7 +1793,6 @@
             });
 
             if (res1.isConfirmed) {
-                // Actualizamos a Verificado
                 showToast("Marcando expediente como Verificado...", "info");
                 await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'update_expediente_status', id: expId, estado: 'Verificado' }) });
                 
@@ -1845,12 +1815,12 @@
                     const dataFinal = await resFinal.json();
                     if(dataFinal.status === 'success') {
                         showToast("Enviado a Evaluación exitosamente", "success");
-                        cargarExpediente(); // Recarga la UI y repinta la tabla con las fechas y asignaciones
+                        cargarExpediente();
                     } else {
                         showToast("Hubo un error al derivar.", "danger");
                     }
                 } else {
-                    cargarExpediente(); // Solo recarga para mostrar el estado "Verificado"
+                    cargarExpediente();
                 }
             }
         }
@@ -1887,7 +1857,6 @@
             let docsMostrados = 0;
             
             documentTrace.forEach(doc => {
-                // Mostrar SOLO si el documento tiene una URL real (es decir, existe en la BD)
                 if (doc.url && doc.url.trim() !== "") {
                     docsMostrados++;
                     
@@ -1896,7 +1865,6 @@
                     if(doc.estado === "Pendiente") estadoClass += " badge-pending";
                     if(doc.estado === "En revisión" || doc.estado === "Revisado por Sara") estadoClass += " badge-review";
 
-                    // NUEVO: solo el Form 402 permite que la ejecutiva suba la versión ya notariada por el docente
                     const btnActualizarForm402 = doc.nombre === "Form 402"
                         ? `<a href="#" onclick="abrirModalActualizarForm402(); return false;" title="Subir Form 402 notariado"><i class="fa-solid fa-file-arrow-up"></i> Actualizar</a>`
                         : '';
@@ -1918,7 +1886,6 @@
                 }
             });
             
-            // Si no hay ningún documento que mostrar, inyectamos el mensaje amigable UX
             if (docsMostrados === 0) {
                 tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-5" style="border: 1px dashed #e2e8f0; border-radius: 12px; background: #f8fafc;">
                     <i class="fa-regular fa-folder-open mb-2" style="font-size: 2rem; color: #cbd5e1;"></i><br>
@@ -1933,7 +1900,6 @@
         }
 
         function actualizarResumen() {
-            // Filtrar solo los que realmente existen en pantalla (Tienen URL)
             const docsGenerados = documentTrace.filter(d => d.url && d.url.trim() !== "");
             
             document.getElementById('totalDocs').innerText = docsGenerados.length;
@@ -1954,7 +1920,7 @@
         }
 
         function actualizarUrlsDesdeBackend(urls) {
-            documentTrace = []; // Reconstruimos desde cero usando solo Google Sheets
+            documentTrace = [];
             
             const docsGenerables = [
                 "Form 402", "Letter of Appointment", "Resume", "Reference Check Forms",
@@ -1964,7 +1930,6 @@
 
             docsGenerables.forEach(nombre => {
                 let docData = urls[nombre];
-                // Si el backend mandó un objeto JSON (Nuestra nueva lógica)
                 if (docData && typeof docData === 'object' && docData.url) {
                     documentTrace.push({
                         nombre: nombre,
@@ -1976,7 +1941,6 @@
                         fechaAprobacion: docData.fechaAprobacion || ""
                     });
                 } 
-                // Si el backend mandó una URL antigua (Compatibilidad)
                 else if (docData && typeof docData === 'string' && docData.trim() !== "") {
                     documentTrace.push({
                         nombre: nombre, url: docData, version: 1, estado: "Pendiente",
@@ -1989,14 +1953,12 @@
 
         // ==================== GENERACIÓN DE DOCUMENTOS ====================
         
-        // Esta es la lista oficial de documentos que el sistema puede autogenerar (El Handbook no va aquí porque lo sube el docente)
         const DOCS_GENERABLES = [
             "Form 402", "Letter of Appointment", "Resume", "Reference Check Forms",
             "Proposed Salary", "Academic Preparation Evaluation Form", "Assigned Employee Notice",
             "Direct Deposit Authorization Form", "Confidentiality Agreement", "Job Description"
         ];
 
-        // 1. Abre el modal y dibuja los checkboxes dinámicamente
         function generarDocumentos() {
             let html = '';
             DOCS_GENERABLES.forEach((docName, index) => {
@@ -2012,12 +1974,10 @@
             new bootstrap.Modal(document.getElementById('modalSeleccionarDocs')).show();
         }
 
-        // 2. Marcar/Desmarcar todos
         function toggleAllDocs(source) {
             document.querySelectorAll('.doc-gen-cb').forEach(cb => cb.checked = source.checked);
         }
 
-        // 3. Ejecutar la generación (Llamada al backend con Toast de carga)
         async function ejecutarGeneracionDocs() {
             const checkboxes = document.querySelectorAll('.doc-gen-cb:checked');
             if(checkboxes.length === 0) { 
@@ -2027,10 +1987,8 @@
             
             const selectedDocs = Array.from(checkboxes).map(cb => cb.value);
 
-            // Cerrar el modal limpiamente
             bootstrap.Modal.getInstance(document.getElementById('modalSeleccionarDocs')).hide();
 
-            // Mostrar el toast azul oscuro animado de "Generando..."
             const container = document.getElementById('toastContainer');
             const loadingToast = document.createElement('div');
             loadingToast.className = `toast align-items-center border-0 show shadow-lg rounded-4 mb-3`;
@@ -2046,7 +2004,6 @@
             container.appendChild(loadingToast);
 
             try {
-                // Enviar la orden al backend (Usa la función generate_bulk_documents que ya tienes lista)
                 const payload = {
                     action: "generate_bulk_documents",
                     idExpediente: expId,
@@ -2058,14 +2015,14 @@
 
                 if (result.status === 'success') {
                     showToast("¡Documentos generados exitosamente!", "success");
-                    cargarExpediente(); // Recarga la UI para que aparezcan en la tabla instantáneamente
+                    cargarExpediente();
                 } else {
                     showToast(result.message || "Error al generar documentos.", "danger");
                 }
             } catch (e) { 
                 showToast("Error de conexión con el servidor.", "danger"); 
             } finally {
-                loadingToast.remove(); // Quita el aviso de carga termine bien o mal
+                loadingToast.remove();
             }
         }
 
@@ -2125,7 +2082,6 @@
             if(!toolbar) return;
             let html = '';
 
-            // Botón GLOBAL (Siempre presente)
             html += `<button class="action-btn" onclick="abrirModalNotificacion()"><i class="fa-solid fa-bell"></i> Enviar notificación</button>`;
 
             // ETAPAS 1 y 2 (Recopilación y Revisión)
@@ -2153,7 +2109,6 @@
 
             // ETAPA 3 (Evaluación)
             if (['Por evaluar', 'En evaluación', 'Evaluado'].includes(estadoExp)) {
-                // Eliminado el botón de subir informe de la ejecutiva por requerimiento del sistema
                 if (estadoExp === 'Evaluado') {
                     html += `<button class="action-btn" style="background:#10b981; color:white; border-color:#10b981;" onclick="confirmarEvaluacionAprobacion()"><i class="fa-solid fa-check-double"></i> Confirmar Evaluación (Aprobar)</button>`;
                 }
@@ -2208,14 +2163,13 @@
             }
         }
 
-        // ==================== NUEVO: MODAL DE ENVIAR NOTIFICACIÓN (real) ====================
+        // ==================== MODAL DE ENVIAR NOTIFICACIÓN (real) ====================
         let adjuntosNotif = []; // [{name, type, size, base64}]
 
         async function abrirModalNotificacion() {
             const modal = new bootstrap.Modal(document.getElementById('modalEnviarNotificacion'));
             modal.show();
 
-            // Reiniciar el formulario cada vez que se abre
             document.getElementById('inputAsuntoNotif').value = '';
             document.getElementById('rteMensajeNotif').innerHTML = '';
             adjuntosNotif = [];
@@ -2224,7 +2178,7 @@
             await cargarDestinatariosNotificacion();
         }
 
-        let listaUsuariosNotifGlobal = []; // Guardamos la lista completa para poder filtrarla sin re-consultar el backend
+        let listaUsuariosNotifGlobal = [];
 
         async function cargarDestinatariosNotificacion() {
             const cont = document.getElementById('listaDestinatariosNotif');
@@ -2240,7 +2194,6 @@
                     return;
                 }
 
-                // El correo del docente de este expediente aparece primero y viene pre-seleccionado
                 const correoDocenteActual = (perfilCompletoGlobal && perfilCompletoGlobal.data) ? perfilCompletoGlobal.data.correo : '';
 
                 listaUsuariosNotifGlobal = [...result.data].sort((a, b) => {
@@ -2257,7 +2210,6 @@
 
         function renderListaDestinatarios(lista, correoPreseleccionado) {
             const cont = document.getElementById('listaDestinatariosNotif');
-            // Conservamos lo que ya estaba marcado antes de re-renderizar (por ejemplo, al filtrar)
             const marcadosPrevios = new Set(Array.from(document.querySelectorAll('#listaDestinatariosNotif input[type="checkbox"]:checked')).map(c => c.value));
 
             if (lista.length === 0) {
@@ -2289,19 +2241,16 @@
         }
 
         function actualizarContadorDestinatarios() {
-            // Contamos sobre la lista completa de checkboxes marcados en TODO el modal (no solo los visibles tras filtrar)
             const marcados = new Set(Array.from(document.querySelectorAll('#listaDestinatariosNotif input[type="checkbox"]:checked')).map(c => c.value));
             const el = document.getElementById('contadorDestinatarios');
             if (el) el.innerText = `${marcados.size} seleccionado${marcados.size === 1 ? '' : 's'}`;
         }
 
-        // --- Editor de texto enriquecido (contenteditable + execCommand) ---
         function rteAplicar(comando) {
             document.execCommand(comando, false, null);
             document.getElementById('rteMensajeNotif').focus();
         }
 
-        // --- Adjuntos ---
         function agregarAdjuntosUI(fileList) {
             Array.from(fileList).forEach(file => {
                 const reader = new FileReader();
@@ -2346,7 +2295,6 @@
             }).join('');
         }
 
-        // --- Envío real del correo ---
         async function enviarNotificacionGlobal() {
             const correosSeleccionados = Array.from(document.querySelectorAll('#listaDestinatariosNotif input[type="checkbox"]:checked')).map(c => c.value);
             const asunto = document.getElementById('inputAsuntoNotif').value.trim();
@@ -2388,7 +2336,7 @@
             }
         }
 
-        // ==================== NUEVO: ACTUALIZAR FORM 402 NOTARIADO (solo este documento lo permite) ====================
+        // ==================== ACTUALIZAR FORM 402 NOTARIADO (solo este documento lo permite) ====================
         let archivoForm402Actual = null; // { name, type, size, base64 }
 
         function abrirModalActualizarForm402() {
@@ -2453,7 +2401,7 @@
                 if (result.status === 'success') {
                     bootstrap.Modal.getInstance(document.getElementById('modalActualizarForm402')).hide();
                     showToast("Form 402 actualizado y marcado como Firmado.", "success");
-                    cargarExpediente(); // Recarga la tabla para reflejar el nuevo estado y versión
+                    cargarExpediente();
                 } else {
                     Swal.fire('Error', result.message || 'No se pudo actualizar el Form 402.', 'error');
                     btn.disabled = false;
@@ -2468,8 +2416,6 @@
 
         // ==================== NUEVAS ACCIONES (STUBS) ====================
         function subirInformeEvaluacion() {
-            // Aquí puedes abrir un modal de carga o llamar a una función.
-            // Para el ejemplo, simulamos la subida y cambiamos el estado
             showToast("Simulando subida de informe...", "info");
             setTimeout(() => {
                 cambiarEstadoExpediente('Evaluado');
@@ -2485,7 +2431,6 @@
                 showToast("Cargando datos del docente, por favor espere.", "info");
                 return;
             }
-            // Abre el asistente en una nueva pestaña enviando el ID del expediente, el ID del docente y el modo administrador
             window.open(`../registroexpediente.html?exp=${expId}&doc=${docId}&mode=admin`, '_blank');
         }
 

@@ -203,7 +203,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 const response = await res.json();
                 
                 if (response.status === 'success') {
-                    // Los directores ven expedientes en etapa de Contratación
                     const estadosPermitidos = ["por contratar", "firmado", "contrato enviado", "contratado"];
                     expedientesGlobal = response.data.filter(exp => 
                         estadosPermitidos.includes(exp.estado.toLowerCase())

@@ -159,7 +159,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 return;
             }
 
-            // Inicializar firma
             canvas = document.getElementById('signature-pad-canvas');
             signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' });
             function resizeCanvas() {
@@ -173,7 +172,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             document.getElementById('clearSignatureBtn').addEventListener('click', () => signaturePad.clear());
 
             cargarDetallesFirma();
-            setTimeout(resizeCanvas, 300); // Pequeño retraso para que el flex cargue las dimensiones reales
+            setTimeout(resizeCanvas, 300);
         });
 
         async function cargarDetallesFirma() {
@@ -191,7 +190,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     document.getElementById('txtDocenteNombre').innerText = `${doc.nombres} ${doc.apellidos}`;
                     document.getElementById('txtExpDetails').innerText = `Expediente: ${exp.idExpediente} • Docente ID: ${doc.id}`;
 
-                    // Cargar sólo documentos firmables por director
                     let htmlDocs = "";
                     const docsFirmables = ["Letter of Appointment", "Confidentiality Agreement"];
                     let primerDoc = true;
@@ -280,7 +278,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 const payload = {
                     action: "director_sign_document",
                     idExpediente: expId,
-                    role: localStorage.getItem('userRole'), // DIRECTOR_ZAMUDIO o DIRECTOR_ERNESTO
+                    role: localStorage.getItem('userRole'),
                     documento: selectedDocName,
                     signature: base64Signature
                 };
@@ -298,7 +296,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         icon: 'success',
                         confirmButtonColor: '#1e3a8a'
                     }).then(() => {
-                        window.location.reload(); // Recarga para ver el iframe actualizado con la firma estampada
+                        window.location.reload();
                     });
                 } else {
                     Swal.fire('Error', result.message || 'No se pudo aplicar la firma.', 'error');

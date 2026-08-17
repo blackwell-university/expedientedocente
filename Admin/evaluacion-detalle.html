@@ -263,7 +263,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         let selectedFileBase64 = null;
         let selectedFileObject = null;
 
-        // Roles de usuario
         const role = localStorage.getItem('userRole');
         const isSara = role === 'Ejecutiva Credenciales';
         const isMaria = role === 'Ejecutivo Licenciamiento';
@@ -278,13 +277,11 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 return;
             }
             
-            // Adaptar interfaz si es María (Licenciamiento)
             if (isMaria) {
                 document.getElementById('userRoleTxt').innerText = "Licenciamiento";
                 document.getElementById('headerTitle').innerText = "Área de Licenciamiento";
                 document.getElementById('headerSubtitle').innerText = "Fase de Firma y Contratos";
                 
-                // María no tiene SLA activo
                 document.getElementById('slaCard').style.display = 'none';
             }
             
@@ -309,27 +306,22 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     const doc = response.docente;
                     const drafts = response.drafts;
 
-                    // Definimos los estados concluidos de evaluación académica aquí arriba para evitar ReferenceError
                     const estadosEvaluacionConcluidos = ["evaluado", "por contratar", "firmado", "contrato enviado", "contratado"];
                     const esEvaluacionConcluida = estadosEvaluacionConcluidos.includes(exp.estado.toLowerCase());
 
-                    // Llenado de encabezado
                     document.getElementById('txtExpId').innerText = `Expediente: ${exp.idExpediente}`;
                     document.getElementById('txtDocenteNombre').innerText = `Docente: ${doc.nombres} ${doc.apellidos}`;
 
-                    // Llenado de Datos Personales (Solo lectura)
                     document.getElementById('valDni').innerText = doc.dni || '—';
                     document.getElementById('valNombres').innerText = doc.nombres || '—';
                     document.getElementById('valApellidos').innerText = doc.apellidos || '—';
                     document.getElementById('valPais').innerText = doc.pais || '—';
                     document.getElementById('valCorreo').innerText = doc.correo || '—';
 
-                    // 1. RENDERIZAR CREDENCIALES CORE (Solo Vista)
                     let htmlEvidencias = '';
                     if (doc.url_id) htmlEvidencias += crearEvidenciaCore("Documento de Identidad Oficial (DNI/Pasaporte)", doc.url_id, "id-card");
                     if (doc.url_cv) htmlEvidencias += crearEvidenciaCore("Currículum Vitae (CV Orginal)", doc.url_cv, "file-pdf");
                     
-                    // Diplomas dinámicos de drafts.educacion
                     if (drafts && drafts.educacion && drafts.educacion.length > 0) {
                         drafts.educacion.forEach((edu, idx) => {
                             if (edu.url_diploma) {
@@ -339,39 +331,34 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     }
                     document.getElementById('contenedorEvidenciasCore').innerHTML = htmlEvidencias || '<p class="text-muted m-0">No se encontraron evidencias registradas.</p>';
 
-                    // 2. RENDERIZAR DOCUMENTOS GENERADOS (CON FILTROS SEGÚN ROL)
                     let htmlDocs = '';
                     let fechaAsignacionRaw = ""; 
                     
                     for (const [key, value] of Object.entries(exp.urls)) {
                         if (value && value.url) {
-                            // María solo ve el Form 402 y el Faculty Handbook [2]
                             if (isMaria) {
                                 if (key === "Form 402" || key === "Handbook") {
                                     htmlDocs += crearDocumentoGenerado(key, value);
                                 }
                             } else {
-                                // Sara e Inquilinos ven todo
                                 htmlDocs += crearDocumentoGenerado(key, value);
                             }
 
                             if (value.fechaEnvio && !fechaAsignacionRaw) {
-                                fechaAsignacionRaw = value.fechaEnvio; // Tomamos la fecha de envío del primer documento asignado
+                                fechaAsignacionRaw = value.fechaEnvio;
                             }
                         }
                     }
 
-                    // Si Sara está en la mesa, ocultamos la tarjeta general de expediente institucional para no abrumar su flujo de trabajo
                     if (isSara) {
                         document.getElementById('cardDocsGenerados').style.display = 'none';
                     } else {
                         document.getElementById('contenedorDocsGenerados').innerHTML = htmlDocs || '<p class="text-muted m-0">No hay documentos de expediente generados.</p>';
                     }
 
-                    // 3. CALCULAR SLA (7 DÍAS DESDE EL ENVÍO) - Exclusivo de Sara
                     if (isSara) {
                         if (esEvaluacionConcluida) {
-                            document.getElementById('slaCard').style.display = 'none'; // Ocultamos el SLA si ya evaluó
+                            document.getElementById('slaCard').style.display = 'none';
                         } else {
                             document.getElementById('slaCard').style.display = 'block';
                             calcularSLA(fechaAsignacionRaw || exp.fechaCreacion);
@@ -379,7 +366,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     }
 
                     if (esEvaluacionConcluida) {
-                        // Dictamen ya enviado (Carga deshabilitada para todos)
                         let fileUrl = exp.evaluacionCredenciales ? exp.evaluacionCredenciales.url : '#';
                         let fechaEnvioStr = exp.evaluacionCredenciales ? exp.evaluacionCredenciales.fechaEnvio : '—';
                         
@@ -391,7 +377,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                                 <a href="${getSafeDriveViewUrl(fileUrl)}" target="_blank" class="btn btn-sm btn-outline-success fw-bold px-3 py-2" style="border-radius:8px;"><i class="fa-solid fa-eye me-1"></i> Ver dictamen de Sara</a>
                             </div>`;
                     } else if (isMaria) {
-                        // Si está pendiente y es María, le muestra que Sara está procesando
                         document.getElementById('uploadReportSection').innerHTML = `
                             <div class="text-center py-4 bg-light border border-warning rounded-4" style="color: #b45309;">
                                 <i class="fa-solid fa-clock-three fa-3x mb-2 text-warning"></i>
@@ -409,7 +394,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             }
         }
 
-        // --- CONVERTIDOR INTELIGENTE DE DRIVE VIEW URL (SOLO VISTA) ---
         function getSafeDriveViewUrl(downloadUrl) {
             if (!downloadUrl) return "#";
             const match = downloadUrl.match(/id=([a-zA-Z0-9_-]+)/);
@@ -448,7 +432,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             </div>`;
         }
 
-        // --- CALCULO SLA DE 7 DIAS ---
         function calcularSLA(fechaAsignacionStr) {
             if (!fechaAsignacionStr) {
                 document.getElementById('slaCountdown').innerText = "SLA sin iniciar";
@@ -506,7 +489,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             }
         }
 
-        // --- SUBIR INFORME DE EVALUACIÓN ---
         function seleccionarArchivo(input) {
             if(input.files.length > 0) {
                 const file = input.files[0];
