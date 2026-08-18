@@ -8,7 +8,6 @@
         if (sessionActive === 'true' && savedRole) {
             const roleUpper = savedRole.toUpperCase();
             
-            // Redirección inteligente según el rol guardado
             if (roleUpper === 'DOCENTE') {
                 window.location.href = "dashboard-docente.html";
             } else if (roleUpper.startsWith('DIRECTOR_')) {
@@ -16,6 +15,8 @@
             } else if (roleUpper === 'EJECUTIVA CREDENCIALES' || roleUpper === 'EJECUTIVO LICENCIAMIENTO') {
                 window.location.href = "Admin/evaluacion-dashboard.html";
             } else if (roleUpper === 'ASESORA ACADEMICA') {
+                window.location.href = "Admin/asesora-dashboard.html";
+            } else if (roleUpper === 'JEFE OSE BGU') {
                 window.location.href = "Admin/asesora-dashboard.html";
             } else if (roleUpper === 'ADMINISTRATIVO' || roleUpper === 'ADMINISTRADOR') {
                 window.location.href = "Admin/administrativo.html";
@@ -87,7 +88,6 @@
 
         .card-body { padding: 35px 30px; }
 
-        /* FLOATING LABELS - Estilo App Móvil */
         .form-floating-custom {
             position: relative; margin-bottom: 20px;
         }
@@ -105,7 +105,6 @@
             display: flex; align-items: center; gap: 8px;
         }
 
-        /* Activación del floating effect al hacer click/escribir */
         .form-floating-custom input:focus,
         .form-floating-custom input:not(:placeholder-shown) {
             border-color: var(--primary-blue);
@@ -211,6 +210,9 @@
                     } else if (rolAsignado === 'ASESORA ACADEMICA') {
                         localStorage.setItem('userRole', 'Asesora Academica');
                         window.location.href = "Admin/asesora-dashboard.html";
+                    } else if (rolAsignado === 'JEFE OSE BGU') {
+                        localStorage.setItem('userRole', 'Jefe OSE BGU');
+                        window.location.href = "Admin/asesora-dashboard.html";
                     } else if (
                         rolAsignado === 'ADMINISTRATIVO' || 
                         rolAsignado === 'ADMINISTRADOR'
@@ -226,12 +228,11 @@
                     }
 
                 } else if (response.status === "inactive") {
-                    alert(response.message); // Muestra: "Este usuario no tiene acceso al sistema."
+                    alert(response.message);
                     btn.disabled = false;
                     btn.innerHTML = 'Iniciar Sesión <i class="fa-solid fa-arrow-right"></i>';
 
-                } else {
-                    // Si el status es "error" (usuario o clave mal)
+                } else {                    
                     alert("Usuario o contraseña incorrectos.");
                     btn.disabled = false;
                     btn.innerHTML = 'Iniciar Sesión <i class="fa-solid fa-arrow-right"></i>';

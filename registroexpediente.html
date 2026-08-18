@@ -1275,7 +1275,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label text-primary-dark" style="font-size: 0.8rem;">Franja Horaria (GMT-5) *</label>
+                    <label class="form-label text-primary-dark" style="font-size: 0.8rem;">Franja Horaria <a href="https://time.is/es/EST" target="_blank" style="color: #1e40af; text-decoration: underline;">EST</a>*</label>
                     <select class="form-select border-0 shadow-sm reg-hora-input" id="reg-hora-${num}">
                         <option value="">Seleccione una franja</option>
                         <option value="19:00 a 20:30">19:00 a 20:30</option>
@@ -2609,15 +2609,13 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                             item.dataset.id = idDipGenerado;
 
                             const subirDiploma = getBase64(dipFile).then(b64Dip =>
-                                fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Dip, name: dipFile.name, type: dipFile.type, idExpediente: idExpedienteUrl }) }).then(r => r.json())
+                                fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Dip, name: dipFile.name, type: dipFile.type, uploadTo: 'docente', idDocente: userId, idExpediente: idExpedienteUrl }) }).then(r => r.json())
                             );
                             const subirTranscript = transFile
-                                ? getBase64(transFile).then(b64Trans => fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Trans, name: transFile.name, type: transFile.type, idExpediente: idExpedienteUrl }) }).then(r => r.json()))
+                                ? getBase64(transFile).then(b64Trans => fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Trans, name: transFile.name, type: transFile.type, uploadTo: 'docente', idDocente: userId, idExpediente: idExpedienteUrl }) }).then(r => r.json()))
                                 : Promise.resolve({ url: "" });
 
-                            // Ambos archivos (diploma + transcript) se suben al mismo tiempo, no uno tras otro
                             return Promise.all([subirDiploma, subirTranscript]).then(([resDip, resTrans]) => {
-                                // Enviar al Webhook de N8N (Es un documento nuevo/editado) - incluye idDiploma para que la respuesta se guarde en la fila exacta
                                 fetch(N8N_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: "extract_diploma", fileUrl: resDip.url, idDocente: userId, idExpediente: idExpedienteUrl, idDiploma: idDipGenerado, grado: currentGrado }) }).catch(e => console.log(e));
 
                                 return {
@@ -2627,10 +2625,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                             });
 
                         } else {
-                            // MODO LECTURA (Ya estaban guardados en BD)
                             const estadoItem = item.dataset.estado || "Subido";
-
-                            // LÓGICA CLAVE: Si ya estaba guardado pero se quedó en "Subido", mandamos a N8N otra vez. Si dice "Procesado", lo ignora y avanza.
                             if (estadoItem.toLowerCase() === "subido") {
                                 fetch(N8N_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: "extract_diploma", fileUrl: item.dataset.url, idDocente: userId, idExpediente: idExpedienteUrl, idDiploma: item.dataset.id, grado: item.dataset.grado }) }).catch(e => console.log(e));
                             }
@@ -2644,7 +2639,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         }
                     });
 
-                    // Todos los diplomas (nuevos y ya existentes) se resuelven a la vez
                     const diplomasParaGuardar = await Promise.all(tareasDiplomas);
                     
                     if (hayNuevosOEditados) {
@@ -2654,7 +2648,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
                         isEditingDiplomas = false;
 
-                        // Repintamos los diplomas en "Modo Lectura"
                         const dipContainer = document.getElementById('diplomas-container');
                         dipContainer.innerHTML = '';
                         diplomasParaGuardar.forEach(dip => {
@@ -2673,8 +2666,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         });
                     }
                     
-                    cambiarUI(1, pasoOrigen); // Cambia al Paso 3 instantáneamente
-                    iniciarPollingProcesamiento(); // Empezamos a vigilar en segundo plano cuándo n8n termine de procesar
+                    cambiarUI(1, pasoOrigen);
+                    iniciarPollingProcesamiento();
                     return;
                 }
                 
@@ -2732,7 +2725,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                                 btnNext.disabled = false; btnNext.innerHTML = originalHTML; return;
                             }
 
-                            // Formateamos las fechas y horas seleccionadas de manera prolija para la base de datos
                             const diasArr = bookedSessions.map(s => s.dateStr);
                             const horasArr = bookedSessions.map(s => `${s.dateStr}: ${s.slot}`);
 
@@ -2750,7 +2742,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     }
                 }
 
-                // --- NUEVO: PASO 5 (DATOS BANCARIOS) ---
+                // --- PASO 5 (DATOS BANCARIOS) ---
                 else if (pasoActual === 5) {
                     payload.banco = document.getElementById('reg-banco').value;
                     payload.moneda = document.getElementById('reg-moneda').value;
@@ -2778,13 +2770,11 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         if (!validarPaso5Completo()) pasosFaltantes.push("5 (Banco)");
                         if (!validarPaso6Completo(true)) pasosFaltantes.push("6 (Datos vacíos)"); 
 
-                        // Guardamos el mensaje en el payload para usarlo después del fetch
                         payload.mensajeFaltantes = pasosFaltantes.length > 0
                             ? `Avance guardado. Te falta revisar el Paso: ${pasosFaltantes.join(', ')}`
                             : (soloDatosMode ? "Todos los datos del docente se guardaron correctamente." : "Avance guardado correctamente.");
                     }
 
-                    // Preparamos los datos a guardar
                     payload.educacion = Array.from(document.querySelectorAll('.ai-edu-record')).map(r => ({ 
                         id_diploma: r.dataset.id, 
                         grado: r.dataset.grado, 
@@ -2848,7 +2838,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                             });
                             return;
                         } else {
-                                // AQUI ESTA LA MAGIA UX: Mostramos exactamente lo que falta (o éxito si no falta nada)
                                 const huboFaltantes = (payload.mensajeFaltantes || "").includes("Te falta revisar");
                                 showToast(payload.mensajeFaltantes || "Por favor, revisa que todos los pasos estén completados.", huboFaltantes ? "warning" : "success");
                             }
@@ -2862,7 +2851,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     cargarCursosPendientes();
                 }
 
-                // Carga de borradores (IA) antes del paso 6
                 if (pasoActual === 5) {
                     try {
                         const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: userId, id_expediente: idExpedienteUrl }) }).then(r=>r.json());
@@ -2960,20 +2948,12 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 inputFin.disabled = false;
             }
         }
-        // --- NUEVA FUNCIÓN: ACTUALIZACIÓN SILENCIOSA DEL PASO 6 (Educación/Experiencia extraídas por n8n) ---
-        // Antes, estos campos solo se llenaban una vez al cargar la página (cargarDatosPrevios).
-        // Si el docente llegaba al Paso 6 antes de que n8n terminara de extraer el CV/Diplomas,
-        // se quedaba vacío hasta hacer F5. Esta función agrega SOLO lo que falta (por ID),
-        // sin duplicar ni pisar lo que el docente ya haya editado a mano.
+
         async function refrescarPaso6IA() {
             try {
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: userId, id_expediente: idExpedienteUrl }) });
                 const result = await res.json();
-                // FIX: esta función solo aceptaba 'success', a diferencia de las otras 3 rutas que
-                // pintan Educación/Experiencia/Competencias (carga inicial, transición Paso5->6, y
-                // el bloque de abajo), que sí aceptan 'success' o 'partial'. Como 'partial' es el
-                // status que tu backend usa cuando profileData viene vacío (pero drafts sí trae
-                // datos), esta función se salía sin pintar nada justo al entrar al Paso 6.
+
                 if ((result.status !== 'success' && result.status !== 'partial') || !result.drafts) return;
 
                 let seAgregoAlgo = false;
@@ -3020,10 +3000,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         // --- NUEVA FUNCIÓN: ACTUALIZACIÓN SILENCIOSA DEL PASO 2 ---
         async function refrescarDiplomasIA() {
             try {
-                // FIX: antes esto solo corría si pasoActual === 2, así que si guardabas un diploma
-                // y te ibas a otro paso, la tarjeta se quedaba "a medio convertir" (en modo edición)
-                // hasta que volvías aquí. Ahora corre sin importar en qué paso estés — el propio
-                // guard de "editando" (más abajo) ya protege de pisar algo que sigas subiendo.
 
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: userId, id_expediente: idExpedienteUrl }) });
                 const result = await res.json();
@@ -3093,7 +3069,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         color: '#1e293b',
                         iconColor: '#f59e0b'
                     });
-                    return; // Detiene la navegación, no lo deja pasar
+                    return;
                 }
             }
 
@@ -3155,17 +3131,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         }
 
         function cambiarUI(direccion, pasoOrigen) {
-            // FIX: antes esta función siempre usaba "pasoActual" (variable global) para decidir
-            // qué pestaña marcar como completada. Si el usuario hacía clic en otra pestaña MIENTRAS
-            // el guardado anterior seguía en curso (asíncrono), pasoActual ya había cambiado para
-            // cuando el guardado terminaba — y el check verde se marcaba en el paso equivocado.
-            // Ahora recibe el paso que REALMENTE se guardó (pasoOrigen); si no se pasa explícitamente
-            // (ej. navegación manual), usa el paso actual como antes.
             const pasoBase = (pasoOrigen !== undefined && pasoOrigen !== null) ? pasoOrigen : pasoActual;
             let nuevoPaso = pasoBase + direccion;
 
-            // El Paso 4 está oculto siempre, así que la navegación lo salta por completo
-            // (de 3 se va directo a 5, y de 5 hacia atrás se va directo a 3)
             if (pasoAsignacionOculto && nuevoPaso === 4) {
                 nuevoPaso = direccion === 1 ? 5 : 3;
             }
@@ -3207,11 +3175,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         tab6.classList.remove('completed');
                         if (tab6.querySelector('.step-badge')) tab6.querySelector('.step-badge').innerText = "En progreso";
                     }
-                    // FIX: el Paso 6 es el último paso, así que "nuevoPaso" (7) siempre queda fuera de
-                    // rango y la llamada a irAPaso() de más abajo nunca se ejecuta para él. Como
-                    // evaluarEstadoBotonFinal() solo se disparaba dentro de irAPaso(), el botón
-                    // "Finalizar Registro" (verde) no aparecía hasta refrescar la página (F5) aunque
-                    // ya todo estuviera completo. Lo llamamos aquí directamente para refrescarlo al toque.
                     if (pasoActual === totalPasos) { evaluarEstadoBotonFinal(); }
                 }
                 else {
@@ -3221,9 +3184,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 evaluarDesbloqueoPaso6(); 
             }
 
-            // NUEVO: si el usuario ya se movió manualmente a otro paso mientras esto se guardaba,
-            // no lo arrastramos de vuelta a una navegación automática — solo dejamos el check verde
-            // puesto en el paso correcto y no tocamos dónde está parado ahora mismo.
             if (pasoActual === pasoBase && nuevoPaso >= 1 && nuevoPaso <= totalPasos) { irAPaso(nuevoPaso); }
         }
 
@@ -3244,19 +3204,15 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 document.getElementById('reg-direccion').value.trim(),
                 document.getElementById('reg-cp').value.trim()
             ];
-            // ... (el resto de la función se queda igual)
 
-            // Verificar si falta algún campo básico
             const incompleto = campos.some(valor => valor === "" || valor === null || valor === undefined);
             
-            // Verificación especial para EE.UU. (Estado/Región)
             const pais = document.getElementById('reg-pais').value.toLowerCase();
             const requiereEstado = (pais.includes('estados unidos') || pais.includes('united states'));
             const estadoRegion = document.getElementById('reg-estado-region').value.trim();
             
             if (requiereEstado && estadoRegion === "") return false;
 
-            // Verificar si el PDF de identidad ya está guardado o subido
             const idListo = (urlIdGlobal !== "" && !isEditingId) || (document.getElementById('idFile').files.length > 0);
 
             return !incompleto && idListo;
@@ -3308,9 +3264,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 if (!element) return;
                 if (!element.value.trim()) {
                     if (mostrarErrores) {
-                        element.style.border = '2px solid #ef4444'; // Borde rojo
-                        element.style.backgroundColor = '#fef2f2'; // Fondo rojizo suave
-                        // Quitar el rojo en cuanto el usuario escriba/seleccione algo
+                        element.style.border = '2px solid #ef4444';
+                        element.style.backgroundColor = '#fef2f2';
                         element.addEventListener('input', function() { 
                             this.style.border = ''; 
                             this.style.backgroundColor = ''; 
@@ -3364,11 +3319,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             const reqDocs = window.docsSolicitadosGlobal || "";
             const pideDoctorado = reqDocs.includes("Especialmente Doctorado");
 
-            // FIX: un Doctorado es un grado ACADÉMICAMENTE SUPERIOR a un Máster, pero antes solo se
-            // aceptaba como válido el string "master/maestría/magíster" — un docente que solo tenía
-            // registrado su Doctorado (sin un Máster aparte) se quedaba bloqueado en rojo para
-            // siempre, aunque tuviera todo lleno. Ahora un Doctorado también cubre el requisito de
-            // "al menos un Máster".
             if (pideDoctorado && !hasDoctorate) esValido = false;
             if (!pideDoctorado && !hasMaster && !hasDoctorate) esValido = false;
 
@@ -3398,11 +3348,10 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         let pollingProcesamiento = null;
 
         function iniciarPollingProcesamiento() {
-            if (pollingProcesamiento) return; // ya está corriendo, evitamos duplicar el intervalo
+            if (pollingProcesamiento) return;
 
             pollingProcesamiento = setInterval(async () => {
                 const tab6 = document.getElementById('tab-6');
-                // Si ya no hay nada bloqueado, dejamos de consultar (ya no hace falta)
                 if (tab6 && !tab6.classList.contains('step-locked')) {
                     clearInterval(pollingProcesamiento);
                     pollingProcesamiento = null;
@@ -3460,7 +3409,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     }
 
                     // --- Paso 6: rellenar educación/experiencia si n8n ya las extrajo ---
-                    // --- Paso 6: rellenar educación/experiencia si n8n ya las extrajo ---
                     if (result.drafts) {
                         if (result.drafts.educacion && result.drafts.educacion.length > 0) {
                             const idsEduExistentes = new Set(Array.from(document.querySelectorAll('.ai-edu-record')).map(el => el.dataset.id));
@@ -3509,8 +3457,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             const step2Listo = document.getElementById('tab-2').classList.contains('completed');
             const tab6 = document.getElementById('tab-6');
 
-            // Ya no exigimos "Procesado por IA" como condición de bloqueo,
-            // basta con que Paso 1 (CV/Handbook subidos) y Paso 2 (diplomas) estén completos.
             if (step1Listo && step2Listo) {
                 tab6.classList.remove('step-locked');
                 const icon = tab6.querySelector('.default-icon');
@@ -3536,8 +3482,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
             if (p1 && p2 && p3 && p4 && p5 && p6) {
                 if (soloDatosMode) {
-                    // NUEVO: en este modo no hay expediente que "finalizar" — solo se guardan
-                    // los datos del docente, nunca se marca ni se muestra como "completado"
+
                     btnNext.innerHTML = 'Guardar Datos del Docente <i class="fa-solid fa-save ms-2"></i>';
                     btnNext.style.background = 'var(--primary)';
                     btnNext.dataset.intencion = "borrador";

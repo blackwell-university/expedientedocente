@@ -4,7 +4,7 @@
     <script>
         const isLoggedIn = localStorage.getItem('isLoggedIn');
         const userRole = localStorage.getItem('userRole');
-        if (isLoggedIn !== 'true' || (userRole !== 'Asesora Academica' && userRole !== 'Administrador')) {
+        if (isLoggedIn !== 'true' || (userRole !== 'Asesora Academica' && userRole !== 'Administrador' && userRole !== 'Jefe OSE BGU')) {
             window.location.href = "../index.html";
         }
     </script>
@@ -242,6 +242,7 @@
         </div>
         <ul class="nav-list">
             <li><a href="asesora-dashboard.html" class="nav-link active"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Gestión de Clases</span></a></li>
+            <li id="navGestionAsesoras" style="display:none;"><a href="gestion-asesoras.html" class="nav-link"><i class="fa-solid fa-people-arrows"></i> <span class="link-text">Gestionar Asesoras</span></a></li>
         </ul>
         <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;"><i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span></a>
     </aside>
@@ -293,12 +294,10 @@
 
                             <span class="info-label mb-2 d-block">Agenda Original del Docente</span>
                             <div class="agenda-list" id="contenedorAgendaOriginal">
-                                <!-- Reemplazo UX: Listado de Clases Compacto y Limpio -->
                                 <div class="text-center text-muted py-2"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando agenda...</div>
                             </div>
                         </div>
 
-                        <!-- NUEVO: sección propia para el sílabo del curso -->
                         <div class="form-card">
                             <span class="section-badge" style="background:#eef2ff; color:#4338ca;"><i class="fa-solid fa-book-open me-2"></i>Sílabo del Curso</span>
                             <a href="#" id="btnVerSilabo" class="silabo-card" target="_blank" style="display:none;">
@@ -317,7 +316,6 @@
 
                     <!-- COLUMNA DERECHA: GESTIÓN ORDENADA EN PESTAÑAS -->
                     <div class="col-xl-8">
-
                         <ul class="nav custom-tabs mb-3" id="gestionTabs" role="tablist">
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link active" id="tab-btn-gestion" data-bs-toggle="tab" data-bs-target="#tab-gestion" type="button" role="tab">
@@ -345,7 +343,6 @@
                                     <p class="text-muted small mb-4">Añada los enlaces de videoconferencia para que estén disponibles en el portal del profesor.</p>
                                     
                                     <div id="contenedorEnlaces" class="d-flex flex-column gap-3 mb-3">
-                                        <!-- Enlaces dinámicos -->
                                     </div>
                                     <button class="btn-add" onclick="agregarEnlaceUI()"><i class="fa-solid fa-plus me-1"></i> Añadir Nuevo Enlace</button>
                                 </div>
@@ -361,7 +358,6 @@
                                     <p class="text-muted small mb-4">Actualice el dictado de cada sesión o configure una fecha y horario alternativo si se solicita una reprogramación.</p>
                                     
                                     <div id="contenedorSesiones">
-                                        <!-- Sesiones dinámicas -->
                                     </div>
                                 </div>
 
@@ -399,6 +395,12 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             const name = localStorage.getItem('userName') || "Asesora Académica";
             document.getElementById('userName').innerText = name;
             document.getElementById('userInitial').innerText = name.trim().substring(0, 2).toUpperCase();
+
+            const rolActual = localStorage.getItem('userRole');
+            if (rolActual === 'Jefe OSE BGU' || rolActual === 'Administrador') {
+                document.getElementById('navGestionAsesoras').style.display = 'block';
+            }
+
             if(!invId) { Swal.fire('Error', 'Faltan parámetros de clase.', 'error'); return; }
             cargarDetalleClase();
         });
