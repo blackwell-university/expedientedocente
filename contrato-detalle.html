@@ -350,8 +350,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             cargarDetallesFirma();
         });
 
-        // NUEVO: pantalla de bloqueo cuando el expediente/invitación aún no llegó
-        // a la etapa en la que el sistema espera la firma del docente
         function mostrarNoListoParaFirma(mensaje) {
             const wrapper = document.getElementById('docCarousel');
             if (wrapper) {
@@ -395,20 +393,18 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         document.getElementById('txtDocenteNombre').innerText = `Hola, ${doc.nombres}`;
                         document.getElementById('txtExpDetails').innerText = `Invitación N°: ${inv.idInvitacion} • ${inv.curso}`;
 
-                        // NUEVO: solo se puede firmar cuando la universidad ya envió estos
-                        // documentos de invitación a firma (o etapas posteriores, para poder
-                        // ver el estado aunque ya no queden pendientes)
                         const estadosListoFirmaInv = ['Pendiente firma docente', 'Firmado por docente', 'Pendiente firma directores', 'Completado'];
                         if (!estadosListoFirmaInv.includes(inv.estado)) {
                             mostrarNoListoParaFirma(`Esta invitación todavía está en estado "${inv.estado || 'Pendiente'}". Podrás firmar cuando la universidad te envíe los documentos.`);
                             return;
                         }
 
-                        // LOS ÚNICOS 3 DOCUMENTOS QUE EL DOCENTE FIRMA EN UNA INVITACIÓN
                         const docsFirmablesInvitacion = [
                             "Letter of Appointment",
                             "Proposed Salary",
-                            "Job Description"
+                            "Job Description",
+                            "Assigned Employee Notice and Acknowledgments",
+                            "Direct Deposit Authorization Form"
                         ];
 
                         documentosDisponibles = docsFirmablesInvitacion
