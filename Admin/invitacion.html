@@ -541,16 +541,16 @@
         let estadoActual = "";
         let docsActuales = {};
 
-        // NUEVO: guardamos estos datos para poder armar el correo de "Enviar Invitación al Docente"
         let cursoActual = "", programaActual = "", docenteNombreActual = "";
         let franjasActual = "", clasesActual = "", pagoActual = "", idDocenteActual = "";
 
-        // Base de documentos propios de una invitación (4 documentos)
         const DOCS_INVITACION = [
             "Letter of Appointment",
             "Proposed Salary",
             "Academic Preparation Evaluation Form",
-            "Job Description"
+            "Job Description",
+            "Assigned Employee Notice and Acknowledgments",
+            "Direct Deposit Authorization Form"
         ];
 
         document.addEventListener('DOMContentLoaded', () => {
