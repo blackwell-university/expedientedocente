@@ -70,6 +70,12 @@
         .agenda-badge { background: var(--primary-light); color: var(--primary); font-weight: 800; font-size: 0.7rem; padding: 3px 8px; border-radius: 6px; flex-shrink: 0; }
         .agenda-time { color: var(--text-muted); font-size: 0.8rem; display: flex; align-items: center; gap: 6px; }
 
+        /* NUEVO: badge de estado dentro de la Agenda Original (refleja reprogramaciones) */
+        .agenda-estado-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.66rem; font-weight: 700; padding: 3px 9px; border-radius: 20px; width: fit-content; cursor: help; }
+        .agenda-estado-badge.badge-repro { background: #fffbeb; color: #b45309; }
+        .agenda-estado-badge.badge-realizada { background: #f0fdf4; color: #15803d; }
+        .agenda-fecha-original { font-size: 0.72rem; color: var(--text-muted); text-decoration: line-through; margin-left: 4px; }
+
         /* Sesiones dinámicas — REDISEÑADAS */
         .session-card { background: #ffffff; border: 1px solid var(--gray-border); border-radius: 14px; padding: 18px 20px; margin-bottom: 14px; transition: 0.25s; box-shadow: 0 2px 8px rgba(0,0,0,0.015); }
         .session-card:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.05); }
@@ -87,6 +93,10 @@
         .session-date-block i { color: var(--primary); font-size: 1rem; }
         .session-date-label { font-size: 0.68rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 1px; }
         .session-date-value { font-size: 0.88rem; color: #0f172a; font-weight: 700; }
+
+        /* NUEVO: botón para confirmar la reprogramación con su propio modal */
+        .btn-confirmar-repro { background: #d97706; color: white; border: none; font-weight: 700; font-size: 0.82rem; padding: 9px 18px; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .btn-confirmar-repro:hover { background: #b45309; transform: translateY(-1px); }
 
         .reprogramacion-box { background: #fffbeb; border: 1px dashed #fde68a; border-radius: 10px; padding: 16px; }
 
@@ -534,6 +544,11 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
                     availableSlots = extractTimeSlots(inv.franjas);
 
+                    // NUEVO: se parsea arraySesiones ANTES de construir la Agenda Original,
+                    // para poder cruzar cada día con su estado real (reprogramada/realizada)
+                    try { arraySesiones = JSON.parse(inv.sesiones); } catch(e) { arraySesiones = []; }
+                    if (!Array.isArray(arraySesiones)) arraySesiones = [];
+
                     const diasArr = inv.diasElegidos ? inv.diasElegidos.split(',').map(s=>s.trim()) : [];
                     const horasArr = inv.horasElegidas ? inv.horasElegidas.split('|').map(s=>s.trim()) : [];
                     
@@ -541,13 +556,37 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     diasArr.forEach((dia, idx) => {
                         let horaStr = horasArr[idx] || "";
                         if(horaStr.includes(': ')) horaStr = horaStr.split(/:\s*(.*)/s)[1].trim();
+
+                        // FIX: antes esta lista se armaba solo con la fecha original y nunca
+                        // reflejaba una reprogramación guardada. Ahora se cruza con arraySesiones
+                        // y usa fechaBase/horaBase, que es la fecha REAL vigente de la sesión
+                        // (se actualiza al confirmar una reprogramación, no depende de nuevaFecha).
+                        const sesionRel = arraySesiones.find(s => s.num === idx + 1);
+                        let fechaMostrar = dia;
+                        let horaMostrar = horaStr;
+                        let badgeExtra = '';
+
+                        if (sesionRel) {
+                            fechaMostrar = sesionRel.fechaBase || dia;
+                            horaMostrar = sesionRel.horaBase || horaStr;
+
+                            if (sesionRel.estado === 'Reprogramada') {
+                                const fOrig = sesionRel.fechaOriginal || dia;
+                                const hOrig = sesionRel.horaOriginal || horaStr;
+                                badgeExtra = `<span class="agenda-estado-badge badge-repro" title="Fecha original: ${fOrig} · ${hOrig}"><i class="fa-solid fa-rotate"></i> Reprogramada</span>`;
+                            } else if (sesionRel.estado === 'Realizada') {
+                                badgeExtra = `<span class="agenda-estado-badge badge-realizada"><i class="fa-solid fa-check"></i> Realizada</span>`;
+                            }
+                        }
+
                         htmlAgenda += `
                         <div class="agenda-item">
                             <div class="agenda-item-top">
                                 <span class="agenda-badge">Sesión ${idx + 1}</span>
-                                <span class="fw-bold text-dark">${dia}</span>
+                                <span class="fw-bold text-dark">${fechaMostrar}</span>
                             </div>
-                            <span class="agenda-time"><i class="fa-regular fa-clock"></i> ${horaStr}</span>
+                            <span class="agenda-time"><i class="fa-regular fa-clock"></i> ${horaMostrar}</span>
+                            ${badgeExtra}
                         </div>`;
                     });
                     document.getElementById('contenedorAgendaOriginal').innerHTML = htmlAgenda || '<p class="text-muted m-0">No se encontraron clases agendadas.</p>';
@@ -556,8 +595,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     if (!Array.isArray(arrayEnlaces)) arrayEnlaces = [];
                     renderEnlacesUI();
 
-                    try { arraySesiones = JSON.parse(inv.sesiones); } catch(e) { arraySesiones = []; }
-                    if (!Array.isArray(arraySesiones) || arraySesiones.length === 0) {
+                    if (arraySesiones.length === 0) {
                         diasArr.forEach((dia, idx) => {
                             let horaStr = horasArr[idx] || "";
                             if(horaStr.includes(': ')) horaStr = horaStr.split(/:\s*(.*)/s)[1].trim();
@@ -677,7 +715,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         <select class="form-select form-select-sm fw-bold w-auto sel-estado estado-${claseClp}" onchange="cambiarEstadoSesion(${idx}, this)">
                             <option value="Pendiente" ${ses.estado === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
                             <option value="Realizada" ${ses.estado === 'Realizada' ? 'selected' : ''}>Realizada</option>
-                            <option value="Reprogramada" ${ses.estado === 'Reprogramada' ? 'selected' : ''}>Reprogramada</option>
+                            <option value="Reprogramada" ${ses.estado === 'Reprogramada' ? 'selected' : ''} ${ses.estado === 'Realizada' ? 'disabled' : ''}>Reprogramada</option>
                         </select>
                     </div>
                     
@@ -686,8 +724,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                             <div class="session-date-block">
                                 <i class="fa-regular fa-calendar"></i>
                                 <div>
-                                    <div class="session-date-label">Fecha Original</div>
-                                    <div class="session-date-value">${ses.fechaBase || '—'}</div>
+                                    <div class="session-date-label">${ses.fechaOriginal ? 'Fecha Programada' : 'Fecha Original'}</div>
+                                    <div class="session-date-value">${ses.fechaBase || '—'} ${ses.fechaOriginal ? `<span class="agenda-fecha-original">(antes: ${ses.fechaOriginal})</span>` : ''}</div>
                                 </div>
                             </div>
                         </div>
@@ -695,8 +733,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                             <div class="session-date-block">
                                 <i class="fa-regular fa-clock"></i>
                                 <div>
-                                    <div class="session-date-label">Horario Original</div>
-                                    <div class="session-date-value">${ses.horaBase || '—'}</div>
+                                    <div class="session-date-label">${ses.fechaOriginal ? 'Horario Programado' : 'Horario Original'}</div>
+                                    <div class="session-date-value">${ses.horaBase || '—'} ${ses.fechaOriginal ? `<span class="agenda-fecha-original">(antes: ${ses.horaOriginal})</span>` : ''}</div>
                                 </div>
                             </div>
                         </div>
@@ -716,10 +754,79 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                                 </select>
                             </div>
                         </div>
+                        <button type="button" class="btn-confirmar-repro mt-3" onclick="confirmarReprogramacion(${idx})">
+                            <i class="fa-solid fa-calendar-check"></i> Confirmar Reprogramación
+                        </button>
                     </div>
                 </div>`;
             });
             container.innerHTML = html;
+        }
+
+        // NUEVO: confirmación dedicada para reprogramar una sesión puntual — valida los
+        // campos, muestra un resumen del cambio (fecha original → nueva fecha) y guarda
+        // de inmediato esa sesión sin depender del botón general "Guardar Asistencias"
+        function confirmarReprogramacion(idx) {
+            const card = document.querySelector(`.ses-row[data-index="${idx}"]`);
+            const rawDate = card.querySelector('.inp-nfecha').value;
+            const nuevaHora = card.querySelector('.inp-nhora').value;
+
+            if (!rawDate || !nuevaHora) {
+                Swal.fire('Faltan datos', 'Completa la nueva fecha y el nuevo horario antes de confirmar.', 'warning');
+                return;
+            }
+
+            const dp = rawDate.split('-');
+            const nuevaFechaFmt = `${dp[2]}/${dp[1]}/${dp[0]}`;
+            const ses = arraySesiones[idx];
+
+            Swal.fire({
+                title: '¿Confirmar reprogramación?',
+                html: `La <b>Sesión ${ses.num}</b> pasará de:<br>
+                       <span class="text-muted" style="text-decoration:line-through;">${ses.fechaBase} · ${ses.horaBase}</span><br>
+                       a:<br>
+                       <span style="color:#b45309; font-weight:700;">${nuevaFechaFmt} · ${nuevaHora}</span>`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#d97706',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, reprogramar',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            }).then(async (result) => {
+                if (!result.isConfirmed) return;
+
+                const ses = arraySesiones[idx];
+
+                // FIX: antes solo se guardaba en nuevaFecha/nuevaHora, y ese campo se
+                // borraba en cuanto la sesión pasaba a "Realizada" — perdiendo el registro
+                // de la fecha real. Ahora la nueva fecha se PROMUEVE a fechaBase/horaBase
+                // (el dato que de verdad se usa para tomar asistencia), y se guarda la
+                // fecha original aparte, solo la primera vez, por si se reprograma de nuevo.
+                if (!ses.fechaOriginal) {
+                    ses.fechaOriginal = ses.fechaBase;
+                    ses.horaOriginal = ses.horaBase;
+                }
+                ses.fechaBase = nuevaFechaFmt;
+                ses.horaBase = nuevaHora;
+                ses.estado = 'Reprogramada';
+                ses.nuevaFecha = "";
+                ses.nuevaHora = "";
+
+                Swal.fire({ title: 'Guardando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                try {
+                    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'save_asesora_course_data', idInvitacion: invId, enlaces: arrayEnlaces, sesiones: arraySesiones }) });
+                    const json = await res.json();
+                    if (json.status === 'success') {
+                        Swal.fire({ icon: 'success', title: 'Sesión reprogramada', timer: 1800, showConfirmButton: false });
+                        cargarDetalleClase();
+                    } else {
+                        Swal.fire('Error', 'No se pudo guardar la reprogramación.', 'error');
+                    }
+                } catch (e) {
+                    Swal.fire('Error de conexión', 'No se pudo conectar con el servidor.', 'error');
+                }
+            });
         }
 
         function cambiarEstadoSesion(idx, selectEl) {
@@ -732,6 +839,12 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             selectEl.classList.remove('estado-pendiente', 'estado-realizada', 'estado-reprogramada');
             selectEl.classList.add('estado-' + selectEl.value.toLowerCase());
 
+            // NUEVO: no tiene sentido reprogramar una clase que ya se dictó — si la sesión
+            // queda en "Realizada", se bloquea la opción "Reprogramada" hasta que se
+            // regrese manualmente a "Pendiente" (un paso deliberado, no accidental)
+            const opcionRepro = selectEl.querySelector('option[value="Reprogramada"]');
+            if (opcionRepro) opcionRepro.disabled = (selectEl.value === 'Realizada');
+
             const box = card.querySelector('.reprogramacion-box');
             if (selectEl.value === 'Reprogramada') {
                 box.style.display = 'block';
@@ -739,6 +852,10 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 box.style.display = 'none';
                 card.querySelector('.inp-nfecha').value = "";
                 card.querySelector('.inp-nhora').selectedIndex = 0;
+                // FIX: antes solo se limpiaban los inputs visuales — ahora también se limpia
+                // el dato real en memoria de inmediato, no recién cuando se guarda
+                arraySesiones[idx].nuevaFecha = "";
+                arraySesiones[idx].nuevaHora = "";
             }
         }
 
@@ -746,20 +863,30 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             document.querySelectorAll('.ses-row').forEach(row => {
                 const idx = parseInt(row.getAttribute('data-index'));
                 const sel = row.querySelector('.sel-estado').value;
-                arraySesiones[idx].estado = sel;
+                const ses = arraySesiones[idx];
+                ses.estado = sel;
                 
                 if (sel === 'Reprogramada') {
                     const rawDate = row.querySelector('.inp-nfecha').value;
-                    if (rawDate) {
+                    const nuevaHora = row.querySelector('.inp-nhora').value;
+                    // FIX: mismo criterio que confirmarReprogramacion() — la nueva fecha se
+                    // promueve a fechaBase/horaBase para que quede registrada en la base de
+                    // datos y no se pierda cuando la sesión pase a "Realizada" más adelante.
+                    if (rawDate && nuevaHora) {
                         const dp = rawDate.split('-');
-                        arraySesiones[idx].nuevaFecha = `${dp[2]}/${dp[1]}/${dp[0]}`;
-                    } else {
-                        arraySesiones[idx].nuevaFecha = "";
+                        const nuevaFechaFmt = `${dp[2]}/${dp[1]}/${dp[0]}`;
+                        if (!ses.fechaOriginal) {
+                            ses.fechaOriginal = ses.fechaBase;
+                            ses.horaOriginal = ses.horaBase;
+                        }
+                        ses.fechaBase = nuevaFechaFmt;
+                        ses.horaBase = nuevaHora;
                     }
-                    arraySesiones[idx].nuevaHora = row.querySelector('.inp-nhora').value;
+                    ses.nuevaFecha = "";
+                    ses.nuevaHora = "";
                 } else {
-                    arraySesiones[idx].nuevaFecha = "";
-                    arraySesiones[idx].nuevaHora = "";
+                    ses.nuevaFecha = "";
+                    ses.nuevaHora = "";
                 }
             });
         }
