@@ -242,13 +242,13 @@
         const invId = urlParams.get('inv') || urlParams.get('invId');
         const rolActual = urlParams.get('role'); // DIRECTOR_ZAMUDIO | DIRECTOR_ERNESTO
         const esZamudio = rolActual === 'DIRECTOR_ZAMUDIO';
-        const nombreDirectorMostrado = esZamudio ? 'Director Zamudio' : (rolActual === 'DIRECTOR_ERNESTO' ? 'Director Ernesto' : 'Director');
+        const nombreDirectorMostrado = esZamudio ? 'Director Zamudio' : (rolActual === 'DIRECTOR_ERNESTO' ? 'Assistant Director Ernesto' : 'Director');
 
         let signaturePad;
         let canvas;
         let selectedDocName = "";
         let selectedDocUrl = "";
-        let documentosDisponibles = []; // [{nombre, url, version, estado}] -- "estado" aquí refleja SOLO la firma de este director
+        let documentosDisponibles = [];
         let indiceDocActual = 0;
 
         function resizeCanvas() {
@@ -273,7 +273,6 @@
                 return;
             }
 
-            // Inicializar firma (primer render; se vuelve a inicializar cada vez que cambia de estado)
             inicializarSignaturePad();
             window.addEventListener('resize', resizeCanvas);
 
@@ -282,14 +281,13 @@
 
         function inicializarSignaturePad() {
             canvas = document.getElementById('signature-pad-canvas');
-            if (!canvas) return; // Ya no queda nada pendiente: no hay canvas que inicializar
+            if (!canvas) return;
             signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' });
             const clearBtn = document.getElementById('clearSignatureBtn');
             if (clearBtn) clearBtn.addEventListener('click', () => signaturePad.clear());
             setTimeout(resizeCanvas, 50);
         }
 
-        // Determina si ESTE director específico (Zamudio o Ernesto) ya firmó ese documento en particular
         function firmadoPorEsteDirector(fileObj) {
             if (!fileObj) return false;
             return esZamudio ? !!fileObj.zamudioFirmado : !!fileObj.ernestoFirmado;
@@ -315,7 +313,7 @@
                         const doc = response.docente;
                         const docs = response.documentos || {};
 
-                        document.getElementById('txtDocenteNombre').innerText = `Hola, ${nombreDirectorMostrado}`;
+                        document.getElementById('txtDocenteNombre').innerText = `${nombreDirectorMostrado}`;
                         document.getElementById('txtExpDetails').innerText = `Invitación N°: ${inv.idInvitacion} • Docente: ${doc.nombres} ${doc.apellidos}`;
 
                         const docsFirmablesDirector = ["Letter of Appointment", "Proposed Salary", "Job Description", "Assigned Employee Notice and Acknowledgments", "Direct Deposit Authorization Form"];
@@ -345,7 +343,7 @@
                         const exp = response.expediente;
                         const doc = response.docente;
 
-                        document.getElementById('txtDocenteNombre').innerText = `Hola, ${nombreDirectorMostrado}`;
+                        document.getElementById('txtDocenteNombre').innerText = `${nombreDirectorMostrado}`;
                         document.getElementById('txtExpDetails').innerText = `Expediente N°: ${exp.idExpediente} • Docente: ${doc.nombres} ${doc.apellidos}`;
 
                         const docsFirmablesDirector = [
