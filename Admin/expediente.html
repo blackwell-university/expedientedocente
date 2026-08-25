@@ -2082,48 +2082,73 @@
             if(!toolbar) return;
             let html = '';
 
+            // 1. Botón global de notificaciones
             html += `<button class="action-btn" onclick="abrirModalNotificacion()"><i class="fa-solid fa-bell"></i> Enviar notificación</button>`;
+
+            // Verificamos si ya existen documentos generados en el expediente
+            const tieneDocsGenerados = documentTrace.some(d => d.url && d.url.trim() !== "");
 
             // ETAPAS 1 y 2 (Recopilación y Revisión)
             const etapa1y2 = ['Por enviar', 'Enviado', 'En proceso', 'Recibido', 'En revisión', 'Verificado'];
             if (etapa1y2.includes(estadoExp) || estadoExp === '') {
                 
-                // Lógica de bloqueo para Generar Documentos
+                // Lógica de bloqueo si el docente aún no ha empezado
                 const deshabilitado = ['Por enviar', 'Enviado'].includes(estadoExp) || estadoExp === '';
                 const opacidad = deshabilitado ? '0.5' : '1';
                 const cursor = deshabilitado ? 'not-allowed' : 'pointer';
                 const mensaje = deshabilitado ? "El docente aún no empieza a rellenar sus datos (Debe estar 'En proceso')." : "";
 
-                html += `<button class="action-btn action-btn-primary" 
-                            onclick="${deshabilitado ? 'return false;' : 'generarDocumentos()'}" 
-                            style="opacity: ${opacidad}; cursor: ${cursor};" 
-                            title="${mensaje}">
-                            <i class="fa-solid fa-file-lines"></i> Generar documentos
+                if (tieneDocsGenerados) {
+                    html += `<button class="action-btn" onclick="generarDocumentos()"><i class="fa-solid fa-rotate"></i> Regenerar documentos</button>`;
+                } else {
+                    html += `<button class="action-btn action-btn-primary" 
+                                onclick="${deshabilitado ? 'return false;' : 'generarDocumentos()'}" 
+                                style="opacity: ${opacidad}; cursor: ${cursor};" 
+                                title="${mensaje}">
+                                <i class="fa-solid fa-file-lines"></i> Generar documentos
+                             </button>`;
+                }
+            }
+
+            // ETAPA 2 (Revisión y avance directo a Firma de Docente)
+            if (['Recibido', 'En revisión', 'Verificado'].includes(estadoExp)) {
+                
+                // Botón principal: Enviar para firma al docente (Saltea evaluación)
+                html += `<button class="action-btn" style="background:#0284c7; color:white; border-color:#0284c7;" onclick="enviarContratoDocente()">
+                            <i class="fa-solid fa-pen-nib"></i> Enviar para firma (Docente)
+                         </button>`;
+
+                // Botón deshabilitado opcional de evaluaciones
+                html += `<button class="action-btn" style="opacity:0.5; cursor:not-allowed; background:#f59e0b; color:white; border-color:#f59e0b;" disabled title="El paso de evaluación está deshabilitado por el momento">
+                            <i class="fa-solid fa-share-from-square"></i> Enviar a Evaluaciones (Omitido)
                          </button>`;
             }
 
-            // ETAPA 2 (Revisión exclusiva)
-            if (['En revisión', 'Verificado'].includes(estadoExp)) {
-                html += `<button class="action-btn" style="background:#f59e0b; color:white; border-color:#f59e0b;" onclick="iniciarFlujoEvaluacion()"><i class="fa-solid fa-share-from-square"></i> Enviar a Evaluaciones</button>`;
-            }
-
-            // ETAPA 3 (Evaluación)
+            // ETAPA 3 (Evaluación - En desuso temporal)
             if (['Por evaluar', 'En evaluación', 'Evaluado'].includes(estadoExp)) {
-                if (estadoExp === 'Evaluado') {
-                    html += `<button class="action-btn" style="background:#10b981; color:white; border-color:#10b981;" onclick="confirmarEvaluacionAprobacion()"><i class="fa-solid fa-check-double"></i> Confirmar Evaluación (Aprobar)</button>`;
-                }
+                html += `<button class="action-btn" style="background:#0284c7; color:white; border-color:#0284c7;" onclick="enviarContratoDocente()">
+                            <i class="fa-solid fa-pen-nib"></i> Enviar para firma (Docente)
+                         </button>`;
             }
 
             // ETAPA 4 (Contratación - Pipeline Secuencial de Firma)
             if (['Por contratar', 'Contrato enviado', 'Firmado', 'Contratado'].includes(estadoExp)) {
                 if (estadoExp === 'Por contratar') {
-                    html += `<button class="action-btn" style="background:#0284c7; color:white; border-color:#0284c7;" onclick="enviarContratoDocente()"><i class="fa-solid fa-paper-plane"></i> Enviar contrato a docente</button>`;
+                    html += `<button class="action-btn" style="background:#0284c7; color:white; border-color:#0284c7;" onclick="enviarContratoDocente()">
+                                <i class="fa-solid fa-paper-plane"></i> Enviar para firma (Docente)
+                             </button>`;
                 } else if (estadoExp === 'Contrato enviado') {
-                    html += `<button class="action-btn" style="background:#64748b; color:white; border-color:#64748b;" disabled><i class="fa-solid fa-hourglass-half"></i> Esperando firma del docente</button>`;
+                    html += `<button class="action-btn" style="background:#64748b; color:white; border-color:#64748b;" disabled>
+                                <i class="fa-solid fa-hourglass-half"></i> Esperando firma del docente...
+                             </button>`;
                 } else if (estadoExp === 'Firmado') {
-                    html += `<button class="action-btn" style="background:#1e3a8a; color:white; border-color:#1e3a8a;" onclick="enviarContratoDirectores()"><i class="fa-solid fa-user-tie"></i> Enviar contrato a directores</button>`;
+                    html += `<button class="action-btn" style="background:#1e3a8a; color:white; border-color:#1e3a8a;" onclick="enviarContratoDirectores()">
+                                <i class="fa-solid fa-user-tie"></i> Enviar contrato a directores
+                             </button>`;
                 } else if (estadoExp === 'Contratado') {
-                    html += `<button class="action-btn" style="background:#10b981; color:white; border-color:#10b981;" disabled><i class="fa-solid fa-check-double"></i> Proceso de Contratación Culminado</button>`;
+                    html += `<button class="action-btn" style="background:#10b981; color:white; border-color:#10b981;" disabled>
+                                <i class="fa-solid fa-check-double"></i> Proceso de Contratación Culminado
+                             </button>`;
                 }
             }
 
