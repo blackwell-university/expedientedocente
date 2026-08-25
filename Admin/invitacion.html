@@ -125,6 +125,18 @@
         .badge-completed { background: #e0f2fe; color: #0369a1; }
         .badge-pending { background: #fef3c7; color: #b45309; }
         .badge-success { background: #dcfce7; color: #166534; }
+        /* NUEVO: aviso de placeholders {{...}} sin rellenar detectados */
+        .badge-faltantes { background: #fef2f2; color: #b91c1c; cursor: help; margin-top: 4px; display: inline-flex; }
+        /* FIX: el globo ya NO vive dentro de la celda (el .table-wrapper con overflow-x:auto
+           lo recortaba). Ahora es un globo único, fijo al body, posicionado por JS — así
+           escapa de cualquier overflow de sus contenedores padre. */
+        .tooltip-datos-global {
+            display: none; position: fixed; background: #1e293b; color: #f8fafc;
+            padding: 10px 14px; border-radius: 10px; font-size: 0.72rem; font-weight: 500;
+            max-width: 260px; box-shadow: 0 10px 24px rgba(0,0,0,0.18); z-index: 9999;
+            text-align: left; line-height: 1.6; pointer-events: none;
+        }
+        .tooltip-datos-global b { color: #fca5a5; }
 
         .table-actions { display: flex; gap: 6px; flex-wrap: wrap; }
         .table-actions a { color: var(--text-muted); text-decoration: none; font-size: 0.78rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 8px; transition: var(--transition); cursor: pointer; }
@@ -611,6 +623,16 @@
                 const doc = json.docente || {};
                 docsActuales = json.documentos || {};
 
+                // NUEVO: si el backend ya calculó los placeholders faltantes al generar
+                // (parche en generate_invitacion_documents), se precarga la caché automáticamente
+                // sin necesidad de apretar "Verificar" a mano.
+                Object.keys(docsActuales).forEach(nombreDoc => {
+                    const d = docsActuales[nombreDoc];
+                    if (d && Array.isArray(d.placeholdersFaltantes)) {
+                        placeholdersCache[nombreDoc] = d.placeholdersFaltantes;
+                    }
+                });
+
                 estadoActual = inv.estado || "Guardado";
                 docId = doc.id || "";
                 docenteCorreoActual = doc.correo || "";
@@ -805,6 +827,66 @@
             }
         }
 
+        // NUEVO: guarda en memoria, por nombre de documento, la última verificación de
+        // placeholders {{...}} sin rellenar — se llena bajo demanda con el botón "Verificar"
+        let placeholdersCache = {};
+
+        // NUEVO: globo de nota posicionado por JS (position: fixed) para escapar del
+        // overflow-x:auto de .table-wrapper, que antes lo recortaba.
+        function mostrarTooltipFaltantes(el, nombreDoc) {
+            const faltantes = placeholdersCache[nombreDoc];
+            if (!faltantes || faltantes.length === 0) return;
+
+            const tip = document.getElementById('tooltipGlobal');
+            tip.innerHTML = '<b>Campos sin rellenar:</b><br>' + faltantes.map(p => '• ' + p.replace(/</g, '&lt;')).join('<br>');
+            tip.style.display = 'block';
+
+            const rect = el.getBoundingClientRect();
+            tip.style.left = Math.max(8, rect.left) + 'px';
+
+            const altura = tip.offsetHeight;
+            // Si no hay espacio arriba del badge, lo mostramos debajo en su lugar
+            if (rect.top - altura - 10 < 0) {
+                tip.style.top = (rect.bottom + 8) + 'px';
+            } else {
+                tip.style.top = (rect.top - altura - 10) + 'px';
+            }
+        }
+
+        function ocultarTooltipFaltantes() {
+            document.getElementById('tooltipGlobal').style.display = 'none';
+        }
+
+        async function verificarPlaceholders(nombreDoc, url) {
+            Swal.fire({ title: 'Verificando documento...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'check_document_placeholders', url: url }) });
+                const result = await res.json();
+
+                if (result.status === 'success') {
+                    placeholdersCache[nombreDoc] = result.placeholdersFaltantes;
+
+                    if (result.placeholdersFaltantes.length > 0) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Faltan datos por rellenar',
+                            html: `El documento <b>${nombreDoc}</b> todavía tiene <b>${result.placeholdersFaltantes.length}</b> campo(s) sin completar:<br><br>` +
+                                  result.placeholdersFaltantes.map(p => `<code>${p}</code>`).join('<br>') +
+                                  `<br><br><span class="text-muted small">Revisa los datos del docente/curso o edita el documento directamente para corregirlo.</span>`,
+                            confirmButtonColor: '#2563eb'
+                        });
+                    } else {
+                        Swal.fire({ icon: 'success', title: '¡Todo completo!', text: `"${nombreDoc}" no tiene ningún campo sin rellenar.`, timer: 2500, showConfirmButton: false });
+                    }
+                    renderTablaDocumentos();
+                } else {
+                    Swal.fire('Error', result.message || 'No se pudo verificar el documento.', 'error');
+                }
+            } catch (e) {
+                Swal.fire('Error de conexión', 'No se pudo conectar con el servidor.', 'error');
+            }
+        }
+
         function renderTablaDocumentos(estadoLower) {
             const tbody = document.getElementById('tablaDocumentosBody');
             let html = '';
@@ -826,14 +908,22 @@
                     if (estDoc.toLowerCase().includes("firmado por docente")) { classBadge = "badge-success"; firmados++; }
                     if (estDoc.toLowerCase().includes("formalizado") || estDoc.toLowerCase().includes("completado") || estDoc.toLowerCase().includes("firmado por director")) { classBadge = "badge-success"; firmados++; }
 
+                    // NUEVO: badge de "faltan datos" si ya se verificó este documento y quedaron
+                    // placeholders {{...}} sin rellenar — no se calcula solo, hay que apretar "Verificar"
+                    const faltantes = placeholdersCache[docName];
+                    const badgeFaltantes = (faltantes && faltantes.length > 0)
+                        ? `<span class="badge-state badge-faltantes" onmouseenter="mostrarTooltipFaltantes(this, '${docName.replace(/'/g, "\\'")}')" onmouseleave="ocultarTooltipFaltantes()"><i class="fa-solid fa-triangle-exclamation"></i> Faltan ${faltantes.length} dato(s)</span>`
+                        : '';
+
                     html += `<tr>
-                        <td><strong>${docName}</strong></td>
+                        <td><strong>${docName}</strong>${badgeFaltantes ? '<br>' + badgeFaltantes : ''}</td>
                         <td><span class="badge bg-light text-dark border fw-bold" style="font-size:0.75rem;">${versionText}</span></td>
                         <td><span class="badge-state ${classBadge}">${estDoc}</span></td>
                         <td class="table-actions">
                             <a href="${getDriveViewUrl(docData.url)}" target="_blank" title="Ver documento"><i class="fa-regular fa-eye"></i> Ver</a>
                             <a href="${getDriveEditUrl(docData.url)}" target="_blank" title="Abrir para editar"><i class="fa-regular fa-pen-to-square"></i> Editar</a>
                             <a href="${getDrivePdfDownloadUrl(docData.url)}" title="Descargar PDF"><i class="fa-solid fa-download"></i> Descargar</a>
+                            <a href="#" onclick="verificarPlaceholders('${docName.replace(/'/g, "\\'")}', '${docData.url}'); return false;" title="Revisar si quedaron campos {{...}} sin rellenar"><i class="fa-solid fa-magnifying-glass"></i> Verificar</a>
                         </td>
                     </tr>`;
                 }
@@ -1330,5 +1420,6 @@
             setTimeout(() => toast.remove(), 3500);
         }
     </script>
+    <div id="tooltipGlobal" class="tooltip-datos-global"></div>
 </body>
 </html>
