@@ -219,7 +219,7 @@
                 <p id="txtExpDetails">Expediente: —</p>
             </div>
 
-            <span class="section-badge"><i class="fa-solid fa-file-signature me-2"></i>1. Seleccione Documento</span>
+            <span class="section-badge"><i class="fa-solid fa-file-signature me-2"></i>1. Lista de Documentos</span>
             <div class="doc-carousel mb-2" id="docCarousel">
                 <div class="text-center text-muted py-3 w-100"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando documentos...</div>
             </div>
@@ -316,7 +316,7 @@
                         document.getElementById('txtDocenteNombre').innerText = `${nombreDirectorMostrado}`;
                         document.getElementById('txtExpDetails').innerText = `Invitación N°: ${inv.idInvitacion} • Docente: ${doc.nombres} ${doc.apellidos}`;
 
-                        const docsFirmablesDirector = ["Letter of Appointment", "Proposed Salary", "Job Description", "Assigned Employee Notice and Acknowledgments", "Direct Deposit Authorization Form"];
+                        const docsFirmablesDirector = ["Letter of Appointment", "Proposed Salary", "Academic Preparation Evaluation Form", "Job Description", "Assigned Employee Notice and Acknowledgments", "Direct Deposit Authorization Form"];
 
                         documentosDisponibles = docsFirmablesDirector
                             .map(nombre => ({ nombre, ...(docs[nombre] || {}) }))
@@ -349,7 +349,7 @@
                         const docsFirmablesDirector = [
                             "Letter of Appointment", "Resume", "Reference Check Forms", "Proposed Salary",
                             "Academic Preparation Evaluation Form", "Assigned Employee Notice and Acknowledgments",
-                            "Direct Deposit", "Confidentiality Agreement", "Job Description"
+                            "Direct Deposit Authorization Form", "Confidentiality Agreement", "Job Description"
                         ];
 
                         documentosDisponibles = docsFirmablesDirector
