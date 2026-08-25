@@ -109,6 +109,22 @@
         .clear-btn { position: absolute; top: 10px; right: 10px; background: rgba(226, 232, 240, 0.8); border: none; padding: 5px 12px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: 0.2s; z-index: 5; }
         .clear-btn:hover { background: #cbd5e1; color: var(--primary-dark); }
 
+        /* NUEVO: pestañas para elegir entre dibujar la firma o subir una imagen */
+        .firma-modo-tabs { display: flex; gap: 8px; margin-bottom: 10px; }
+        .firma-modo-btn { flex: 1; background: #f8fafc; border: 1px solid var(--border-color); color: var(--text-muted); font-weight: 700; font-size: 0.82rem; padding: 8px 12px; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s; cursor: pointer; }
+        .firma-modo-btn.active { background: var(--primary-light); color: var(--primary); border-color: #bfdbfe; }
+        .firma-modo-btn:hover:not(.active) { background: #f1f5f9; }
+        .firma-modo-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* NUEVO: zona para subir la imagen de la firma + su vista previa */
+        .firma-imagen-dropzone { border: 2px dashed var(--border-color); border-radius: 10px; padding: 34px 16px; text-align: center; color: var(--text-muted); cursor: pointer; transition: 0.2s; background: white; }
+        .firma-imagen-dropzone:hover { border-color: var(--primary); color: var(--primary); background: #f8fafc; }
+        .firma-imagen-preview-wrap { background: white; border-radius: 10px; padding: 12px; text-align: center; }
+        .firma-imagen-preview { max-width: 100%; max-height: 170px; display: block; margin: 0 auto; border: 1px solid var(--border-color); border-radius: 6px; background: white; }
+        .btn-eliminar-firma-img { margin-top: 12px; width: 100%; background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; font-weight: 700; font-size: 0.8rem; padding: 9px; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s; cursor: pointer; }
+        .btn-eliminar-firma-img:hover { background: #fee2e2; }
+        .btn-eliminar-firma-img:disabled { opacity: 0.5; cursor: not-allowed; }
+
         .btn-sign { background-color: var(--primary-dark); color: white; width: 100%; padding: 16px; border-radius: 12px; font-weight: 700; border: none; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15); }
         .btn-sign:hover { background-color: var(--primary); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(37, 99, 235, 0.2); }
 
@@ -128,16 +144,19 @@
             box-shadow: 0 4px 14px rgba(37, 99, 235, 0.08); transition: var(--transition);
         }
         .doc-current-card.is-signed { border-color: #86efac; background: #f0fdf4; box-shadow: 0 4px 14px rgba(21, 128, 61, 0.06); }
+        .doc-current-card.is-noaplica { border-color: #e2e8f0; background: #f8fafc; box-shadow: none; }
         .doc-current-card .doc-name { font-weight: 700; font-size: 0.94rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .doc-current-card .doc-meta { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
         .doc-current-card .doc-badge { flex-shrink: 0; font-size: 0.68rem; font-weight: 700; padding: 5px 12px; border-radius: 20px; background: #fef3c7; color: #b45309; white-space: nowrap; }
         .doc-current-card.is-signed .doc-badge { background: #dcfce7; color: #15803d; }
+        .doc-current-card .doc-badge.is-noaplica { background: #f1f5f9; color: #64748b; cursor: help; }
 
         .doc-dots { display: flex; justify-content: center; align-items: center; gap: 6px; flex-wrap: wrap; margin: 12px 0 1.5rem; }
         .doc-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-color); cursor: pointer; transition: var(--transition); border: none; padding: 0; }
         .doc-dot:hover { background: #94a3b8; }
         .doc-dot.active { background: var(--primary); width: 22px; border-radius: 5px; }
         .doc-dot.is-signed:not(.active) { background: #86efac; }
+        .doc-dot.is-noaplica:not(.active) { background: #cbd5e1; }
 
         .signed-doc-notice { text-align: center; padding: 1.75rem 1rem; background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 14px; }
         .all-signed-notice { text-align: center; padding: 2.5rem 1rem; }
@@ -210,20 +229,14 @@
             <p class="text-muted small mb-3">Dibuje su firma una sola vez en el recuadro inferior. Se aplicará automáticamente, junto con la fecha de hoy, a todos los documentos que aún tenga pendientes de firma.</p>
 
             <div id="panelFirmaContenido">
-                <div class="signature-wrapper">
-                    <button type="button" class="clear-btn" id="clearSignatureBtn"><i class="fa-solid fa-eraser"></i> Limpiar</button>
-                    <canvas id="signature-pad-canvas"></canvas>
-                </div>
-                <button type="button" class="btn-sign" id="btnSubmitSignature" onclick="ejecutarFirmaDocente()">
-                    <i class="fa-solid fa-file-signature"></i> Generar y Firmar Documento
-                </button>
+                <div class="text-center text-muted py-4"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando panel de firma...</div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script>
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
         const urlParams = new URLSearchParams(window.location.search);
         const expId = urlParams.get('exp');
         const invId = urlParams.get('inv') || urlParams.get('invId');
@@ -305,14 +318,14 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         document.getElementById('txtDocenteNombre').innerText = `Hola, ${nombreDirectorMostrado}`;
                         document.getElementById('txtExpDetails').innerText = `Invitación N°: ${inv.idInvitacion} • Docente: ${doc.nombres} ${doc.apellidos}`;
 
-                        const docsFirmablesDirector = ["Letter of Appointment", "Proposed Salary", "Job Description"];
+                        const docsFirmablesDirector = ["Letter of Appointment", "Proposed Salary", "Job Description", "Assigned Employee Notice and Acknowledgments", "Direct Deposit Authorization Form"];
 
                         documentosDisponibles = docsFirmablesDirector
                             .map(nombre => ({ nombre, ...(docs[nombre] || {}) }))
-                            .filter(d => d.url && !noAplicaAEsteDirector(d))
-                            .map(d => ({ ...d, estado: firmadoPorEsteDirector(d) ? 'Firmado' : 'Pendiente' }));
+                            .filter(d => d.url)
+                            .map(d => ({ ...d, estado: firmadoPorEsteDirector(d) ? 'Firmado' : (noAplicaAEsteDirector(d) ? 'NoAplica' : 'Pendiente') }));
 
-                        const primerPendiente = documentosDisponibles.findIndex(d => !d.estado.includes('Firmado'));
+                        const primerPendiente = documentosDisponibles.findIndex(d => d.estado === 'Pendiente');
                         indiceDocActual = primerPendiente !== -1 ? primerPendiente : 0;
 
                         renderCarrusel();
@@ -337,16 +350,16 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
                         const docsFirmablesDirector = [
                             "Letter of Appointment", "Resume", "Reference Check Forms", "Proposed Salary",
-                            "Academic Preparation Evaluation Form", "Assigned Employee Notice",
+                            "Academic Preparation Evaluation Form", "Assigned Employee Notice and Acknowledgments",
                             "Direct Deposit", "Confidentiality Agreement", "Job Description"
                         ];
 
                         documentosDisponibles = docsFirmablesDirector
                             .map(nombre => ({ nombre, ...(exp.urls[nombre] || {}) }))
-                            .filter(d => d.url && !noAplicaAEsteDirector(d))
-                            .map(d => ({ ...d, estado: firmadoPorEsteDirector(d) ? 'Firmado' : 'Pendiente' }));
+                            .filter(d => d.url)
+                            .map(d => ({ ...d, estado: firmadoPorEsteDirector(d) ? 'Firmado' : (noAplicaAEsteDirector(d) ? 'NoAplica' : 'Pendiente') }));
 
-                        const primerPendiente = documentosDisponibles.findIndex(d => !d.estado.includes('Firmado'));
+                        const primerPendiente = documentosDisponibles.findIndex(d => d.estado === 'Pendiente');
                         indiceDocActual = primerPendiente !== -1 ? primerPendiente : 0;
 
                         renderCarrusel();
@@ -372,25 +385,30 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             }
 
             const d = documentosDisponibles[indiceDocActual];
-            const yaFirmado = d.estado.includes('Firmado');
+            const yaFirmado = d.estado === 'Firmado';
+            const noAplica = d.estado === 'NoAplica';
+
+            let badgeHtml = '<span class="doc-badge">Pendiente</span>';
+            if (yaFirmado) badgeHtml = '<span class="doc-badge is-signed"><i class="fa-solid fa-check"></i> Firmado</span>';
+            else if (noAplica) badgeHtml = '<span class="doc-badge is-noaplica" title="Este documento no tiene tu placeholder de firma"><i class="fa-solid fa-circle-info"></i> No requiere tu firma</span>';
 
             wrapper.innerHTML = `
                 <button type="button" class="doc-nav-arrow" onclick="navegarDocumento(-1)" ${indiceDocActual === 0 ? 'disabled' : ''} title="Documento anterior">
                     <i class="fa-solid fa-chevron-left"></i>
                 </button>
-                <div class="doc-current-card ${yaFirmado ? 'is-signed' : ''}">
+                <div class="doc-current-card ${yaFirmado ? 'is-signed' : ''} ${noAplica ? 'is-noaplica' : ''}">
                     <div style="min-width:0;">
                         <div class="doc-name">${d.nombre}</div>
                         <div class="doc-meta">Documento ${indiceDocActual + 1} de ${documentosDisponibles.length} • v${d.version || 1}</div>
                     </div>
-                    <span class="doc-badge">${yaFirmado ? '<i class="fa-solid fa-check"></i> Firmado' : 'Pendiente'}</span>
+                    ${badgeHtml}
                 </div>
                 <button type="button" class="doc-nav-arrow" onclick="navegarDocumento(1)" ${indiceDocActual === documentosDisponibles.length - 1 ? 'disabled' : ''} title="Siguiente documento">
                     <i class="fa-solid fa-chevron-right"></i>
                 </button>`;
 
             dotsWrapper.innerHTML = documentosDisponibles.map((doc, i) => `
-                <button type="button" class="doc-dot ${i === indiceDocActual ? 'active' : ''} ${doc.estado.includes('Firmado') ? 'is-signed' : ''}" onclick="irADocumento(${i})" title="${doc.nombre}"></button>
+                <button type="button" class="doc-dot ${i === indiceDocActual ? 'active' : ''} ${doc.estado === 'Firmado' ? 'is-signed' : ''} ${doc.estado === 'NoAplica' ? 'is-noaplica' : ''}" onclick="irADocumento(${i})" title="${doc.nombre}"></button>
             `).join('');
 
             selectedDocName = d.nombre;
@@ -411,11 +429,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             renderCarrusel();
         }
 
-        // El panel de firma ya no depende de qué documento estás viendo (la firma es única para
-        // todos los pendientes) — solo depende de si TODAVÍA queda algo por firmar en total.
         function actualizarPanelFirma() {
             const panel = document.getElementById('panelFirmaContenido');
-            const pendientes = documentosDisponibles.filter(d => !d.estado.includes('Firmado'));
+            const pendientes = documentosDisponibles.filter(d => d.estado === 'Pendiente');
 
             if (pendientes.length === 0) {
                 panel.innerHTML = `
@@ -428,17 +444,88 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 return;
             }
 
-            // Mientras quede al menos un documento pendiente, mostramos el área de firma —
-            // sin importar cuál esté visible en el carrusel en ese momento.
             panel.innerHTML = `
-                <div class="signature-wrapper">
-                    <button type="button" class="clear-btn" id="clearSignatureBtn"><i class="fa-solid fa-eraser"></i> Limpiar</button>
-                    <canvas id="signature-pad-canvas"></canvas>
+                <div class="firma-modo-tabs">
+                    <button type="button" class="firma-modo-btn active" id="btnModoDibujar" onclick="cambiarModoFirma('dibujar')">
+                        <i class="fa-solid fa-pen"></i> Dibujar Firma
+                    </button>
+                    <button type="button" class="firma-modo-btn" id="btnModoImagen" onclick="cambiarModoFirma('imagen')">
+                        <i class="fa-regular fa-image"></i> Subir Imagen
+                    </button>
                 </div>
+
+                <div id="firmaDibujarPanel">
+                    <div class="signature-wrapper">
+                        <button type="button" class="clear-btn" id="clearSignatureBtn"><i class="fa-solid fa-eraser"></i> Limpiar</button>
+                        <canvas id="signature-pad-canvas"></canvas>
+                    </div>
+                </div>
+
+                <div id="firmaImagenPanel" class="signature-wrapper" style="display:none; padding: 14px;">
+                    <input type="file" id="inputFirmaImagen" accept="image/png, image/jpeg" style="display:none;" onchange="cargarImagenFirma(event)">
+                    <div id="firmaImagenVacio" class="firma-imagen-dropzone" onclick="document.getElementById('inputFirmaImagen').click()">
+                        <i class="fa-solid fa-cloud-arrow-up fa-2x mb-2"></i>
+                        <p class="m-0 fw-bold">Haz clic para subir tu firma</p>
+                        <p class="m-0 small text-muted">Formatos permitidos: PNG o JPG</p>
+                    </div>
+                    <div id="firmaImagenPreviewWrap" class="firma-imagen-preview-wrap" style="display:none;">
+                        <img id="firmaImagenPreview" class="firma-imagen-preview" alt="Vista previa de tu firma">
+                        <button type="button" class="btn-eliminar-firma-img" id="btnEliminarImagenFirma" onclick="eliminarImagenFirma()">
+                            <i class="fa-solid fa-trash"></i> Eliminar y subir otra imagen
+                        </button>
+                    </div>
+                </div>
+
                 <button type="button" class="btn-sign" id="btnSubmitSignature" onclick="ejecutarFirmaDocente()">
                     <i class="fa-solid fa-file-signature"></i> Firmar Todos los Documentos Pendientes
                 </button>`;
+            cambiarModoFirma('dibujar');
             inicializarSignaturePad();
+        }
+
+        let modoFirma = 'dibujar';
+        let imagenFirmaBase64 = null;
+
+        function cambiarModoFirma(modo) {
+            modoFirma = modo;
+            const btnDibujar = document.getElementById('btnModoDibujar');
+            const btnImagen = document.getElementById('btnModoImagen');
+            if (btnDibujar) btnDibujar.classList.toggle('active', modo === 'dibujar');
+            if (btnImagen) btnImagen.classList.toggle('active', modo === 'imagen');
+            const panelDibujar = document.getElementById('firmaDibujarPanel');
+            const panelImagen = document.getElementById('firmaImagenPanel');
+            if (panelDibujar) panelDibujar.style.display = modo === 'dibujar' ? 'block' : 'none';
+            if (panelImagen) panelImagen.style.display = modo === 'imagen' ? 'block' : 'none';
+        }
+
+        function cargarImagenFirma(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!['image/png', 'image/jpeg', 'image/jpg'].includes(file.type)) {
+                Swal.fire('Formato no válido', 'Solo se aceptan imágenes en formato PNG o JPG.', 'warning');
+                event.target.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const dataUrl = e.target.result;
+                imagenFirmaBase64 = dataUrl.split(',')[1];
+                document.getElementById('firmaImagenPreview').src = dataUrl;
+                document.getElementById('firmaImagenVacio').style.display = 'none';
+                document.getElementById('firmaImagenPreviewWrap').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // NUEVO: por si subió la imagen equivocada — la quita y deja subir otra
+        function eliminarImagenFirma() {
+            imagenFirmaBase64 = null;
+            const input = document.getElementById('inputFirmaImagen');
+            if (input) input.value = '';
+            document.getElementById('firmaImagenPreviewWrap').style.display = 'none';
+            document.getElementById('firmaImagenVacio').style.display = 'block';
         }
 
         function actualizarIframe(url) {
@@ -452,12 +539,23 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         }
 
         async function ejecutarFirmaDocente() {
-            if(!signaturePad || signaturePad.isEmpty()) {
-                Swal.fire('Firma Requerida', 'Por favor, dibuje su firma en el recuadro antes de guardar.', 'warning');
-                return;
+            // NUEVO: la validación depende de qué modo esté activo
+            let base64Signature;
+            if (modoFirma === 'imagen') {
+                if (!imagenFirmaBase64) {
+                    Swal.fire('Firma Requerida', 'Por favor, sube una imagen de tu firma antes de guardar.', 'warning');
+                    return;
+                }
+                base64Signature = imagenFirmaBase64;
+            } else {
+                if (!signaturePad || signaturePad.isEmpty()) {
+                    Swal.fire('Firma Requerida', 'Por favor, dibuje su firma en el recuadro antes de guardar.', 'warning');
+                    return;
+                }
+                base64Signature = signaturePad.toDataURL('image/png').split(',')[1];
             }
 
-            const pendientes = documentosDisponibles.filter(d => !d.estado.includes('Firmado'));
+            const pendientes = documentosDisponibles.filter(d => d.estado === 'Pendiente');
             if (pendientes.length === 0) return;
 
             const listaHtml = pendientes.map(d => `<li style="margin-bottom:4px;">${d.nombre}</li>`).join('');
@@ -483,9 +581,13 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             const originalHTML = btn.innerHTML;
             btn.disabled = true;
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i>Estampando Firma Digital...`;
+            // Mientras se envía, bloqueamos poder cambiar de modo o tocar la firma
+            ['btnModoDibujar', 'btnModoImagen', 'btnEliminarImagenFirma'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.disabled = true;
+            });
 
             try {
-                const base64Signature = signaturePad.toDataURL('image/png').split(',')[1];
                 const payload = invId ? {
                     action: "director_sign_all_invitation_documents", // o accion equivalente
                     idInvitacion: invId,
@@ -523,12 +625,20 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     Swal.fire('Error', result.message || 'No se pudo aplicar la firma.', 'error');
                     btn.disabled = false;
                     btn.innerHTML = originalHTML;
+                    ['btnModoDibujar', 'btnModoImagen', 'btnEliminarImagenFirma'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.disabled = false;
+                    });
                 }
 
             } catch(e) {
                 Swal.fire('Error', 'Fallo de red al conectar con el servidor.', 'error');
                 btn.disabled = false;
                 btn.innerHTML = originalHTML;
+                ['btnModoDibujar', 'btnModoImagen', 'btnEliminarImagenFirma'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.disabled = false;
+                });
             }
         }
 
