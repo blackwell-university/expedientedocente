@@ -860,7 +860,7 @@
         async function verificarPlaceholders(nombreDoc, url) {
             Swal.fire({ title: 'Verificando documento...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             try {
-                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'check_document_placeholders', url: url }) });
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'check_document_placeholders', url: url, contexto: 'invitacion', idInvitacion: invId, nombreDoc: nombreDoc }) });
                 const result = await res.json();
 
                 if (result.status === 'success') {
