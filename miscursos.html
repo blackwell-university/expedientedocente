@@ -4,8 +4,7 @@
     <script>
         // Protección de ruta
         if (localStorage.getItem('isLoggedIn') !== 'true' || localStorage.getItem('userRole') !== 'Docente') {
-            // Descomentar en producción
-            // window.location.href = "index.html";
+  
         }
     </script>
     <meta charset="UTF-8">
@@ -18,9 +17,8 @@
     
     <!-- Íconos Minimalistas y delgados (Weight 300) -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,300,0,0" />
+
     <style>
-        /* FIX: sin esta regla, .material-symbols-rounded no usa la fuente de íconos
-           y el navegador renderiza el nombre del ícono como texto plano */
         .material-symbols-rounded {
             font-family: 'Material Symbols Rounded';
             font-weight: normal;
