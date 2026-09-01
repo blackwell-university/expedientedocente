@@ -7,13 +7,10 @@
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <!-- Íconos Minimalistas y delgados -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,300,0,0" />
     <style>
-        /* FIX: sin esta regla, .material-symbols-rounded no usa la fuente de íconos
-           y el navegador renderiza el nombre del ícono (home, folder_open, etc.)
-           como texto plano en vez del ícono -- por eso no se veían en el bottom-nav. */
         .material-symbols-rounded {
             font-family: 'Material Symbols Rounded';
             font-weight: normal;
@@ -30,6 +27,8 @@
             -webkit-font-smoothing: antialiased;
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
@@ -74,12 +73,45 @@
             display: none; justify-content: space-between; align-items: center;
             padding: 0 25px; padding-bottom: env(safe-area-inset-bottom); z-index: 1000;
         }
-        .bottom-item { display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; color: #94a3b8; transition: 0.3s ease; flex: 1; position: relative; }
-        .bottom-item .material-symbols-rounded { font-size: 1.5rem; transition: transform 0.2s; font-variation-settings: 'FILL' 1, 'wght' 400; }
-        .bottom-item span { font-size: 0.65rem; font-weight: 550; }
-        .bottom-item.active { color: var(--primary); }
-        .bottom-item.active .material-symbols-rounded { transform: translateY(-2px); }
-        .bottom-item.active::after { content: ''; position: absolute; bottom: -10px; width: 5px; height: 5px; background: var(--primary); border-radius: 50%; }
+         /* --- BOTTOM NAVIGATION (Móvil) — rediseño en píldora dinámica --- */
+        .bottom-nav {
+            position: fixed; left: 16px; right: 16px; bottom: 14px; height: 68px;
+            background: rgba(255,255,255,0.92);
+            -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+            border-radius: 26px;
+            box-shadow: 0 12px 32px rgba(15,23,42,0.14), 0 2px 8px rgba(15,23,42,0.05);
+            border: 1px solid rgba(226,232,240,0.8);
+            display: none; justify-content: space-around; align-items: center;
+            padding: 0 10px; padding-bottom: env(safe-area-inset-bottom); z-index: 1000;
+        }
+        .bottom-item {
+            display: flex; flex-direction: row; align-items: center; justify-content: center;
+            flex: 0 0 auto; gap: 0; height: 46px; padding: 0 16px; border-radius: 23px;
+            text-decoration: none; color: #94a3b8; position: relative;
+            transition: background 0.35s cubic-bezier(.34,1.56,.64,1), padding 0.35s cubic-bezier(.34,1.56,.64,1), color 0.25s ease;
+        }
+        .bottom-item .icon-wrap { display: flex; align-items: center; justify-content: center; }
+        .bottom-item .material-symbols-rounded, .bottom-item i {
+            font-size: 1.32rem; line-height: 1;
+            font-variation-settings: 'FILL' 0, 'wght' 400;
+            transition: font-variation-settings 0.25s ease;
+            transform: none;
+        }
+        .bottom-item > span:last-child {
+            font-size: 0; max-width: 0; opacity: 0; overflow: hidden; white-space: nowrap;
+            font-weight: 800; margin-left: 0; line-height: 1;
+            transition: font-size 0.25s ease, max-width 0.3s ease, opacity 0.25s ease, margin-left 0.25s ease;
+        }
+        .bottom-item.active {
+            background: var(--primary-light, #eff6ff);
+            color: var(--primary-dark, #1e3a8a);
+            padding: 0 18px;
+        }
+        .bottom-item.active .material-symbols-rounded,
+        .bottom-item.active i { font-variation-settings: 'FILL' 1, 'wght' 500; }
+        .bottom-item.active > span:last-child { font-size: 0.78rem; max-width: 120px; opacity: 1; margin-left: 7px; }
+        .bottom-item:active { transform: scale(0.94); }
+
 
         /* --- CONTENEDOR PRINCIPAL SPLIT --- */
         .split-wrapper { flex-grow: 1; display: flex; width: 100%; height: calc(100vh - 70px); overflow: hidden; }
@@ -95,8 +127,7 @@
             margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;
             letter-spacing: 0.5px; flex-shrink: 0;
         }
-        /* NUEVO: botón para ver el documento en pantalla completa -- en celular el
-           recuadro normal queda muy chico para leer un contrato completo */
+        
         .pdf-expand-btn {
             margin-left: auto; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
             color: #fff; width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
@@ -211,16 +242,10 @@
         @media (max-width: 768px) {
             .top-nav { display: none !important; }
             .bottom-nav { display: flex; }
-            /* FIX: 80px quedaba casi exacto al alto del bottom-nav (68px + 14px = 82px),
-               sin margen de seguridad -> el pill flotante tapaba el botón "Firmar"
-               y el lienzo de firma en varios celulares. Ahora se deja más aire y se
-               suma env(safe-area-inset-bottom) para celulares con notch/home indicator. */
             .split-wrapper { height: 100vh; -webkit-overflow-scrolling: touch; padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
             .pdf-panel { height: 380px; }
         }
         @media (max-width: 480px) {
-            /* Pantallas muy chicas: el visor de PDF se reduce más para que el panel
-               de firma no quede tan abajo y se necesite menos scroll para llegar a él. */
             .pdf-panel { height: 300px; }
             #signature-pad-canvas { height: 170px; }
         }
@@ -285,6 +310,7 @@
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script>
