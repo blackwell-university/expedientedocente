@@ -164,16 +164,30 @@
         /* RESPONSIVE */
         @media (max-width: 992px) {
             .nav-links-desktop { display: none; }
-            .split-wrapper { flex-direction: column; overflow-y: auto; height: auto; padding-bottom: 100px; }
+            .split-wrapper { flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; height: auto; padding-bottom: calc(120px + env(safe-area-inset-bottom)); }
             .pdf-panel { width: 100%; height: 500px; padding: 1.5rem; }
             .form-panel { width: 100%; padding: 2rem 1.5rem; overflow-y: visible; box-shadow: none; border-radius: 24px 24px 0 0; margin-top: -20px; z-index: 20;}
             .top-nav { padding: 0 20px; }
+            .bottom-nav { display: flex; } /* FIX: antes solo aparecía debajo de 768px, dejando un hueco sin menú entre 769px y 992px */
+            .signature-wrapper { margin-bottom: 2rem; }
+            .btn-sign { margin-bottom: 1rem; }
+            .firma-imagen-dropzone, .firma-imagen-preview-wrap { margin-bottom: 1.25rem; }
         }
         @media (max-width: 768px) {
             .top-nav { display: none !important; }
             .bottom-nav { display: flex; }
-            .split-wrapper { height: 100vh; padding-bottom: 80px; }
-            .pdf-panel { height: 400px; }
+            /* FIX: 80px quedaba casi exacto al alto del bottom-nav (68px + 14px = 82px),
+               sin margen de seguridad -> el pill flotante tapaba el botón "Firmar"
+               y el lienzo de firma en varios celulares. Ahora se deja más aire y se
+               suma env(safe-area-inset-bottom) para celulares con notch/home indicator. */
+            .split-wrapper { height: 100vh; -webkit-overflow-scrolling: touch; padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
+            .pdf-panel { height: 320px; }
+        }
+        @media (max-width: 480px) {
+            /* Pantallas muy chicas: el visor de PDF se reduce más para que el panel
+               de firma no quede tan abajo y se necesite menos scroll para llegar a él. */
+            .pdf-panel { height: 240px; }
+            #signature-pad-canvas { height: 170px; }
         }
     </style>
 </head>
