@@ -10,6 +10,26 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Íconos Minimalistas y delgados -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,300,0,0" />
+    <style>
+        /* FIX: sin esta regla, .material-symbols-rounded no usa la fuente de íconos
+           y el navegador renderiza el nombre del ícono (home, folder_open, etc.)
+           como texto plano en vez del ícono -- por eso no se veían en el bottom-nav. */
+        .material-symbols-rounded {
+            font-family: 'Material Symbols Rounded';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
@@ -75,12 +95,27 @@
             margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;
             letter-spacing: 0.5px; flex-shrink: 0;
         }
+        /* NUEVO: botón para ver el documento en pantalla completa -- en celular el
+           recuadro normal queda muy chico para leer un contrato completo */
+        .pdf-expand-btn {
+            margin-left: auto; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+            color: #fff; width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition);
+        }
+        .pdf-expand-btn:hover { background: rgba(255,255,255,0.3); }
+        .pdf-expand-btn .material-symbols-rounded { font-size: 20px; }
         .pdf-container {
             flex: 1; width: 100%; background: white;
             border-radius: 12px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.25);
             border: 1px solid rgba(255,255,255,0.1); display: flex; position: relative;
         }
         .pdf-container iframe { width: 100%; height: 100%; border: none; display: block; }
+        /* NUEVO: modo pantalla completa del visor -- se activa/desactiva con .pdf-expand-btn */
+        .pdf-panel.is-fullscreen {
+            position: fixed; inset: 0; width: 100% !important; height: 100% !important;
+            z-index: 3000; padding: 1rem; border-radius: 0;
+        }
+        .pdf-panel.is-fullscreen .pdf-header-title { margin-bottom: 0.75rem; }
 
         /* PANEL DERECHO: FORMULARIO Y FIRMA */
         .form-panel { 
@@ -181,12 +216,12 @@
                y el lienzo de firma en varios celulares. Ahora se deja más aire y se
                suma env(safe-area-inset-bottom) para celulares con notch/home indicator. */
             .split-wrapper { height: 100vh; -webkit-overflow-scrolling: touch; padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
-            .pdf-panel { height: 320px; }
+            .pdf-panel { height: 380px; }
         }
         @media (max-width: 480px) {
             /* Pantallas muy chicas: el visor de PDF se reduce más para que el panel
                de firma no quede tan abajo y se necesite menos scroll para llegar a él. */
-            .pdf-panel { height: 240px; }
+            .pdf-panel { height: 300px; }
             #signature-pad-canvas { height: 170px; }
         }
     </style>
@@ -220,6 +255,9 @@
         <div class="pdf-panel">
             <div class="pdf-header-title">
                 <i class="fa-solid fa-file-pdf"></i> Vista previa del contrato
+                <button type="button" class="pdf-expand-btn" id="btnExpandPdf" onclick="togglePdfFullscreen()" title="Ver documento en pantalla completa">
+                    <span class="material-symbols-rounded">open_in_full</span>
+                </button>
             </div>
             <div class="pdf-container">
                 <iframe id="pdf-preview-frame" src="about:blank"></iframe>
@@ -264,6 +302,17 @@
         let selectedDocUrl = "";
         let documentosDisponibles = [];
         let indiceDocActual = 0;
+
+        function togglePdfFullscreen() {
+            const panel = document.querySelector('.pdf-panel');
+            const btn = document.getElementById('btnExpandPdf');
+            if (!panel) return;
+            const isFull = panel.classList.toggle('is-fullscreen');
+            if (btn) {
+                btn.title = isFull ? 'Cerrar vista ampliada' : 'Ver documento en pantalla completa';
+                btn.querySelector('.material-symbols-rounded').textContent = isFull ? 'close_fullscreen' : 'open_in_full';
+            }
+        }
 
         function resizeCanvas() {
             if (!canvas) return;
