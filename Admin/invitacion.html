@@ -25,6 +25,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
+        html { font-size: 15px; }
         :root {
             --primary: #2563eb;
             --primary-light: #eff6ff;
@@ -73,7 +74,7 @@
         .back-link:hover { color: var(--primary); }
         
         .page-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px; }
-        .page-header h1 { font-weight: 800; font-size: 2.2rem; margin-bottom: 8px; letter-spacing: -0.03em; color: var(--primary-dark); }
+        .page-header h1 { font-weight: 800; font-size: 1.9rem; margin-bottom: 8px; letter-spacing: -0.03em; color: var(--primary-dark); }
         .page-header p { color: var(--text-muted); font-size: 1.1rem; margin: 0;}
 
         .pipeline-wrapper { margin-bottom: 25px; background: white; border: 1px solid var(--gray-border); border-radius: 12px; padding: 16px 20px; }
@@ -908,8 +909,6 @@
                     if (estDoc.toLowerCase().includes("firmado por docente")) { classBadge = "badge-success"; firmados++; }
                     if (estDoc.toLowerCase().includes("formalizado") || estDoc.toLowerCase().includes("completado") || estDoc.toLowerCase().includes("firmado por director")) { classBadge = "badge-success"; firmados++; }
 
-                    // NUEVO: badge de "faltan datos" si ya se verificó este documento y quedaron
-                    // placeholders {{...}} sin rellenar — no se calcula solo, hay que apretar "Verificar"
                     const faltantes = placeholdersCache[docName];
                     const badgeFaltantes = (faltantes && faltantes.length > 0)
                         ? `<span class="badge-state badge-faltantes" onmouseenter="mostrarTooltipFaltantes(this, '${docName.replace(/'/g, "\\'")}')" onmouseleave="ocultarTooltipFaltantes()"><i class="fa-solid fa-triangle-exclamation"></i> Faltan ${faltantes.length} dato(s)</span>`

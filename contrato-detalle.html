@@ -124,8 +124,6 @@
             margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;
             letter-spacing: 0.5px; flex-shrink: 0;
         }
-        /* NUEVO: botón para ver el documento en pantalla completa -- en celular el
-           recuadro normal queda muy chico para leer un contrato completo */
         .pdf-expand-btn {
             margin-left: auto; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
             color: #fff; width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
@@ -139,7 +137,6 @@
             border: 1px solid rgba(255,255,255,0.1); display: flex; position: relative;
         }
         .pdf-container iframe { width: 100%; height: 100%; border: none; display: block; }
-        /* NUEVO: modo pantalla completa del visor -- se activa/desactiva con .pdf-expand-btn */
         .pdf-panel.is-fullscreen {
             position: fixed; inset: 0; width: 100% !important; height: 100% !important;
             z-index: 3000; padding: 1rem; border-radius: 0;
@@ -176,7 +173,6 @@
         .btn-sign { background-color: var(--primary-dark); color: white; width: 100%; padding: 16px; border-radius: 12px; font-weight: 700; border: none; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15); }
         .btn-sign:hover { background-color: var(--primary); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(37, 99, 235, 0.2); }
 
-        /* --- NUEVO: CARRUSEL COMPACTO DE DOCUMENTOS (reemplaza la lista larga de 9 tarjetas) --- */
         .doc-carousel { display: flex; align-items: center; gap: 10px; }
         .doc-nav-arrow {
             flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%;
@@ -469,11 +465,6 @@
 
                         documentosDisponibles = docsFirmablesInvitacion
                             .map(nombre => ({ nombre, ...(docs[nombre] || {}) }))
-                            // NUEVO: solo se listan los documentos que realmente tienen el
-                            // placeholder {{firma_docente}} (dato calculado y cacheado en el
-                            // backend). Si el backend todavía no manda ese dato (undefined),
-                            // se sigue mostrando por seguridad -- solo se oculta cuando es
-                            // explícitamente "false".
                             .filter(d => d.url && d.tieneFirmaDocente !== false);
 
                         const primerPendiente = documentosDisponibles.findIndex(d => !d.estado || !d.estado.includes('Firmado'));
@@ -499,18 +490,12 @@
                         document.getElementById('txtDocenteNombre').innerText = `Hola, ${doc.nombres}`;
                         document.getElementById('txtExpDetails').innerText = `Expediente Anual N°: ${exp.idExpediente}`;
 
-                        // NUEVO: solo se puede firmar cuando el expediente ya está en la
-                        // fase de Contratación y la universidad envió el contrato para firma
                         const estadosListoFirmaExp = ['Contrato enviado', 'Firmado', 'Contratado'];
                         if (!estadosListoFirmaExp.includes(exp.estado)) {
                             mostrarNoListoParaFirma(`Tu expediente todavía está en estado "${exp.estado || 'Pendiente'}". Podrás firmar tu contrato cuando la universidad te lo envíe.`);
                             return;
                         }
 
-                        // NUEVO: lista fija -- estos son los únicos 6 documentos del
-                        // expediente (contrato anual) que el docente debe firmar. Se quitaron
-                        // "Resume", "Reference Check Forms" y "Academic Preparation Evaluation Form"
-                        // porque no llevan firma del docente.
                         const docsFirmablesExpediente = [
                             "Letter of Appointment", "Proposed Salary",
                             "Assigned Employee Notice and Acknowledgments",

@@ -24,6 +24,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
 
     <style>
+        html { font-size: 15px; }
         :root {
             --primary: #2563eb; 
             --primary-dark: #1e3a8a; 
@@ -70,8 +71,18 @@
         .breadcrumb-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; color: var(--text-muted); font-size: 14px; }
         .back-link { text-decoration: none; color: var(--text-muted); display: flex; align-items: center; gap: 6px; transition: 0.2s; font-weight: 500;}
         .back-link:hover { color: var(--primary); }
-        .page-header h1 { font-weight: 800; font-size: 2.2rem; margin-bottom: 8px; letter-spacing: -0.03em; color: var(--primary-dark); }
+        .page-header h1 { font-weight: 800; font-size: 1.9rem; margin-bottom: 8px; letter-spacing: -0.03em; color: var(--primary-dark); }
         .page-header p { color: var(--text-muted); font-size: 1.1rem; }
+        /* NUEVO: badge de estado de la CUENTA (Activo/Inactivo) junto al nombre del docente */
+        .page-header .header-top-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+        .badge-cuenta {
+            display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px;
+            border-radius: 20px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.3px;
+            text-transform: uppercase; vertical-align: middle;
+        }
+        .badge-cuenta::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+        .badge-cuenta.cuenta-activo { background: #f0fdf4; color: #15803d; }
+        .badge-cuenta.cuenta-inactivo { background: #fef2f2; color: #b91c1c; }
 
         /* --- TABS & CARDS --- */
         .nav-tabs { border-bottom: 2px solid #e2e8f0; gap: 10px; margin-bottom: 30px; }
@@ -112,6 +123,19 @@
         .modal-modern .modal-header { background: #f8fafc; color: var(--primary-dark); border-bottom: 1px solid #e2e8f0; padding: 24px 30px; }
         .input-modern { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 18px; font-size: 0.95rem; color: #334155; }
         .input-modern:focus { background-color: #ffffff; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); outline: none;}
+        /* NUEVO: estilos del modal "Configurar Cuenta del Docente" (tomados de gestion-docentes.html) */
+        .btn-primary {
+            background: var(--primary); border: none; border-radius: 12px;
+            padding: 11px 22px; font-weight: 700; font-size: 0.875rem;
+            transition: var(--transition); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            color: white; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-primary:hover { transform: translateY(-2px); background: var(--primary-dark); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35); color: white; }
+        .btn-cancelar-modal {
+            background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; border-radius: 12px;
+            padding: 10px 20px; font-weight: 700; font-size: 0.85rem; transition: var(--transition);
+        }
+        .btn-cancelar-modal:hover { background: #f1f5f9; border-color: #cbd5e1; color: #1e293b; }
         .label-modern { font-size: 0.85rem; color: #64748b; font-weight: 600; margin-bottom: 8px; }
         
         /* --- REDISEÑO DEL MODAL (Corporativo, Minimalista y Compacto) --- */
@@ -393,7 +417,10 @@
                 </div>
 
                 <div class="page-header">
-                    <h1 id="det-nombre">Cargando Nombre...</h1>
+                    <div class="header-top-row">
+                        <h1 id="det-nombre" class="mb-0">Cargando Nombre...</h1>
+                        <span id="det-estado-badge" class="badge-cuenta cuenta-activo" style="display:none;">Activa</span>
+                    </div>
                     <p>Expediente completo y gestión de contratos</p>
                 </div>
 
@@ -469,6 +496,19 @@
                                             <div class="action-text">
                                                 <span class="action-title">Subir Información del Docente</span>
                                                 <span class="action-desc">Registra CV, educación y datos, sin asignar curso aún</span>
+                                            </div>
+                                            <i class="fa-solid fa-chevron-right action-arrow"></i>
+                                        </button>
+
+                                        <!-- NUEVO: Acción — Editar datos de cuenta (nombres, correo, contraseña)
+                                             y activar/desactivar el acceso del docente al portal. -->
+                                        <button class="btn-action-minimal" onclick="abrirModalConfigurarCuenta()">
+                                            <div class="action-icon-wrapper" style="background:#eef2ff; color:#4338ca;">
+                                                <i class="fa-solid fa-user-gear"></i>
+                                            </div>
+                                            <div class="action-text">
+                                                <span class="action-title">Configurar Cuenta del Docente</span>
+                                                <span class="action-desc">Editar datos de acceso y activar/desactivar la cuenta</span>
                                             </div>
                                             <i class="fa-solid fa-chevron-right action-arrow"></i>
                                         </button>
@@ -680,6 +720,55 @@
         </div>
     </div>
 
+    <!-- NUEVO: MODAL — CONFIGURAR CUENTA DEL DOCENTE (movido desde gestion-docentes.html,
+         ahora con el control de Activo/Inactivo agregado) -->
+    <div class="modal fade modal-modern" id="modalConfigurarCuenta" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg">
+                <div class="modal-header">
+                    <h5 class="fw-bold m-0"><i class="fa-solid fa-user-gear me-2"></i>Configurar Cuenta del Docente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formConfigurarCuenta">
+                        <input type="hidden" id="cuenta-id">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted">Nombres</label>
+                                <input type="text" class="form-control input-modern" id="cuenta-nombres" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted">Apellidos</label>
+                                <input type="text" class="form-control input-modern" id="cuenta-apellidos" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted">Correo</label>
+                                <input type="email" class="form-control input-modern" id="cuenta-correo" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted">Nueva Contraseña (opcional)</label>
+                                <input type="text" class="form-control input-modern" id="cuenta-password" placeholder="Dejar en blanco para no cambiarla">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-bold text-muted">Estado de la cuenta</label>
+                                <select class="form-select input-modern" id="cuenta-estado">
+                                    <option value="Activo">Activo — puede iniciar sesión con normalidad</option>
+                                    <option value="Inactivo">Inactivo — se bloquea el acceso al portal</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                            <button type="button" class="btn-cancelar-modal" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn-primary" style="border:none;">
+                                <i class="fa-solid fa-check"></i> Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- TOAST NOTIFICATION -->
     <div class="toast-container position-fixed bottom-0 end-0 p-4" style="z-index: 1055;" id="toastContainer"></div>
 
@@ -729,12 +818,17 @@
             if (tabCursos) tabCursos.addEventListener('shown.bs.tab', cargarCursosAsignados);
         });
 
+        // NUEVO: guardamos el último perfil cargado para poder prellenar el modal
+        // de "Configurar Cuenta" sin tener que volver a pedirlo al servidor.
+        let perfilActualDocente = null;
+
         async function cargarPerfilDocente(id) {
             try {
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: id }) });
                 const json = await res.json();
                 if(json.status === 'success') {
                     const d = json.data;
+                    perfilActualDocente = d;
                     document.getElementById('det-nombre').innerText = `${d.nombres} ${d.apellidos}` || "No especificado";
                     document.getElementById('det-dni').innerText = d.dni || "-";
                     document.getElementById('det-correo').innerText = d.correo || "-";
@@ -745,10 +839,73 @@
                     if (document.getElementById('det-pais')) document.getElementById('det-pais').innerText = d.pais || "-";
                     if (document.getElementById('det-direccion')) document.getElementById('det-direccion').innerText = d.direccion || "-";
 
+                    // NUEVO: badge de Activo/Inactivo junto al nombre (columna F de la hoja Usuarios)
+                    const estadoCuenta = (d.estadoCuenta || "Activo").trim();
+                    const badgeEstado = document.getElementById('det-estado-badge');
+                    if (badgeEstado) {
+                        badgeEstado.style.display = 'inline-flex';
+                        badgeEstado.className = `badge-cuenta cuenta-${estadoCuenta.toLowerCase()}`;
+                        badgeEstado.textContent = estadoCuenta.toLowerCase() === 'activo' ? 'Activa' : 'Cuenta Inactiva';
+                    }
+
                     llenarAcordeonDatosDocente(d, json.drafts || { educacion: [], experiencia: [] });
                 }
             } catch(e) { console.error(e); }
         }
+
+        // --- NUEVO: CONFIGURAR CUENTA DEL DOCENTE (datos + Activo/Inactivo) ---
+        let modalConfigurarCuentaInstance = null;
+
+        function abrirModalConfigurarCuenta() {
+            if (!perfilActualDocente) return;
+            const d = perfilActualDocente;
+            document.getElementById('cuenta-id').value = d.id;
+            document.getElementById('cuenta-nombres').value = d.nombres || '';
+            document.getElementById('cuenta-apellidos').value = d.apellidos || '';
+            document.getElementById('cuenta-correo').value = d.correo || '';
+            document.getElementById('cuenta-password').value = ''; // siempre vacío, es de solo-escritura por seguridad
+            document.getElementById('cuenta-estado').value = (d.estadoCuenta || 'Activo').trim();
+
+            if (!modalConfigurarCuentaInstance) {
+                modalConfigurarCuentaInstance = new bootstrap.Modal(document.getElementById('modalConfigurarCuenta'));
+            }
+            modalConfigurarCuentaInstance.show();
+        }
+
+        document.getElementById('formConfigurarCuenta').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Guardando...`;
+
+            const payload = {
+                action: "update_teacher",
+                id: document.getElementById('cuenta-id').value,
+                nombres: document.getElementById('cuenta-nombres').value,
+                apellidos: document.getElementById('cuenta-apellidos').value,
+                correo: document.getElementById('cuenta-correo').value,
+                password: document.getElementById('cuenta-password').value, // solo se envía si se escribió algo
+                estado: document.getElementById('cuenta-estado').value      // Activo / Inactivo
+            };
+
+            try {
+                const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    modalConfigurarCuentaInstance.hide();
+                    showToast('Cuenta del docente actualizada correctamente.');
+                    cargarPerfilDocente(docenteId);
+                } else {
+                    Swal.fire('Error', result.message || 'No se pudo actualizar la cuenta.', 'error');
+                }
+            } catch (err) {
+                Swal.fire('Error de conexión', 'No se pudo contactar al servidor.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+        });
 
         function campoDato(label, valor) {
             const tieneValor = valor !== undefined && valor !== null && String(valor).trim() !== '';

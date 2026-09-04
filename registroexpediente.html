@@ -179,7 +179,7 @@
         .page-header { margin-bottom: 25px; }
         .page-header h1 { 
             font-weight: 800 !important; /* Letra ultra gruesa */
-            font-size: 2.2rem; 
+            font-size: 1.9rem; 
             margin-bottom: 8px; 
             letter-spacing: -0.03em; /* Letras más juntas (estilo moderno) */
             color: var(--primary-dark); 
@@ -218,7 +218,7 @@
         .centered-container { width: 100%; max-width: 1250px; text-align: left; }
 
         .page-header { margin-bottom: 32px; }
-        .page-header h1 { font-weight: 800; font-size: 2.2rem; margin-bottom: 8px; letter-spacing: -0.03em; color: var(--primary-dark); }
+        .page-header h1 { font-weight: 800; font-size: 1.9rem; margin-bottom: 8px; letter-spacing: -0.03em; color: var(--primary-dark); }
 
         /* --- WIZARD CARD MINIMALISTA --- */
         .wizard-card { 
@@ -1628,10 +1628,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     expedienteCompleto = dataExp.expediente;
                 }
 
-                // NUEVO: bloqueo de edición — una vez que el expediente terminó la etapa
-                // de Recopilación (ya no está en "", "Por enviar", "Enviado" o "En proceso"),
-                // el docente ya no puede seguir editando desde aquí. Esto no aplica cuando
-                // lo abre la ejecutiva con ?mode=admin (botón "Completar formulario del docente").
                 const esModoAdmin = new URLSearchParams(window.location.search).get('mode') === 'admin';
                 const estadosEditables = ['', 'Por enviar', 'Enviado', 'En proceso'];
                 if (idExpedienteUrl && expEstadoReal && !estadosEditables.includes(expEstadoReal) && !esModoAdmin) {

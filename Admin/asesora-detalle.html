@@ -17,6 +17,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
+        html { font-size: 15px; }
         :root { --primary: #2563eb; --primary-light: #eff6ff; --primary-dark: #1e3a8a; --bg-body: #f8fafc; --sidebar-bg: #ffffff; --text-main: #1e293b; --text-muted: #64748b; --gray-border: #e2e8f0; --card-radius: 20px; --sidebar-width: 260px; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid var(--gray-border); display: flex; flex-direction: column; padding: 24px 16px; flex-shrink: 0; }
@@ -50,8 +51,6 @@
         .info-label { display: block; font-size: 0.75rem; color: #64748b; margin-bottom: 6px; font-weight: 600; text-transform: uppercase;}
         .info-value { font-size: 0.95rem; color: #0f172a; font-weight: 600; margin-bottom: 15px;}
 
-        /* FIX: sin min-width:0 el texto (sobre todo el correo, que es largo y sin espacios)
-           no se encogía dentro del flex y quedaba cortado feo contra el borde de la card */
         .profile-info { min-width: 170px; flex: 1 1 170px; padding-top: 2px; }
         .profile-info h6 { font-size: 1rem; overflow-wrap: anywhere; }
         .profile-contact { display: flex; align-items: center; gap: 7px; font-size: 0.82rem; color: var(--text-muted); margin-top: 7px; overflow-wrap: anywhere; }
@@ -61,9 +60,7 @@
 
         /* Agenda Original */
         .agenda-list { display: flex; flex-direction: column; gap: 10px; background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid var(--gray-border); }
-        /* FIX: antes badge+fecha+hora iban en una sola fila con justify-content:space-between,
-           y en columnas angostas el texto de la hora se partía a la mitad ("a" solo en su propia
-           línea). Ahora es un layout de 2 líneas: arriba badge+fecha, abajo el rango de hora. */
+
         .agenda-item { display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem; padding-bottom: 10px; border-bottom: 1px dashed var(--gray-border); }
         .agenda-item:last-child { padding-bottom: 0; border-bottom: none; }
         .agenda-item-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
@@ -763,9 +760,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             container.innerHTML = html;
         }
 
-        // NUEVO: confirmación dedicada para reprogramar una sesión puntual — valida los
-        // campos, muestra un resumen del cambio (fecha original → nueva fecha) y guarda
-        // de inmediato esa sesión sin depender del botón general "Guardar Asistencias"
         function confirmarReprogramacion(idx) {
             const card = document.querySelector(`.ses-row[data-index="${idx}"]`);
             const rawDate = card.querySelector('.inp-nfecha').value;
@@ -798,11 +792,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
                 const ses = arraySesiones[idx];
 
-                // FIX: antes solo se guardaba en nuevaFecha/nuevaHora, y ese campo se
-                // borraba en cuanto la sesión pasaba a "Realizada" — perdiendo el registro
-                // de la fecha real. Ahora la nueva fecha se PROMUEVE a fechaBase/horaBase
-                // (el dato que de verdad se usa para tomar asistencia), y se guarda la
-                // fecha original aparte, solo la primera vez, por si se reprograma de nuevo.
                 if (!ses.fechaOriginal) {
                     ses.fechaOriginal = ses.fechaBase;
                     ses.horaOriginal = ses.horaBase;
@@ -839,9 +828,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             selectEl.classList.remove('estado-pendiente', 'estado-realizada', 'estado-reprogramada');
             selectEl.classList.add('estado-' + selectEl.value.toLowerCase());
 
-            // NUEVO: no tiene sentido reprogramar una clase que ya se dictó — si la sesión
-            // queda en "Realizada", se bloquea la opción "Reprogramada" hasta que se
-            // regrese manualmente a "Pendiente" (un paso deliberado, no accidental)
             const opcionRepro = selectEl.querySelector('option[value="Reprogramada"]');
             if (opcionRepro) opcionRepro.disabled = (selectEl.value === 'Realizada');
 
@@ -852,8 +838,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 box.style.display = 'none';
                 card.querySelector('.inp-nfecha').value = "";
                 card.querySelector('.inp-nhora').selectedIndex = 0;
-                // FIX: antes solo se limpiaban los inputs visuales — ahora también se limpia
-                // el dato real en memoria de inmediato, no recién cuando se guarda
+
                 arraySesiones[idx].nuevaFecha = "";
                 arraySesiones[idx].nuevaHora = "";
             }
@@ -869,9 +854,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 if (sel === 'Reprogramada') {
                     const rawDate = row.querySelector('.inp-nfecha').value;
                     const nuevaHora = row.querySelector('.inp-nhora').value;
-                    // FIX: mismo criterio que confirmarReprogramacion() — la nueva fecha se
-                    // promueve a fechaBase/horaBase para que quede registrada en la base de
-                    // datos y no se pierda cuando la sesión pase a "Realizada" más adelante.
+
                     if (rawDate && nuevaHora) {
                         const dp = rawDate.split('-');
                         const nuevaFechaFmt = `${dp[2]}/${dp[1]}/${dp[0]}`;
