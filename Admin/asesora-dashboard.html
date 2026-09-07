@@ -4,7 +4,7 @@
     <script>
         const isLoggedIn = localStorage.getItem('isLoggedIn');
         const userRole = localStorage.getItem('userRole');
-        if (isLoggedIn !== 'true' || (userRole !== 'Asesora Academica' && userRole !== 'Administrador' && userRole !== 'Jefe OSE BGU')) {
+        if (isLoggedIn !== 'true' || (userRole !== 'Asesora Academica' && userRole !== 'Administrador' && userRole !== 'Jefe OSE BGU' && userRole !== 'E-learning')) {
             window.location.href = "../index.html";
         }
     </script>
@@ -202,6 +202,9 @@
         let paginaActual = 1;
         const FILAS_POR_PAGINA = 10;
 
+        // El rol E-learning solo puede visualizar la información, no editar enlaces ni asistencias
+        const esSoloLectura = localStorage.getItem('userRole') === 'E-learning';
+
         document.addEventListener('DOMContentLoaded', () => {
             const name = localStorage.getItem('userName') || "Asesora Académica";
             document.getElementById('userName').innerText = name;
@@ -211,6 +214,8 @@
             if (rolActual === 'Jefe OSE BGU' || rolActual === 'Administrador') {
                 document.getElementById('navGestionAsesoras').style.display = 'block';
                 document.getElementById('userRoleLabel').innerText = rolActual === 'Jefe OSE BGU' ? 'Jefe OSE BGU' : 'Gestión de Cursos';
+            } else if (rolActual === 'E-learning') {
+                document.getElementById('userRoleLabel').innerText = 'E-learning (solo lectura)';
             }
 
             cargarClases();
@@ -316,13 +321,16 @@
             const inicio = (paginaActual - 1) * FILAS_POR_PAGINA;
             const pageItems = clasesFiltradas.slice(inicio, inicio + FILAS_POR_PAGINA);
 
+            const textoBoton = esSoloLectura ? 'Ver Clase' : 'Gestionar Clase';
+            const iconoBoton = esSoloLectura ? 'fa-regular fa-eye' : 'fa-regular fa-calendar-check';
+
             let html = "";
             pageItems.forEach(inv => {
                 html += `<tr>
                     <td><div class="fw-bold text-dark">${inv.nombreDocente}</div></td>
                     <td><div class="fw-bold text-primary-dark">${inv.curso}</div><div class="small text-muted">${inv.programa}</div></td>
                     <td>${badgeEstado(inv.estado)}</td>
-                    <td><a href="asesora-detalle.html?invId=${inv.id}" class="btn-gestionar"><i class="fa-regular fa-calendar-check"></i> Gestionar Clase</a></td>
+                    <td><a href="asesora-detalle.html?invId=${inv.id}" class="btn-gestionar"><i class="${iconoBoton}"></i> ${textoBoton}</a></td>
                 </tr>`;
             });
             tbody.innerHTML = html;

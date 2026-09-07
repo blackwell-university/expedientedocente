@@ -25,6 +25,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
+        body.swal2-height-auto { height: 100% !important; }
         html { font-size: 15px; }
         :root {
             --primary: #2563eb;
@@ -88,6 +89,89 @@
         .info-group { margin-bottom: 15px; }
         .info-label { display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 6px; font-weight: 600; }
         .info-value { font-size: 0.95rem; color: #0f172a; font-weight: 500; min-height: 40px; padding: 8px 0; }
+
+        /* NUEVO: widget de aprobación de sábado (misma implementación que invitacion.html) */
+        .alert-sabado {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef9e7 100%);
+            border: 1px solid #fde68a; border-radius: 10px; padding: 10px 14px; margin-top: 8px;
+        }
+        .alert-sabado-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .alert-sabado-icon {
+            width: 26px; height: 26px; border-radius: 7px; background: #fef3c7; color: #b45309;
+            display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0;
+        }
+        .alert-sabado-text { flex-shrink: 0; }
+        .alert-sabado-title { font-size: 0.8rem; font-weight: 700; color: #92400e; line-height: 1.2; }
+        .alert-sabado-subtitle { font-size: 0.7rem; color: #b45309; opacity: 0.85; font-weight: 500; }
+        .alert-sabado-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+        .chip-sabado-fecha {
+            background: #ffffff; border: 1px solid #fde68a; border-radius: 7px; padding: 4px 6px 4px 10px;
+            font-size: 0.72rem; font-weight: 700; color: #78350f; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .chip-sabado-fecha .chip-hora { font-weight: 500; color: #92400e; opacity: 0.8; }
+        .chip-sabado-btn {
+            width: 20px; height: 20px; border-radius: 5px; border: none; display: inline-flex;
+            align-items: center; justify-content: center; font-size: 0.65rem; cursor: pointer; transition: 0.2s;
+        }
+        .chip-sabado-ok { background: #dcfce7; color: #15803d; }
+        .chip-sabado-ok:hover { background: #15803d; color: #fff; }
+        .chip-sabado-x { background: #fee2e2; color: #b91c1c; }
+        .chip-sabado-x:hover { background: #b91c1c; color: #fff; }
+        .btn-sabado-manual {
+            background: none; border: none; color: #92400e; font-size: 0.7rem; font-weight: 700;
+            display: inline-flex; align-items: center; gap: 5px; padding: 6px 0 0; cursor: pointer; text-decoration: underline dotted;
+        }
+        .btn-sabado-manual:hover { color: #78350f; }
+
+        /* NUEVO: estilos del calendario del modal "Gestionar Horario del Docente"
+           -- portados de registroinvitacion.html para que la ejecutiva tenga la misma experiencia. */
+        .carousel-wrapper { display: flex; align-items: center; gap: 12px; width: 100%; }
+        .carousel-nav-btn {
+            width: 42px; height: 42px; border-radius: 50%; background: #ffffff;
+            border: 1.5px solid #e2e8f0; color: var(--text-muted);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s ease; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+        .carousel-nav-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); transform: scale(1.05); }
+        .day-carousel { display: flex; gap: 12px; overflow-x: auto; padding: 10px 4px; scrollbar-width: none; scroll-behavior: smooth; flex: 1; }
+        .day-carousel::-webkit-scrollbar { display: none; }
+        .day-pill {
+            flex: 0 0 auto; width: 75px; background: #ffffff; border: 1.5px solid #e2e8f0;
+            border-radius: 16px; padding: 12px 6px; text-align: center; cursor: pointer; transition: all 0.25s ease; user-select: none;
+        }
+        .day-pill:hover { border-color: var(--primary); background: var(--primary-light); }
+        .day-pill.selected { background: var(--primary-dark) !important; border-color: var(--primary-dark) !important; box-shadow: 0 4px 12px rgba(30, 64, 175, 0.15); }
+        .day-pill.selected .day-abbr, .day-pill.selected .day-num, .day-pill.selected .day-month { color: #ffffff !important; }
+        .day-pill .day-abbr { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; }
+        .day-pill .day-num { font-weight: 800; font-size: 1.25rem; color: var(--text-main); display: block; margin: 2px 0; line-height: 1.1; }
+        .day-pill .day-month { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); display: block; }
+        .day-pill.has-booking { border-color: #10b981; }
+        .day-pill.has-booking:not(.selected) { background: #ecfdf5; }
+        .time-slot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-top: 15px; }
+        .time-slot-pill {
+            background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 12px;
+            text-align: center; font-weight: 700; font-size: 0.88rem; color: var(--text-main); cursor: pointer; transition: all 0.2s ease;
+        }
+        .time-slot-pill:hover { border-color: var(--primary); background: var(--primary-light); }
+        .time-slot-pill.active { background: var(--primary) !important; border-color: var(--primary) !important; color: #ffffff !important; }
+        .alert-aesthetic-warning {
+            background-color: #fffbeb; border: 1px solid #fef3c7; color: #b45309;
+            border-radius: 12px; padding: 16px; display: flex; align-items: flex-start; gap: 12px; margin-top: 15px;
+        }
+        .alert-aesthetic-warning i { font-size: 1.2rem; margin-top: 2px; }
+        .booked-session-card {
+            background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px;
+            display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; gap: 10px;
+        }
+        .booked-session-badge { background: var(--primary-light); color: var(--primary); font-weight: 800; font-size: 0.72rem; padding: 6px 10px; border-radius: 8px; text-transform: uppercase; }
+        .session-details { display: flex; flex-direction: column; gap: 4px; }
+        .session-date { font-weight: 700; font-size: 0.9rem; color: var(--text-main); }
+        .session-time { font-weight: 500; font-size: 0.8rem; color: var(--text-muted); }
+        .btn-delete-session {
+            background: #fef2f2; color: #ef4444; border: none; border-radius: 10px;
+            width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; transition: 0.2s; flex-shrink: 0;
+        }
+        .btn-delete-session:hover { background: #ef4444; color: white; transform: scale(1.05); }
 
         .input-modern { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px; font-size: 0.95rem; color: #334155; width: 100%; transition: 0.2s;}
         .input-modern:focus { background-color: #ffffff; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); outline: none;}
@@ -674,7 +758,7 @@
                         <div class="form-card mb-4">
                             <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
                                 <span class="section-badge"><i class="fa-solid fa-circle-info me-2"></i>Información de la Invitación</span>
-                                <button type="button" class="action-btn" style="margin-top: -4px;" onclick="abrirModalEditarInvitacion()">
+                                <button type="button" class="action-btn" onclick="abrirModalEditarInvitacion()">
                                     <i class="fa-solid fa-pen"></i> Editar Invitación
                                 </button>
                             </div>
@@ -684,6 +768,21 @@
                                 <div class="col-md-3"><span class="info-label">Día / Horario Elegido</span><div id="view-horario" class="info-value">-</div></div>
                                 <div class="col-md-3"><span class="info-label">Pago Acordado</span><div id="view-pago" class="info-value text-success fw-bold">-</div></div>
                             </div>
+
+                            <!-- NUEVO: widget de aprobación de sábado -- cada fecha tiene su propio par de
+                                 botones. El ✓ aprueba directo; el ✗ pregunta quién elige la fecha de
+                                 reemplazo (el docente o la ejecutiva ahí mismo). -->
+                            <div id="wrapperSabadosPendientes" class="alert-sabado d-none">
+                                <div class="alert-sabado-row">
+                                    <div class="alert-sabado-icon"><i class="fa-solid fa-calendar-day"></i></div>
+                                    <div class="alert-sabado-text">
+                                        <div class="alert-sabado-title">Sábado(s) por coordinar</div>
+                                        <div class="alert-sabado-subtitle">Confirma con académica antes de aprobar cada fecha</div>
+                                    </div>
+                                    <div id="listaSabadosPendientes" class="alert-sabado-chips"></div>
+                                </div>
+                            </div>
+
                             <div id="aviso-invitacion-pendiente-admin"></div>
                         </div>
 
@@ -951,6 +1050,59 @@
         </div>
     </div>
 
+    <!-- NUEVO: MODAL GESTOR DE HORARIO -- misma experiencia de calendario que usa el docente
+         en registroinvitacion.html, para que la ejecutiva edite/complete su horario sin
+         desbalancear la cantidad de clases pactadas. -->
+    <div class="modal fade" id="modalReprogramarHorario" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 20px; border: none;">
+                <div class="modal-header" style="border-bottom: 1px solid #f1f5f9;">
+                    <div>
+                        <h5 class="fw-bold m-0" style="color: var(--primary-dark);"><i class="fa-regular fa-calendar-days me-2"></i>Gestionar Horario del Docente</h5>
+                        <p class="text-muted small m-0 mt-1" id="modalReprogramarSubtitle">Selecciona las fechas exactas dentro del rango del curso, igual que lo haría el docente.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" style="padding: 28px;">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-3">
+                        <label class="form-label small fw-bold text-uppercase text-muted m-0" style="letter-spacing: 0.5px;">1. Seleccione un día del calendario</label>
+                        <div class="badge rounded-pill fw-bold text-primary p-2" style="background: var(--primary-light); font-size: 0.85rem;" id="adminTxtSessionsCounter">
+                            0 de 4 Agendadas
+                        </div>
+                    </div>
+
+                    <div class="carousel-wrapper mb-4">
+                        <button type="button" class="carousel-nav-btn" onclick="adminScrollCarousel('left')" title="Anterior"><i class="fa-solid fa-chevron-left"></i></button>
+                        <div class="day-carousel" id="adminCarouselDays"></div>
+                        <button type="button" class="carousel-nav-btn" onclick="adminScrollCarousel('right')" title="Siguiente"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+
+                    <label class="form-label small fw-bold text-uppercase text-muted" style="letter-spacing: 0.5px;">2. Elija la franja horaria para el día elegido</label>
+                    <div class="time-slot-grid" id="adminGridTimeSlots"></div>
+
+                    <div id="adminSaturdayNotice" class="alert-aesthetic-warning d-none">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <div>
+                            <h6 class="fw-bold m-0" style="font-size:0.9rem;">Día de Gestión Especial Académica</h6>
+                            <p class="m-0 mt-1" style="font-size:0.8rem; line-height:1.4;">Este día se gestionará con el área académica. Las clases habitualmente son de lunes a viernes.</p>
+                        </div>
+                    </div>
+
+                    <div id="adminWrapperBookedSessions" style="display: none; margin-top: 25px; padding-top: 20px; border-top: 1px solid #f1f5f9;">
+                        <label class="form-label small fw-bold text-uppercase text-muted" style="letter-spacing: 0.5px; margin-bottom: 12px;">Fechas Seleccionadas</label>
+                        <div id="adminListBookedSessions"></div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid #f1f5f9;">
+                    <button type="button" class="btn btn-white border fw-bold px-4" style="border-radius: 12px; padding: 12px 20px; color: var(--text-muted);" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary fw-bold px-4" style="border-radius: 12px; padding: 12px 20px;" id="btnGuardarHorarioAdmin" onclick="guardarHorarioAdmin()" disabled>
+                        <i class="fa-solid fa-check me-1"></i> Guardar Horario
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL PARA EDITAR LOS DATOS DE LA INVITACIÓN (curso, fechas, horario y pago) -->
     <div class="modal fade" id="modalEditarInvitacion" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -1040,6 +1192,8 @@
 
         // --- Estado para el modal de Editar Invitación ---
         let idInvitacionActual = "";
+        let estadoInvitacionActual = ""; // NUEVO: estado propio de la Invitación (no el del Expediente)
+        let ultimaInvitacionCargada = {}; // NUEVO: datos de la invitación para el gestor de horario
         let docenteNombreActual = "";
         let docenteCorreoActual = "";
         let catalogoCursosEdit = [];
@@ -1381,6 +1535,344 @@
             }
         }
 
+        // NUEVO: widget de aprobación de sábado -- misma lógica que invitacion.html
+        function renderSabadosPendientes(lista) {
+            const wrapper = document.getElementById('wrapperSabadosPendientes');
+            const cont = document.getElementById('listaSabadosPendientes');
+            const hayPendientes = lista && lista.length > 0;
+
+            const mostrarWidget = hayPendientes || estadoInvitacionActual === 'Enviado';
+            if (!mostrarWidget) {
+                wrapper.classList.add('d-none');
+                cont.innerHTML = '';
+                return;
+            }
+
+            wrapper.classList.remove('d-none');
+            cont.innerHTML = hayPendientes ? lista.map(s => `
+                <span class="chip-sabado-fecha">
+                    <span><i class="fa-regular fa-calendar" style="font-size:0.7rem;"></i> ${s.fecha} <span class="chip-hora">· ${s.slot || '-'}</span></span>
+                    <button type="button" class="chip-sabado-btn chip-sabado-ok" title="Aprobar esta fecha" onclick="revisarSabado('${s.fecha}', 'Aprobado')"><i class="fa-solid fa-check"></i></button>
+                    <button type="button" class="chip-sabado-btn chip-sabado-x" title="Solicitar otra fecha" onclick="iniciarDecisionSabado('${s.fecha}')"><i class="fa-solid fa-xmark"></i></button>
+                </span>`).join('') : '<span style="font-size:0.75rem; color:#92400e;">Falta que el docente complete su horario</span>';
+        }
+
+        async function revisarSabado(fecha, decision) {
+            const confirmacion = await Swal.fire({
+                title: '¿Aprobar esta fecha?',
+                html: `Se confirma que el <b>${fecha}</b> queda aprobado para dictar clase.`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#15803d',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, aprobar',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            });
+            if (!confirmacion.isConfirmed) return;
+            await enviarDecisionSabado(fecha, decision);
+        }
+
+        // NUEVO: al denegar, primero se pregunta quién va a elegir la fecha de
+        // reemplazo -- así queda claro el siguiente paso, en vez de dejar la
+        // fecha "en el aire" o forzar siempre al mismo camino.
+        async function iniciarDecisionSabado(fecha) {
+            const result = await Swal.fire({
+                title: '¿Quién va a elegir la fecha de reemplazo?',
+                html: `Ya se avisó (o se avisará) al docente que el <b>${fecha}</b> no se puede dictar.`,
+                icon: 'question',
+                showDenyButton: true,
+                showCancelButton: true,
+                confirmButtonText: 'El docente la elige',
+                denyButtonText: 'La elijo yo ahora',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#1e3a8a',
+                denyButtonColor: '#15803d',
+                cancelButtonColor: '#64748b',
+                reverseButtons: true
+            });
+
+            if (result.isConfirmed) {
+                await enviarDecisionSabado(fecha, 'Denegado');
+            } else if (result.isDenied) {
+                abrirModalReprogramarHorario(fecha);
+            }
+        }
+
+        async function enviarDecisionSabado(fecha, decision) {
+            try {
+                const res = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'revisar_sabado_invitacion', idInvitacion: idInvitacionActual, fecha: fecha, decision: decision })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    showToast(decision === 'Denegado' ? 'Se avisó al docente por correo para que elija una nueva fecha.' : 'Fecha aprobada.', 'success');
+                    cargarExpediente();
+                } else {
+                    showToast(data.message || 'No se pudo procesar la decisión.', 'danger');
+                }
+            } catch (e) {
+                showToast('Error de conexión.', 'danger');
+            }
+        }
+
+        // ==================== GESTOR DE HORARIO (misma experiencia que registroinvitacion.html) ====================
+        let adminMaxClasses = 4;
+        let adminAvailableSlots = [];
+        let adminBookedSessions = [];
+        let adminGeneratedDates = [];
+        let adminSelectedDateObj = null;
+        let modalReprogramarInstance = null;
+
+        function adminParseClasesCount(val) {
+            if (!val) return 4;
+            const clean = String(val).trim().toLowerCase();
+            const map = { 'una': 1, 'uno': 1, '1': 1, 'dos': 2, '2': 2, 'tres': 3, '3': 3, 'cuatro': 4, '4': 4, 'cinco': 5, '5': 5, 'seis': 6, '6': 6, 'ocho': 8, '8': 8 };
+            return map[clean] || parseInt(clean) || 4;
+        }
+
+        function adminExtractTimeSlots(franjasStr) {
+            if (!franjasStr) return ["19:00 a 20:30", "20:30 a 22:00"];
+            const regex = /(\d{2}:\d{2}\s*(?:a|to|-)\s*\d{2}:\d{2})/gi;
+            const matches = franjasStr.match(regex);
+            return (matches && matches.length > 0) ? matches.map(m => m.trim().replace(/\s*to\s*/i, ' a ')) : ["19:00 a 20:30", "20:30 a 22:00"];
+        }
+
+        function adminParseDateSecure(str) {
+            if (!str) return new Date();
+            if (str instanceof Date) return str;
+            let s = String(str).trim().split('T')[0];
+            if (s.includes('/')) {
+                const parts = s.split('/');
+                if (parts.length === 3) {
+                    return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+                }
+            }
+            if (s.includes('-')) {
+                const parts = s.split('-');
+                if (parts.length === 3) {
+                    return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+                }
+            }
+            const d = new Date(str);
+            return isNaN(d.getTime()) ? new Date() : d;
+        }
+
+        function adminFormatDateToDDMMYYYY(date) {
+            return ("0" + date.getDate()).slice(-2) + "/" + ("0" + (date.getMonth() + 1)).slice(-2) + "/" + date.getFullYear();
+        }
+
+        function adminGenerateDatesRange(startStr, endStr) {
+            const dates = [];
+            const sDate = adminParseDateSecure(startStr);
+            const eDate = adminParseDateSecure(endStr);
+            let temp = new Date(sDate);
+            while (temp <= eDate) {
+                if (temp.getDay() !== 0) dates.push(new Date(temp)); // excluye domingos
+                temp.setDate(temp.getDate() + 1);
+            }
+            return dates;
+        }
+
+        let adminFechaModoReemplazo = null; // Guardará si estamos reemplazando una fecha específica
+
+        function abrirModalReprogramarHorario(fechaExcluir) {
+            const inv = ultimaInvitacionCargada || {};
+            const fInicio = inv.fechaInicio || (ultimaInvitacionCargada ? ultimaInvitacionCargada.fechaInicio : null);
+            const fFin = inv.fechaFin || (ultimaInvitacionCargada ? ultimaInvitacionCargada.fechaFin : null);
+
+            adminFechaModoReemplazo = fechaExcluir || null;
+            adminMaxClasses = adminParseClasesCount(inv.clases);
+            adminAvailableSlots = adminExtractTimeSlots(inv.franjas);
+            adminGeneratedDates = adminGenerateDatesRange(fInicio, fFin);
+            adminBookedSessions = [];
+
+            // Cargar las sesiones confirmadas excluyendo la que se va a reemplazar
+            if (inv.dias && inv.horario) {
+                const daysArr = inv.dias.split(',').map(d => d.trim()).filter(Boolean);
+                const hoursArr = inv.horario.split('|').map(h => h.trim()).filter(Boolean);
+                daysArr.forEach((dateStr, idx) => {
+                    if (dateStr && dateStr !== fechaExcluir) {
+                        const matchHora = hoursArr.find(h => h.includes(dateStr));
+                        let slot = matchHora ? matchHora.split(/:(.*)/s)[1].trim() : (hoursArr[idx] ? hoursArr[idx].trim() : "");
+                        if (slot.includes(':') && !slot.includes('a') && !slot.includes('to')) {
+                            slot = slot.split(/:(.*)/s)[1].trim();
+                        }
+                        adminBookedSessions.push({ dateStr: dateStr, slot: slot, fijo: true });
+                    }
+                });
+            }
+
+            const subtitle = document.getElementById('modalReprogramarSubtitle');
+            if (fechaExcluir) {
+                subtitle.innerHTML = `Seleccione en el calendario el <b>día y hora de reemplazo</b> para el <b>${fechaExcluir}</b>. Las demás clases confirmadas se mantendrán intactas.`;
+            } else {
+                subtitle.innerText = 'Selecciona las fechas exactas dentro del rango del curso, igual que lo haría el docente.';
+            }
+
+            // Seleccionar primer día disponible no agendado
+            const primerDiaLibre = adminGeneratedDates.find(d => !adminBookedSessions.some(s => s.dateStr === adminFormatDateToDDMMYYYY(d)));
+            adminSelectedDateObj = primerDiaLibre || (adminGeneratedDates.length > 0 ? adminGeneratedDates[0] : new Date());
+
+            renderAdminScheduleWidget();
+
+            if (!modalReprogramarInstance) modalReprogramarInstance = new bootstrap.Modal(document.getElementById('modalReprogramarHorario'));
+            modalReprogramarInstance.show();
+        }
+
+        function renderAdminScheduleWidget() {
+            if (!adminSelectedDateObj) return;
+            const carousel = document.getElementById('adminCarouselDays');
+            const grid = document.getElementById('adminGridTimeSlots');
+            const selectedDateStr = adminFormatDateToDDMMYYYY(adminSelectedDateObj);
+            const diasAbreviados = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+            const mesesAbreviados = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
+            let htmlDays = "";
+            adminGeneratedDates.forEach(date => {
+                const dateStr = adminFormatDateToDDMMYYYY(date);
+                const isSelected = dateStr === selectedDateStr ? "selected" : "";
+                const hasBooking = adminBookedSessions.some(s => s.dateStr === dateStr) ? "has-booking" : "";
+                htmlDays += `
+                <div class="day-pill ${isSelected} ${hasBooking}" onclick="adminSelectDate('${date.toISOString()}')">
+                    <span class="day-abbr">${diasAbreviados[date.getDay()]}</span>
+                    <span class="day-num">${date.getDate()}</span>
+                    <span class="day-month">${mesesAbreviados[date.getMonth()]}</span>
+                </div>`;
+            });
+            carousel.innerHTML = htmlDays;
+
+            const isSaturday = adminSelectedDateObj.getDay() === 6;
+            document.getElementById('adminSaturdayNotice').classList.toggle('d-none', !isSaturday);
+
+            let htmlSlots = "";
+            adminAvailableSlots.forEach(slot => {
+                const isActive = adminBookedSessions.some(s => s.dateStr === selectedDateStr && s.slot === slot) ? "active" : "";
+                htmlSlots += `<div class="time-slot-pill ${isActive}" onclick="adminBookSlot('${slot}')">${slot}</div>`;
+            });
+            grid.innerHTML = htmlSlots;
+
+            renderAdminBookedSessionsList();
+        }
+
+        function adminSelectDate(dateIsoStr) {
+            adminSelectedDateObj = new Date(dateIsoStr);
+            renderAdminScheduleWidget();
+        }
+
+        function adminScrollCarousel(direction) {
+            document.getElementById('adminCarouselDays').scrollLeft += direction === 'left' ? -250 : 250;
+        }
+
+        function adminBookSlot(slot) {
+            const selectedDateStr = adminFormatDateToDDMMYYYY(adminSelectedDateObj);
+            const existingIndex = adminBookedSessions.findIndex(s => s.dateStr === selectedDateStr);
+
+            if (existingIndex !== -1) {
+                // Si es una fecha fija previamente acordada, no permitir quitarla en este flujo
+                if (adminBookedSessions[existingIndex].fijo) {
+                    showToast("Esta fecha ya fue confirmada previamente. Solo debes seleccionar el día de reemplazo.", "info");
+                    return;
+                }
+                if (adminBookedSessions[existingIndex].slot === slot) {
+                    adminBookedSessions.splice(existingIndex, 1);
+                } else {
+                    adminBookedSessions[existingIndex].slot = slot;
+                }
+            } else {
+                if (adminBookedSessions.length >= adminMaxClasses) {
+                    // Reemplazar la sesión tentativa previa si ya hay 4
+                    const indexTentativo = adminBookedSessions.findIndex(s => !s.fijo);
+                    if (indexTentativo !== -1) {
+                        adminBookedSessions.splice(indexTentativo, 1);
+                    } else {
+                        showToast(`Ya se seleccionaron las ${adminMaxClasses} clases requeridas.`, "warning");
+                        return;
+                    }
+                }
+                adminBookedSessions.push({ dateStr: selectedDateStr, slot: slot, fijo: false });
+            }
+            renderAdminScheduleWidget();
+        }
+
+        function renderAdminBookedSessionsList() {
+            const container = document.getElementById('adminWrapperBookedSessions');
+            const list = document.getElementById('adminListBookedSessions');
+            const counter = document.getElementById('adminTxtSessionsCounter');
+            const btnSubmit = document.getElementById('btnGuardarHorarioAdmin');
+
+            counter.innerText = `${adminBookedSessions.length} de ${adminMaxClasses} Agendadas`;
+            btnSubmit.disabled = adminBookedSessions.length !== adminMaxClasses;
+
+            if (adminBookedSessions.length === 0) { container.style.display = 'none'; return; }
+            container.style.display = 'block';
+
+            adminBookedSessions.sort((a, b) => {
+                const pA = a.dateStr.split('/'); const pB = b.dateStr.split('/');
+                return new Date(pA[2], pA[1] - 1, pA[0]) - new Date(pB[2], pB[1] - 1, pB[0]);
+            });
+
+            list.innerHTML = adminBookedSessions.map((s, idx) => `
+                <div class="booked-session-card">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="booked-session-badge">${s.fijo ? 'Confirmada' : 'Nueva Fecha'}</span>
+                        <div class="session-details">
+                            <span class="session-date"><i class="fa-regular fa-calendar text-primary me-1"></i> ${s.dateStr}</span>
+                            <span class="session-time"><i class="fa-regular fa-clock text-muted me-1"></i> ${s.slot}</span>
+                        </div>
+                    </div>
+                    ${!s.fijo ? `
+                    <button type="button" class="btn-delete-session" onclick="adminRemoveSession(${idx})" title="Eliminar reemplazo">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>` : `<span class="text-success small fw-bold"><i class="fa-solid fa-lock me-1"></i>Pactada</span>`}
+                </div>`).join('');
+        }
+
+        function adminRemoveSession(idx) {
+            adminBookedSessions.splice(idx, 1);
+            renderAdminScheduleWidget();
+        }
+
+        async function guardarHorarioAdmin() {
+            if (adminBookedSessions.length !== adminMaxClasses) {
+                showToast(`Debes completar las ${adminMaxClasses} clases requeridas.`, "danger");
+                return;
+            }
+            const btn = document.getElementById('btnGuardarHorarioAdmin');
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i> Guardando...`;
+
+            const diasArr = adminBookedSessions.map(s => s.dateStr);
+            const horasArr = adminBookedSessions.map(s => `${s.dateStr}: ${s.slot}`);
+
+            try {
+                const res = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'actualizar_horario_invitacion_admin',
+                        idInvitacion: idInvitacionActual,
+                        dia: diasArr.join(', '),
+                        hora: horasArr.join(' | ')
+                    })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    modalReprogramarInstance.hide();
+                    showToast('Horario del docente actualizado correctamente.', 'success');
+                    cargarExpediente();
+                } else {
+                    showToast(data.message || 'No se pudo guardar el horario.', 'danger');
+                }
+            } catch (e) {
+                showToast('Error de conexión.', 'danger');
+            } finally {
+                btn.disabled = adminBookedSessions.length !== adminMaxClasses;
+                btn.innerHTML = originalHTML;
+            }
+        }
+
         function showToast(mensaje, tipo = 'success') {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
@@ -1444,6 +1936,7 @@
                     const exp = response.expediente;
                     const d = response.docente;
                     const inv = response.invitacion;
+                    ultimaInvitacionCargada = inv; // NUEVO: para poder abrir el gestor de horario con estos datos
                     docId = d.id;
 
                     idInvitacionActual = exp.idInvitacion || "";
@@ -1509,6 +2002,10 @@
                     }
                     
                     document.getElementById('view-pago').innerText = inv.pago || "-";
+
+                    // NUEVO: widget de aprobación de sábado
+                    estadoInvitacionActual = inv.estado || "";
+                    renderSabadosPendientes(inv.sabadosDetectados || []);
 
                     const avisoInvAdmin = document.getElementById('aviso-invitacion-pendiente-admin');
                     const sinHorarioElegido = !inv.horario || inv.horario.trim() === '' || inv.horario.trim() === '-';

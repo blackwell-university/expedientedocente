@@ -4,7 +4,7 @@
     <script>
         const isLoggedIn = localStorage.getItem('isLoggedIn');
         const userRole = localStorage.getItem('userRole');
-        if (isLoggedIn !== 'true' || (userRole !== 'Asesora Academica' && userRole !== 'Administrador' && userRole !== 'Jefe OSE BGU')) {
+        if (isLoggedIn !== 'true' || (userRole !== 'Asesora Academica' && userRole !== 'Administrador' && userRole !== 'Jefe OSE BGU' && userRole !== 'E-learning')) {
             window.location.href = "../index.html";
         }
     </script>
@@ -128,8 +128,9 @@
         .foto-acciones { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
         .btn-foto-accion { background: #f8fafc; color: var(--text-muted); border: 1px solid var(--gray-border); font-size: 0.72rem; font-weight: 700; padding: 5px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; transition: 0.2s; text-decoration: none; }
         .btn-foto-accion:hover { background: var(--primary-light); color: var(--primary); border-color: #bfdbfe; }
+        .foto-error-msg { display: none; width: 100%; max-width: 100%; font-size: 0.68rem; color: #b91c1c; margin-top: 2px; line-height: 1.35; white-space: normal; overflow-wrap: break-word; }
         .profile-avatar { position: relative; }
-        .profile-avatar-wrap { display: flex; flex-direction: column; align-items: flex-start; flex-shrink: 0; }
+        .profile-avatar-wrap { display: flex; flex-direction: column; align-items: flex-start; flex-shrink: 0; max-width: 150px; }
 
         /* NUEVO: tarjeta destacada para el sílabo del curso, en su propia sección */
         .silabo-card {
@@ -277,6 +278,9 @@
                 <div class="page-header mb-4">
                     <h1 id="txtCursoNombre">Cargando Curso...</h1>
                     <p id="txtPrograma">Obteniendo programa...</p>
+                    <div id="avisoSoloLectura" style="display:none; margin-top:10px; background:#fffbeb; border:1px solid #fde68a; color:#b45309; font-size:0.82rem; font-weight:600; padding:10px 16px; border-radius:10px; display:none; align-items:center; gap:8px; width:fit-content;">
+                        <i class="fa-solid fa-eye"></i> Estás en modo solo lectura: puedes ver los enlaces y la asistencia, pero no editarlos.
+                    </div>
                 </div>
 
                 <div class="row g-4">
@@ -355,7 +359,7 @@
                                     
                                     <div id="contenedorEnlaces" class="d-flex flex-column gap-3 mb-3">
                                     </div>
-                                    <button class="btn-add" onclick="agregarEnlaceUI()"><i class="fa-solid fa-plus me-1"></i> Añadir Nuevo Enlace</button>
+                                    <button class="btn-add" id="btnAddLink" onclick="agregarEnlaceUI()"><i class="fa-solid fa-plus me-1"></i> Añadir Nuevo Enlace</button>
                                 </div>
 
                                 <!-- CONTROL DE SESIONES (GUARDADO CONTEXTUAL) -->
@@ -402,6 +406,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         let arraySesiones = [];
         let availableSlots = [];
 
+        // El rol E-learning solo puede visualizar: no debe poder editar enlaces ni asistencias/reprogramaciones
+        const esSoloLectura = localStorage.getItem('userRole') === 'E-learning';
+
         document.addEventListener('DOMContentLoaded', () => {
             const name = localStorage.getItem('userName') || "Asesora Académica";
             document.getElementById('userName').innerText = name;
@@ -410,6 +417,14 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             const rolActual = localStorage.getItem('userRole');
             if (rolActual === 'Jefe OSE BGU' || rolActual === 'Administrador') {
                 document.getElementById('navGestionAsesoras').style.display = 'block';
+            }
+
+            if (esSoloLectura) {
+                const aviso = document.getElementById('avisoSoloLectura');
+                aviso.style.display = 'flex';
+                document.getElementById('btnSaveLinks').style.display = 'none';
+                document.getElementById('btnAddLink').style.display = 'none';
+                document.getElementById('btnSaveSessions').style.display = 'none';
             }
 
             if(!invId) { Swal.fire('Error', 'Faltan parámetros de clase.', 'error'); return; }
@@ -456,13 +471,27 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 </div>`).join('');
         }
 
+        // Mismo método que ya funciona en perfil.html: "docs.google.com/uc?export=view" no siempre
+        // renderiza bien como <img> en todos los navegadores; lh3.googleusercontent.com sí es confiable.
         function getSafeImgUrl(url) {
             if (!url) return "";
             const match = url.match(/[-\w]{25,}/);
-            if (match && (url.includes('drive.google.com') || url.includes('docs.google.com'))) {
-                return `https://docs.google.com/uc?export=view&id=${match[0]}`;
-            }
-            return url;
+            if (!match) return url;
+            return `https://lh3.googleusercontent.com/d/${match[0]}=s300`;
+        }
+
+        // Para "Ver" (pestaña de Drive) y "Descargar" seguimos usando enlaces distintos al de <img>,
+        // ya que lh3.googleusercontent.com sirve para mostrar la miniatura, no para verla/bajarla.
+        function getDriveViewUrl(url) {
+            if (!url) return "";
+            const match = url.match(/[-\w]{25,}/);
+            return match ? `https://drive.google.com/file/d/${match[0]}/view` : url;
+        }
+
+        function getDriveDownloadUrl(url) {
+            if (!url) return "";
+            const match = url.match(/[-\w]{25,}/);
+            return match ? `https://docs.google.com/uc?export=download&id=${match[0]}` : url;
         }
 
         function extractTimeSlots(franjasStr) {
@@ -535,17 +564,27 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     const avatarEl = document.getElementById('avatarContainer');
                     const fotoAcciones = document.getElementById('fotoAccionesContainer');
                     if (doc.url_foto) {
-                        const safeUrl = getSafeImgUrl(doc.url_foto);
+                        const imgUrl = getSafeImgUrl(doc.url_foto);
+                        const viewUrl = getDriveViewUrl(doc.url_foto);
+                        const downloadUrl = getDriveDownloadUrl(doc.url_foto);
                         const initials = doc.nombres ? doc.nombres.substring(0,2).toUpperCase() : 'DOC';
-                        avatarEl.innerHTML = `<img src="${safeUrl}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" onerror="this.parentElement.innerText='${initials}'">`;
-                        
+                        // Si la imagen no carga, avisamos con un mensaje corto (sin desbordar la card)
+                        // en vez de dejar solo las iniciales sin explicación.
+                        avatarEl.innerHTML = `<img src="${imgUrl}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" onerror="this.parentElement.innerHTML='<span>${initials}</span>'; document.getElementById('fotoErrorMsg').style.display='block';">`;
+
                         fotoAcciones.innerHTML = `
-                            <a href="${safeUrl}" download class="btn-foto-accion" title="Descargar foto del docente">
+                            <a href="${viewUrl}" target="_blank" class="btn-foto-accion" title="Abrir la foto en Drive en una pestaña nueva">
+                                <i class="fa-regular fa-eye"></i> Ver foto
+                            </a>
+                            <a href="${downloadUrl}" class="btn-foto-accion" title="Descargar la foto del docente a tu equipo">
                                 <i class="fa-solid fa-download"></i> Descargar
                             </a>
-                            <button class="btn-foto-accion" onclick="copiarEnlaceFoto('${safeUrl}')" title="Copiar enlace de la foto para compartir">
+                            <button type="button" class="btn-foto-accion" onclick="copiarEnlaceFoto('${viewUrl}')" title="Copiar el enlace de la foto para compartirlo">
                                 <i class="fa-solid fa-copy"></i> Copiar enlace
-                            </button>`;
+                            </button>
+                            <span id="fotoErrorMsg" class="foto-error-msg">
+                                <i class="fa-solid fa-triangle-exclamation"></i> No se pudo mostrar la foto aquí.
+                            </span>`;
                     } else {
                         avatarEl.innerText = doc.nombres ? doc.nombres.substring(0,2).toUpperCase() : 'DOC';
                         fotoAcciones.innerHTML = '<span class="btn-foto-accion" style="cursor:default; opacity:.5;"><i class="fa-solid fa-image-slash"></i> Sin foto</span>';
@@ -647,18 +686,20 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         function renderEnlacesUI() {
             const container = document.getElementById('contenedorEnlaces');
             let html = "";
+            const soloLecturaAttr = esSoloLectura ? 'disabled' : '';
             arrayEnlaces.forEach((enlace, idx) => {
                 html += `
                 <div class="row g-2 align-items-center link-row" data-index="${idx}">
                     <div class="col-md-4">
-                        <input type="text" class="form-control inp-titulo" placeholder="Ej. Clase 1 - Zoom" value="${enlace.titulo}">
+                        <input type="text" class="form-control inp-titulo" placeholder="Ej. Clase 1 - Zoom" value="${enlace.titulo}" ${soloLecturaAttr}>
                     </div>
-                    <div class="col-md-7">
-                        <input type="url" class="form-control inp-url" placeholder="https://..." value="${enlace.url}">
+                    <div class="col-md-${esSoloLectura ? '8' : '7'}">
+                        <input type="url" class="form-control inp-url" placeholder="https://..." value="${enlace.url}" ${soloLecturaAttr}>
                     </div>
+                    ${esSoloLectura ? `<div class="col-md-auto d-flex justify-content-end">${enlace.url ? `<a href="${enlace.url}" target="_blank" class="btn-material-ver"><i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir</a>` : ''}</div>` : `
                     <div class="col-md-1 d-flex justify-content-end">
                         <button class="btn-delete" onclick="eliminarEnlaceUI(${idx})"><i class="fa-solid fa-trash"></i></button>
-                    </div>
+                    </div>`}
                 </div>`;
             });
             container.innerHTML = html || '<p class="text-muted m-0" id="noLinksText">No se han registrado enlaces de acceso virtual.</p>';
@@ -721,7 +762,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                             <div class="session-num-circle">${ses.num}</div>
                             <h6 class="fw-bold m-0">Sesión ${ses.num}</h6>
                         </div>
-                        <select class="form-select form-select-sm fw-bold w-auto sel-estado estado-${claseClp}" onchange="cambiarEstadoSesion(${idx}, this)">
+                        <select class="form-select form-select-sm fw-bold w-auto sel-estado estado-${claseClp}" onchange="cambiarEstadoSesion(${idx}, this)" ${esSoloLectura ? 'disabled' : ''}>
                             <option value="Pendiente" ${ses.estado === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
                             <option value="Realizada" ${ses.estado === 'Realizada' ? 'selected' : ''}>Realizada</option>
                             <option value="Reprogramada" ${ses.estado === 'Reprogramada' ? 'selected' : ''} ${ses.estado === 'Realizada' ? 'disabled' : ''}>Reprogramada</option>
@@ -750,7 +791,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     </div>
 
                     <!-- Campos de Reprogramación (Con Selector de Hora) -->
-                    <div class="reprogramacion-box mt-3" style="display: ${mostrarRepro};">
+                    <div class="reprogramacion-box mt-3" style="display: ${esSoloLectura ? 'none' : mostrarRepro};">
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label small fw-bold text-primary">Nueva Fecha *</label>
@@ -773,6 +814,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         }
 
         function confirmarReprogramacion(idx) {
+            if (esSoloLectura) return;
             const card = document.querySelector(`.ses-row[data-index="${idx}"]`);
             const rawDate = card.querySelector('.inp-nfecha').value;
             const nuevaHora = card.querySelector('.inp-nhora').value;
@@ -831,6 +873,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         }
 
         function cambiarEstadoSesion(idx, selectEl) {
+            if (esSoloLectura) return;
             arraySesiones[idx].estado = selectEl.value;
             const card = document.querySelector(`.ses-row[data-index="${idx}"]`);
             
@@ -917,12 +960,14 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         }
 
         function guardarEnlaces() {
+            if (esSoloLectura) return;
             guardarEstadoEnlacesUI();
             const btn = document.getElementById('btnSaveLinks');
             ejecutarGuardadoLocal(btn, "enlaces de acceso");
         }
 
         function guardarSesiones() {
+            if (esSoloLectura) return;
             guardarEstadoSesionesUI();
             const btn = document.getElementById('btnSaveSessions');
             ejecutarGuardadoLocal(btn, "estados de asistencia");

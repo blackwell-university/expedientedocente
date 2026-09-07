@@ -18,6 +18,8 @@
                 window.location.href = "Admin/asesora-dashboard.html";
             } else if (roleUpper === 'JEFE OSE BGU') {
                 window.location.href = "Admin/asesora-dashboard.html";
+            } else if (roleUpper === 'E-LEARNING') {
+                window.location.href = "Admin/asesora-dashboard.html";
             } else if (roleUpper === 'ADMINISTRATIVO' || roleUpper === 'ADMINISTRADOR') {
                 window.location.href = "Admin/administrativo.html";
             }
@@ -212,6 +214,9 @@
                         window.location.href = "Admin/asesora-dashboard.html";
                     } else if (rolAsignado === 'JEFE OSE BGU') {
                         localStorage.setItem('userRole', 'Jefe OSE BGU');
+                        window.location.href = "Admin/asesora-dashboard.html";
+                    } else if (rolAsignado === 'E-LEARNING') {
+                        localStorage.setItem('userRole', 'E-learning');
                         window.location.href = "Admin/asesora-dashboard.html";
                     } else if (
                         rolAsignado === 'ADMINISTRATIVO' || 

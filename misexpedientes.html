@@ -466,7 +466,7 @@
                     estadoVisual = 'Firma Requerida';
                     badgeClass = 'status-firmar'; icon = 'edit_document'; color = '#2563eb'; 
                     actionText = 'Firmar documentos'; actionLink = `contrato-detalle.html?inv=${inv.id}`; accentClass = 'accent-blue';
-                } else if (['respondido', 'aceptado', 'documentos generados'].includes(estadoLower)) {
+                } else if (['respondido', 'aceptado', 'documentos generados'].includes(estadoLower) || estadoLower.includes('sábado') || estadoLower.includes('sabado')) {
                     estadoVisual = 'En Proceso Administrativo';
                     badgeClass = 'status-proceso'; icon = 'hourglass_empty'; color = '#7e22ce'; 
                     actionText = 'Ver estado'; actionLink = '#'; accentClass = 'accent-purple';
@@ -544,10 +544,6 @@
                     badgeClass = 'status-proceso'; icon = 'manage_search'; color = '#7e22ce'; 
                     actionText = 'Ver estado'; actionLink = `contrato-detalle.html?exp=${exp.idExpediente}`; accentClass = 'accent-purple';
                 } else if (estadoLower === 'completado' && exp.estadoReal && exp.estadoReal !== 'Contratado') {
-                    // NUEVO: "Completado" es una etiqueta que agrupa varios estados internos
-                    // (Recibido, En revisión, Verificado, Por evaluar, En evaluación, Evaluado).
-                    // Solo "Contratado" está realmente listo para verse en contrato-detalle.html —
-                    // el resto sigue en trámite interno, así que mostramos un aviso en vez de navegar.
                     estadoVisual = 'En Revisión';
                     badgeClass = 'status-proceso'; icon = 'manage_search'; color = '#7e22ce';
                     actionText = 'Ver estado'; actionLink = 'javascript:void(0)'; accentClass = 'accent-purple';
@@ -560,8 +556,8 @@
 
                 const vigencia = exp.fechaVencimiento ? `Vence: ${new Date(exp.fechaVencimiento).toLocaleDateString('es-ES')}` : "Periodo actual";
 
-              const estadoInvLower = (exp.estadoInvitacion || '').toString().trim().toLowerCase();
-                const invitacionPendiente = exp.idInvitacion && !['aceptado', 'respondido'].includes(estadoInvLower);
+                const estadoInvLower = (exp.estadoInvitacion || '').toString().trim().toLowerCase();
+                const invitacionPendiente = exp.idInvitacion && !['aceptado', 'respondido'].includes(estadoInvLower) && !estadoInvLower.includes('sábado') && !estadoInvLower.includes('sabado');
                 const avisoInvitacion = invitacionPendiente ? `
                     <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:8px 12px; margin-bottom:10px; font-size:0.78rem; color:#92400e; display:flex; align-items:center; gap:6px;">
                         <span class="material-symbols-rounded" style="font-size:1rem;">error</span>
