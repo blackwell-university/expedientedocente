@@ -162,6 +162,20 @@
             font-size: 0.75rem; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block; 
         }
 
+        /* NUEVO: selector de estado tipo "pill" para el modal de Configurar Cuenta,
+           más fino que un <select> plano y coherente con los badges del resto del sistema. */
+        .status-toggle-group { display: flex; gap: 10px; }
+        .status-toggle-btn {
+            flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 13px 16px; border-radius: 10px; border: 1px solid #e2e8f0; background: #f8fafc;
+            color: #64748b; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: var(--transition);
+        }
+        .status-toggle-btn i { font-size: 0.95rem; }
+        .status-toggle-btn:hover { background: #f1f5f9; }
+        .status-toggle-btn.active[data-value="Activo"] { background: #f0fdf4; border-color: #bbf7d0; color: #15803d; }
+        .status-toggle-btn.active[data-value="Inactivo"] { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
+        .status-toggle-desc { font-size: 0.8rem; color: #94a3b8; margin-top: 10px; }
+
         /* --- REDISEÑO DE SWEETALERT2 (UI Corporativa) --- */
         div:where(.swal2-container) div:where(.swal2-popup) {
             border-radius: 16px !important;
@@ -419,7 +433,7 @@
                 <div class="page-header">
                     <div class="header-top-row">
                         <h1 id="det-nombre" class="mb-0">Cargando Nombre...</h1>
-                        <span id="det-estado-badge" class="badge-cuenta cuenta-activo" style="display:none;">Activa</span>
+                        <span id="det-estado-badge" class="badge-cuenta cuenta-activo" style="display:none;">Cuenta Activa</span>
                     </div>
                     <p>Expediente completo y gestión de contratos</p>
                 </div>
@@ -720,50 +734,63 @@
         </div>
     </div>
 
-    <!-- NUEVO: MODAL — CONFIGURAR CUENTA DEL DOCENTE (movido desde gestion-docentes.html,
-         ahora con el control de Activo/Inactivo agregado) -->
-    <div class="modal fade modal-modern" id="modalConfigurarCuenta" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content shadow-lg">
+    <!-- NUEVO: MODAL — CONFIGURAR CUENTA DEL DOCENTE (rediseñado con el mismo estilo
+         "modal-aesthetic" que usa el resto del sistema: más ancho, header con ícono
+         y descripción, y un selector de estado tipo pill en vez de un <select> plano) -->
+    <div class="modal fade modal-aesthetic" id="modalConfigurarCuenta" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="fw-bold m-0"><i class="fa-solid fa-user-gear me-2"></i>Configurar Cuenta del Docente</h5>
+                    <div>
+                        <h5 class="fw-bold m-0" style="color: var(--primary-dark); letter-spacing: -0.01em;">
+                            <i class="fa-solid fa-user-gear me-2 text-primary"></i>Configurar Cuenta del Docente
+                        </h5>
+                        <p class="text-muted small m-0 mt-1">Edita sus datos de acceso o activa/desactiva su ingreso al portal.</p>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="formConfigurarCuenta">
                         <input type="hidden" id="cuenta-id">
-                        <div class="row g-3">
+
+                        <span class="section-badge"><i class="fa-solid fa-id-badge me-2"></i>Datos de Acceso</span>
+                        <div class="row g-3 mb-4">
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold text-muted">Nombres</label>
-                                <input type="text" class="form-control input-modern" id="cuenta-nombres" required>
+                                <label class="label-aesthetic">Nombres</label>
+                                <input type="text" class="form-control input-aesthetic" id="cuenta-nombres" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold text-muted">Apellidos</label>
-                                <input type="text" class="form-control input-modern" id="cuenta-apellidos" required>
+                                <label class="label-aesthetic">Apellidos</label>
+                                <input type="text" class="form-control input-aesthetic" id="cuenta-apellidos" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold text-muted">Correo</label>
-                                <input type="email" class="form-control input-modern" id="cuenta-correo" required>
+                                <label class="label-aesthetic">Correo</label>
+                                <input type="email" class="form-control input-aesthetic" id="cuenta-correo" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold text-muted">Nueva Contraseña (opcional)</label>
-                                <input type="text" class="form-control input-modern" id="cuenta-password" placeholder="Dejar en blanco para no cambiarla">
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label small fw-bold text-muted">Estado de la cuenta</label>
-                                <select class="form-select input-modern" id="cuenta-estado">
-                                    <option value="Activo">Activo — puede iniciar sesión con normalidad</option>
-                                    <option value="Inactivo">Inactivo — se bloquea el acceso al portal</option>
-                                </select>
+                                <label class="label-aesthetic">Nueva Contraseña (opcional)</label>
+                                <input type="text" class="form-control input-aesthetic" id="cuenta-password" placeholder="Dejar en blanco para no cambiarla">
                             </div>
                         </div>
-                        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
-                            <button type="button" class="btn-cancelar-modal" data-bs-dismiss="modal">Cancelar</button>
-                            <button type="submit" class="btn-primary" style="border:none;">
-                                <i class="fa-solid fa-check"></i> Guardar Cambios
+
+                        <span class="section-badge"><i class="fa-solid fa-toggle-on me-2"></i>Estado de la Cuenta</span>
+                        <input type="hidden" id="cuenta-estado" value="Activo">
+                        <div class="status-toggle-group">
+                            <button type="button" class="status-toggle-btn active" data-value="Activo" onclick="seleccionarEstadoCuenta('Activo')">
+                                <i class="fa-solid fa-circle-check"></i> Activo
+                            </button>
+                            <button type="button" class="status-toggle-btn" data-value="Inactivo" onclick="seleccionarEstadoCuenta('Inactivo')">
+                                <i class="fa-solid fa-ban"></i> Inactivo
                             </button>
                         </div>
+                        <p class="status-toggle-desc" id="cuenta-estado-desc">El docente puede iniciar sesión en el portal con normalidad.</p>
                     </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancelar-modal" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" form="formConfigurarCuenta" class="btn-primary" style="border:none;">
+                        <i class="fa-solid fa-check"></i> Guardar Cambios
+                    </button>
                 </div>
             </div>
         </div>
@@ -845,7 +872,7 @@
                     if (badgeEstado) {
                         badgeEstado.style.display = 'inline-flex';
                         badgeEstado.className = `badge-cuenta cuenta-${estadoCuenta.toLowerCase()}`;
-                        badgeEstado.textContent = estadoCuenta.toLowerCase() === 'activo' ? 'Activa' : 'Cuenta Inactiva';
+                        badgeEstado.textContent = estadoCuenta.toLowerCase() === 'activo' ? 'Cuenta Activa' : 'Cuenta Inactiva';
                     }
 
                     llenarAcordeonDatosDocente(d, json.drafts || { educacion: [], experiencia: [] });
@@ -856,6 +883,19 @@
         // --- NUEVO: CONFIGURAR CUENTA DEL DOCENTE (datos + Activo/Inactivo) ---
         let modalConfigurarCuentaInstance = null;
 
+        function seleccionarEstadoCuenta(valor) {
+            document.getElementById('cuenta-estado').value = valor;
+            document.querySelectorAll('.status-toggle-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.value === valor);
+            });
+            const desc = document.getElementById('cuenta-estado-desc');
+            if (desc) {
+                desc.textContent = valor === 'Activo'
+                    ? 'El docente puede iniciar sesión en el portal con normalidad.'
+                    : 'Se bloquea el acceso del docente al portal hasta reactivar la cuenta.';
+            }
+        }
+
         function abrirModalConfigurarCuenta() {
             if (!perfilActualDocente) return;
             const d = perfilActualDocente;
@@ -864,7 +904,7 @@
             document.getElementById('cuenta-apellidos').value = d.apellidos || '';
             document.getElementById('cuenta-correo').value = d.correo || '';
             document.getElementById('cuenta-password').value = ''; // siempre vacío, es de solo-escritura por seguridad
-            document.getElementById('cuenta-estado').value = (d.estadoCuenta || 'Activo').trim();
+            seleccionarEstadoCuenta((d.estadoCuenta || 'Activo').trim());
 
             if (!modalConfigurarCuentaInstance) {
                 modalConfigurarCuentaInstance = new bootstrap.Modal(document.getElementById('modalConfigurarCuenta'));
@@ -874,7 +914,10 @@
 
         document.getElementById('formConfigurarCuenta').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const btn = e.target.querySelector('button[type="submit"]');
+            // NUEVO: el botón "Guardar Cambios" vive en el modal-footer, fuera del <form>
+            // (se conecta vía el atributo form="formConfigurarCuenta"), así que se busca
+            // directo en el modal en vez de e.target.querySelector(...).
+            const btn = document.querySelector('#modalConfigurarCuenta button[type="submit"]');
             const originalHTML = btn.innerHTML;
             btn.disabled = true;
             btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Guardando...`;

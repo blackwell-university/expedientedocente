@@ -108,6 +108,10 @@
         .btn-gestionar:hover { background: var(--primary); color: white; }
         .btn-material-ver { background: #f8fafc; color: var(--text-main); border: 1px solid var(--gray-border); font-weight: 700; font-size: 0.8rem; padding: 8px 16px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: 0.2s; white-space: nowrap; }
         .btn-material-ver:hover { background: #f1f5f9; color: var(--text-main); }
+        /* NUEVO: botón "Abrir" -- reemplaza el comportamiento que antes tenía "Descargar"
+           por error (abrir el archivo en otra pestaña en vez de bajarlo). */
+        .btn-material-abrir { background: #eef2ff; color: #4338ca; font-weight: 700; font-size: 0.8rem; border: none; padding: 8px 16px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: 0.2s; white-space: nowrap; }
+        .btn-material-abrir:hover { background: #4338ca; color: white; }
 
         .form-control, .form-select { border-radius: 8px; border-color: #cbd5e1; font-size: 0.9rem; }
         .form-control:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
@@ -430,6 +434,13 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 const match = (url || '').match(/[-\w]{25,}/);
                 return match ? `https://drive.google.com/file/d/${match[0]}/view` : url;
             };
+            // NUEVO: la URL que guarda el backend (file.getUrl()) es la de VISTA de Drive, no una
+            // de descarga real -- por eso "Descargar" abría el archivo en vez de bajarlo. Esta
+            // construye la URL que sí fuerza la descarga del archivo.
+            const getDownloadUrl = (url) => {
+                const match = (url || '').match(/[-\w]{25,}/);
+                return match ? `https://drive.google.com/uc?export=download&id=${match[0]}` : url;
+            };
             cont.innerHTML = archivos.map(arch => `
                 <div class="material-item">
                     <div class="material-icon"><i class="${iconoPorNombre(arch.nombre)}"></i></div>
@@ -439,7 +450,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     </div>
                     <div class="d-flex gap-2" style="flex-shrink:0;">
                         <a href="${getViewUrl(arch.url)}" target="_blank" class="btn-material-ver"><i class="fa-regular fa-eye"></i> Ver</a>
-                        <a href="${arch.url}" target="_blank" class="btn-gestionar"><i class="fa-solid fa-download"></i> Descargar</a>
+                        <a href="${arch.url}" target="_blank" class="btn-material-abrir"><i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir</a>
+                        <a href="${getDownloadUrl(arch.url)}" download="${arch.nombre || 'archivo'}" class="btn-gestionar"><i class="fa-solid fa-download"></i> Descargar</a>
                     </div>
                 </div>`).join('');
         }
