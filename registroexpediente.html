@@ -1575,7 +1575,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
             // Inyectamos el HTML dinámico del Paso 2 (Loader y Contenedores)
             document.getElementById('step-2').innerHTML = `
-                <h4 class="fw-800 mb-2">Grados Académicos</h4>
+                <h2 class="step-title">Grados Académicos</h2>
                 <p class="text-muted mb-4">Añade los diplomas y certificados de notas de tus grados más altos.</p>
                 <div id="step2-loader" class="text-center py-5">
                     <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;"></div>
@@ -2503,7 +2503,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     if (isEditingCV && cvFile) {
                         subidasPaso1.push(
                             getBase64(cvFile).then(b64Cv =>
-                                fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Cv, name: cvFile.name, type: cvFile.type, uploadTo: 'docente', idDocente: userId }) }).then(r=>r.json())
+                                fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Cv, name: cvFile.name, type: cvFile.type, uploadTo: 'docente', idDocente: userId, tipoDocumento: 'cv' }) }).then(r=>r.json())
                             ).then(resCv => {
                                 urlCVGlobal = resCv.url; payload.url_cv = urlCVGlobal;
                                 fetch(N8N_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: "extract_cv", fileUrl: urlCVGlobal, idDocente: userId, idExpediente: idExpedienteUrl }) }).catch(e=>console.log(e));
@@ -2514,7 +2514,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     if (isEditingHb && hbFile) {
                         subidasPaso1.push(
                             getBase64(hbFile).then(b64Hb =>
-                                fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Hb, name: hbFile.name, type: hbFile.type, uploadTo: 'docente', idDocente: userId }) }).then(r=>r.json())
+                                fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Hb, name: hbFile.name, type: hbFile.type, uploadTo: 'docente', idDocente: userId, tipoDocumento: 'handbook' }) }).then(r=>r.json())
                             ).then(resHb => {
                                 urlHbGlobal = resHb.url; payload.url_handbook = urlHbGlobal;
                             })
@@ -2605,10 +2605,10 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                             item.dataset.id = idDipGenerado;
 
                             const subirDiploma = getBase64(dipFile).then(b64Dip =>
-                                fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Dip, name: dipFile.name, type: dipFile.type, uploadTo: 'docente', idDocente: userId, idExpediente: idExpedienteUrl }) }).then(r => r.json())
+                                fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Dip, name: dipFile.name, type: dipFile.type, uploadTo: 'docente', idDocente: userId, idExpediente: idExpedienteUrl, tipoDocumento: 'diploma', grado: currentGrado }) }).then(r => r.json())
                             );
                             const subirTranscript = transFile
-                                ? getBase64(transFile).then(b64Trans => fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Trans, name: transFile.name, type: transFile.type, uploadTo: 'docente', idDocente: userId, idExpediente: idExpedienteUrl }) }).then(r => r.json()))
+                                ? getBase64(transFile).then(b64Trans => fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Trans, name: transFile.name, type: transFile.type, uploadTo: 'docente', idDocente: userId, idExpediente: idExpedienteUrl, tipoDocumento: 'transcript', grado: currentGrado }) }).then(r => r.json()))
                                 : Promise.resolve({ url: "" });
 
                             return Promise.all([subirDiploma, subirTranscript]).then(([resDip, resTrans]) => {
@@ -2673,7 +2673,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         const idFile = document.getElementById('idFile').files[0];
                         if (idFile) {
                             const b64Id = await getBase64(idFile);
-                            const resId = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Id, name: idFile.name, type: idFile.type, uploadTo: 'docente', idDocente: userId }) }).then(r=>r.json());
+                            const resId = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Id, name: idFile.name, type: idFile.type, uploadTo: 'docente', idDocente: userId, tipoDocumento: 'dni' }) }).then(r=>r.json());
                             urlIdGlobal = resId.url;
                             isEditingId = false;
                             document.getElementById('view-link-id').href = getDriveViewUrl(urlIdGlobal);
@@ -2686,7 +2686,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         const fotoFile = document.getElementById('fotoFile').files[0];
                         if (fotoFile) {
                             const b64Foto = await getBase64(fotoFile);
-                            const resFoto = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Foto, name: fotoFile.name, type: fotoFile.type, uploadTo: 'docente', idDocente: userId }) }).then(r=>r.json());
+                            const resFoto = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Foto, name: fotoFile.name, type: fotoFile.type, uploadTo: 'docente', idDocente: userId, tipoDocumento: 'foto' }) }).then(r=>r.json());
                             urlFotoGlobal = resFoto.url;
                             isEditingFoto = false;
                             document.getElementById('view-link-foto').href = getDriveViewUrl(urlFotoGlobal);
