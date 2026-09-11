@@ -491,8 +491,12 @@
 
             let html = "";
             cursosArray.forEach(curso => {
-                
-                let isConfirmed = (curso.estado.toLowerCase() === 'respondido' || curso.estado.toLowerCase() === 'completado' || curso.estado.toLowerCase() === 'aprobado' || curso.estado.toLowerCase() === 'aceptado');
+            
+
+                let isConfirmed = ['respondido','completado','aprobado','aceptado',
+                    'pendiente firma docente','firmado por docente',
+                    'pendiente firma directores']
+                    .includes(curso.estado.toLowerCase());
                 
                 let dotClass = isConfirmed ? 'dot-asignado' : 'dot-pendiente';
                 let txtEstado = isConfirmed ? 'Asignado' : 'Por confirmar';
