@@ -2764,7 +2764,12 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         // El Paso 4 (Curso) ya no existe en este asistente — nunca se exige aquí
                         if (!pasoAsignacionOculto && !validarPaso4Completo()) pasosFaltantes.push("4 (Curso)");
                         if (!validarPaso5Completo()) pasosFaltantes.push("5 (Banco)");
-                        if (!validarPaso6Completo(true)) pasosFaltantes.push("6 (Datos vacíos)"); 
+                        if (!validarPaso6Completo(true)) {
+                            const detallePaso6 = (window.paso6Motivos && window.paso6Motivos.length)
+                                ? window.paso6Motivos.join(' · ')
+                                : "Datos vacíos";
+                            pasosFaltantes.push(`6 (${detallePaso6})`);
+                        }
 
                         payload.mensajeFaltantes = pasosFaltantes.length > 0
                             ? `Avance guardado. Te falta revisar el Paso: ${pasosFaltantes.join(', ')}`
@@ -3254,9 +3259,13 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         // Función experta para verificar si el paso 6 está totalmente lleno
         function validarPaso6Completo(mostrarErrores = false) {
             let esValido = true;
+            // Motivos legibles de por qué falló, y el primer campo inválido para poder
+            // llevar al usuario directo ahí (en vez de dejarlo adivinar qué falta).
+            const motivos = [];
+            let primerCampoInvalido = null;
 
             // Helper para validar y pintar de rojo
-            const checkField = (element) => {
+            const checkField = (element, motivo) => {
                 if (!element) return;
                 if (!element.value.trim()) {
                     if (mostrarErrores) {
@@ -3266,8 +3275,10 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                             this.style.border = ''; 
                             this.style.backgroundColor = ''; 
                         }, {once: true});
+                        if (!primerCampoInvalido) primerCampoInvalido = element;
                     }
                     esValido = false;
+                    if (motivo && !motivos.includes(motivo)) motivos.push(motivo);
                 } else {
                     if (mostrarErrores) { element.style.border = ''; element.style.backgroundColor = ''; }
                 }
@@ -3275,7 +3286,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
             // 1. Validar Competencias (Habilidades)
             const skillCards = document.querySelectorAll('.skill-item');
-            if (skillCards.length === 0) esValido = false;
+            if (skillCards.length === 0) { esValido = false; motivos.push('Competencias: agrega al menos una de cada tipo (Tecnológica, Lingüística y Habilidades Blandas)'); }
             
             let hasTech = false, hasLang = false, hasSoft = false;
             skillCards.forEach(card => {
@@ -3283,27 +3294,29 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 const nomInp = card.querySelector('.skill-nombre');
                 const nivSel = card.querySelector('.skill-nivel');
                 
-                checkField(tipoSel); checkField(nomInp); checkField(nivSel);
+                checkField(tipoSel, 'Competencias: completa todos los campos de cada tarjeta');
+                checkField(nomInp, 'Competencias: completa todos los campos de cada tarjeta');
+                checkField(nivSel, 'Competencias: completa todos los campos de cada tarjeta');
                 
                 if (tipoSel.value === 'CTecnologica') hasTech = true;
                 if (tipoSel.value === 'CLinguistica') hasLang = true;
                 if (tipoSel.value === 'CHBlandas') hasSoft = true;
             });
-            if (!hasTech || !hasLang || !hasSoft) esValido = false;
+            if (!hasTech || !hasLang || !hasSoft) { esValido = false; motivos.push('Competencias: falta agregar una tarjeta de tipo Tecnológica, Lingüística o Habilidades Blandas (se requieren las 3)'); }
 
             // 2. Validar Educación (Grados)
             const eduCards = document.querySelectorAll('.ai-edu-record');
-            if (eduCards.length === 0) esValido = false;
+            if (eduCards.length === 0) { esValido = false; motivos.push('Educación: agrega al menos un grado académico'); }
             
             let hasMaster = false;
             let hasDoctorate = false;
 
             eduCards.forEach(card => {
-                checkField(card.querySelector('.ai-rama'));
-                checkField(card.querySelector('.ai-institucion'));
-                checkField(card.querySelector('.ai-ubicacion'));
-                checkField(card.querySelector('.ai-inicio'));
-                checkField(card.querySelector('.ai-fin'));
+                checkField(card.querySelector('.ai-rama'), 'Educación: completa todos los campos de cada grado');
+                checkField(card.querySelector('.ai-institucion'), 'Educación: completa todos los campos de cada grado');
+                checkField(card.querySelector('.ai-ubicacion'), 'Educación: completa todos los campos de cada grado');
+                checkField(card.querySelector('.ai-inicio'), 'Educación: completa todos los campos de cada grado');
+                checkField(card.querySelector('.ai-fin'), 'Educación: completa todos los campos de cada grado');
                 
                 // Mapear los grados subidos en la validación final
                 let gradoStr = (card.dataset.grado || "").toLowerCase();
@@ -3315,28 +3328,49 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             const reqDocs = window.docsSolicitadosGlobal || "";
             const pideDoctorado = reqDocs.includes("Especialmente Doctorado");
 
-            if (pideDoctorado && !hasDoctorate) esValido = false;
-            if (!pideDoctorado && !hasMaster && !hasDoctorate) esValido = false;
+            if (pideDoctorado && !hasDoctorate) { esValido = false; motivos.push('Educación: este curso requiere que registres un grado de Doctorado'); }
+            if (!pideDoctorado && !hasMaster && !hasDoctorate) { esValido = false; motivos.push('Educación: se requiere registrar al menos un grado de Máster o Doctorado (Bachelor solo no es suficiente)'); }
 
             // 3. Validar Experiencia Laboral
             const expCards = document.querySelectorAll('.exp-item');
-            if (expCards.length === 0) esValido = false;
+            if (expCards.length === 0) { esValido = false; motivos.push('Experiencia: agrega al menos una experiencia laboral'); }
             expCards.forEach(card => {
-                checkField(card.querySelector('.exp-empresa'));
-                checkField(card.querySelector('.exp-cargo'));
-                checkField(card.querySelector('.exp-area'));
-                checkField(card.querySelector('.exp-direccion'));
-                checkField(card.querySelector('.exp-inicio'));
+                checkField(card.querySelector('.exp-empresa'), 'Experiencia: completa Empresa, Cargo, Dirección e Inicio de cada experiencia');
+                checkField(card.querySelector('.exp-cargo'), 'Experiencia: completa Empresa, Cargo, Dirección e Inicio de cada experiencia');
+                checkField(card.querySelector('.exp-direccion'), 'Experiencia: completa Empresa, Cargo, Dirección e Inicio de cada experiencia');
+                checkField(card.querySelector('.exp-inicio'), 'Experiencia: completa Empresa, Cargo, Dirección e Inicio de cada experiencia');
+
+                // "Área de enseñanza" solo es obligatoria cuando el Tipo de Experiencia
+                // es "Academic or Education" — el propio campo dice "*Solo si enseñó".
+                const areaField = card.querySelector('.exp-area');
+                const tipoSel = card.querySelector('.exp-tipo');
+                const esExperienciaAcademica = tipoSel && tipoSel.value === 'Academic or Education';
+                if (esExperienciaAcademica) {
+                    checkField(areaField, 'Experiencia: indica el Área de enseñanza en tus experiencias académicas');
+                } else if (areaField) {
+                    areaField.style.border = '';
+                    areaField.style.backgroundColor = '';
+                }
                 
                 const isActualidad = card.querySelector('.actualidad-check').checked;
                 if (!isActualidad) {
-                    checkField(card.querySelector('.exp-fin'));
+                    checkField(card.querySelector('.exp-fin'), 'Experiencia: indica la fecha de Culminación o marca "Actualidad"');
                 } else {
                     // Si está en actualidad, le quitamos el error al input fin por si lo tenía
                     card.querySelector('.exp-fin').style.border = '';
                     card.querySelector('.exp-fin').style.backgroundColor = '';
                 }
             });
+
+            // Guardamos el detalle para quien quiera mostrar un mensaje específico
+            // (ver uso en el armado del toast de "Guardar Avance").
+            window.paso6Motivos = motivos;
+            window.paso6PrimerCampoInvalido = primerCampoInvalido;
+
+            if (mostrarErrores && primerCampoInvalido) {
+                primerCampoInvalido.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                primerCampoInvalido.focus({ preventScroll: true });
+            }
 
             return esValido;
         }
