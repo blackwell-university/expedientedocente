@@ -182,7 +182,7 @@
         
         /* Borde izquierdo de color para identificar el tipo o estado */
         .card-accent { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--border-color); }
-        .accent-blue { background: #3b82f6; } .accent-orange { background: #f97316; } .accent-green { background: #10b981; } .accent-purple { background: #8b5cf6; }
+        .accent-blue { background: #3b82f6; } .accent-orange { background: #f97316; } .accent-green { background: #10b981; } .accent-purple { background: #8b5cf6; } .accent-red { background: #ef4444; }
 
         .card-header-flex { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;}
         .card-icon { width: 46px; height: 46px; border-radius: 14px; background: #f1f5f9; color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;}
@@ -193,6 +193,7 @@
         .status-firmar { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;}
         .status-completado { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0;}
         .status-proceso { background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff;}
+        .status-cancelado { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca;}
 
         /* Textos específicos */
         .t-type { font-size: 0.75rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
@@ -534,6 +535,7 @@
                 const estadoLower = exp.estado.toLowerCase();
 
                 let esInfoModal = false;
+                let esCanceladoModal = false;
 
                 // Reglas UX para Expedientes
                 if (estadoLower === 'pendiente' || estadoLower === 'en proceso' ||  estadoLower === 'enviado') {
@@ -553,6 +555,11 @@
                     badgeClass = 'status-proceso'; icon = 'manage_search'; color = '#7e22ce';
                     actionText = 'Ver estado'; actionLink = 'javascript:void(0)'; accentClass = 'accent-purple';
                     esInfoModal = true;
+                } else if (estadoLower === 'cancelado') {
+                    estadoVisual = 'Cancelado';
+                    badgeClass = 'status-cancelado'; icon = 'cancel'; color = '#b91c1c';
+                    actionText = 'Ver detalle'; actionLink = 'javascript:void(0)'; accentClass = 'accent-red';
+                    esCanceladoModal = true;
                 } else {
                     estadoVisual = 'Completado';
                     badgeClass = 'status-completado'; icon = 'verified_user'; color = '#16a34a'; 
@@ -572,7 +579,7 @@
 
                 html += `
                 <div class="col-md-6 col-xl-4">
-                    <a href="${invitacionPendiente ? 'registroinvitacion.html?inv=' + exp.idInvitacion : actionLink}" class="tramite-card" ${(!invitacionPendiente && esInfoModal) ? `onclick="mostrarModalEnRevision('${(exp.estadoReal||'').replace(/'/g, "\\'")}'); return false;"` : ''}>
+                    <a href="${invitacionPendiente ? 'registroinvitacion.html?inv=' + exp.idInvitacion : actionLink}" class="tramite-card" ${(!invitacionPendiente && esInfoModal) ? `onclick="mostrarModalEnRevision('${(exp.estadoReal||'').replace(/'/g, "\\'")}'); return false;"` : ''} ${(!invitacionPendiente && esCanceladoModal) ? `onclick="mostrarModalCancelado(); return false;"` : ''}>
                         <div class="card-accent ${accentClass}"></div>
                         <div class="card-header-flex">
                             <div class="card-icon"><span class="material-symbols-rounded">folder_shared</span></div>
@@ -613,6 +620,16 @@
                 html: `Ya completaste y enviaste tu información. La universidad la está revisando internamente en este momento.<br><br>Te notificaremos por correo cuando tu contrato esté listo para firmar.`,
                 confirmButtonText: 'Entendido',
                 confirmButtonColor: '#16a34a'
+            });
+        }
+
+        function mostrarModalCancelado() {
+            Swal.fire({
+                icon: 'info',
+                title: 'Proceso finalizado',
+                html: `Tu proceso de contratación con Blackwell Global University ha sido finalizado en esta oportunidad.<br><br>Gracias por el tiempo dedicado durante el proceso.`,
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#b91c1c'
             });
         }
 

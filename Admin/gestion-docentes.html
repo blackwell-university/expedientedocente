@@ -6,7 +6,7 @@
         const userRole = localStorage.getItem('userRole');
         
         const rolesPermitidos = [
-            'Administrativo', 'Administrador', 'Ejecutivo Licenciamiento', 
+            'Administrativo', 'Administrador', 'ADMIN', 'Ejecutivo Licenciamiento', 
             'Asesora Academica', 'Ejecutiva Credenciales'
         ];
         
@@ -358,7 +358,7 @@
             <div class="avatar" id="userInitial">AD</div>
             <div class="user-meta">
                 <b id="userName">Admin User</b>
-                <span id="userRoleLabel">Administrador</span>
+                <span id="userRoleLabel">ADMIN</span>
             </div>
         </div>
 
@@ -673,7 +673,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             const name = localStorage.getItem('userName') || "Admin";
-            const rol = localStorage.getItem('userRole') || "Administrador";
+            const rol = localStorage.getItem('userRole') || "ADMIN";
             document.getElementById('userName').innerText = name;
             document.getElementById('userRoleLabel').innerText = rol;
             document.getElementById('userInitial').innerText = name.trim().substring(0, 2).toUpperCase();

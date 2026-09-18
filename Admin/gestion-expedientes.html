@@ -6,7 +6,7 @@
         const userRole = localStorage.getItem('userRole');
         
         const rolesPermitidos = [
-            'Administrativo', 'Administrador', 'Ejecutivo Licenciamiento', 
+            'Administrativo', 'Administrador', 'ADMIN', 'Ejecutivo Licenciamiento', 
             'Asesora Academica', 'Ejecutiva Credenciales'
         ];
         
@@ -85,6 +85,7 @@
         /* Estados */
         .badge-status { padding: 6px 14px 6px 10px; border-radius: 50px; font-weight: 700; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.3px; display: inline-flex; align-items: center; gap: 6px;}
         .status-Pendiente { background: #fffbeb; color: #b45309; }
+        .status-EnProceso { background: #eff6ff; color: #1d4ed8; }
         .status-Completado { background: #eff6ff; color: #1d4ed8; }
         .status-Aprobado { background: #f0fdf4; color: #15803d; }
         .status-Rechazado { background: #fef2f2; color: #b91c1c; }
@@ -167,7 +168,7 @@
         </a>
         <div class="user-preview">
             <div class="avatar" id="userInitial">AD</div>
-            <div class="user-meta"><b id="userName">Admin User</b><span id="userRoleLabel">Administrador</span></div>
+            <div class="user-meta"><b id="userName">Admin User</b><span id="userRoleLabel">ADMIN</span></div>
         </div>
         <ul class="nav-list">
             <li><a href="administrativo.html" class="nav-link "><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
@@ -224,10 +225,15 @@
                             <label class="form-label-sm" id="labelFiltroEstado">Estado de Expediente</label>
                             <select id="filterStatus" class="form-select input-filter" style="cursor: pointer;">
                                 <option value="Todos">Todos los estados</option>
-                                <option value="Pendiente">Pendiente (Sin completar)</option>
-                                <option value="Completado">Completado (Listo para revisar)</option>
-                                <option value="Aprobado">Aprobado</option>
-                                <option value="Rechazado">Rechazado</option>
+                                <option value="Por enviar">Por enviar</option>
+                                <option value="En proceso">En proceso (Docente completando)</option>
+                                <option value="Recibido">Recibido</option>
+                                <option value="En revisión">En revisión</option>
+                                <option value="Pendiente firma directores">Por contratar</option>
+                                <option value="Contrato enviado">Contrato enviado</option>
+                                <option value="Firmado por Docente">Firmado (Docente)</option>
+                                <option value="Contratado">Contratado</option>
+                                <option value="Cancelado">Cancelado</option>
                             </select>
                         </div>
                         <div class="col-md-3">
@@ -355,7 +361,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             const name = localStorage.getItem('userName') || "Admin";
-            const rol = localStorage.getItem('userRole') || "Administrador";
+            const rol = localStorage.getItem('userRole') || "ADMIN";
             document.getElementById('userName').innerText = name;
             document.getElementById('userRoleLabel').innerText = rol;
             document.getElementById('userInitial').innerText = name.trim().substring(0, 2).toUpperCase();
@@ -383,10 +389,15 @@
                 labelEstado.innerText = 'Estado de Expediente';
                 filterStatus.innerHTML = `
                     <option value="Todos">Todos los estados</option>
-                    <option value="Pendiente">Pendiente (Sin completar)</option>
-                    <option value="Completado">Completado (Listo para revisar)</option>
-                    <option value="Aprobado">Aprobado</option>
-                    <option value="Rechazado">Rechazado</option>`;
+                    <option value="Por enviar">Por enviar</option>
+                    <option value="En proceso">En proceso (Docente completando)</option>
+                    <option value="Recibido">Recibido</option>
+                    <option value="En revisión">En revisión</option>
+                    <option value="Pendiente firma directores">Por contratar</option>
+                    <option value="Contrato enviado">Contrato enviado</option>
+                    <option value="Firmado por Docente">Firmado (Docente)</option>
+                    <option value="Contratado">Contratado</option>
+                    <option value="Cancelado">Cancelado</option>`;
             } else {
                 labelTexto.innerText = 'Buscar por Docente, Curso o ID Invitación';
                 labelEstado.innerText = 'Estado de Invitación';
@@ -473,6 +484,27 @@
             return '';
         }
 
+        // Traduce el valor real de estado de Expediente a lo que ve la Ejecutiva/Administrativo:
+        // etiqueta amigable + clase CSS (evita el bug de clases con espacios en el nombre)
+        function traducirEstadoExpediente(estadoReal) {
+            const e = String(estadoReal || '').trim();
+            const mapa = {
+                '':                             { label: 'Por enviar',  clase: 'status-Pendiente', icon: 'fa-clock' },
+                'Por enviar':                   { label: 'Por enviar',  clase: 'status-Pendiente', icon: 'fa-clock' },
+                'Enviado':                      { label: 'Enviado',     clase: 'status-Pendiente', icon: 'fa-paper-plane' },
+                'En proceso':                   { label: 'En proceso',  clase: 'status-EnProceso', icon: 'fa-spinner' },
+                'Recibido':                     { label: 'Recibido',    clase: 'status-EnProceso', icon: 'fa-inbox' },
+                'En revisión':                  { label: 'En revisión', clase: 'status-EnProceso', icon: 'fa-magnifying-glass' },
+                'Verificado':                   { label: 'Verificado',  clase: 'status-EnProceso', icon: 'fa-check' },
+                'Pendiente firma directores':   { label: 'Por contratar',       clase: 'status-Aprobado', icon: 'fa-user-tie' },
+                'Contrato enviado':             { label: 'Contrato enviado',    clase: 'status-Aprobado', icon: 'fa-hourglass-half' },
+                'Firmado por Docente':          { label: 'Firmado (Docente)',   clase: 'status-Aprobado', icon: 'fa-signature' },
+                'Contratado':                   { label: 'Contratado',          clase: 'status-Aprobado', icon: 'fa-check-double' },
+                'Cancelado':                    { label: 'Cancelado',   clase: 'status-Rechazado', icon: 'fa-ban' }
+            };
+            return mapa[e] || { label: e || 'Sin estado', clase: 'status-Pendiente', icon: 'fa-circle-question' };
+        }
+
         function formatCustomDate(dateString) {
             if(!dateString) return '-';
             const d = new Date(dateString);
@@ -519,7 +551,7 @@
                         </div>
                     </td>
                     <td>${vigenciaHtml}</td>
-                    <td><span class="badge-status status-${exp.estado}">${getIconForStatus(exp.estado)} ${exp.estado}</span></td>
+                    <td>${(() => { const info = traducirEstadoExpediente(exp.estado); return `<span class="badge-status ${info.clase}"><i class="fa-solid ${info.icon}"></i> ${info.label}</span>`; })()}</td>
                     <td class="text-center">
                         <a href="${linkHref}" class="btn-revisar-link">
                             <i class="fa-regular fa-folder-open"></i> Revisar

@@ -204,7 +204,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 const response = await res.json();
                 
                 if (response.status === 'success') {
-                    const estadosPermitidos = ["por contratar", "firmado", "contrato enviado", "contratado"];
+                    const estadosPermitidos = ["pendiente firma directores", "firmado por docente", "contrato enviado", "contratado"];
                     expedientesGlobal = response.data.filter(exp => 
                         estadosPermitidos.includes(exp.estado.toLowerCase())
                     );
@@ -217,6 +217,17 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             }
         }
 
+        function traducirEstadoDirector(estadoReal) {
+            const e = String(estadoReal || '').toLowerCase();
+            if (e === 'pendiente firma directores' || e === 'firmado por docente' || e === 'contrato enviado') {
+                return { label: 'Por contratar', filtro: 'POR CONTRATAR', clase: 'status-por-contratar' };
+            }
+            if (e === 'contratado') {
+                return { label: 'Contratado', filtro: 'CONTRATADO', clase: 'status-contratado' };
+            }
+            return { label: estadoReal, filtro: e.toUpperCase(), clase: 'status-por-contratar' };
+        }
+
         function renderTabla(lista) {
             const tbody = document.getElementById('tablaExpedientesBody');
             if (lista.length === 0) {
@@ -226,14 +237,13 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
             let html = "";
             lista.forEach(exp => {
-                let badgeClass = "status-por-contratar";
-                if(exp.estado.toLowerCase() === "contratado") badgeClass = "status-contratado";
+                const info = traducirEstadoDirector(exp.estado);
 
                 const fInicio = exp.fechaInicio ? formatearFecha(exp.fechaInicio) : "Por definir";
                 const fFin = exp.fechaFin ? formatearFecha(exp.fechaFin) : "Por definir";
                 const fActualizacion = exp.fechaCreacion ? formatearFecha(exp.fechaCreacion) : "—";
 
-                html += `<tr class="exp-row" data-search="${exp.nombreDocente.toLowerCase()} ${exp.idExpediente.toLowerCase()}" data-estado="${exp.estado.toUpperCase()}">
+                html += `<tr class="exp-row" data-search="${exp.nombreDocente.toLowerCase()} ${exp.idExpediente.toLowerCase()}" data-estado="${info.filtro}">
                     <td>
                         <div class="fw-bold text-dark">${exp.nombreDocente}</div>
                         <div class="text-muted small">ID: ${exp.docenteId}</div>
@@ -248,11 +258,11 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         <div class="text-secondary fw-medium"><i class="fa-regular fa-calendar me-1"></i> ${fActualizacion}</div>
                     </td>
                     <td>
-                        <span class="badge-status ${badgeClass}">${exp.estado}</span>
+                        <span class="badge-status ${info.clase}">${info.label}</span>
                     </td>
                     <td>
-                        <a href="director-detalle.html?expId=${exp.idExpediente}" class="btn-firmar">
-                            <i class="fa-solid fa-signature"></i> Revisar y Firmar
+                        <a href="director-detalle.html?docenteId=${exp.docenteId}" class="btn-firmar">
+                            <i class="fa-regular fa-folder-open"></i> Ver docente
                         </a>
                     </td>
                 </tr>`;

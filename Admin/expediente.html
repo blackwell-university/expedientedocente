@@ -6,7 +6,7 @@
         const userRole = localStorage.getItem('userRole');
         
         const rolesPermitidos = [
-            'Administrativo', 'Administrador', 'Ejecutivo Licenciamiento', 
+            'Administrativo', 'Administrador', 'ADMIN', 'Ejecutivo Licenciamiento', 
             'Asesora Academica', 'Ejecutiva Credenciales'
         ];
         
@@ -636,7 +636,7 @@
         </a>
         <div class="user-preview">
             <div class="avatar" id="userInitial">AD</div>
-            <div class="user-meta"><b id="userName">Admin User</b><span id="userRoleLabel">Administrador</span></div>
+            <div class="user-meta"><b id="userName">Admin User</b><span id="userRoleLabel">ADMIN</span></div>
         </div>
         <ul class="nav-list">
             <li><a href="administrativo.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
@@ -682,10 +682,10 @@
                         <h1 id="det-nombre-curso">Cargando Expediente...</h1>
                         <p id="det-subtitle">Obteniendo datos...</p>
                     </div>
-                    <!-- Dropdown para cambiar el estado manualmente -->
+                    <!-- Dropdown para cambiar el estado manualmente (solo Administrador/ADMIN) -->
                     <div id="status-badge-container" class="d-flex align-items-center gap-2">
                         <span id="badge-estado-actual" class="badge text-white px-3 py-2 shadow-sm" style="border-radius: 20px; font-size: 0.85rem; background: #64748b;">Estado: Cargando...</span>
-                        <div class="dropdown">
+                        <div class="dropdown" id="moverEtapaWrapper" style="display:none;">
                             <button class="btn btn-sm btn-outline-secondary dropdown-toggle bg-white" style="border-radius: 20px; font-weight: 600;" type="button" data-bs-toggle="dropdown">
                                 Mover Etapa
                             </button>
@@ -698,17 +698,35 @@
                                 <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('En revisión')">En revisión</a></li>
                                 <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('Verificado')">Verificado</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><h6 class="dropdown-header text-primary fw-bold">3. Evaluación</h6></li>
-                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('Por evaluar')">Por evaluar</a></li>
-                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('En evaluación')">En evaluación</a></li>
-                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('Evaluado')">Evaluado (Check)</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><h6 class="dropdown-header text-primary fw-bold">4. Contratación</h6></li>
-                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('Por contratar')">Por contratar</a></li>
-                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('Firmado')">Firmado</a></li>
+                                <li><h6 class="dropdown-header text-primary fw-bold">3. Contratación</h6></li>
+                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('Pendiente firma directores')">Por contratar</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('Firmado por Docente')">Firmado</a></li>
                                 <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('Contrato enviado')">Contrato enviado</a></li>
                                 <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('Contratado')">Contratado</a></li>
                             </ul>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-danger" id="btnAbrirCancelarExpediente" style="border-radius: 20px; font-weight: 600; display:none;" onclick="abrirModalCancelarExpediente()">
+                            <i class="fa-solid fa-ban"></i> Cancelar expediente
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modal: Cancelar Expediente -->
+                <div class="modal fade" id="modalCancelarExpediente" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content" style="border-radius: 16px; border:none;">
+                            <div class="modal-header border-0">
+                                <h5 class="modal-title fw-bold"><i class="fa-solid fa-triangle-exclamation text-danger me-2"></i>Cancelar Expediente</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p class="text-muted" style="font-size:0.9rem;">Esta acción es <b>irreversible</b>. El expediente quedará marcado como Cancelado y se notificará al docente por correo. Indica el motivo:</p>
+                                <textarea id="motivoCancelarExpediente" class="form-control" rows="4" placeholder="Motivo de la cancelación..."></textarea>
+                            </div>
+                            <div class="modal-footer border-0">
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Volver</button>
+                                <button type="button" class="btn btn-danger" onclick="confirmarCancelarExpediente()">Confirmar Cancelación</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -719,8 +737,8 @@
                     <div class="pipeline-stages" id="pipeline-container">
                         <div class="stage-step step-gray" id="stage-1">1. Recopilación</div>
                         <div class="stage-step step-gray" id="stage-2">2. Revisión</div>
-                        <div class="stage-step step-gray" id="stage-3">3. Evaluación</div>
-                        <div class="stage-step step-gray" id="stage-4">4. Contratación</div>
+                        <div class="stage-step step-gray" id="stage-3">3. Contratación</div>
+                        <div class="stage-step step-gray" id="stage-4">4. Firma Final</div>
                     </div>
                 </div>
 
@@ -1885,10 +1903,17 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             const name = localStorage.getItem('userName') || "Admin";
-            const rol = localStorage.getItem('userRole') || "Administrador";
+            const rol = localStorage.getItem('userRole') || "ADMIN";
             document.getElementById('userName').innerText = name;
             document.getElementById('userRoleLabel').innerText = rol;
             document.getElementById('userInitial').innerText = name.trim().substring(0, 2).toUpperCase();
+
+            const rolUpper = String(rol || "").toUpperCase();
+            const esAdmin = (rolUpper === 'ADMINISTRADOR' || rolUpper === 'ADMIN');
+            const esAdministrativo = (rolUpper === 'ADMINISTRATIVO');
+            document.getElementById('moverEtapaWrapper').style.display = esAdmin ? '' : 'none';
+            document.getElementById('btnAbrirCancelarExpediente').style.display = (esAdmin || esAdministrativo) ? '' : 'none';
+
             if(!expId) {
                 document.getElementById('det-nombre-curso').innerText = "Error: Faltan datos";
                 return;
@@ -1949,13 +1974,14 @@
                     const estadoExp = (exp.estado || '').trim();
                     
                     let bgBadge = '#ea580c';
-                    if(['Recibido', 'Verificado', 'Evaluado', 'Contratado', 'Firmado', 'Contrato enviado'].includes(estadoExp)) bgBadge = '#15803d';
-                    if(['En proceso', 'En revisión', 'En evaluación'].includes(estadoExp)) bgBadge = '#2563eb';
+                    if(['Recibido', 'Verificado', 'Contratado', 'Firmado por Docente', 'Contrato enviado', 'Pendiente firma directores'].includes(estadoExp)) bgBadge = '#15803d';
+                    if(['En proceso', 'En revisión'].includes(estadoExp)) bgBadge = '#2563eb';
+                    if(estadoExp === 'Cancelado') bgBadge = '#b91c1c';
                     
                     const badgeElement = document.getElementById('badge-estado-actual');
                     if(badgeElement) {
                         badgeElement.style.background = bgBadge;
-                        badgeElement.innerText = `Estado: ${estadoExp}`;
+                        badgeElement.innerText = `Estado: ${estadoExp === 'Pendiente firma directores' ? 'Por contratar' : estadoExp}`;
                     }
 
                     const stages = [
@@ -1971,15 +1997,13 @@
                     } else if (['En revisión', 'Verificado'].includes(estadoExp)) {
                         stages[0].classList.replace('step-gray', 'step-green');
                         stages[1].classList.replace('step-gray', 'step-yellow');
-                    } else if (['Por evaluar', 'En evaluación', 'Evaluado'].includes(estadoExp)) {
-                        stages[0].classList.replace('step-gray', 'step-green');
-                        stages[1].classList.replace('step-gray', 'step-green');
-                        stages[2].classList.replace('step-gray', 'step-red');
-                    } else if (['Por contratar', 'Firmado', 'Contrato enviado', 'Contratado'].includes(estadoExp)) {
+                    } else if (['Pendiente firma directores', 'Firmado por Docente', 'Contrato enviado', 'Contratado'].includes(estadoExp)) {
                         stages[0].classList.replace('step-gray', 'step-green');
                         stages[1].classList.replace('step-gray', 'step-green');
                         stages[2].classList.replace('step-gray', 'step-green');
                         stages[3].classList.replace('step-gray', estadoExp === 'Contratado' ? 'step-green' : 'step-yellow'); 
+                    } else if (estadoExp === 'Cancelado') {
+                        stages[0].classList.replace('step-gray', 'step-red');
                     }
 
                     renderBotonesDinamicos(estadoExp);
@@ -2231,6 +2255,35 @@
             }
         }
 
+        function abrirModalCancelarExpediente() {
+            document.getElementById('motivoCancelarExpediente').value = "";
+            new bootstrap.Modal(document.getElementById('modalCancelarExpediente')).show();
+        }
+
+        async function confirmarCancelarExpediente() {
+            const motivo = document.getElementById('motivoCancelarExpediente').value.trim();
+            if (!motivo) { showToast("Debes indicar el motivo de la cancelación.", "danger"); return; }
+            if (!confirm("Esta acción es irreversible. ¿Confirmas la cancelación del expediente?")) return;
+
+            showToast("Cancelando expediente...", "info");
+            try {
+                const res = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'cancelar_expediente', idExpediente: expId, motivo: motivo })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    bootstrap.Modal.getInstance(document.getElementById('modalCancelarExpediente')).hide();
+                    showToast("Expediente cancelado.", "success");
+                    cargarExpediente();
+                } else {
+                    showToast(data.message || "Error al cancelar el expediente", "danger");
+                }
+            } catch(e) {
+                showToast("Error de conexión", "danger");
+            }
+        }
+
         function mostrarErrorDatos() {
             document.getElementById('det-nombre-curso').innerText = `Expediente no encontrado`;
             document.getElementById('det-subtitle').innerText = `No se pudo obtener la información.`;
@@ -2286,53 +2339,6 @@
                     </div>
                 </div>
             </div>`;
-        }
-
-        async function iniciarFlujoEvaluacion() {
-            // Modal 1: Verificación
-            const res1 = await Swal.fire({
-                title: 'Verificación de Documentos',
-                html: '¿Confirma que ha revisado detalladamente y <b>aprueba</b> los documentos generados de este docente?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#2563eb', 
-                cancelButtonColor: '#64748b',
-                confirmButtonText: '<i class="fa-solid fa-check me-2"></i> Sí, documentos verificados',
-                cancelButtonText: 'Aún estoy revisando',
-                reverseButtons: true
-            });
-
-            if (res1.isConfirmed) {
-                showToast("Marcando expediente como Verificado...", "info");
-                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'update_expediente_status', id: expId, estado: 'Verificado' }) });
-                
-                // Modal 2: Enviar a Evaluación
-                const res2 = await Swal.fire({
-                    title: 'Derivar a Evaluación',
-                    html: 'El expediente ha sido verificado. ¿Desea enviarlo ahora al área de <b>Evaluación de Credenciales</b> (Sara)?',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#2563eb',
-                    cancelButtonColor: '#64748b',
-                    confirmButtonText: '<i class="fa-solid fa-paper-plane me-2"></i> Sí, derivar a evaluación',
-                    cancelButtonText: 'Enviar más tarde',
-                reverseButtons: true
-                });
-
-                if (res2.isConfirmed) {
-                    showToast("Enviando y asignando documentos...", "info");
-                    const resFinal = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'confirm_evaluation_approval', idExpediente: expId }) });
-                    const dataFinal = await resFinal.json();
-                    if(dataFinal.status === 'success') {
-                        showToast("Enviado a Evaluación exitosamente", "success");
-                        cargarExpediente();
-                    } else {
-                        showToast("Hubo un error al derivar.", "danger");
-                    }
-                } else {
-                    cargarExpediente();
-                }
-            }
         }
 
         // ==================== TRAZABILIDAD DE DOCUMENTOS ====================
@@ -2694,30 +2700,16 @@
                 }
             }
 
-            // ETAPA 2 (Revisión y avance directo a Firma de Docente)
+            // ETAPA 2 (Revisión y avance a Firma de Docente)
             if (['Recibido', 'En revisión', 'Verificado'].includes(estadoExp)) {
-                
-                // Botón principal: Enviar para firma al docente (Saltea evaluación)
-                html += `<button class="action-btn" style="background:#0284c7; color:white; border-color:#0284c7;" onclick="enviarContratoDocente()">
-                            <i class="fa-solid fa-pen-nib"></i> Enviar para firma (Docente)
-                         </button>`;
-
-                // Botón deshabilitado opcional de evaluaciones
-                html += `<button class="action-btn" style="opacity:0.5; cursor:not-allowed; background:#f59e0b; color:white; border-color:#f59e0b;" disabled title="El paso de evaluación está deshabilitado por el momento">
-                            <i class="fa-solid fa-share-from-square"></i> Enviar a Evaluaciones (Omitido)
-                         </button>`;
-            }
-
-            // ETAPA 3 (Evaluación - En desuso temporal)
-            if (['Por evaluar', 'En evaluación', 'Evaluado'].includes(estadoExp)) {
                 html += `<button class="action-btn" style="background:#0284c7; color:white; border-color:#0284c7;" onclick="enviarContratoDocente()">
                             <i class="fa-solid fa-pen-nib"></i> Enviar para firma (Docente)
                          </button>`;
             }
 
-            // ETAPA 4 (Contratación - Pipeline Secuencial de Firma)
-            if (['Por contratar', 'Contrato enviado', 'Firmado', 'Contratado'].includes(estadoExp)) {
-                if (estadoExp === 'Por contratar') {
+            // ETAPA 3/4 (Contratación - Pipeline Secuencial de Firma)
+            if (['Pendiente firma directores', 'Contrato enviado', 'Firmado por Docente', 'Contratado'].includes(estadoExp)) {
+                if (estadoExp === 'Pendiente firma directores') {
                     html += `<button class="action-btn" style="background:#0284c7; color:white; border-color:#0284c7;" onclick="enviarContratoDocente()">
                                 <i class="fa-solid fa-paper-plane"></i> Enviar para firma (Docente)
                              </button>`;
@@ -2725,7 +2717,7 @@
                     html += `<button class="action-btn" style="background:#64748b; color:white; border-color:#64748b;" disabled>
                                 <i class="fa-solid fa-hourglass-half"></i> Esperando firma del docente...
                              </button>`;
-                } else if (estadoExp === 'Firmado') {
+                } else if (estadoExp === 'Firmado por Docente') {
                     html += `<button class="action-btn" style="background:#1e3a8a; color:white; border-color:#1e3a8a;" onclick="enviarContratoDirectores()">
                                 <i class="fa-solid fa-user-tie"></i> Enviar contrato a directores
                              </button>`;
@@ -2736,40 +2728,13 @@
                 }
             }
 
-            toolbar.innerHTML = html;
-        }
-
-        async function confirmarEvaluacionAprobacion() {
-            const confirm = await Swal.fire({
-                title: '¿Confirmar Evaluación Académica?',
-                text: "Al confirmar, el expediente pasará formalmente a la fase de Contratación (Por contratar) para iniciar la formalización de sus documentos contractuales.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#2563eb',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: 'Sí, confirmar y avanzar',
-                cancelButtonText: 'Cancelar',
-                reverseButtons: true
-            });
-
-            if (confirm.isConfirmed) {
-                showToast("Procesando aprobación y notificando a directivos...", "info");
-                try {
-                    const res = await fetch(GAS_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'confirm_evaluation_approval', idExpediente: expId })
-                    });
-                    const result = await res.json();
-                    if(result.status === 'success') {
-                        showToast("Expediente derivado a Contratación exitosamente", "success");
-                        cargarExpediente();
-                    } else {
-                        showToast("Error al derivar el expediente.", "danger");
-                    }
-                } catch(e) {
-                    showToast("Error de conexión.", "danger");
-                }
+            if (estadoExp === 'Cancelado') {
+                html += `<button class="action-btn" style="background:#b91c1c; color:white; border-color:#b91c1c;" disabled>
+                            <i class="fa-solid fa-ban"></i> Expediente Cancelado
+                         </button>`;
             }
+
+            toolbar.innerHTML = html;
         }
 
         // ==================== MODAL DE ENVIAR NOTIFICACIÓN (real) ====================
@@ -3024,13 +2989,6 @@
         }
 
         // ==================== NUEVAS ACCIONES (STUBS) ====================
-        function subirInformeEvaluacion() {
-            showToast("Simulando subida de informe...", "info");
-            setTimeout(() => {
-                cambiarEstadoExpediente('Evaluado');
-            }, 1000);
-        }
-
         function enviarADirectivos() {
             showToast("Documentos enviados a directivos.", "success");
         }
