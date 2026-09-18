@@ -1211,15 +1211,17 @@
 
         // --- Estado para el modal de Editar Invitación ---
         let idInvitacionActual = "";
-        let estadoInvitacionActual = ""; // NUEVO: estado propio de la Invitación (no el del Expediente)
-        let ultimaInvitacionCargada = {}; // NUEVO: datos de la invitación para el gestor de horario
+        let estadoInvitacionActual = ""; 
+        let ultimaInvitacionCargada = {};
         let docenteNombreActual = "";
         let docenteCorreoActual = "";
         let catalogoCursosEdit = [];
-        let documentTrace = []; // { nombre, version, estado, asignadoA, fechaEnvio, fechaAprobacion, url }
+        let documentTrace = [];
         let pollingTraducciones = null;
 
         let perfilCompletoGlobal = null;
+
+        let urlCarpetaExpediente = "";
 
         function campoDato(label, valor) {
             const tieneValor = valor !== undefined && valor !== null && String(valor).trim() !== '';
@@ -1964,8 +1966,9 @@
                     const exp = response.expediente;
                     const d = response.docente;
                     const inv = response.invitacion;
-                    ultimaInvitacionCargada = inv; // NUEVO: para poder abrir el gestor de horario con estos datos
+                    ultimaInvitacionCargada = inv;
                     docId = d.id;
+                    urlCarpetaExpediente = exp.urlCarpeta || "";
 
                     idInvitacionActual = exp.idInvitacion || "";
                     docenteNombreActual = `${d.nombres || ''} ${d.apellidos || ''}`.trim();
@@ -2677,6 +2680,13 @@
 
             // 1. Botón global de notificaciones
             html += `<button class="action-btn" onclick="abrirModalNotificacion()"><i class="fa-solid fa-bell"></i> Enviar notificación</button>`;
+
+            // 2. Botón para abrir la carpeta de Drive en pestaña nueva
+            if (urlCarpetaExpediente) {
+                html += `<button type="button" class="action-btn" onclick="window.open('${urlCarpetaExpediente}', '_blank')" title="Abrir carpeta de Drive del expediente">
+                            <i class="fa-brands fa-google-drive text-success"></i> Carpeta Drive
+                         </button>`;
+            }
 
             // Verificamos si ya existen documentos generados en el expediente
             const tieneDocsGenerados = documentTrace.some(d => d.url && d.url.trim() !== "");

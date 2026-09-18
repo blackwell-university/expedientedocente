@@ -25,9 +25,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
-        /* FIX: SweetAlert2 por defecto cambia el height del <body> a "auto" al abrir
-           un Swal.fire(), lo que provoca que la página "salte" de scroll al abrir/cerrar
-           el modal. Esta regla es la solución oficial de la librería para desactivarlo. */
         body.swal2-height-auto { height: 100% !important; }
         html { font-size: 15px; }
         :root {
@@ -722,7 +719,7 @@
         
         const urlParams = new URLSearchParams(window.location.search);
         const invId = urlParams.get('invId') || urlParams.get('inv');
-        let ultimaInvitacionCargada = {}; // NUEVO: datos de la invitación para el gestor de horario
+        let ultimaInvitacionCargada = {};
         
         let docId = "";
         let docenteCorreoActual = "";
@@ -731,6 +728,7 @@
 
         let cursoActual = "", programaActual = "", docenteNombreActual = "";
         let franjasActual = "", clasesActual = "", pagoActual = "", idDocenteActual = "";
+        let urlCarpetaInvitacion = "";
 
         const DOCS_INVITACION = [
             "Letter of Appointment",
@@ -868,10 +866,7 @@
             }
         }
 
-        // ==================== GESTOR DE HORARIO (misma experiencia que registroinvitacion.html) ====================
-        // NUEVO: en vez de un formulario simple que solo agregaba una fecha sin respetar
-        // la cantidad de clases del curso, la ejecutiva usa el mismo calendario interactivo
-        // que usa el docente -- así el total de clases siempre cuadra con lo pactado.
+        // ==================== GESTOR DE HORARIO ====================
         let adminMaxClasses = 4;
         let adminAvailableSlots = [];
         let adminBookedSessions = [];
@@ -1143,7 +1138,8 @@
                 const inv = json.invitacion || {};
                 const doc = json.docente || {};
                 docsActuales = json.documentos || {};
-                ultimaInvitacionCargada = inv; // NUEVO: para poder abrir el gestor de horario con estos datos
+                ultimaInvitacionCargada = inv;
+                urlCarpetaInvitacion = inv.urlCarpeta || "";
 
                 Object.keys(docsActuales).forEach(nombreDoc => {
                     const d = docsActuales[nombreDoc];
@@ -1461,10 +1457,13 @@
 
             html += `<button class="action-btn" onclick="abrirModalNotificacion()"><i class="fa-regular fa-envelope"></i> Enviar correo</button>`;
 
-            // NUEVO: si la invitación nunca se envió al docente (sigue en "Guardado"/"Por enviar"),
-            // el docente NO la ve en misexpedientes.html (esa vista oculta a propósito todo lo que
-            // esté en "Guardado", por ser un borrador). Faltaba un botón real para enviarla — antes
-            // solo existía "Enviar correo" (una notificación libre, no la invitación formal).
+            // Botón para abrir la carpeta de Drive de la invitación en pestaña nueva
+            if (urlCarpetaInvitacion) {
+                html += `<button type="button" class="action-btn" onclick="window.open('${urlCarpetaInvitacion}', '_blank')" title="Abrir carpeta de Drive de la invitación">
+                            <i class="fa-brands fa-google-drive text-success"></i> Carpeta Drive
+                         </button>`;
+            }
+            
             if (['guardado', 'por enviar', ''].includes(estadoLower)) {
                 html += `<button class="action-btn action-btn-primary" onclick="confirmarEnviarInvitacionDocente()">
                             <i class="fa-solid fa-paper-plane"></i> Enviar Invitación al Docente
