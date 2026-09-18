@@ -127,22 +127,14 @@
         .pdf-expand-btn {
             margin-left: auto; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
             color: #fff; width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition);
+            display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transition: var(--transition);
         }
         .pdf-expand-btn:hover { background: rgba(255,255,255,0.3); }
         .pdf-expand-btn .material-symbols-rounded { font-size: 20px; }
-        .pdf-open-external-btn {
-            margin-left: 8px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
-            color: #fff; height: 34px; padding: 0 12px; border-radius: 10px; flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;
-            transition: var(--transition); font-size: 0.78rem; font-weight: 700; text-decoration: none;
-            white-space: nowrap;
-        }
-        .pdf-open-external-btn:hover { background: rgba(255,255,255,0.3); color: #fff; }
-        .pdf-open-external-btn .material-symbols-rounded { font-size: 18px; }
-        .pdf-open-external-btn .btn-open-label { display: none; }
+        .pdf-expand-btn .btn-expand-label { display: none; font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
         @media (max-width: 992px) {
-            .pdf-open-external-btn .btn-open-label { display: inline; }
+            .pdf-expand-btn { width: auto; padding: 0 14px; }
+            .pdf-expand-btn .btn-expand-label { display: inline; }
         }
         .pdf-container {
             flex: 1; width: 100%; background: white;
@@ -334,11 +326,8 @@
         <div class="pdf-panel">
             <div class="pdf-header-title">
                 <i class="fa-solid fa-file-pdf"></i> Vista previa del documento
-                <a href="#" class="pdf-open-external-btn" id="btnOpenExternal" onclick="abrirDocumentoExterno(event)" title="Abrir documento en una pestaña nueva (permite hacer zoom con más comodidad)">
-                    <span class="material-symbols-rounded">open_in_new</span><span class="btn-open-label">Abrir</span>
-                </a>
                 <button type="button" class="pdf-expand-btn" id="btnExpandPdf" onclick="togglePdfFullscreen()" title="Ver documento en pantalla completa">
-                    <span class="material-symbols-rounded">open_in_full</span>
+                    <span class="material-symbols-rounded">open_in_full</span><span class="btn-expand-label">Ampliar</span>
                 </button>
             </div>
             <div class="pdf-container">
@@ -372,7 +361,7 @@
                     <canvas id="signature-pad-canvas"></canvas>
                 </div>
                 <button type="button" class="btn-sign" id="btnSubmitSignature" onclick="ejecutarFirmaDocente()">
-                    <i class="fa-solid fa-file-signature"></i> Firmar Documento
+                    <i class="fa-solid fa-file-signature"></i> Generar y Firmar Documento
                 </button>
             </div>
         </div>
@@ -402,6 +391,8 @@
             if (btn) {
                 btn.title = isFull ? 'Cerrar vista ampliada' : 'Ver documento en pantalla completa';
                 btn.querySelector('.material-symbols-rounded').textContent = isFull ? 'close_fullscreen' : 'open_in_full';
+                const label = btn.querySelector('.btn-expand-label');
+                if (label) label.textContent = isFull ? 'Cerrar' : 'Ampliar';
             }
         }
 
@@ -616,7 +607,8 @@
                     <canvas id="signature-pad-canvas"></canvas>
                 </div>
                 <button type="button" class="btn-sign" id="btnSubmitSignature" onclick="ejecutarFirmaDocente()">
-                    <i class="fa-solid fa-file-signature"></i>Firmar Documentos</button>`;
+                    <i class="fa-solid fa-file-signature"></i> Firmar Todos los Documentos Pendientes
+                </button>`;
             inicializarSignaturePad();
         }
 
@@ -628,15 +620,6 @@
             } else {
                 document.getElementById('pdf-preview-frame').src = url;
             }
-        }
-
-        function abrirDocumentoExterno(e) {
-            if (e) e.preventDefault();
-            if (!selectedDocUrl) return;
-            // Abre el documento original en una pestaña nueva: fuera del recuadro
-            // pequeño del visor, el usuario puede hacer zoom con total comodidad
-            // usando los controles nativos de Google Docs / del navegador.
-            window.open(selectedDocUrl, '_blank', 'noopener');
         }
 
         async function ejecutarFirmaDocente() {
