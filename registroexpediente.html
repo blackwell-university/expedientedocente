@@ -12,12 +12,10 @@
             'Asesora Academica', 'Ejecutiva Credenciales'
         ];
 
-        // Inyectamos la clase de modo administrador de forma instantánea para evitar flickering
         if (modeParam === 'admin') {
             document.documentElement.classList.add('admin-mode');
         }
 
-        // Si es modo admin, permitimos el acceso a los roles administrativos autorizados
         if (isLoggedInHead !== 'true') {
             window.location.href = "index.html";
         } else if (modeParam === 'admin') {
@@ -2830,10 +2828,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                             }).then(() => {
                                 const modeParam = new URLSearchParams(window.location.search).get('mode');
                                 if (modeParam === 'admin') {
-                                    // Si es administrativo, lo devuelve directamente al expediente de origen
                                     window.location.href = `Admin/expediente.html?expId=${idExpedienteUrl}`;
                                 } else {
-                                    // Si es el docente, lo devuelve a su listado de expedientes
                                     window.location.href = "misexpedientes.html";
                                 }
                             });

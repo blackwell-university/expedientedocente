@@ -6,7 +6,7 @@
         const userRole = localStorage.getItem('userRole');
         
         const rolesPermitidos = [
-            'Administrativo', 'Administrador', 'ADMIN', 'Ejecutivo Licenciamiento', 
+            'Administrativo', 'Administrador', 'ADMIN', 'Ejecutiva Academica', 'Ejecutivo Licenciamiento', 
             'Asesora Academica', 'Ejecutiva Credenciales'
         ];
         
@@ -367,6 +367,7 @@
             <li><a href="gestion-docentes.html" class="nav-link active"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
             <li><a href="gestion-expedientes.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
             <li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Gestión Cursos</span></a></li>
+            <li id="navGestionUsuarios" style="display:none;"><a href="gestion-usuarios.html" class="nav-link"><i class="fa-solid fa-user-gear"></i> <span class="link-text">Gestión de Usuarios</span></a></li>
         </ul>
 
         <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;">
@@ -677,6 +678,12 @@
             document.getElementById('userName').innerText = name;
             document.getElementById('userRoleLabel').innerText = rol;
             document.getElementById('userInitial').innerText = name.trim().substring(0, 2).toUpperCase();
+
+            const rolUpperNav = String(rol || '').toUpperCase();
+            if (rolUpperNav === 'ADMINISTRADOR' || rolUpperNav === 'ADMIN') {
+                const navGU = document.getElementById('navGestionUsuarios');
+                if (navGU) navGU.style.display = '';
+            }
             
             // Verificar si hay mensaje de éxito pendiente desde registrodocente.html
             const toastMsg = sessionStorage.getItem('toastMessage');

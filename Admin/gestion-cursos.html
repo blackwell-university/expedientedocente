@@ -7,7 +7,7 @@
         
         const rolesPermitidos = [
             'Administrativo', 'Administrador', 'Ejecutivo Licenciamiento', 
-            'Asesora Academica', 'Ejecutiva Credenciales'
+            'Asesora Academica', 'Ejecutiva Credenciales', 'ADMIN'
         ];
         
         if (isLoggedIn !== 'true' || !rolesPermitidos.some(rol => userRole && userRole.toLowerCase() === rol.toLowerCase())) {

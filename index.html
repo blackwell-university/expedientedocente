@@ -20,7 +20,7 @@
                 window.location.href = "Admin/asesora-dashboard.html";
             } else if (roleUpper === 'E-LEARNING') {
                 window.location.href = "Admin/asesora-dashboard.html";
-            } else if (roleUpper === 'ADMINISTRATIVO' || roleUpper === 'ADMINISTRADOR' || roleUpper === 'ADMIN') {
+            } else if (roleUpper === 'ADMINISTRATIVO' || roleUpper === 'ADMINISTRADOR' || roleUpper === 'ADMIN' || roleUpper === 'EJECUTIVA ACADEMICA') {
                 window.location.href = "Admin/administrativo.html";
             }
         }
@@ -221,7 +221,8 @@
                     } else if (
                         rolAsignado === 'ADMINISTRATIVO' || 
                         rolAsignado === 'ADMINISTRADOR' ||
-                        rolAsignado === 'ADMIN'
+                        rolAsignado === 'ADMIN' ||
+                        rolAsignado === 'EJECUTIVA ACADEMICA'
                     ) {
                         // Guardamos el rol exacto para futuros permisos, pero todos van al mismo panel
                         localStorage.setItem('userRole', response.role);

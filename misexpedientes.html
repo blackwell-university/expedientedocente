@@ -457,9 +457,6 @@
                 let badgeClass, icon, color, actionText, actionLink, accentClass;
                 let estadoVisual = inv.estado;
                 const estadoLower = inv.estado.toLowerCase();
-                // Fuente de verdad de "¿ya eligió día/hora?" — no depende del Estado administrativo,
-                // así que aunque el Estado haya avanzado por error (ej. se envió a firma sin que el
-                // docente aceptara), esta bandera sigue reflejando la realidad.
                 const horarioOk = !!inv.horarioConfirmado;
 
                 // Reglas UX para Invitaciones
