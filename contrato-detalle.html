@@ -50,7 +50,7 @@
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; letter-spacing: -0.01em; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; letter-spacing: -0.01em; }
 
         /* --- TOP NAVIGATION (Escritorio) --- */
         .top-nav {
@@ -170,7 +170,8 @@
         .clear-btn { position: absolute; top: 10px; right: 10px; background: rgba(226, 232, 240, 0.8); border: none; padding: 5px 12px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: 0.2s; z-index: 5; }
         .clear-btn:hover { background: #cbd5e1; color: var(--primary-dark); }
 
-        .btn-sign { background-color: var(--primary-dark); color: white; width: 100%; padding: 16px; border-radius: 12px; font-weight: 700; border: none; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15); }
+        .btn-sign { background-color: var(--primary-dark); color: white; width: 100%; padding: 13px 20px; border-radius: 12px; font-weight: 700; border: none; font-size: 0.92rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15); }
+        .btn-sign .fa-file-signature { font-size: 0.9rem; }
         .btn-sign:hover { background-color: var(--primary); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(37, 99, 235, 0.2); }
 
         .doc-carousel { display: flex; align-items: center; gap: 10px; }
@@ -205,23 +206,30 @@
         /* RESPONSIVE */
         @media (max-width: 992px) {
             .nav-links-desktop { display: none; }
-            .split-wrapper { flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; height: auto; padding-bottom: calc(120px + env(safe-area-inset-bottom)); }
+            .split-wrapper { flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; height: auto; padding-bottom: calc(140px + env(safe-area-inset-bottom)); }
             .pdf-panel { width: 100%; height: 500px; padding: 1.5rem; }
             .form-panel { width: 100%; padding: 2rem 1.5rem; overflow-y: visible; box-shadow: none; border-radius: 24px 24px 0 0; margin-top: -20px; z-index: 20;}
             .top-nav { padding: 0 20px; }
             .bottom-nav { display: flex; } /* FIX: antes solo aparecía debajo de 768px, dejando un hueco sin menú entre 769px y 992px */
             .signature-wrapper { margin-bottom: 2rem; }
-            .btn-sign { margin-bottom: 1rem; }
+            /* FIX: el botón necesita un colchón amplio y FIJO (no solo el padding
+               del contenedor), porque el pill flotante inferior es "position: fixed"
+               y en móviles reales (Safari/Chrome con barra de direcciones dinámica)
+               100vh no coincide con el área visible real. Este margen garantiza
+               espacio libre debajo del botón sin importar esas variaciones. */
+            .btn-sign { margin-bottom: calc(90px + env(safe-area-inset-bottom)); }
             .firma-imagen-dropzone, .firma-imagen-preview-wrap { margin-bottom: 1.25rem; }
         }
         @media (max-width: 768px) {
             .top-nav { display: none !important; }
             .bottom-nav { display: flex; }
-            /* FIX: 80px quedaba casi exacto al alto del bottom-nav (68px + 14px = 82px),
-               sin margen de seguridad -> el pill flotante tapaba el botón "Firmar"
-               y el lienzo de firma en varios celulares. Ahora se deja más aire y se
-               suma env(safe-area-inset-bottom) para celulares con notch/home indicator. */
-            .split-wrapper { height: 100vh; -webkit-overflow-scrolling: touch; padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
+            /* FIX: se usa 100dvh (altura dinámica real del viewport) con 100vh como
+               respaldo para navegadores viejos. 100vh en móvil se calcula sobre el
+               viewport "máximo" (con la barra de direcciones oculta), por lo que en
+               muchos celulares el contenido de más abajo queda recortado fuera del
+               área realmente visible aunque el scroll interno "llegue" hasta ahí.
+               100dvh se ajusta al área visible real en cada momento. */
+            .split-wrapper { height: 100vh; height: 100dvh; -webkit-overflow-scrolling: touch; padding-bottom: calc(130px + env(safe-area-inset-bottom)); }
             .pdf-panel { height: 380px; }
         }
         @media (max-width: 480px) {
