@@ -77,13 +77,77 @@
         
         /* Tabla Limpia y Elegante */
         .table-corporate { margin-bottom: 0; width: 100%; border-collapse: separate; border-spacing: 0; }
-        .table-corporate thead th { background-color: white; color: #64748b; font-weight: 700; text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.08em; padding: 20px 24px; border-bottom: 2px solid #f1f5f9; border-top: none; white-space: nowrap;}
-        .table-corporate tbody td { padding: 18px 24px; color: #334155; border-bottom: 1px solid #f1f5f9; vertical-align: middle; font-size: 0.9rem;}
+        .table-corporate thead th { background-color: white; color: #64748b; font-weight: 700; text-transform: uppercase; font-size: 0.68rem; letter-spacing: 0.06em; padding: 14px 16px; border-bottom: 2px solid #f1f5f9; border-top: none; white-space: nowrap;}
+        .table-corporate tbody td { padding: 12px 16px; color: #334155; border-bottom: 1px solid #f1f5f9; vertical-align: middle; font-size: 0.85rem;}
         .table-corporate tbody tr { transition: background-color 0.2s; }
         .table-corporate tbody tr:hover { background-color: #f8fafc; }
         .table-corporate tbody tr:last-child td { border-bottom: none; }
 
-        .badge-programa { background: #f1f5f9; color: #475569; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; border: 1px solid #e2e8f0;}
+        .badge-programa { background: #f1f5f9; color: #64748b; padding: 5px 10px; border-radius: 8px; font-size: 0.72rem; font-weight: 500; border: 1px solid #e2e8f0; display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle;}
+
+        /* --- RESUMEN / ESTADÍSTICAS --- */
+        .stats-bar { display: flex; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
+        .stat-pill { background: white; border: 1px solid rgba(0,0,0,0.04); border-radius: 16px; padding: 14px 22px; display: flex; align-items: center; gap: 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.02); flex: 1; min-width: 180px; }
+        .stat-pill .stat-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+        .stat-pill .stat-num { font-weight: 800; font-size: 1.4rem; color: var(--primary-dark); line-height: 1.1; }
+        .stat-pill .stat-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
+
+        /* --- TABS TIPO PROGRAMA --- */
+        .tipo-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tipo-tab { background: white; border: 1px solid #e2e8f0; color: #64748b; font-weight: 700; font-size: 0.82rem; padding: 9px 18px; border-radius: 30px; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .tipo-tab:hover { border-color: #cbd5e1; background: #f8fafc; }
+        .tipo-tab.active { background: var(--primary-dark); border-color: var(--primary-dark); color: white; }
+        .tipo-tab .count-chip { background: rgba(0,0,0,0.08); padding: 1px 8px; border-radius: 20px; font-size: 0.7rem; }
+        .tipo-tab.active .count-chip { background: rgba(255,255,255,0.2); }
+
+        /* --- TARJETAS DE PROGRAMA --- */
+        .programas-section-title { font-weight: 800; font-size: 1rem; color: var(--text-main); margin: 22px 0 14px; display: flex; align-items: center; gap: 10px; }
+        .programas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 16px; margin-bottom: 8px; }
+        .programa-card { background: white; border: 1px solid rgba(0,0,0,0.04); border-radius: 18px; padding: 20px; box-shadow: 0 6px 20px rgba(0,0,0,0.03); transition: 0.2s; cursor: pointer; position: relative; overflow: hidden; }
+        .programa-card:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(0,0,0,0.07); border-color: rgba(37,99,235,0.15); }
+        .programa-card.filtro-activo { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+        .programa-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+        .programa-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0; }
+        .tipo-upgrade { background: #eff6ff; color: #2563eb; }
+        .tipo-master { background: #f5f3ff; color: #7e22ce; }
+        .tipo-doctorade { background: #fffbeb; color: #b45309; }
+        .badge-tipo { font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; padding: 4px 9px; border-radius: 6px; }
+        .programa-nombre { font-weight: 700; font-size: 0.94rem; color: var(--text-main); line-height: 1.3; margin-bottom: 4px; min-height: 2.4em; }
+        .programa-count { font-size: 0.78rem; color: var(--text-muted); font-weight: 600; margin-bottom: 14px; }
+        .programa-count b { color: var(--primary-dark); }
+        .asesora-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 14px; border-top: 1px dashed #e2e8f0; }
+        .asesora-info { display: flex; align-items: center; gap: 8px; min-width: 0; }
+        .asesora-avatar { width: 28px; height: 28px; border-radius: 50%; background: #dcfce7; color: #15803d; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.68rem; flex-shrink: 0; }
+        .asesora-avatar.sin-asignar { background: #f1f5f9; color: #94a3b8; }
+        .asesora-nombre { font-size: 0.8rem; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .asesora-nombre.sin-asignar { color: #94a3b8; font-weight: 600; font-style: italic; }
+        .btn-asignar-asesora { background: none; border: none; color: var(--primary); font-size: 0.85rem; padding: 4px 6px; border-radius: 6px; flex-shrink: 0; transition: 0.2s; }
+        .btn-asignar-asesora:hover { background: #eff6ff; }
+
+        /* --- BOTONES MINI (Sílabo en la tabla) --- */
+        .btn-icon-mini { width: 30px; height: 30px; border-radius: 8px; border: 1px solid #e2e8f0; background: white; color: #64748b; font-size: 0.78rem; display: inline-flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .btn-icon-mini:hover:not(:disabled) { background: #eff6ff; color: var(--primary); border-color: #bfdbfe; }
+        .btn-icon-mini:disabled { opacity: 0.35; cursor: not-allowed; }
+        .silabo-actions { display: inline-flex; gap: 4px; }
+
+        .asesora-badge-tabla { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600; color: var(--text-main); }
+        .asesora-badge-tabla .dot { width: 7px; height: 7px; border-radius: 50%; background: #15803d; flex-shrink: 0; }
+        .asesora-badge-tabla.sin-asignar { color: #94a3b8; font-style: italic; font-weight: 500; }
+        .asesora-badge-tabla.sin-asignar .dot { background: #cbd5e1; }
+
+        /* --- BARRA DE FILTROS (rediseñada, acorde al resto del sistema) --- */
+        .filter-section-cursos { background: white; border-radius: 16px; padding: 18px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.04); }
+        .search-wrap-cursos { position: relative; display: flex; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; transition: 0.2s; height: 44px; }
+        .search-wrap-cursos:focus-within { background: white; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37,99,235,0.1); }
+        .search-wrap-cursos i { color: #94a3b8; margin-left: 14px; font-size: 0.85rem; flex-shrink: 0; }
+        .search-input-cursos { border: none; background: transparent; padding: 0 14px; font-size: 0.88rem; flex: 1; outline: none; color: #1e293b; height: 100%; min-width: 0; }
+        .select-wrap-cursos { position: relative; }
+        .select-cursos { width: 100%; height: 44px; appearance: none; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 0 38px 0 16px; font-size: 0.88rem; color: #1e293b; transition: 0.2s; cursor: pointer; }
+        .select-cursos:focus { outline: none; background: white; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37,99,235,0.1); }
+        .select-caret { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.65rem; pointer-events: none; }
+        .btn-limpiar-cursos { width: 100%; height: 44px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; color: #64748b; font-weight: 600; font-size: 0.85rem; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-limpiar-cursos:hover { background: #eef2f7; border-color: #cbd5e1; color: #334155; }
+        .hint-busqueda-global { margin-top: 12px; font-size: 0.8rem; color: var(--primary); font-weight: 600; display: flex; align-items: center; gap: 6px; }
 
         /* Botones de acción minimalistas en tabla */
         .btn-action-table { background: transparent; border: none; color: #64748b; font-weight: 600; font-size: 0.85rem; padding: 8px 12px; border-radius: 8px; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
@@ -124,6 +188,13 @@
         .file-pill:hover { background: #eff6ff; color: var(--primary); border-color: #bfdbfe; }
         .file-pill span { text-overflow: ellipsis; overflow: hidden; }
 
+        /* --- SESIONES PROGRAMADAS (formato legible en el panel de materiales) --- */
+        .sesiones-lista { display: flex; flex-direction: column; gap: 4px; }
+        .sesion-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 10px; font-size: 0.78rem; }
+        .sesion-fecha { color: #334155; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+        .sesion-fecha i { color: var(--primary); font-size: 0.72rem; }
+        .sesion-hora { color: #64748b; font-weight: 600; white-space: nowrap; }
+
         /* --- ESTILOS RESPONSIVE MENÚ MÓVIL (Sincronizado con administrativo.html) --- */
         .sidebar-overlay {
             display: none; position: fixed; top: 0; left: 0; 
@@ -151,6 +222,9 @@
             
             .table-responsive { border-radius: 12px; }
             .offcanvas { width: 90vw; }
+            .stats-bar { flex-direction: column; }
+            .programas-grid { grid-template-columns: 1fr; }
+            .tipo-tabs { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; }
         }
     </style>
 </head>
@@ -217,42 +291,72 @@
                     <p class="mb-0">Administra la base de datos, tarifas y revisa los materiales de los docentes.</p>
                 </div>
 
-                <!-- FILTROS INTELIGENTES -->
-                <div class="row g-3 mb-4 align-items-center">
-                    <div class="col-md-5">
-                        <div class="position-relative">
-                            <span class="position-absolute top-50 translate-middle-y ms-3 text-muted"><i class="fa-solid fa-magnifying-glass"></i></span>
-                            <input type="text" id="searchInput" class="form-control input-modern ps-5" placeholder="Buscar curso o código..." oninput="filtrarCursos()">
-                        </div>
+                <!-- RESUMEN RÁPIDO -->
+                <div class="stats-bar">
+                    <div class="stat-pill">
+                        <div class="stat-icon" style="background:#eff6ff; color:#2563eb;"><i class="fa-solid fa-layer-group"></i></div>
+                        <div><div class="stat-num" id="statProgramas">—</div><div class="stat-label">Programas académicos</div></div>
                     </div>
-                    <div class="col-md-5">
-                        <select id="filterPrograma" class="form-select input-modern" onchange="filtrarCursos()">
-                            <option value="Todos">Todos los Programas</option>
-                            <!-- El JS llenará las opciones automáticamente -->
-                        </select>
+                    <div class="stat-pill">
+                        <div class="stat-icon" style="background:#f0fdf4; color:#15803d;"><i class="fa-solid fa-book-open"></i></div>
+                        <div><div class="stat-num" id="statCursos">—</div><div class="stat-label">Cursos en el catálogo</div></div>
                     </div>
-                    <div class="col-md-2">
-                        <button class="btn w-100 fw-semibold text-secondary" style="border-radius: 12px; height: 46px; border: 1px solid #e2e8f0; background: #f8fafc; transition: 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f8fafc'" onclick="resetFiltros()">
-                            <i class="fa-solid fa-eraser me-1"></i> Limpiar
-                        </button>
+                    <div class="stat-pill">
+                        <div class="stat-icon" style="background:#fef3c7; color:#b45309;"><i class="fa-solid fa-user-tie"></i></div>
+                        <div><div class="stat-num" id="statSinAsesora">—</div><div class="stat-label">Programas sin asesora</div></div>
                     </div>
                 </div>
 
+                <!-- TABS POR TIPO DE PROGRAMA -->
+                <div class="tipo-tabs" id="tipoTabs"></div>
+
+                <!-- TARJETAS DE PROGRAMAS -->
+                <div id="programasContainer"></div>
+
+                <!-- FILTROS INTELIGENTES -->
+                <div class="filter-section-cursos mb-4" style="margin-top: 8px;">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-5">
+                            <div class="search-wrap-cursos">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="searchInput" class="search-input-cursos" placeholder="Buscar en todo el catálogo por curso o código..." oninput="filtrarCursos()">
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="select-wrap-cursos">
+                                <select id="filterPrograma" class="select-cursos" onchange="filtrarCursos()">
+                                    <option value="Todos">Todos los Programas</option>
+                                    <!-- El JS llenará las opciones automáticamente -->
+                                </select>
+                                <i class="fa-solid fa-chevron-down select-caret"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn-limpiar-cursos" onclick="resetFiltros()">
+                                <i class="fa-solid fa-eraser"></i> Limpiar
+                            </button>
+                        </div>
+                    </div>
+                    <div id="hintBusquedaGlobal" class="hint-busqueda-global" style="display:none;"></div>
+                </div>
+
                 <!-- TABLA DE CURSOS -->
-                <div class="card-modern">
+                <div class="card-modern" id="tablaCursosAnchor">
                     <div class="table-responsive">
                         <table class="table-corporate w-100">
                             <thead>
                                 <tr>
-                                    <th style="width: 12%;">Código</th>
-                                    <th style="width: 38%;">Curso / Asignatura</th>
-                                    <th style="width: 25%;">Programa Académico</th>
-                                    <th style="width: 10%;">Tarifa base</th>
-                                    <th class="text-end" style="width: 15%;">Gestión</th>
+                                    <th style="width: 10%;">Código</th>
+                                    <th style="width: 32%;">Curso / Asignatura</th>
+                                    <th id="thPrograma" style="width: 18%;">Programa Académico</th>
+                                    <th style="width: 15%;">Asesora</th>
+                                    <th style="width: 9%;">Tarifa</th>
+                                    <th style="width: 7%;">Sílabo</th>
+                                    <th class="text-end" style="width: 9%;">Gestión</th>
                                 </tr>
                             </thead>
                             <tbody id="tabla-cursos">
-                                <tr><td colspan="5" class="text-center py-5"><i class="fa-solid fa-spinner fa-spin text-primary fs-3"></i></td></tr>
+                                <tr><td colspan="7" class="text-center py-5"><i class="fa-solid fa-spinner fa-spin text-primary fs-3"></i></td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -328,6 +432,14 @@
                                 <label class="label-aesthetic">Requisitos Académicos (Interno)</label>
                                 <textarea id="mod-req" class="form-control input-modern" rows="2" placeholder="Ej: Especialización en ciencias de la computación..."></textarea>
                             </div>
+
+                            <div class="col-12">
+                                <label class="label-aesthetic">Asesora Académica asignada</label>
+                                <select id="mod-asesora" class="form-select input-modern">
+                                    <option value="">Sin asesora asignada</option>
+                                </select>
+                                <div class="form-text" style="font-size: 0.75rem;">Esto sobreescribe la asesora solo para este curso. Para cambiarla en todo el programa, usa el botón desde la tarjeta del programa.</div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -346,6 +458,19 @@
         div:where(.swal2-container) div:where(.swal2-popup) { border-radius: 20px !important; font-family: 'Inter', sans-serif !important; border: 1px solid rgba(0,0,0,0.05) !important; padding: 24px !important; box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;}
         div:where(.swal2-container) button:where(.swal2-styled) { border-radius: 10px !important; font-weight: 600 !important; padding: 10px 24px !important;}
         div:where(.swal2-container) h2:where(.swal2-title) { font-size: 1.3rem !important; color: var(--primary-dark) !important; }
+
+        /* Modal "Asignar Asesora" — acorde al resto del sistema (misma paleta e inputs que el resto del panel) */
+        .swal-asesora-popup { width: 400px !important; text-align: left !important; }
+        .swal-asesora-popup .swal2-html-container { margin: 8px 0 0 !important; }
+        .swal-asesora-desc { font-size: 0.82rem; color: #64748b; margin: 0 0 2px; }
+        .swal-asesora-programa { font-size: 0.92rem; font-weight: 700; color: var(--primary-dark); margin: 0 0 18px; line-height: 1.3; }
+        .swal-asesora-label { display: block; font-size: 0.7rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+        .swal-asesora-select { width: 100%; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 14px; font-size: 0.85rem; color: #1e293b; font-family: 'Inter', sans-serif; }
+        .swal-asesora-select:focus { outline: none; background: white; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+        .swal-asesora-btn-confirm { background: var(--primary) !important; color: white !important; border-radius: 10px !important; font-weight: 700 !important; font-size: 0.85rem !important; padding: 10px 20px !important; border: none !important; }
+        .swal-asesora-btn-confirm:hover { background: var(--primary-dark) !important; }
+        .swal-asesora-btn-cancel { background: #f1f5f9 !important; color: #475569 !important; border-radius: 10px !important; font-weight: 700 !important; font-size: 0.85rem !important; padding: 10px 20px !important; border: none !important; }
+        .swal-asesora-btn-cancel:hover { background: #e2e8f0 !important; }
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -354,7 +479,10 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         
         let listaCursosGlobal = [];
         let cursosFiltrados = [];
-        
+        let listaAsesorasGlobal = [];
+        let tipoProgramaActivo = '';
+        let programaCardActivo = null; // {tipo, programa} de la tarjeta seleccionada, si aplica
+
         // Paginación
         let currentPage = 1;
         const rowsPerPage = 10;
@@ -362,6 +490,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         // Determinar permisos
         const userRoleApp = localStorage.getItem('userRole') || "";
         const esSoporte = userRoleApp.toLowerCase().includes("asesora") || userRoleApp.toLowerCase().includes("soporte");
+
+        const ICONOS_TIPO = { UPGRADE: 'fa-graduation-cap', MASTER: 'fa-user-graduate', DOCTORADE: 'fa-award' };
+        const CLASE_TIPO = { UPGRADE: 'tipo-upgrade', MASTER: 'tipo-master', DOCTORADE: 'tipo-doctorade' };
 
         function logout() { if(confirm("¿Cerrar sesión?")) { sessionStorage.clear(); localStorage.clear(); window.location.href = "../index.html"; } }
 
@@ -373,7 +504,27 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             document.getElementById('userInitial').innerText = name.trim().substring(0, 2).toUpperCase();
             
             cargarCursos();
+            cargarAsesoras();
         });
+
+        async function cargarAsesoras() {
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_usuarios_por_rol', rol: 'Asesora Academica' }) });
+                const json = await res.json();
+                if (json.status === 'success') listaAsesorasGlobal = json.data || [];
+            } catch (e) { /* silencioso: la asignación de asesoras no bloquea el resto de la página */ }
+        }
+
+        function nombreAsesora(username) {
+            if (!username) return '';
+            const a = listaAsesorasGlobal.find(x => x.username === username);
+            return a ? a.nombre : username;
+        }
+
+        function inicialesDe(nombre) {
+            const partes = String(nombre || '').trim().split(/\s+/);
+            return ((partes[0]?.[0] || '') + (partes[1]?.[0] || '')).toUpperCase() || '--';
+        }
 
         /* --- LÓGICA DE PAGINACIÓN Y RENDERIZADO --- */
         async function cargarCursos() {
@@ -383,20 +534,176 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 if(json.status === 'success') {
                     listaCursosGlobal = json.data;
                     cursosFiltrados = [...listaCursosGlobal];
+
+                    // Por defecto mostramos el primer tipo de programa disponible (ya no existe la pestaña "Todos",
+                    // para no abrumar con demasiadas tarjetas a la vez)
+                    const tiposDisponibles = [...new Set(listaCursosGlobal.map(c => c.tipoPrograma).filter(Boolean))];
+                    if (!tipoProgramaActivo || !tiposDisponibles.includes(tipoProgramaActivo)) {
+                        tipoProgramaActivo = tiposDisponibles[0] || '';
+                    }
+
                     poblarFiltroProgramas();
+                    renderTiposTabs();
+                    renderProgramCards();
+                    renderStats();
                     renderTablaPaginada();
                 }
             } catch(e) {
-                document.getElementById('tabla-cursos').innerHTML = '<tr><td colspan="5" class="text-center text-danger py-5"><i class="fa-solid fa-triangle-exclamation fs-3 mb-2"></i><br>Error de conexión.</td></tr>';
+                document.getElementById('tabla-cursos').innerHTML = '<tr><td colspan="7" class="text-center text-danger py-5"><i class="fa-solid fa-triangle-exclamation fs-3 mb-2"></i><br>Error de conexión.</td></tr>';
             }
         }
 
-        
+        // Agrupa los cursos por (tipoPrograma, programa) — la unidad "Programa académico" de las tarjetas
+        function agruparProgramas() {
+            const mapa = new Map();
+            listaCursosGlobal.forEach(c => {
+                const tipo = c.tipoPrograma || 'Otro';
+                const key = tipo + '||' + c.programa;
+                if (!mapa.has(key)) mapa.set(key, { tipo, programa: c.programa, cursos: [] });
+                mapa.get(key).cursos.push(c);
+            });
+            // Asesora "representativa" del programa: la más frecuente entre sus cursos
+            return [...mapa.values()].map(p => {
+                const conteoAsesoras = {};
+                p.cursos.forEach(c => { if (c.asesora) conteoAsesoras[c.asesora] = (conteoAsesoras[c.asesora] || 0) + 1; });
+                const entradas = Object.entries(conteoAsesoras).sort((a, b) => b[1] - a[1]);
+                p.asesora = entradas.length ? entradas[0][0] : '';
+                p.asesoraMixta = entradas.length > 1;
+                return p;
+            }).sort((a, b) => a.programa.localeCompare(b.programa));
+        }
+
+        function renderStats() {
+            const programas = agruparProgramas();
+            document.getElementById('statProgramas').innerText = programas.length;
+            document.getElementById('statCursos').innerText = listaCursosGlobal.length;
+            document.getElementById('statSinAsesora').innerText = programas.filter(p => !p.asesora).length;
+        }
+
+        function renderTiposTabs() {
+            const tipos = [...new Set(listaCursosGlobal.map(c => c.tipoPrograma).filter(Boolean))];
+            const cont = document.getElementById('tipoTabs');
+            let html = '';
+            tipos.forEach(t => {
+                const count = listaCursosGlobal.filter(c => c.tipoPrograma === t).length;
+                html += `<button class="tipo-tab ${tipoProgramaActivo === t ? 'active' : ''}" onclick="seleccionarTipoPrograma('${t}')"><i class="fa-solid ${ICONOS_TIPO[t] || 'fa-book'}"></i> ${t} <span class="count-chip">${count}</span></button>`;
+            });
+            cont.innerHTML = html;
+        }
+
+        function seleccionarTipoPrograma(tipo) {
+            tipoProgramaActivo = tipo;
+            programaCardActivo = null;
+            renderTiposTabs();
+            renderProgramCards();
+            poblarFiltroProgramas();
+            document.getElementById('filterPrograma').value = 'Todos';
+            filtrarCursos();
+        }
+
+        function renderProgramCards() {
+            const programas = agruparProgramas().filter(p => p.tipo === tipoProgramaActivo);
+            document.getElementById('programasContainer').innerHTML = `<div class="programas-grid">${programas.map(p => cardProgramaHtml(p)).join('')}</div>`;
+        }
+
+        function cardProgramaHtml(p) {
+            const activo = programaCardActivo && programaCardActivo.tipo === p.tipo && programaCardActivo.programa === p.programa;
+            const nombreAses = nombreAsesora(p.asesora);
+            const avatarHtml = p.asesora
+                ? `<div class="asesora-avatar">${inicialesDe(nombreAses)}</div>`
+                : `<div class="asesora-avatar sin-asignar"><i class="fa-solid fa-user-slash" style="font-size:0.7rem;"></i></div>`;
+            const nombreHtml = p.asesora
+                ? `<span class="asesora-nombre" title="${nombreAses}${p.asesoraMixta ? ' (y otras en este programa)' : ''}">${nombreAses}${p.asesoraMixta ? ' *' : ''}</span>`
+                : `<span class="asesora-nombre sin-asignar">Sin asesora</span>`;
+
+            return `
+            <div class="programa-card ${activo ? 'filtro-activo' : ''}" onclick="filtrarProgramaDesdeCard('${p.tipo}', '${p.programa.replace(/'/g, "\\'")}')">
+                <div class="programa-card-top">
+                    <div class="programa-icon ${CLASE_TIPO[p.tipo] || ''}"><i class="fa-solid ${ICONOS_TIPO[p.tipo] || 'fa-book'}"></i></div>
+                    <span class="badge-tipo ${CLASE_TIPO[p.tipo] || ''}">${p.tipo}</span>
+                </div>
+                <div class="programa-nombre" title="${p.programa}">${p.programa}</div>
+                <div class="programa-count"><b>${p.cursos.length}</b> curso${p.cursos.length !== 1 ? 's' : ''} en el catálogo</div>
+                <div class="asesora-row">
+                    <div class="asesora-info">${avatarHtml}${nombreHtml}</div>
+                    <button type="button" class="btn-asignar-asesora" title="Asignar/cambiar asesora de todo el programa" onclick="event.stopPropagation(); abrirAsignarAsesoraPrograma('${p.programa.replace(/'/g, "\\'")}')">
+                        <i class="fa-solid fa-user-pen"></i>
+                    </button>
+                </div>
+            </div>`;
+        }
+
+        function filtrarProgramaDesdeCard(tipo, programa) {
+            programaCardActivo = { tipo, programa };
+            document.getElementById('filterPrograma').value = programa;
+            filtrarCursos();
+            renderProgramCards();
+            document.getElementById('tablaCursosAnchor').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        async function abrirAsignarAsesoraPrograma(programa) {
+            const asesoraActual = (agruparProgramas().find(p => p.programa === programa) || {}).asesora || '';
+            let opcionesHtml = `<option value="">Sin asesora asignada</option>`;
+            listaAsesorasGlobal.forEach(a => {
+                opcionesHtml += `<option value="${a.username}" ${a.username === asesoraActual ? 'selected' : ''}>${a.nombre}</option>`;
+            });
+
+            const result = await Swal.fire({
+                title: 'Asignar Asesora',
+                html: `
+                    <p class="swal-asesora-desc">Se asignará a <b>todos</b> los cursos del programa:</p>
+                    <p class="swal-asesora-programa">${programa}</p>
+                    <label class="swal-asesora-label">Asesora académica</label>
+                    <select id="swalAsesoraSelect" class="swal-asesora-select">${opcionesHtml}</select>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Asignar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#f1f5f9',
+                customClass: { popup: 'swal-asesora-popup', confirmButton: 'swal-asesora-btn-confirm', cancelButton: 'swal-asesora-btn-cancel' },
+                buttonsStyling: false,
+                preConfirm: () => document.getElementById('swalAsesoraSelect').value
+            });
+
+            if (!result.isConfirmed) return;
+            const asesoraElegida = result.value;
+
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'asignar_asesora_programa', programa: programa, asesora: asesoraElegida }) });
+                const json = await res.json();
+                if (json.status === 'success') {
+                    Swal.fire({ title: 'Actualizado', text: `Se actualizaron ${json.actualizados} curso(s) de este programa.`, icon: 'success', confirmButtonColor: '#10b981' });
+                    cargarCursos();
+                } else {
+                    Swal.fire('Error', 'No se pudo actualizar la asesora.', 'error');
+                }
+            } catch (e) {
+                Swal.fire('Error', 'Problema de conexión.', 'error');
+            }
+        }
+
+        function copiarEnlaceRapido(url) {
+            if (!url) return;
+            const hacerToast = () => Swal.fire({ title: 'Copiado', text: 'El enlace se ha copiado al portapapeles.', icon: 'success', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(hacerToast).catch(() => copiarEnlaceFallback(url, hacerToast));
+            } else {
+                copiarEnlaceFallback(url, hacerToast);
+            }
+        }
+        function copiarEnlaceFallback(url, callback) {
+            const tmp = document.createElement('textarea');
+            tmp.value = url; document.body.appendChild(tmp); tmp.select();
+            document.execCommand('copy'); document.body.removeChild(tmp);
+            callback();
+        }
 
         function poblarFiltroProgramas() {
             const select = document.getElementById('filterPrograma');
-            // Extrae los programas únicos de la base de datos (evita duplicados)
-            const programasUnicos = [...new Set(listaCursosGlobal.map(c => c.programa))].filter(p => p);
+            // Solo los programas del tipo activo (UPGRADE/MASTER/DOCTORADE), para no ofrecer
+            // opciones que después no calcen con ningún resultado en la tabla.
+            const programasUnicos = [...new Set(listaCursosGlobal.filter(c => c.tipoPrograma === tipoProgramaActivo).map(c => c.programa))].filter(p => p);
             
             let html = '<option value="Todos">Todos los Programas</option>';
             programasUnicos.sort().forEach(prog => {
@@ -406,14 +713,28 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         }
 
         function filtrarCursos() {
-            const txt = document.getElementById('searchInput').value.toLowerCase();
+            const txt = document.getElementById('searchInput').value.toLowerCase().trim();
             const prog = document.getElementById('filterPrograma').value;
+            const hint = document.getElementById('hintBusquedaGlobal');
 
-            cursosFiltrados = listaCursosGlobal.filter(c => {
-                const matchText = c.nombre.toLowerCase().includes(txt) || c.codigo.toLowerCase().includes(txt);
-                const matchProg = (prog === "Todos") || (c.programa === prog);
-                return matchText && matchProg; // Tienen que cumplirse ambas condiciones
-            });
+            if (txt) {
+                // Búsqueda global: el usuario puede no saber a qué programa pertenece el curso,
+                // así que buscamos en TODO el catálogo, sin importar la pestaña de tipo ni el programa activos.
+                cursosFiltrados = listaCursosGlobal.filter(c =>
+                    c.nombre.toLowerCase().includes(txt) || c.codigo.toLowerCase().includes(txt)
+                );
+                hint.innerHTML = `<i class="fa-solid fa-globe"></i> Buscando en los ${listaCursosGlobal.length} cursos del catálogo completo`;
+                hint.style.display = 'flex';
+            } else {
+                if (prog !== programaCardActivo?.programa) programaCardActivo = null;
+
+                cursosFiltrados = listaCursosGlobal.filter(c => {
+                    const matchProg = (prog === "Todos") || (c.programa === prog);
+                    const matchTipo = c.tipoPrograma === tipoProgramaActivo;
+                    return matchProg && matchTipo;
+                });
+                hint.style.display = 'none';
+            }
             
             currentPage = 1; // Volver a la página 1 al filtrar
             renderTablaPaginada();
@@ -422,15 +743,24 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         function resetFiltros() {
             document.getElementById('searchInput').value = '';
             document.getElementById('filterPrograma').value = 'Todos';
-            filtrarCursos(); // Vuelve a cargar la tabla completa
+            programaCardActivo = null;
+            renderProgramCards();
+            filtrarCursos(); // Vuelve a cargar la tabla completa (dentro del tipo de programa activo)
         }
 
         function renderTablaPaginada() {
             const tbody = document.getElementById('tabla-cursos');
             const paginationCtr = document.getElementById('paginationControls');
+            const thPrograma = document.getElementById('thPrograma');
+            const buscando = document.getElementById('searchInput').value.trim() !== '';
+
+            // Si ya se filtró a un programa específico (y no se está buscando en todo el catálogo),
+            // esa columna es redundante en cada fila: la ocultamos para liberar espacio.
+            const progSeleccionado = !buscando && document.getElementById('filterPrograma').value !== 'Todos';
+            thPrograma.style.display = progSeleccionado ? 'none' : '';
             
             if(cursosFiltrados.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted"><i class="fa-solid fa-book fs-2 mb-3 opacity-25"></i><br>No se encontraron cursos con ese criterio.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-5 text-muted"><i class="fa-solid fa-book fs-2 mb-3 opacity-25"></i><br>No se encontraron cursos con ese criterio.</td></tr>';
                 paginationCtr.style.display = 'none';
                 return;
             }
@@ -446,12 +776,32 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     ? `<button class="btn-action-table edit" onclick="abrirModalEdicion('${c.id}')" title="Configurar Curso"><i class="fa-solid fa-pen"></i></button>` 
                     : ``;
 
+                const nombreAses = nombreAsesora(c.asesora);
+                const asesoraHtml = c.asesora
+                    ? `<span class="asesora-badge-tabla" title="${nombreAses}"><span class="dot"></span>${nombreAses}</span>`
+                    : `<span class="asesora-badge-tabla sin-asignar"><span class="dot"></span>Sin asignar</span>`;
+
+                const silaboValido = c.silabo && (c.silabo.startsWith('http://') || c.silabo.startsWith('https://'));
+                const silaboEscapado = (c.silabo || '').replace(/'/g, "\\'");
+                const silaboHtml = silaboValido
+                    ? `<div class="silabo-actions">
+                            <button type="button" class="btn-icon-mini" title="Ver sílabo" onclick="window.open('${silaboEscapado}','_blank')"><i class="fa-solid fa-eye"></i></button>
+                            <button type="button" class="btn-icon-mini" title="Copiar enlace" onclick="copiarEnlaceRapido('${silaboEscapado}')"><i class="fa-regular fa-copy"></i></button>
+                       </div>`
+                    : `<div class="silabo-actions">
+                            <button type="button" class="btn-icon-mini" disabled title="Sin enlace válido"><i class="fa-solid fa-eye-slash"></i></button>
+                       </div>`;
+
+                const tdPrograma = progSeleccionado ? '' : `<td style="max-width: 0;"><span class="badge-programa" title="${c.programa}">${c.programa}</span></td>`;
+
                 html += `
                 <tr>
-                    <td><b style="color: #64748b; font-size: 0.85rem; letter-spacing: 0.5px;">${c.codigo}</b></td>
-                    <td class="fw-bold" style="color: #1e293b;">${c.nombre}</td>
-                    <td><span class="badge-programa">${c.programa}</span></td>
+                    <td><span style="color: #94a3b8; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.4px;">${c.codigo}</span></td>
+                    <td style="color: #1e293b; font-weight: 500;">${c.nombre}</td>
+                    ${tdPrograma}
+                    <td>${asesoraHtml}</td>
                     <td><b style="color: #15803d; font-size: 0.95rem;">${c.moneda} ${c.monto || '0'}</b></td>
+                    <td>${silaboHtml}</td>
                     <td class="text-end" style="white-space: nowrap;">
                         ${btnEditar}
                         <button class="btn-action-table folder" onclick="abrirPanelMateriales('${c.id}', '${c.nombre.replace(/'/g, "\\'")}')">
@@ -520,19 +870,19 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             document.getElementById('mod-silabo').value = curso.silabo || "";
             document.getElementById('mod-req').value = curso.requisito || "";
 
+            const selAsesora = document.getElementById('mod-asesora');
+            let opciones = '<option value="">Sin asesora asignada</option>';
+            listaAsesorasGlobal.forEach(a => { opciones += `<option value="${a.username}">${a.nombre}</option>`; });
+            selAsesora.innerHTML = opciones;
+            selAsesora.value = curso.asesora || "";
+
             new bootstrap.Modal(document.getElementById('modalEdicionCurso')).show();
         }
 
         function copiarSilabo() {
             const input = document.getElementById('mod-silabo');
             if(!input.value) return;
-            input.select();
-            document.execCommand("copy");
-            
-            Swal.fire({
-                title: 'Copiado', text: 'El enlace se ha copiado al portapapeles.', icon: 'success', 
-                toast: true, position: 'top-end', showConfirmButton: false, timer: 2000
-            });
+            copiarEnlaceRapido(input.value);
         }
 
         function abrirSilabo() {
@@ -549,9 +899,12 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Guardando...';
             btn.disabled = true;
 
+            const idCurso = document.getElementById('mod-id').value;
+            const asesoraElegida = document.getElementById('mod-asesora').value;
+
             const payload = {
                 action: 'update_curso',
-                id: document.getElementById('mod-id').value,
+                id: idCurso,
                 moneda: document.getElementById('mod-moneda').value,
                 monto: document.getElementById('mod-monto').value,
                 silabo: document.getElementById('mod-silabo').value,
@@ -562,6 +915,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const json = await res.json();
                 if(json.status === 'success') {
+                    // La asesora de este curso puntual se guarda aparte (puede sobreescribir la del programa)
+                    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'asignar_asesora_curso', idCurso: idCurso, asesora: asesoraElegida }) });
+
                     Swal.fire({ title: '¡Guardado!', text: 'El catálogo ha sido actualizado correctamente.', icon: 'success', confirmButtonColor: '#10b981' });
                     bootstrap.Modal.getInstance(document.getElementById('modalEdicionCurso')).hide();
                     cargarCursos(); 
@@ -574,6 +930,27 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         }
 
         /* --- LÓGICA DEL PANEL DE MATERIALES (OFFCANVAS) --- */
+
+        // El backend entrega el horario como un texto crudo tipo:
+        // "05/10/2026, 12/10/2026 a las 05/10/2026: 19:00 a 20:30 | 12/10/2026: 19:00 a 20:30"
+        // Nos quedamos solo con la parte útil (después de "a las"), que ya trae "fecha: horario" por sesión,
+        // y la convertimos en una lista de fechas legible.
+        function formatearSesionesHorario(horarioStr) {
+            if (!horarioStr) return '<p class="text-muted small m-0 fst-italic">Horario por confirmar.</p>';
+
+            const parteUtil = horarioStr.includes(' a las ') ? horarioStr.split(' a las ').pop() : horarioStr;
+            const sesiones = parteUtil.split('|').map(s => s.trim()).filter(Boolean);
+
+            if (sesiones.length === 0) return '<p class="text-muted small m-0 fst-italic">Horario por confirmar.</p>';
+
+            return sesiones.map(s => {
+                const idx = s.indexOf(':');
+                const fecha = (idx > -1 ? s.slice(0, idx) : s).trim();
+                const rango = (idx > -1 ? s.slice(idx + 1) : '').trim().replace(/\ba\b/, '–');
+                return `<div class="sesion-row"><span class="sesion-fecha"><i class="fa-regular fa-calendar"></i> ${fecha}</span><span class="sesion-hora">${rango || '—'}</span></div>`;
+            }).join('');
+        }
+
         async function abrirPanelMateriales(idCurso, nombreCurso) {
             document.getElementById('oc-curso-nombre').innerText = nombreCurso;
             const bodyPanel = document.getElementById('oc-body');
@@ -617,11 +994,12 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                             </div>
                             
                             <div class="bg-light rounded-4 p-3 mb-3 border border-secondary-subtle">
-                                <div class="row g-2">
+                                <div class="row g-2 mb-1">
                                     <div class="col-6"><span class="text-muted d-block fw-bold" style="font-size:0.65rem; letter-spacing: 0.5px;">INICIO</span> <b style="color: #334155; font-size: 0.9rem;">${doc.fechaInicio}</b></div>
                                     <div class="col-6"><span class="text-muted d-block fw-bold" style="font-size:0.65rem; letter-spacing: 0.5px;">TARIFA CERRADA</span> <b class="text-success" style="font-size: 0.9rem;">${doc.pago}</b></div>
-                                    <div class="col-12 mt-2"><span class="text-muted d-block fw-bold" style="font-size:0.65rem; letter-spacing: 0.5px;">HORARIO</span> <b style="color: #334155; font-size: 0.85rem;"><i class="fa-regular fa-clock text-primary me-1"></i>${doc.horario}</b></div>
                                 </div>
+                                <span class="text-muted d-block fw-bold mt-2 mb-1" style="font-size:0.65rem; letter-spacing: 0.5px;">SESIONES PROGRAMADAS</span>
+                                <div class="sesiones-lista">${formatearSesionesHorario(doc.horario)}</div>
                             </div>
 
                             <h6 class="fw-bold text-dark mb-2" style="font-size: 0.8rem; text-transform: uppercase; color: #64748b !important;"><i class="fa-solid fa-cloud-arrow-up me-2 opacity-50"></i>Materiales / Entregables</h6>

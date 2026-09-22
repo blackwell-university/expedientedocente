@@ -4,7 +4,7 @@
     <script>
         const isLoggedIn = localStorage.getItem('isLoggedIn');
         const userRole = localStorage.getItem('userRole');
-        if (isLoggedIn !== 'true' || (userRole !== 'Jefe OSE BGU' && userRole !== 'Administrador')) {
+        if (isLoggedIn !== 'true' || (userRole !== 'Jefe OSE BGU' && userRole !== 'Administrador' && userRole !== 'ADMIN')) {
             window.location.href = "../index.html";
         }
     </script>
@@ -77,6 +77,48 @@
         .pagination-bar .btn-page:disabled { opacity: 0.4; cursor: not-allowed; }
         .pagination-bar .btn-page.active { background: var(--primary); color: white; border-color: var(--primary); }
 
+        /* --- ASIGNACIÓN MASIVA: TABS DE TIPO + TARJETAS DE PROGRAMA (mismo lenguaje visual que Gestión de Cursos) --- */
+        .tipo-tabs-asesoras { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tipo-tab-a { background: white; border: 1px solid var(--gray-border); color: var(--text-muted); font-weight: 700; font-size: 0.82rem; padding: 9px 18px; border-radius: 30px; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .tipo-tab-a:hover { border-color: #cbd5e1; background: #f8fafc; }
+        .tipo-tab-a.active { background: var(--primary-dark); border-color: var(--primary-dark); color: white; }
+        .tipo-tab-a .count-chip { background: rgba(0,0,0,0.08); padding: 1px 8px; border-radius: 20px; font-size: 0.7rem; }
+        .tipo-tab-a.active .count-chip { background: rgba(255,255,255,0.2); }
+
+        .programas-grid-a { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 16px; }
+        .programa-card-a { background: white; border: 1px solid rgba(0,0,0,0.04); border-radius: 18px; padding: 20px; box-shadow: 0 6px 20px rgba(0,0,0,0.03); transition: 0.2s; }
+        .programa-card-a:hover { box-shadow: 0 12px 28px rgba(0,0,0,0.07); border-color: rgba(37,99,235,0.15); }
+        .programa-card-a-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+        .programa-icon-a { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0; }
+        .tipo-upgrade-a { background: #eff6ff; color: #2563eb; }
+        .tipo-master-a { background: #f5f3ff; color: #7e22ce; }
+        .tipo-doctorade-a { background: #fffbeb; color: #b45309; }
+        .badge-tipo-a { font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; padding: 4px 9px; border-radius: 6px; }
+        .programa-nombre-a { font-weight: 600; font-size: 0.94rem; color: var(--text-main); line-height: 1.3; margin-bottom: 4px; min-height: 2.4em; }
+        .programa-count-a { font-size: 0.78rem; color: var(--text-muted); font-weight: 600; margin-bottom: 14px; }
+        .programa-count-a b { color: var(--primary-dark); }
+        .asesora-row-a { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 14px; border-top: 1px dashed var(--gray-border); }
+        .asesora-info-a { display: flex; align-items: center; gap: 8px; min-width: 0; }
+        .asesora-avatar-a { width: 28px; height: 28px; border-radius: 50%; background: #dcfce7; color: #15803d; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.68rem; flex-shrink: 0; }
+        .asesora-avatar-a.sin-asignar { background: #f1f5f9; color: #94a3b8; }
+        .asesora-nombre-a { font-size: 0.8rem; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .asesora-nombre-a.sin-asignar { color: #94a3b8; font-weight: 500; font-style: italic; }
+        .btn-asignar-asesora-a { background: none; border: none; color: var(--primary); font-size: 0.85rem; padding: 4px 6px; border-radius: 6px; flex-shrink: 0; transition: 0.2s; }
+        .btn-asignar-asesora-a:hover { background: #eff6ff; }
+
+        /* Modal "Asignar Asesora" (SweetAlert2) — mismos estilos que en Gestión de Cursos */
+        .swal-asesora-popup { width: 400px !important; text-align: left !important; }
+        .swal-asesora-popup .swal2-html-container { margin: 8px 0 0 !important; }
+        .swal-asesora-desc { font-size: 0.82rem; color: #64748b; margin: 0 0 2px; }
+        .swal-asesora-programa { font-size: 0.92rem; font-weight: 700; color: var(--primary-dark); margin: 0 0 18px; line-height: 1.3; }
+        .swal-asesora-label { display: block; font-size: 0.7rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+        .swal-asesora-select { width: 100%; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 14px; font-size: 0.85rem; color: #1e293b; font-family: 'Inter', sans-serif; }
+        .swal-asesora-select:focus { outline: none; background: white; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+        .swal-asesora-btn-confirm { background: var(--primary) !important; color: white !important; border-radius: 10px !important; font-weight: 700 !important; font-size: 0.85rem !important; padding: 10px 20px !important; border: none !important; }
+        .swal-asesora-btn-confirm:hover { background: var(--primary-dark) !important; }
+        .swal-asesora-btn-cancel { background: #f1f5f9 !important; color: #475569 !important; border-radius: 10px !important; font-weight: 700 !important; font-size: 0.85rem !important; padding: 10px 20px !important; border: none !important; }
+        .swal-asesora-btn-cancel:hover { background: #e2e8f0 !important; }
+
         .sidebar-overlay {
             display: none; position: fixed; top: 0; left: 0;
             width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.4);
@@ -97,6 +139,8 @@
             .filter-card { padding: 16px; }
             .table-wrapper { overflow-x: auto; }
             .custom-table { min-width: 560px; }
+            .programas-grid-a { grid-template-columns: 1fr; }
+            .tipo-tabs-asesoras { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; }
         }
 
         /* --- REDISEÑO DE SWEETALERT2 (UI Corporativa, igual al resto del sistema) --- */
@@ -158,29 +202,11 @@
                     <div class="tab-pane fade show active" id="tab-programa" role="tabpanel">
                         <div class="form-card">
                             <span class="section-badge"><i class="fa-solid fa-diagram-project me-2"></i>Asignación Masiva</span>
-                            <p class="text-muted small mb-4" style="margin-top:-8px;">Asigna una asesora a <b>todos los cursos</b> que pertenezcan a un programa académico de una sola vez. Los cursos que ya tengan otra asesora asignada también se sobreescribirán.</p>
-
-                            <div class="row g-3 align-items-end">
-                                <div class="col-md-5">
-                                    <label class="form-label fw-600 text-muted small">Programa Académico</label>
-                                    <select id="selPrograma" class="form-select" onchange="actualizarConteoPrograma()">
-                                        <option value="">Selecciona un programa...</option>
-                                    </select>
-                                    <div class="conteo-programa" id="conteoPrograma" style="display:none;"></div>
-                                </div>
-                                <div class="col-md-5">
-                                    <label class="form-label fw-600 text-muted small">Asesora Académica</label>
-                                    <select id="selAsesoraPrograma" class="form-select">
-                                        <option value="">Selecciona una asesora...</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-2">
-                                    <button class="btn-asignar w-100 justify-content-center" onclick="confirmarAsignacionPrograma()">
-                                        <i class="fa-solid fa-check"></i> Asignar
-                                    </button>
-                                </div>
-                            </div>
+                            <p class="text-muted small mb-0" style="margin-top:-8px;">Elige un programa y asigna a la asesora encargada de <b>todos sus cursos</b> con un clic. Los cursos que ya tengan otra asesora asignada también se sobreescribirán.</p>
                         </div>
+
+                        <div class="tipo-tabs-asesoras" id="tipoTabsAsesoras"></div>
+                        <div id="programasCardsAsesoras"><div class="programas-grid-a"></div></div>
                     </div>
 
                     <!-- ===================== TAB 2: ASIGNACIÓN INDIVIDUAL POR CURSO ===================== -->
@@ -261,7 +287,8 @@
             cargarDatosOptimizadosAdmin('get_all_cursos', {}, (data) => {
                 if (!data) return;
                 cursosGlobal = data;
-                poblarProgramas();
+                renderTipoTabsAsesoras();
+                renderProgramCardsAsesoras();
                 aplicarFiltrosCursos();
             });
 
@@ -269,81 +296,165 @@
                 if (!data) return;
                 asesorasGlobal = data;
                 poblarAsesoras();
+                renderProgramCardsAsesoras();
             });
-        }
-
-        function poblarProgramas() {
-            const sel = document.getElementById('selPrograma');
-            const seleccionActual = sel.value;
-            sel.innerHTML = '<option value="">Selecciona un programa...</option>';
-            const programasUnicos = [...new Set(cursosGlobal.map(c => c.programa).filter(Boolean))].sort();
-            programasUnicos.forEach(p => sel.insertAdjacentHTML('beforeend', `<option value="${p}">${p}</option>`));
-            if (seleccionActual) sel.value = seleccionActual;
         }
 
         function poblarAsesoras() {
-            const selPrograma = document.getElementById('selAsesoraPrograma');
-            selPrograma.innerHTML = '<option value="">Selecciona una asesora...</option>';
             const selFiltro = document.getElementById('filtroAsesora');
+            const seleccionActual = selFiltro.value;
             selFiltro.innerHTML = '<option value="">Todas</option><option value="__sin_asignar__">Sin asignar</option>';
-
             asesorasGlobal.forEach(a => {
-                selPrograma.insertAdjacentHTML('beforeend', `<option value="${a.nombre}">${a.nombre}</option>`);
-                selFiltro.insertAdjacentHTML('beforeend', `<option value="${a.nombre}">${a.nombre}</option>`);
+                selFiltro.insertAdjacentHTML('beforeend', `<option value="${a.username}">${a.nombre}</option>`);
             });
+            if (seleccionActual) selFiltro.value = seleccionActual;
         }
 
-        // NUEVO: muestra cuántos cursos tiene el programa seleccionado, para que la Jefa
-        // sepa el alcance real antes de confirmar la asignación masiva
-        function actualizarConteoPrograma() {
-            const programa = document.getElementById('selPrograma').value;
-            const conteoEl = document.getElementById('conteoPrograma');
-            if (!programa) { conteoEl.style.display = 'none'; return; }
-            const cantidad = cursosGlobal.filter(c => c.programa === programa).length;
-            conteoEl.innerHTML = `<i class="fa-solid fa-circle-info"></i> Este programa tiene <b>${cantidad}</b> curso(s) actualmente.`;
-            conteoEl.style.display = 'flex';
+        // La columna "Asesora" de la hoja puede tener guardado el username (así es como lo guarda
+        // Gestión de Cursos) o, por datos antiguos, el nombre completo directamente. Estas dos
+        // funciones traducen en cualquier sentido para que ambas páginas siempre muestren el
+        // nombre bonito sin importar cuál de las dos lo haya guardado.
+        function nombreAsesora(valor) {
+            if (!valor) return '';
+            const porUsername = asesorasGlobal.find(a => a.username === valor);
+            if (porUsername) return porUsername.nombre;
+            const porNombre = asesorasGlobal.find(a => a.nombre === valor);
+            if (porNombre) return porNombre.nombre;
+            return valor; // desconocida: la mostramos tal cual en vez de ocultarla
+        }
+        function usernameDeAsesora(valor) {
+            if (!valor) return '';
+            const porUsername = asesorasGlobal.find(a => a.username === valor);
+            if (porUsername) return porUsername.username;
+            const porNombre = asesorasGlobal.find(a => a.nombre === valor);
+            if (porNombre) return porNombre.username;
+            return valor;
         }
 
-        function confirmarAsignacionPrograma() {
-            const programa = document.getElementById('selPrograma').value;
-            const selAsesora = document.getElementById('selAsesoraPrograma');
-            const asesora = selAsesora.value;
+        // ===================== TAB 1: TABS DE TIPO + TARJETAS DE PROGRAMA =====================
+        const ICONOS_TIPO_A = { UPGRADE: 'fa-graduation-cap', MASTER: 'fa-user-graduate', DOCTORADE: 'fa-award' };
+        const CLASE_TIPO_A = { UPGRADE: 'tipo-upgrade-a', MASTER: 'tipo-master-a', DOCTORADE: 'tipo-doctorade-a' };
+        let tipoActivoAsesoras = '';
 
-            if (!programa) { Swal.fire('Falta el programa', 'Selecciona un programa académico primero.', 'warning'); return; }
-            if (!asesora) { Swal.fire('Falta la asesora', 'Selecciona qué asesora quedará a cargo.', 'warning'); return; }
+        function agruparProgramasAsesoras() {
+            const mapa = new Map();
+            cursosGlobal.forEach(c => {
+                const tipo = c.tipoPrograma || 'Otro';
+                const key = tipo + '||' + c.programa;
+                if (!mapa.has(key)) mapa.set(key, { tipo, programa: c.programa, cursos: [] });
+                mapa.get(key).cursos.push(c);
+            });
+            return [...mapa.values()].map(p => {
+                const conteo = {};
+                p.cursos.forEach(c => { if (c.asesora) conteo[c.asesora] = (conteo[c.asesora] || 0) + 1; });
+                const entradas = Object.entries(conteo).sort((a, b) => b[1] - a[1]);
+                p.asesora = entradas.length ? entradas[0][0] : '';
+                p.asesoraMixta = entradas.length > 1;
+                return p;
+            }).sort((a, b) => a.programa.localeCompare(b.programa));
+        }
 
+        function renderTipoTabsAsesoras() {
+            const tipos = [...new Set(cursosGlobal.map(c => c.tipoPrograma).filter(Boolean))];
+            if (!tipoActivoAsesoras || !tipos.includes(tipoActivoAsesoras)) tipoActivoAsesoras = tipos[0] || '';
+
+            let html = '';
+            tipos.forEach(t => {
+                const count = cursosGlobal.filter(c => c.tipoPrograma === t).length;
+                html += `<button class="tipo-tab-a ${tipoActivoAsesoras === t ? 'active' : ''}" onclick="seleccionarTipoAsesoras('${t}')"><i class="fa-solid ${ICONOS_TIPO_A[t] || 'fa-book'}"></i> ${t} <span class="count-chip">${count}</span></button>`;
+            });
+            document.getElementById('tipoTabsAsesoras').innerHTML = html;
+        }
+
+        function seleccionarTipoAsesoras(tipo) {
+            tipoActivoAsesoras = tipo;
+            renderTipoTabsAsesoras();
+            renderProgramCardsAsesoras();
+        }
+
+        function inicialesDeA(nombre) {
+            const partes = String(nombre || '').trim().split(/\s+/);
+            return ((partes[0]?.[0] || '') + (partes[1]?.[0] || '')).toUpperCase() || '--';
+        }
+
+        function renderProgramCardsAsesoras() {
+            const programas = agruparProgramasAsesoras().filter(p => p.tipo === tipoActivoAsesoras);
+            const cont = document.querySelector('#programasCardsAsesoras .programas-grid-a') || document.getElementById('programasCardsAsesoras');
+            cont.innerHTML = programas.map(p => cardProgramaAsesoraHtml(p)).join('') || '<p class="text-muted small">No hay programas en esta categoría.</p>';
+        }
+
+        function cardProgramaAsesoraHtml(p) {
+            const nombreAses = nombreAsesora(p.asesora);
+            const avatarHtml = p.asesora
+                ? `<div class="asesora-avatar-a">${inicialesDeA(nombreAses)}</div>`
+                : `<div class="asesora-avatar-a sin-asignar"><i class="fa-solid fa-user-slash" style="font-size:0.7rem;"></i></div>`;
+            const nombreHtml = p.asesora
+                ? `<span class="asesora-nombre-a" title="${nombreAses}${p.asesoraMixta ? ' (y otras en este programa)' : ''}">${nombreAses}${p.asesoraMixta ? ' *' : ''}</span>`
+                : `<span class="asesora-nombre-a sin-asignar">Sin asesora</span>`;
+
+            return `
+            <div class="programa-card-a">
+                <div class="programa-card-a-top">
+                    <div class="programa-icon-a ${CLASE_TIPO_A[p.tipo] || ''}"><i class="fa-solid ${ICONOS_TIPO_A[p.tipo] || 'fa-book'}"></i></div>
+                    <span class="badge-tipo-a ${CLASE_TIPO_A[p.tipo] || ''}">${p.tipo}</span>
+                </div>
+                <div class="programa-nombre-a" title="${p.programa}">${p.programa}</div>
+                <div class="programa-count-a"><b>${p.cursos.length}</b> curso${p.cursos.length !== 1 ? 's' : ''} en el catálogo</div>
+                <div class="asesora-row-a">
+                    <div class="asesora-info-a">${avatarHtml}${nombreHtml}</div>
+                    <button type="button" class="btn-asignar-asesora-a" title="Asignar/cambiar asesora de todo el programa" onclick="abrirAsignarAsesoraPrograma('${p.programa.replace(/'/g, "\\'")}')">
+                        <i class="fa-solid fa-user-pen"></i>
+                    </button>
+                </div>
+            </div>`;
+        }
+
+        async function abrirAsignarAsesoraPrograma(programa) {
             const cantidad = cursosGlobal.filter(c => c.programa === programa).length;
+            const asesoraActual = usernameDeAsesora((agruparProgramasAsesoras().find(p => p.programa === programa) || {}).asesora || '');
 
-            Swal.fire({
-                title: '¿Confirmar asignación masiva?',
-                html: `Se asignará a <b>${asesora}</b> como responsable de los <b>${cantidad}</b> curso(s) del programa:<br><span style="color:var(--primary-dark); font-weight:700;">${programa}</span><br><br>Esto sobreescribirá cualquier asesora asignada previamente a esos cursos.`,
-                icon: 'warning',
+            let opcionesHtml = `<option value="">Sin asesora asignada</option>`;
+            asesorasGlobal.forEach(a => {
+                opcionesHtml += `<option value="${a.username}" ${a.username === asesoraActual ? 'selected' : ''}>${a.nombre}</option>`;
+            });
+
+            const result = await Swal.fire({
+                title: 'Asignar Asesora',
+                html: `
+                    <p class="swal-asesora-desc">Se asignará a <b>todos</b> los ${cantidad} curso(s) del programa:</p>
+                    <p class="swal-asesora-programa">${programa}</p>
+                    <label class="swal-asesora-label">Asesora académica</label>
+                    <select id="swalAsesoraSelect" class="swal-asesora-select">${opcionesHtml}</select>
+                `,
                 showCancelButton: true,
-                confirmButtonColor: '#2563eb',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: 'Sí, asignar a todo el programa',
+                confirmButtonText: 'Asignar',
                 cancelButtonText: 'Cancelar',
-                reverseButtons: true
-            }).then(async (result) => {
-                if (!result.isConfirmed) return;
-
-                Swal.fire({ title: 'Asignando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-                try {
-                    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'asignar_asesora_programa', programa, asesora }) });
-                    const json = await res.json();
-                    if (json.status === 'success') {
-                        // Actualizamos localmente para no esperar un refetch completo
-                        cursosGlobal.forEach(c => { if (c.programa === programa) c.asesora = asesora; });
-                        localStorage.removeItem('cache_get_all_cursos_global');
-                        aplicarFiltrosCursos();
-                        Swal.fire('¡Listo!', `Se actualizaron ${json.actualizados} curso(s).`, 'success');
-                    } else {
-                        Swal.fire('Error', json.message || 'No se pudo completar la asignación.', 'error');
-                    }
-                } catch (e) {
-                    Swal.fire('Error de conexión', 'No se pudo conectar con el servidor.', 'error');
-                }
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#f1f5f9',
+                customClass: { popup: 'swal-asesora-popup', confirmButton: 'swal-asesora-btn-confirm', cancelButton: 'swal-asesora-btn-cancel' },
+                buttonsStyling: false,
+                preConfirm: () => document.getElementById('swalAsesoraSelect').value
             });
+
+            if (!result.isConfirmed) return;
+            const asesora = result.value; // username, o '' para quitar asesora — mismo formato que Gestión de Cursos
+
+            Swal.fire({ title: 'Asignando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'asignar_asesora_programa', programa, asesora }) });
+                const json = await res.json();
+                if (json.status === 'success') {
+                    cursosGlobal.forEach(c => { if (c.programa === programa) c.asesora = asesora; });
+                    localStorage.removeItem('cache_get_all_cursos_global');
+                    renderProgramCardsAsesoras();
+                    aplicarFiltrosCursos();
+                    Swal.fire({ title: '¡Listo!', text: `Se actualizaron ${json.actualizados} curso(s).`, icon: 'success', confirmButtonColor: '#10b981' });
+                } else {
+                    Swal.fire('Error', json.message || 'No se pudo completar la asignación.', 'error');
+                }
+            } catch (e) {
+                Swal.fire('Error de conexión', 'No se pudo conectar con el servidor.', 'error');
+            }
         }
 
         // ===================== TAB 2: LÓGICA DE LA TABLA INDIVIDUAL =====================
@@ -355,7 +466,7 @@
                 const coincideTexto = !texto || (c.nombre || '').toLowerCase().includes(texto) || (c.programa || '').toLowerCase().includes(texto) || (c.codigo || '').toLowerCase().includes(texto);
                 let coincideAsesora = true;
                 if (filtroAsesora === '__sin_asignar__') coincideAsesora = !c.asesora;
-                else if (filtroAsesora) coincideAsesora = c.asesora === filtroAsesora;
+                else if (filtroAsesora) coincideAsesora = usernameDeAsesora(c.asesora) === filtroAsesora;
                 return coincideTexto && coincideAsesora;
             });
 
@@ -374,12 +485,14 @@
             const inicio = (paginaActual - 1) * FILAS_POR_PAGINA;
             const pagina = cursosFiltrados.slice(inicio, inicio + FILAS_POR_PAGINA);
 
-            let opcionesAsesoras = '<option value="">— Sin asignar —</option>' + asesorasGlobal.map(a => `<option value="${a.nombre}">${a.nombre}</option>`).join('');
+            let opcionesAsesoras = '<option value="">— Sin asignar —</option>' + asesorasGlobal.map(a => `<option value="${a.username}">${a.nombre}</option>`).join('');
 
             let html = '';
             pagina.forEach(c => {
+                const nombreAses = nombreAsesora(c.asesora);
+                const usernameActual = usernameDeAsesora(c.asesora);
                 const chip = c.asesora
-                    ? `<span class="chip-asesora chip-asignada"><i class="fa-solid fa-user-check me-1"></i>${c.asesora}</span>`
+                    ? `<span class="chip-asesora chip-asignada"><i class="fa-solid fa-user-check me-1"></i>${nombreAses}</span>`
                     : `<span class="chip-asesora chip-sin-asignar"><i class="fa-solid fa-user-xmark me-1"></i>Sin asignar</span>`;
 
                 html += `
@@ -390,8 +503,8 @@
                     </td>
                     <td class="text-muted">${c.programa || '—'}</td>
                     <td>
-                        <select class="form-select form-select-sm sel-asesora-fila" data-id="${c.id}" data-anterior="${c.asesora || ''}" onchange="confirmarCambioIndividual(this)">
-                            ${opcionesAsesoras.replace(`value="${c.asesora}"`, `value="${c.asesora}" selected`)}
+                        <select class="form-select form-select-sm sel-asesora-fila" data-id="${c.id}" data-anterior="${usernameActual}" onchange="confirmarCambioIndividual(this)">
+                            ${opcionesAsesoras.replace(`value="${usernameActual}"`, `value="${usernameActual}" selected`)}
                         </select>
                         <div class="mt-1">${chip}</div>
                     </td>
@@ -424,11 +537,11 @@
         function confirmarCambioIndividual(selectEl) {
             const idCurso = selectEl.dataset.id;
             const anterior = selectEl.dataset.anterior;
-            const nueva = selectEl.value;
+            const nueva = selectEl.value; // username, o '' para quitar asesora
             const curso = cursosGlobal.find(c => c.id === idCurso);
             const nombreCurso = curso ? curso.nombre : idCurso;
 
-            const textoNueva = nueva || 'Sin asignar';
+            const textoNueva = nueva ? nombreAsesora(nueva) : 'Sin asignar';
 
             Swal.fire({
                 title: '¿Confirmar el cambio?',
