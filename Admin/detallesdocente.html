@@ -435,7 +435,7 @@
                         <h1 id="det-nombre" class="mb-0">Cargando Nombre...</h1>
                         <span id="det-estado-badge" class="badge-cuenta cuenta-activo" style="display:none;">Cuenta Activa</span>
                     </div>
-                    <p>Expediente completo y gestión de contratos</p>
+                    <p>Expediente completo y gestión de expedientes</p>
                 </div>
 
                 <ul class="nav nav-tabs" id="teacherTabs" role="tablist">
@@ -483,14 +483,12 @@
                                                 <i class="fa-solid fa-folder-plus"></i>
                                             </div>
                                             <div class="action-text">
-                                                <span class="action-title">Crear Contrato + Invitación</span>
+                                                <span class="action-title">Crear Expediente + Invitación</span>
                                                 <span class="action-desc">Asigna cursos y solicita documentación</span>
                                             </div>
                                             <i class="fa-solid fa-chevron-right action-arrow"></i>
                                         </button>
 
-                                        <!-- NUEVO: Acción — Asignar un curso adicional al Expediente (contrato anual) YA existente.
-                                             No pide documentos porque esos ya se solicitaron una sola vez al crear el Expediente. -->
                                         <button class="btn-action-minimal" onclick="abrirModalInvitacion('curso')">
                                             <div class="action-icon-wrapper" style="background:#fff7ed; color:#c2410c;">
                                                 <i class="fa-solid fa-calendar-plus"></i>
@@ -502,7 +500,6 @@
                                             <i class="fa-solid fa-chevron-right action-arrow"></i>
                                         </button>
 
-                                        <!-- NUEVO: Acción — Subir datos del docente SIN asignar curso todavía -->
                                         <button class="btn-action-minimal" onclick="subirInformacionSinCurso()">
                                             <div class="action-icon-wrapper" style="background:#f0fdf4; color:#15803d;">
                                                 <i class="fa-solid fa-id-card-clip"></i>
@@ -1355,9 +1352,9 @@
                         const fVencimiento = exp.fechaVencimiento ? new Date(exp.fechaVencimiento).toLocaleDateString('es-ES', {day: '2-digit', month: 'short', year:'numeric'}) : null;
                         let bannerVencimiento = '';
                         if (exp.vencido) {
-                            bannerVencimiento = `<div class="record-banner record-banner-danger"><i class="fa-solid fa-triangle-exclamation"></i>Este contrato venció el ${fVencimiento}. Genera un nuevo Expediente para renovarlo.</div>`;
+                            bannerVencimiento = `<div class="record-banner record-banner-danger"><i class="fa-solid fa-triangle-exclamation"></i>Este expediente venció el ${fVencimiento}. Genera un nuevo Expediente para renovarlo.</div>`;
                         } else if (exp.porVencer) {
-                            bannerVencimiento = `<div class="record-banner record-banner-warn"><i class="fa-solid fa-clock"></i>Este contrato está por vencer (${fVencimiento}). Considera generar un nuevo Expediente.</div>`;
+                            bannerVencimiento = `<div class="record-banner record-banner-warn"><i class="fa-solid fa-clock"></i>Este expediente está por vencer (${fVencimiento}). Considera generar un nuevo Expediente.</div>`;
                         }
 
                         html += `
@@ -1508,7 +1505,7 @@
             Swal.fire({
                 title: esReenvio ? '¿Reenviar Invitación al Docente?' : '¿Enviar Invitación al Docente?',
                 text: esReenvio
-                    ? "Se volverá a enviar el correo con el contrato, por si el docente lo eliminó o no lo recibió."
+                    ? "Se volverá a enviar el correo con el Expediente de Aprobaciónd de la contratación, por si el docente lo eliminó o no lo recibió."
                     : "Se enviará el correo oficial y el estado de la invitación cambiará a 'Enviado'.",
                 icon: 'warning',
                 showCancelButton: true,

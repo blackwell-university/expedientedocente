@@ -205,7 +205,6 @@
                     <p>Filtra y revisa los expedientes formales de la plana docente.</p>
                 </div>
 
-                <!-- NUEVO: CHIPS PARA ALTERNAR ENTRE EXPEDIENTES ANUALES (CONTRATOS) E INVITACIONES (CURSOS) -->
                 <div class="d-flex gap-2 mb-3">
                     <button type="button" class="chip-vista active" id="chip-expedientes" onclick="cambiarVista('expedientes')">
                         <i class="fa-solid fa-folder-tree me-2"></i>Expedientes Anuales
@@ -231,7 +230,7 @@
                                 <option value="Recibido">Recibido</option>
                                 <option value="En revisión">En revisión</option>
                                 <option value="Pendiente firma directores">Por contratar</option>
-                                <option value="Contrato enviado">Contrato enviado</option>
+                                <option value="Expediente enviado">Expediente enviado</option>
                                 <option value="Firmado por Docente">Firmado (Docente)</option>
                                 <option value="Contratado">Contratado</option>
                                 <option value="Cancelado">Cancelado</option>
@@ -380,7 +379,6 @@
             document.getElementById('filterStatus').addEventListener('change', filtrar);
         });
 
-        // NUEVO: alterna entre la vista de Expedientes Anuales (contratos) y la de Invitaciones (cursos)
         function cambiarVista(vista) {
             vistaActual = vista;
             document.getElementById('chip-expedientes').classList.toggle('active', vista === 'expedientes');
@@ -401,7 +399,7 @@
                     <option value="Recibido">Recibido</option>
                     <option value="En revisión">En revisión</option>
                     <option value="Pendiente firma directores">Por contratar</option>
-                    <option value="Contrato enviado">Contrato enviado</option>
+                    <option value="Expediente enviado">Expediente enviado</option>
                     <option value="Firmado por Docente">Firmado (Docente)</option>
                     <option value="Contratado">Contratado</option>
                     <option value="Cancelado">Cancelado</option>`;
@@ -504,7 +502,7 @@
                 'En revisión':                  { label: 'En revisión', clase: 'status-EnProceso', icon: 'fa-magnifying-glass' },
                 'Verificado':                   { label: 'Verificado',  clase: 'status-EnProceso', icon: 'fa-check' },
                 'Pendiente firma directores':   { label: 'Por contratar',       clase: 'status-Aprobado', icon: 'fa-user-tie' },
-                'Contrato enviado':             { label: 'Contrato enviado',    clase: 'status-Aprobado', icon: 'fa-hourglass-half' },
+                'Expediente enviado':             { label: 'Expediente enviado',    clase: 'status-Aprobado', icon: 'fa-hourglass-half' },
                 'Firmado por Docente':          { label: 'Firmado (Docente)',   clase: 'status-Aprobado', icon: 'fa-signature' },
                 'Contratado':                   { label: 'Contratado',          clase: 'status-Aprobado', icon: 'fa-check-double' },
                 'Cancelado':                    { label: 'Cancelado',   clase: 'status-Rechazado', icon: 'fa-ban' }

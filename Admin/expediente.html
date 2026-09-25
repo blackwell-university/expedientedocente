@@ -702,7 +702,7 @@
                                 <li><h6 class="dropdown-header text-primary fw-bold">3. Contratación</h6></li>
                                 <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('Pendiente firma directores')">Por contratar</a></li>
                                 <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('Firmado por Docente')">Firmado</a></li>
-                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('Contrato enviado')">Contrato enviado</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('Expediente enviado')">Expediente enviado</a></li>
                                 <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('Contratado')">Contratado</a></li>
                             </ul>
                         </div>
@@ -1980,7 +1980,7 @@
                     const estadoExp = (exp.estado || '').trim();
                     
                     let bgBadge = '#ea580c';
-                    if(['Recibido', 'Verificado', 'Contratado', 'Firmado por Docente', 'Contrato enviado', 'Pendiente firma directores'].includes(estadoExp)) bgBadge = '#15803d';
+                    if(['Recibido', 'Verificado', 'Contratado', 'Firmado por Docente', 'Expediente enviado', 'Pendiente firma directores'].includes(estadoExp)) bgBadge = '#15803d';
                     if(['En proceso', 'En revisión'].includes(estadoExp)) bgBadge = '#2563eb';
                     if(estadoExp === 'Cancelado') bgBadge = '#b91c1c';
                     
@@ -2003,7 +2003,7 @@
                     } else if (['En revisión', 'Verificado'].includes(estadoExp)) {
                         stages[0].classList.replace('step-gray', 'step-green');
                         stages[1].classList.replace('step-gray', 'step-yellow');
-                    } else if (['Pendiente firma directores', 'Firmado por Docente', 'Contrato enviado', 'Contratado'].includes(estadoExp)) {
+                    } else if (['Pendiente firma directores', 'Firmado por Docente', 'Expediente enviado', 'Contratado'].includes(estadoExp)) {
                         stages[0].classList.replace('step-gray', 'step-green');
                         stages[1].classList.replace('step-gray', 'step-green');
                         stages[2].classList.replace('step-gray', 'step-green');
@@ -2721,12 +2721,12 @@
             }
 
             // ETAPA 3/4 (Contratación - Pipeline Secuencial de Firma)
-            if (['Pendiente firma directores', 'Contrato enviado', 'Firmado por Docente', 'Contratado'].includes(estadoExp)) {
+            if (['Pendiente firma directores', 'Expediente enviado', 'Firmado por Docente', 'Contratado'].includes(estadoExp)) {
                 if (estadoExp === 'Pendiente firma directores') {
                     html += `<button class="action-btn" style="background:#0284c7; color:white; border-color:#0284c7;" onclick="enviarContratoDocente()">
                                 <i class="fa-solid fa-paper-plane"></i> Enviar para firma (Docente)
                              </button>`;
-                } else if (estadoExp === 'Contrato enviado') {
+                } else if (estadoExp === 'Expediente enviado') {
                     html += `<button class="action-btn" style="background:#64748b; color:white; border-color:#64748b;" disabled>
                                 <i class="fa-solid fa-hourglass-half"></i> Esperando firma del docente...
                              </button>`;
@@ -3036,7 +3036,7 @@
                     });
                     const result = await res.json();
                     if(result.status === 'success') {
-                        showToast("Contrato enviado exitosamente", "success");
+                        showToast("Expediente enviado exitosamente", "success");
                         cargarExpediente();
                     } else {
                         showToast("Error al enviar el contrato.", "danger");
@@ -3069,7 +3069,7 @@
                     });
                     const result = await res.json();
                     if(result.status === 'success') {
-                        showToast("Contrato enviado a directores exitosamente", "success");
+                        showToast("Expediente enviado a directores exitosamente", "success");
                         cargarExpediente();
                     } else {
                         showToast("Error al enviar el contrato.", "danger");

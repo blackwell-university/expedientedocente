@@ -139,7 +139,7 @@
             <div class="user-meta"><b id="txtNombre">Director</b><span>Director Blackwell</span></div>
         </div>
         <ul class="nav-list">
-            <li><a href="director-dashboard.html" class="nav-link active"><i class="fa-solid fa-file-signature"></i> <span class="link-text">Contratos por Firmar</span></a></li>
+            <li><a href="director-dashboard.html" class="nav-link active"><i class="fa-solid fa-file-signature"></i> <span class="link-text">Expedientes por Firmar</span></a></li>
         </ul>
         <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;">
             <i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span>
@@ -318,7 +318,7 @@
         function traducirEstadoExpediente(estadoReal) {
             const e = String(estadoReal || '').toLowerCase();
             if (e === 'contratado') return { label: 'Contratado', clase: 'status-contratado' };
-            if (['pendiente firma directores', 'firmado por docente', 'contrato enviado'].includes(e)) return { label: 'Por contratar', clase: 'status-por-contratar' };
+            if (['pendiente firma directores', 'firmado por docente', 'Expediente enviado'].includes(e)) return { label: 'Por contratar', clase: 'status-por-contratar' };
             if (e === 'cancelado') return { label: 'Cancelado', clase: 'status-neutro' };
             return { label: estadoReal || 'Sin estado', clase: 'status-neutro' };
         }

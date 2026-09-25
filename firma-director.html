@@ -275,7 +275,7 @@
         <!-- PANEL IZQUIERDO: VISOR PDF -->
         <div class="pdf-panel">
             <div class="pdf-header-title">
-                <i class="fa-solid fa-file-pdf"></i> Vista previa del contrato
+                <i class="fa-solid fa-file-pdf"></i> Vista previa del Expediente
                 <button type="button" class="pdf-expand-btn" id="btnExpandPdf" onclick="togglePdfFullscreen()" title="Ver documento en pantalla completa">
                     <span class="material-symbols-rounded">open_in_full</span>
                 </button>
@@ -691,7 +691,7 @@
                     const cantidad = (result.firmados || []).length;
                     
                     const mensajeFinal = result.procesoCompleto
-                        ? 'Su firma se aplicó exitosamente. Con esto, el proceso de contratación quedó completo.'
+                        ? 'Su firma se aplicó exitosamente. Con esto, el proceso del Expediente de Aprobación de contratación docente quedó completo.'
                         : `Su firma digital se aplicó exitosamente en ${cantidad} documento(s).`;
 
                     Swal.fire({

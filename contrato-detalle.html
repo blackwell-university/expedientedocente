@@ -508,9 +508,9 @@
                         document.getElementById('txtDocenteNombre').innerText = `Hola, ${doc.nombres}`;
                         document.getElementById('txtExpDetails').innerText = `Expediente Anual N°: ${exp.idExpediente}`;
 
-                        const estadosListoFirmaExp = ['Contrato enviado', 'Firmado', 'Contratado'];
+                        const estadosListoFirmaExp = ['Expediente enviado', 'Firmado', 'Contratado'];
                         if (!estadosListoFirmaExp.includes(exp.estado)) {
-                            mostrarNoListoParaFirma(`Tu expediente todavía está en estado "${exp.estado || 'Pendiente'}". Podrás firmar tu contrato cuando la universidad te lo envíe.`);
+                            mostrarNoListoParaFirma(`Tu expediente todavía está en estado "${exp.estado || 'Pendiente'}". Podrás firmar el Expediente de aprobación de contratación cuando la universidad te lo envíe.`);
                             return;
                         }
 

@@ -9,7 +9,7 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Trámites y Contratos | Blackwell University</title>
+    <title>Expedientes | Blackwell University</title>
     
     <!-- Frameworks & Fonts -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -316,7 +316,7 @@
                 
                 <!-- HEADER -->
                 <div class="page-header desktop-header d-none d-md-block">
-                    <h1>Documentos y Contratos</h1>
+                    <h1>Expedientes de Aprobación de la Contratación</h1>
                     <p>Gestiona tus invitaciones a cursos y tu expediente base anual.</p>
                 </div>
 
@@ -347,7 +347,7 @@
                         <span class="badge-count" id="count-inv">0</span>
                     </button>
                     <button class="custom-tab" id="tab-btn-exp" onclick="switchView('expedientes')">
-                        <span class="material-symbols-rounded">folder_shared</span> Contratos Anuales
+                        <span class="material-symbols-rounded">folder_shared</span> Expedientes Anuales
                     </button>
                 </div>
 
@@ -521,7 +521,7 @@
         function renderExpedientes(data) {
             const container = document.getElementById('container-expedientes');
             if(data.length === 0) { 
-                mostrarEmptyState('container-expedientes', 'La administración aún no ha generado un contrato para tu perfil.', 'folder_off'); 
+                mostrarEmptyState('container-expedientes', 'La administración aún no ha generado un expediente para tu perfil.', 'folder_off'); 
                 return; 
             }
 
@@ -565,13 +565,11 @@
 
                 const vigencia = exp.fechaVencimiento ? `Vence: ${new Date(exp.fechaVencimiento).toLocaleDateString('es-ES')}` : "Periodo actual";
 
-                // Igual que en renderInvitaciones: nos basamos en si ya eligió día/hora real,
-                // no en el texto del Estado (que puede haber avanzado por error).
                 const invitacionPendiente = !!exp.idInvitacion && !exp.horarioInvitacionConfirmado;
                 const avisoInvitacion = invitacionPendiente ? `
                     <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:8px 12px; margin-bottom:10px; font-size:0.78rem; color:#92400e; display:flex; align-items:center; gap:6px;">
                         <span class="material-symbols-rounded" style="font-size:1rem;">error</span>
-                        Aún debes aceptar tu invitación de curso para terminar tu contrato.
+                        Aún debes aceptar tu invitación de curso para terminar el llenado del Expediente de Aprobación.
                     </div>` : '';
 
                 html += `
@@ -585,7 +583,7 @@
                             </span>
                         </div>
                         <div class="t-type">Expediente Base</div>
-                        <h3 class="t-title">Contrato Anual Docente</h3>
+                        <h3 class="t-title">Expediente Anual Docente</h3>
                         <p class="t-subtitle"><span class="material-symbols-rounded" style="font-size: 1rem;">event_available</span> ${vigencia}</p>
                         
                         ${avisoInvitacion}
@@ -614,7 +612,7 @@
             Swal.fire({
                 icon: 'info',
                 title: 'Tu expediente está en revisión',
-                html: `Ya completaste y enviaste tu información. La universidad la está revisando internamente en este momento.<br><br>Te notificaremos por correo cuando tu contrato esté listo para firmar.`,
+                html: `Ya completaste y enviaste tu información. La universidad la está revisando internamente en este momento.<br><br>Te notificaremos por correo cuando tu “Expediente de Aprobación de la Contratación de Docente” esté listo para firmar.`,
                 confirmButtonText: 'Entendido',
                 confirmButtonColor: '#16a34a'
             });
@@ -624,7 +622,7 @@
             Swal.fire({
                 icon: 'info',
                 title: 'Proceso finalizado',
-                html: `Tu proceso de contratación con Blackwell Global University ha sido finalizado en esta oportunidad.<br><br>Gracias por el tiempo dedicado durante el proceso.`,
+                html: `Tu proceso del Expediente de Aprobación de Contratación Docente con Blackwell Global University ha sido finalizado en esta oportunidad.<br><br>Gracias por el tiempo dedicado durante el proceso.`,
                 confirmButtonText: 'Entendido',
                 confirmButtonColor: '#b91c1c'
             });

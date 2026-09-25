@@ -112,7 +112,7 @@
             <div class="user-meta"><b id="txtNombre">Director</b><span>Director Blackwell</span></div>
         </div>
         <ul class="nav-list">
-            <li><a href="#" class="nav-link active"><i class="fa-solid fa-file-signature"></i> <span class="link-text">Contratos por Firmar</span></a></li>
+            <li><a href="#" class="nav-link active"><i class="fa-solid fa-file-signature"></i> <span class="link-text">Expedientes por Firmar</span></a></li>
         </ul>
         <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;">
             <i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span>
@@ -204,7 +204,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 const response = await res.json();
                 
                 if (response.status === 'success') {
-                    const estadosPermitidos = ["pendiente firma directores", "firmado por docente", "contrato enviado", "contratado"];
+                    const estadosPermitidos = ["pendiente firma directores", "firmado por docente", "Expediente enviado", "contratado"];
                     expedientesGlobal = response.data.filter(exp => 
                         estadosPermitidos.includes(exp.estado.toLowerCase())
                     );
@@ -219,7 +219,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
         function traducirEstadoDirector(estadoReal) {
             const e = String(estadoReal || '').toLowerCase();
-            if (e === 'pendiente firma directores' || e === 'firmado por docente' || e === 'contrato enviado') {
+            if (e === 'pendiente firma directores' || e === 'firmado por docente' || e === 'Expediente enviado') {
                 return { label: 'Por contratar', filtro: 'POR CONTRATAR', clase: 'status-por-contratar' };
             }
             if (e === 'contratado') {
@@ -231,7 +231,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         function renderTabla(lista) {
             const tbody = document.getElementById('tablaExpedientesBody');
             if (lista.length === 0) {
-                mostrarMensajeVacio("No hay contratos pendientes de firma asignados.");
+                mostrarMensajeVacio("No hay expedientes pendientes de firma asignados.");
                 return;
             }
 
