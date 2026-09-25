@@ -8,8 +8,8 @@
         const userRoleHead = localStorage.getItem('userRole');
         
         const rolesAdminAutorizados = [
-            'Administrativo', 'Administrador', 'Ejecutivo Licenciamiento', 
-            'Asesora Academica', 'Ejecutiva Credenciales'
+            'Administrativo', 'Administrador', 'ADMIN', 'Ejecutiva Academica', 'Ejecutivo Licenciamiento', 
+            'Asesora Academica', 'Ejecutiva Credenciales', 'Jefe OSE BGU'
         ];
 
         if (modeParam === 'admin') {
@@ -62,11 +62,12 @@
             background-color: var(--bg-body);
             color: var(--text-main); 
             margin: 0; 
-            padding-top: 70px;
+            padding-top: 70px; /* Espacio para el navbar fijo */
             padding-bottom: 90px;
-            overflow-x: hidden; 
+            overflow-x: hidden; /* Evita el scroll global, solo el del main-wrapper */
         }
 
+        /* --- VISUALIZADOR DE CONTRATOS PREMIUM PARA EL DOCENTE --- */
         .teacher-pdf-panel {
             background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
             border-radius: var(--card-radius);
@@ -454,11 +455,29 @@
 
         @media (max-width: 576px) {
             .minimal-doc-card { flex-direction: column; align-items: flex-start; gap: 16px; }
-            .minimal-doc-actions { width: 100%; display: grid; grid-template-columns: 1fr 1fr; }
+            .minimal-doc-actions { width: 100%; display: flex; flex-wrap: wrap; }
             .btn-minimal { justify-content: center; }
         }
+
+        /* --- Utilidad: elementos visibles solo en modo admin --- */
+        .admin-only-el { display: none !important; }
+        html.admin-mode .admin-only-el { display: inline-flex !important; }
+
+        /* --- Botones de acción compactos e icon-only, uniformes entre CV/Handbook/Diplomas --- */
+        .btn-icon-doc {
+            width: 36px; height: 36px; border-radius: 10px;
+            border: 1px solid #cbd5e1; background: white; color: #64748b;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; transition: 0.2s; cursor: pointer; flex-shrink: 0;
+        }
+        .btn-icon-doc:hover { background: #f8fafc; color: var(--text-main); border-color: #94a3b8; }
+        .btn-icon-doc.danger:hover { background: #fef2f2; color: #ef4444; border-color: #fecaca; }
+        .btn-icon-doc.reanalyze { color: #7c3aed; border-color: #ddd6fe; }
+        .btn-icon-doc.reanalyze:hover { background: #f5f3ff; }
+        .btn-icon-doc.reanalyze.is-loading i { animation: girar 1s linear infinite; }
+        @keyframes girar { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         /* --- BOTONES DE NAVEGACIÓN --- */
-        .btn-continue { background: var(--primary); color: white; border: none; font-weight: 600; font-size: 1.05rem; padding: 16px 40px; border-radius: 14px; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px;}
+        .btn-continue { background: var(--primary); color: white; border: none; font-weight: 600; font-size: 0.9rem; padding: 11px 26px; border-radius: 12px; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;}
         .btn-continue:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(30, 64, 175, 0.25); }
         .btn-continue:disabled { opacity: 0.7; cursor: not-allowed; }
         .btn-cancel { background: #f8fafc; color: #475569; border: 1px solid var(--border-color); font-weight: 600; font-size: 1.05rem; padding: 15px 35px; border-radius: 14px; transition: 0.2s; display: flex; align-items: center; justify-content: center;}
@@ -722,9 +741,15 @@
         /* ==================================================
            SLA / ACCESOS: CONTROL DE VISTA PARA MODO ADMIN
            ================================================== */
+        .admin-back-link { display: none; }
         html.admin-mode .nav-links-desktop,
-        html.admin-mode
-    
+        html.admin-mode .bottom-nav {
+            display: none !important;
+        }
+        html.admin-mode .admin-back-link {
+            display: flex !important;
+        }
+
         /* --- REDISEÑO DE SWEETALERT2 (UI Corporativa) --- */
         div:where(.swal2-container) div:where(.swal2-popup) {
             border-radius: 16px !important;
@@ -777,6 +802,9 @@
             <a href="misexpedientes.html" class="nav-item active"><span class="material-symbols-rounded">folder_open</span>Expedientes</a>
             <a href="miscursos.html" class="nav-item"><span class="material-symbols-rounded">co_present</span> Mis Clases</a>
         </div>
+        <a href="#" class="nav-item admin-back-link" onclick="history.back(); return false;">
+            <span class="material-symbols-rounded">arrow_back</span> Volver
+        </a>
         <div class="nav-user d-flex gap-3 align-items-center">
             <div class="font-controls">
                 <button class="btn-font-action a-minus" onclick="changeFontSize(-1)" title="Reducir letra">A-</button>
@@ -962,6 +990,7 @@
                                     <div class="minimal-doc-actions">
                                         <a href="#" id="view-link-cv" target="_blank" class="btn-minimal"><i class="fa-regular fa-eye"></i> Ver</a>
                                         <button type="button" class="btn-minimal" onclick="editarDocumento('cv')"><i class="fa-solid fa-rotate-right"></i> Cambiar</button>
+                                        <button type="button" class="btn-icon-doc reanalyze admin-only-el" id="btn-reanalizar-cv" title="Reanalizar con IA" onclick="reanalizarConIA('cv', this)"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
                                     </div>
                                 </div>
 
@@ -1021,7 +1050,7 @@
                         <!-- PASO 3: PERFIL -->
                         <div class="step-content" id="step-3">
                             <h2 class="step-title">Datos Personales</h2>
-                            <p class="step-subtitle">Verifique y complete su información de contacto e identidad. Estos datos son confidenciales y se usarán para sus expedientes y contratos.</p>
+                            <p class="step-subtitle">Verifique y complete su información de contacto e identidad. Estos datos son confidenciales y se usarán para sus contratos.</p>
                             
                             <div class="section-label">Información de Contacto</div>
                             <div class="row g-4 mb-4">
@@ -1910,7 +1939,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         function renderDiplomaReadonly(data) {
             const container = document.getElementById('diplomas-container');
             const div = document.createElement('div');
-            div.className = 'dynamic-card diploma-item view-mode-dip mb-3';
+            div.className = 'diploma-item view-mode-dip minimal-doc-card mb-3';
             
             // Guardamos todos los datos en memoria en la misma tarjeta
             div.dataset.id = data.id_diploma || "";
@@ -1925,21 +1954,151 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             div.dataset.estado = data.estado || "Procesado";
 
             div.innerHTML = `
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <h6 class="fw-bold text-dark m-0"><i class="fa-solid fa-graduation-cap text-success me-2"></i>${data.grado}</h6>
-                    <span class="badge bg-light text-dark border">${data.estado || 'Procesado'}</span>
+                <div class="minimal-doc-info">
+                    <div class="minimal-doc-icon" style="background:#f0fdf4; color:#10b981;"><i class="fa-solid fa-graduation-cap"></i></div>
+                    <div class="minimal-doc-text">
+                        <h6>${data.grado}</h6>
+                        <span class="badge bg-light text-dark border">${data.estado || 'Procesado'}</span>
+                        <p class="small text-muted mb-0 mt-1 doc-card-sub">
+                            <b>Especialidad:</b> ${data.rama || 'Pendiente de procesar...'}<br>
+                            <b>Institución:</b> ${data.instituto || 'Pendiente de procesar...'}
+                        </p>
+                    </div>
                 </div>
-                <p class="small text-muted mb-3">
-                    <b>Especialidad:</b> ${data.rama || 'Pendiente de procesar...'}<br>
-                    <b>Institución:</b> ${data.instituto || 'Pendiente de procesar...'}
-                </p>
-                <div class="d-flex gap-2">
-                    <a href="${getDriveViewUrl(data.url_diploma)}" target="_blank" class="btn btn-sm btn-light border fw-bold text-primary"><i class="fa-solid fa-eye"></i> Diploma</a>
-                    ${data.url_transcript ? `<a href="${getDriveViewUrl(data.url_transcript)}" target="_blank" class="btn btn-sm btn-light border fw-bold text-primary"><i class="fa-solid fa-eye"></i> Transcript</a>` : ''}
-                    <button type="button" class="btn btn-sm btn-outline-danger fw-bold ms-auto" onclick="confirmarEdicionDiploma(this)"><i class="fa-solid fa-pen"></i> Editar</button>
+                <div class="minimal-doc-actions">
+                    <a href="${getDriveViewUrl(data.url_diploma)}" target="_blank" class="btn-minimal"><i class="fa-regular fa-eye"></i> Diploma</a>
+                    ${data.url_transcript ? `<a href="${getDriveViewUrl(data.url_transcript)}" target="_blank" class="btn-minimal"><i class="fa-regular fa-eye"></i> Transcript</a>` : ''}
+                    <button type="button" class="btn-icon-doc reanalyze admin-only-el" title="Reanalizar con IA" onclick="reanalizarConIA('diploma', this)"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
+                    <button type="button" class="btn-icon-doc" title="Editar" onclick="confirmarEdicionDiploma(this)"><i class="fa-solid fa-pen"></i></button>
+                    <button type="button" class="btn-icon-doc danger" title="Eliminar" onclick="confirmarEliminarDiploma(this)"><i class="fa-solid fa-trash"></i></button>
                 </div>
             `;
             container.appendChild(div);
+        }
+
+        async function confirmarEliminarDiploma(btn) {
+            const card = btn.closest('.diploma-item');
+            const idDiploma = card.dataset.id;
+            const grado = card.dataset.grado || 'este grado';
+
+            const result = await Swal.fire({
+                title: '¿Eliminar este registro?',
+                html: `Se eliminará por completo el registro de <b>${grado}</b>, incluyendo todo lo que la IA extrajo de él. Esta acción no se puede deshacer.<br><br><span class="text-muted small">Los archivos PDF no se borrarán de Drive, solo el registro.</span>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            });
+            if (!result.isConfirmed) return;
+
+            const iconoOriginal = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
+            card.style.opacity = '0.5';
+            card.style.pointerEvents = 'none';
+
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'delete_diploma', idDiploma: idDiploma }) });
+                const json = await res.json();
+                if (json.status === 'success') {
+                    // También quitamos el registro espejo del Paso 6 (Educación), si ya se había generado;
+                    // si no lo hacíamos, el diploma eliminado seguía apareciendo ahí hasta refrescar la página.
+                    const espejoPaso6 = document.querySelector(`.ai-edu-record[data-id="${idDiploma}"]`);
+                    if (espejoPaso6) espejoPaso6.remove();
+
+                    card.remove();
+                    showToast('Registro eliminado correctamente.');
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = iconoOriginal;
+                    card.style.opacity = '';
+                    card.style.pointerEvents = '';
+                    showToast(json.message || 'No se pudo eliminar el registro.', 'danger');
+                }
+            } catch (e) {
+                btn.disabled = false;
+                btn.innerHTML = iconoOriginal;
+                card.style.opacity = '';
+                card.style.pointerEvents = '';
+                showToast('Error de conexión al eliminar.', 'danger');
+            }
+        }
+
+        // --- MODO ADMIN: reenviar un documento ya subido a la IA de n8n para que lo vuelva a analizar ---
+        async function reanalizarConIA(tipo, btn) {
+            btn.classList.add('is-loading');
+            btn.disabled = true;
+
+            try {
+                if (tipo === 'cv') {
+                    if (!urlCVGlobal) { showToast('Aún no hay un CV subido.', 'danger'); return; }
+                    await fetch(N8N_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: "extract_cv", fileUrl: urlCVGlobal, idDocente: userId, idExpediente: idExpedienteUrl }) });
+                    showToast('CV enviado a reanálisis. Esto puede tardar un momento...');
+                    iniciarPollingReanalisis('cv', null);
+                } else if (tipo === 'diploma') {
+                    const card = btn.closest('.diploma-item');
+                    const idDiploma = card.dataset.id;
+                    await fetch(N8N_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: "extract_diploma", fileUrl: card.dataset.url, idDocente: userId, idExpediente: idExpedienteUrl, idDiploma: idDiploma, grado: card.dataset.grado }) });
+                    showToast('Diploma enviado a reanálisis. Esto puede tardar un momento...');
+                    iniciarPollingReanalisis('diploma', idDiploma);
+                }
+            } catch (e) {
+                showToast('No se pudo contactar al servicio de análisis.', 'danger');
+            } finally {
+                setTimeout(() => { btn.classList.remove('is-loading'); btn.disabled = false; }, 2000);
+            }
+        }
+
+        // Vigila en segundo plano, por un tiempo acotado, hasta que la tarjeta reanalizada cambie de estado
+        function iniciarPollingReanalisis(tipo, targetId) {
+            let intentos = 0;
+            const maxIntentos = 20; // ~20 x 4s = 80s de espera máxima
+
+            const timer = setInterval(async () => {
+                intentos++;
+                if (intentos > maxIntentos) { clearInterval(timer); return; }
+
+                try {
+                    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: userId, id_expediente: idExpedienteUrl }) });
+                    const result = await res.json();
+                    if (result.status !== 'success') return;
+
+                    if (tipo === 'cv' && result.data && result.data.estado_cv) {
+                        const cvContainer = document.getElementById('cv-status-container');
+                        if (cvContainer) {
+                            const estadoNuevo = result.data.estado_cv;
+                            if ((cvContainer.dataset.estado || '').toLowerCase() !== estadoNuevo.toLowerCase()) {
+                                cvContainer.dataset.estado = estadoNuevo;
+                                cvContainer.innerHTML = `<span class="badge bg-light text-dark border mt-1">${estadoNuevo}</span>`;
+                            }
+                            if (estadoNuevo.toLowerCase() === 'procesado') { clearInterval(timer); showToast('El CV terminó de reanalizarse.'); }
+                        }
+                    }
+
+                    if (tipo === 'diploma' && result.drafts && result.drafts.educacion) {
+                        const card = document.querySelector(`.diploma-item.view-mode-dip[data-id="${targetId}"]`);
+                        const eduActualizada = result.drafts.educacion.find(e => String(e.id_diploma) === String(targetId));
+                        if (card && eduActualizada) {
+                            card.dataset.estado = eduActualizada.estado || card.dataset.estado;
+                            card.dataset.rama = eduActualizada.rama || card.dataset.rama;
+                            card.dataset.instituto = eduActualizada.instituto || card.dataset.instituto;
+                            card.dataset.ubicacion = eduActualizada.ubicacion || card.dataset.ubicacion;
+                            card.dataset.inicio = eduActualizada.inicio || card.dataset.inicio;
+                            card.dataset.fin = eduActualizada.fin || card.dataset.fin;
+
+                            const badge = card.querySelector('.badge');
+                            if (badge) badge.textContent = eduActualizada.estado || 'Procesado';
+                            const pInfo = card.querySelector('.doc-card-sub');
+                            if (pInfo) pInfo.innerHTML = `<b>Especialidad:</b> ${eduActualizada.rama || 'Pendiente de procesar...'}<br><b>Institución:</b> ${eduActualizada.instituto || 'Pendiente de procesar...'}`;
+
+                            if ((eduActualizada.estado || '').toLowerCase() === 'procesado') { clearInterval(timer); showToast('El diploma terminó de reanalizarse.'); }
+                        }
+                    }
+                } catch (e) { /* silencioso: se reintenta en el siguiente ciclo */ }
+            }, 4000);
         }
 
         function confirmarEdicionDiploma(btn) {
