@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script src="bgu-shell.js"></script>
+    <script>bguGuard(['Asesora Academica', 'Administrador', 'Jefe OSE BGU', 'E-learning']);</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión Académica | Blackwell University</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="bgu-shell.css">
+    <style>
+        .main-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        .centered-container { width: 100%; max-width: 1200px; text-align: left; }
+        .page-header h1 { font-weight: 800; font-size: 1.9rem; color: var(--primary-dark); letter-spacing: -0.03em; margin-bottom: 8px; }
+        .page-header p { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 32px; }
+        .filter-card { background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--gray-border); margin-bottom: 24px; }
+        /* NUEVO: segunda fila del filtro (rango de fechas) separada por una línea sutil, y botón
+           para limpiar todo de una — útil ahora que hay más de 4 filtros disponibles */
+        .filter-row-2 { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--gray-border); }
+        .filter-row-2 .date-group { display: flex; align-items: center; gap: 8px; }
+        .filter-row-2 .date-group span { color: var(--text-muted); font-size: 0.82rem; }
+        .btn-limpiar-filtros { background: transparent; color: var(--text-muted); font-weight: 600; font-size: 0.82rem; border: none; padding: 8px 4px; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; margin-left: auto; }
+        .btn-limpiar-filtros:hover { color: #ef4444; }
+
+        .table-wrapper { background: white; border-radius: 16px; border: 1px solid var(--gray-border); overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.01); }
+        .custom-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        .custom-table th { padding: 14px 20px; background: #f8fafc; font-weight: 700; text-align: left; border-bottom: 1px solid var(--gray-border); font-size: 0.72rem; letter-spacing: 0.4px; color: #64748b; }
+        .custom-table th.sortable { cursor: pointer; user-select: none; transition: 0.15s; }
+        .custom-table th.sortable:hover { color: var(--primary); background: #f1f5f9; }
+        .custom-table th.sortable i { font-size: 0.65rem; margin-left: 4px; opacity: 0.5; }
+        .custom-table th.sortable.sort-active i { opacity: 1; color: var(--primary); }
+        .custom-table td { padding: 16px 20px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+        /* NUEVO: resalte sutil al pasar el mouse sobre una fila, estándar en tablas de gestión */
+        .custom-table tbody tr { transition: background-color 0.12s; }
+        .custom-table tbody tr:hover { background-color: #f8fafc; }
+        .custom-table tbody tr:last-child td { border-bottom: none; }
+
+        /* NUEVO: avatar con iniciales junto al nombre del docente — da jerarquía visual a la
+           columna más importante de la tabla y es consistente con el resto del portal (sidebar,
+           header) que ya usa este mismo patrón de iniciales en círculo */
+        .docente-cell { display: flex; align-items: center; gap: 12px; }
+        .docente-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--primary-light); color: var(--primary-dark); font-weight: 800; font-size: 0.78rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+        /* NUEVO: columna de periodo de clases, con ícono de calendario a la izquierda */
+        .periodo-cell { display: flex; align-items: center; gap: 8px; color: var(--text-main); font-weight: 600; font-size: 0.83rem; white-space: nowrap; }
+        .periodo-cell i { color: #94a3b8; font-size: 0.85rem; }
+        .periodo-cell.sin-fecha { color: #94a3b8; font-weight: 500; font-style: italic; }
+
+        .btn-gestionar { background: #eff6ff; color: var(--primary); font-weight: 700; font-size: 0.8rem; border: none; padding: 8px 16px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: 0.2s; }
+        .btn-gestionar:hover { background: var(--primary); color: white; }
+
+        /* badges de estado con color diferenciado, para que la asesora identifique de un
+           vistazo si el docente ya aceptó, sigue esperando respuesta, o ya está en firma */
+        .badge-estado { display: inline-block; padding: 5px 12px; border-radius: 30px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
+        .badge-enviado { background: #eff6ff; color: #1d4ed8; }
+        .badge-aceptado { background: #f0fdf4; color: #15803d; }
+        .badge-docs { background: #eef2ff; color: #4338ca; }
+        .badge-pendiente-firma { background: #fffbeb; color: #b45309; }
+        .badge-firmado { background: #ecfdf5; color: #047857; }
+        .badge-completado { background: #dcfce7; color: #166534; }
+        .badge-default { background: #f1f5f9; color: #475569; }
+        /* NUEVO: marca aparte de "Clase Culminada" (dictado de sesiones), independiente del badge de
+           estado de arriba (que es sobre el trámite de contrato/documentos, otra cosa distinta) */
+        .badge-culminada { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 30px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; background: #dcfce7; color: #166534; margin-left: 6px; }
+
+        /* paginación */
+        .pagination-bar { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-top: 1px solid var(--gray-border); flex-wrap: wrap; gap: 12px; }
+        .pagination-bar .btn-page { background: white; border: 1px solid var(--gray-border); color: var(--text-main); font-weight: 600; font-size: 0.82rem; padding: 6px 14px; border-radius: 8px; }
+        .pagination-bar .btn-page:disabled { opacity: 0.4; cursor: not-allowed; }
+        .pagination-bar .btn-page.active { background: var(--primary); color: white; border-color: var(--primary); }
+        @media (max-width: 768px) {
+            .page-header h1 { font-size: 1.6rem; }
+            .filter-card { padding: 16px; }
+            .table-wrapper { overflow-x: auto; }
+            .custom-table { min-width: 560px; }
+        }</style>
+</head>
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <a href="#" class="brand-section">
+            <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div><span class="brand-text">Blackwell</span>
+        </a>
+        <div class="user-preview">
+            <div class="avatar" id="userInitial">AA</div><div class="user-meta"><b id="userName">Asesora Académica</b><span id="userRoleLabel">Gestión de Cursos</span></div>
+        </div>
+        <ul class="nav-list">
+            <li><a href="academica-dashboard.html" class="nav-link active"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Gestión de Clases</span></a></li>
+            <li id="navGestionAsesoras" style="display:none;"><a href="gestion-asesoras.html" class="nav-link"><i class="fa-solid fa-people-arrows"></i> <span class="link-text">Gestionar Asesoras</span></a></li>
+        </ul>
+        <a href="#" onclick="logout('portal académico')" class="nav-link" style="color: #f43f5e; margin-top: auto;"><i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span></a>
+    </aside>
+
+    <main class="main-wrapper">
+        <header>
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn border-0 p-0 d-md-none text-dark fs-4" onclick="toggleMobileSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div><h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Área Académica</h5><p class="text-muted small m-0">Gestión Académica</p></div>
+            </div>
+        </header>
+        <div class="content-area">
+            <div class="centered-container">
+                <div class="page-header">
+                    <h1>Gestión de Clases y Sesiones</h1>
+                    <p>Monitorea los horarios, proporciona los enlaces de acceso y registra la asistencia de las sesiones.</p>
+                </div>
+
+                <div class="filter-card">
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <label class="form-label fw-600 text-muted small">Buscar por Docente o Curso</label>
+                            <input type="text" id="searchInput" class="form-control" placeholder="Ej: Nombre o Contabilidad..." oninput="aplicarFiltros()">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-600 text-muted small">Estado</label>
+                            <select id="filtroEstado" class="form-select" onchange="aplicarFiltros()">
+                                <option value="">Todos los estados</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-600 text-muted small">Programa</label>
+                            <select id="filtroPrograma" class="form-select" onchange="aplicarFiltros()">
+                                <option value="">Todos los programas</option>
+                            </select>
+                        </div>
+                        <!-- NUEVO: filtro por si ya se culminó el dictado de las sesiones -->
+                        <div class="col-md-2">
+                            <label class="form-label fw-600 text-muted small">Dictado</label>
+                            <select id="filtroDictado" class="form-select" onchange="aplicarFiltros()">
+                                <option value="">Todas</option>
+                                <option value="culminadas">Culminadas</option>
+                                <option value="en_curso">En curso</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- NUEVO: rango de fechas de inicio, para encontrar rápido las clases que
+                         empiezan (o empezaron) dentro de un periodo concreto -->
+                    <div class="filter-row-2">
+                        <div class="date-group">
+                            <label class="form-label fw-600 text-muted small m-0">Inicio desde</label>
+                            <input type="date" id="filtroFechaDesde" class="form-control form-control-sm" style="width:auto;" onchange="aplicarFiltros()">
+                        </div>
+                        <div class="date-group">
+                            <span>hasta</span>
+                            <input type="date" id="filtroFechaHasta" class="form-control form-control-sm" style="width:auto;" onchange="aplicarFiltros()">
+                        </div>
+                        <button type="button" class="btn-limpiar-filtros" onclick="limpiarFiltros()">
+                            <i class="fa-solid fa-filter-circle-xmark"></i> Limpiar filtros
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" onclick="ordenarPor('nombreDocente')" id="th-docente">DOCENTE <i class="fa-solid fa-sort"></i></th>
+                                <th>CURSO / PROGRAMA</th>
+                                <th class="sortable" onclick="ordenarPor('fechaInicio')" id="th-periodo">PERIODO DE CLASES <i class="fa-solid fa-sort"></i></th>
+                                <th>ESTADO</th>
+                                <th>ACCIÓN</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaClasesBody">
+                            <tr><td colspan="5" class="text-center text-muted py-5"><i class="fa-solid fa-spinner fa-spin fa-2x mb-3 text-primary"></i><br>Cargando clases programadas...</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="pagination-bar" id="paginationBar"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
+        let clasesGlobal = [];
+        let clasesFiltradas = [];
+        let paginaActual = 1;
+        const FILAS_POR_PAGINA = 10;
+
+        // NUEVO: estado de orden de la tabla (columna activa + dirección)
+        let ordenCampo = null;
+        let ordenAscendente = true;
+
+        // El rol E-learning solo puede visualizar la información, no editar enlaces ni asistencias
+        const esSoloLectura = localStorage.getItem('userRole') === 'E-learning';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const name = localStorage.getItem('userName') || "Usuario";
+            document.getElementById('userName').innerText = name;
+            document.getElementById('userInitial').innerText = name.trim().substring(0, 2).toUpperCase();
+
+            const rolActual = localStorage.getItem('userRole');
+            if (rolActual === 'Jefe OSE BGU' || rolActual === 'Administrador') {
+                document.getElementById('navGestionAsesoras').style.display = 'block';
+                document.getElementById('userRoleLabel').innerText = rolActual === 'Jefe OSE BGU' ? 'Jefe OSE BGU' : 'Gestión de Cursos';
+            } else if (rolActual === 'E-learning') {
+                document.getElementById('userRoleLabel').innerText = 'E-learning (solo lectura)';
+            }
+
+            cargarClases();
+        });
+
+        // NUEVO: formato corto y legible de una fecha ("12 ago 2026"); '—' si no hay fecha válida
+        function formatFechaCorta(fechaRaw) {
+            if (!fechaRaw) return null;
+            const d = new Date(fechaRaw);
+            if (isNaN(d.getTime())) return null;
+            return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).replace('.', '');
+        }
+
+        // NUEVO: arma "12 ago – 20 sept 2026" (un solo año al final si ambas fechas caen en el
+        // mismo año, para no repetirlo dos veces y que se lea más limpio)
+        function formatPeriodo(inicioRaw, finRaw) {
+            const dIni = inicioRaw ? new Date(inicioRaw) : null;
+            const dFin = finRaw ? new Date(finRaw) : null;
+            const iniValido = dIni && !isNaN(dIni.getTime());
+            const finValido = dFin && !isNaN(dFin.getTime());
+
+            if (!iniValido && !finValido) return null;
+            if (iniValido && !finValido) return formatFechaCorta(inicioRaw);
+            if (!iniValido && finValido) return formatFechaCorta(finRaw);
+
+            const mismoAnio = dIni.getFullYear() === dFin.getFullYear();
+            const iniTxt = dIni.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }).replace('.', '');
+            const finTxt = mismoAnio
+                ? dFin.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).replace('.', '')
+                : dFin.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).replace('.', '');
+            return mismoAnio ? `${iniTxt} – ${finTxt}` : `${dIni.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).replace('.', '')} – ${finTxt}`;
+        }
+
+        function badgeEstado(estadoRaw) {
+            const e = (estadoRaw || '').toLowerCase().trim();
+            let clase = 'badge-default';
+            if (e === 'enviado') clase = 'badge-enviado';
+            else if (e === 'aceptado' || e === 'respondido') clase = 'badge-aceptado';
+            else if (e === 'documentos generados') clase = 'badge-docs';
+            else if (e.includes('pendiente firma')) clase = 'badge-pendiente-firma';
+            else if (e.includes('firmado')) clase = 'badge-firmado';
+            else if (e === 'completado' || e === 'formalizado') clase = 'badge-completado';
+            return `<span class="badge-estado ${clase}">${estadoRaw}</span>`;
+        }
+
+        async function cargarDatosOptimizadosAdmin(actionName, payload, callbackRenderizado) {
+            const cacheKey = `cache_${actionName}_global`;
+            
+            const cachedData = localStorage.getItem(cacheKey);
+            if (cachedData) {
+                callbackRenderizado(JSON.parse(cachedData), false); 
+            } else {
+                callbackRenderizado(null, true);
+            }
+
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: actionName, ...payload })
+                });
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    if (JSON.stringify(result.data) !== cachedData) {
+                        localStorage.setItem(cacheKey, JSON.stringify(result.data));
+                        callbackRenderizado(result.data, false);
+                    }
+                } else if (!cachedData) {
+                    document.getElementById('tablaClasesBody').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error al cargar datos.</td></tr>';
+                }
+            } catch (error) {
+                console.error("Error actualizando datos:", error);
+                if (!cachedData) document.getElementById('tablaClasesBody').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error al cargar datos.</td></tr>';
+            }
+        }
+
+        function cargarClases() {
+            cargarDatosOptimizadosAdmin(
+                'get_all_invitations_global',
+                {},
+                (data, isLoading) => {
+                    if (isLoading || !data) return;
+                    clasesGlobal = data.filter(inv => {
+                        const est = (inv.estado || '').toLowerCase();
+                        return est !== 'guardado' && est !== 'cancelado';
+                    });
+                    poblarFiltros();
+                    aplicarFiltros();
+                }
+            );
+        }
+
+        function poblarFiltros() {
+            const selEstado = document.getElementById('filtroEstado');
+            selEstado.innerHTML = '<option value="">Todos los estados</option>';
+            const estadosUnicos = [...new Set(clasesGlobal.map(c => c.estado))].sort();
+            estadosUnicos.forEach(est => selEstado.insertAdjacentHTML('beforeend', `<option value="${est}">${est}</option>`));
+
+            const selPrograma = document.getElementById('filtroPrograma');
+            selPrograma.innerHTML = '<option value="">Todos los programas</option>';
+            const programasUnicos = [...new Set(clasesGlobal.map(c => c.programa).filter(Boolean))].sort();
+            programasUnicos.forEach(p => selPrograma.insertAdjacentHTML('beforeend', `<option value="${p}">${p}</option>`));
+        }
+
+        function aplicarFiltros() {
+            const busqueda = document.getElementById('searchInput').value.toLowerCase().trim();
+            const estado = document.getElementById('filtroEstado').value;
+            const programa = document.getElementById('filtroPrograma').value;
+            const dictado = document.getElementById('filtroDictado').value;
+
+            // NUEVO: rango de fechas de inicio ("Inicio desde" / "hasta")
+            const desdeVal = document.getElementById('filtroFechaDesde').value;
+            const hastaVal = document.getElementById('filtroFechaHasta').value;
+            const desdeDate = desdeVal ? new Date(desdeVal + 'T00:00:00') : null;
+            const hastaDate = hastaVal ? new Date(hastaVal + 'T23:59:59') : null;
+
+            clasesFiltradas = clasesGlobal.filter(inv => {
+                const matchTexto = !busqueda || (inv.nombreDocente + ' ' + inv.curso).toLowerCase().includes(busqueda);
+                const matchEstado = !estado || inv.estado === estado;
+                const matchPrograma = !programa || inv.programa === programa;
+                // fechaCulminacion viene del backend; vacío = en curso, con fecha = culminada
+                const matchDictado = !dictado
+                    || (dictado === 'culminadas' && !!inv.fechaCulminacion)
+                    || (dictado === 'en_curso' && !inv.fechaCulminacion);
+
+                // NUEVO: si hay rango elegido, la fecha de inicio de la clase debe caer dentro
+                let matchFecha = true;
+                if (desdeDate || hastaDate) {
+                    const fIni = inv.fechaInicio ? new Date(inv.fechaInicio) : null;
+                    if (!fIni || isNaN(fIni.getTime())) {
+                        matchFecha = false; // sin fecha de inicio registrada, no puede caer en un rango
+                    } else {
+                        if (desdeDate && fIni < desdeDate) matchFecha = false;
+                        if (hastaDate && fIni > hastaDate) matchFecha = false;
+                    }
+                }
+
+                return matchTexto && matchEstado && matchPrograma && matchDictado && matchFecha;
+            });
+
+            if (ordenCampo) aplicarOrden();
+            paginaActual = 1;
+            renderTabla();
+        }
+
+        // NUEVO: limpia los 6 filtros de una vez y vuelve a mostrar todo
+        function limpiarFiltros() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('filtroEstado').value = '';
+            document.getElementById('filtroPrograma').value = '';
+            document.getElementById('filtroDictado').value = '';
+            document.getElementById('filtroFechaDesde').value = '';
+            document.getElementById('filtroFechaHasta').value = '';
+            aplicarFiltros();
+        }
+
+        // NUEVO: ordenar la tabla al hacer clic en un encabezado — mismo campo de nuevo invierte
+        // la dirección, campo distinto empieza ascendente
+        function ordenarPor(campo) {
+            if (ordenCampo === campo) {
+                ordenAscendente = !ordenAscendente;
+            } else {
+                ordenCampo = campo;
+                ordenAscendente = true;
+            }
+            aplicarOrden();
+            renderTabla();
+        }
+
+        function aplicarOrden() {
+            if (!ordenCampo) return;
+            clasesFiltradas.sort((a, b) => {
+                let va = a[ordenCampo], vb = b[ordenCampo];
+                if (ordenCampo === 'fechaInicio') {
+                    va = va ? new Date(va).getTime() : -Infinity;
+                    vb = vb ? new Date(vb).getTime() : -Infinity;
+                } else {
+                    va = (va || '').toString().toLowerCase();
+                    vb = (vb || '').toString().toLowerCase();
+                }
+                if (va < vb) return ordenAscendente ? -1 : 1;
+                if (va > vb) return ordenAscendente ? 1 : -1;
+                return 0;
+            });
+        }
+
+        // NUEVO: iniciales del docente para el avatar (primera letra de nombre y de apellido)
+        function obtenerIniciales(nombreCompleto) {
+            const partes = (nombreCompleto || '').trim().split(/\s+/);
+            if (partes.length === 0 || !partes[0]) return '--';
+            if (partes.length === 1) return partes[0].substring(0, 2).toUpperCase();
+            return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
+        }
+
+        function renderTabla() {
+            const tbody = document.getElementById('tablaClasesBody');
+
+            // NUEVO: marca visualmente en el encabezado qué columna está ordenando
+            document.querySelectorAll('.custom-table th.sortable').forEach(th => {
+                th.classList.remove('sort-active');
+                th.querySelector('i').className = 'fa-solid fa-sort';
+            });
+            if (ordenCampo) {
+                const thId = ordenCampo === 'nombreDocente' ? 'th-docente' : 'th-periodo';
+                const th = document.getElementById(thId);
+                th.classList.add('sort-active');
+                th.querySelector('i').className = ordenAscendente ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down';
+            }
+
+            if (clasesFiltradas.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No hay clases que coincidan con estos filtros.</td></tr>`;
+                document.getElementById('paginationBar').innerHTML = '';
+                return;
+            }
+
+            const totalPaginas = Math.ceil(clasesFiltradas.length / FILAS_POR_PAGINA);
+            if (paginaActual > totalPaginas) paginaActual = totalPaginas;
+            const inicio = (paginaActual - 1) * FILAS_POR_PAGINA;
+            const pageItems = clasesFiltradas.slice(inicio, inicio + FILAS_POR_PAGINA);
+
+            const textoBoton = esSoloLectura ? 'Ver Clase' : 'Gestionar Clase';
+            const iconoBoton = esSoloLectura ? 'fa-regular fa-eye' : 'fa-regular fa-calendar-check';
+
+            let html = "";
+            pageItems.forEach(inv => {
+                // NUEVO: periodo de clases (fecha inicio – fecha fin), con estado vacío prolijo
+                const periodoTxt = formatPeriodo(inv.fechaInicio, inv.fechaFin);
+                const periodoHtml = periodoTxt
+                    ? `<div class="periodo-cell"><i class="fa-regular fa-calendar"></i> ${periodoTxt}</div>`
+                    : `<div class="periodo-cell sin-fecha"><i class="fa-regular fa-calendar"></i> Sin fecha</div>`;
+
+                html += `<tr>
+                    <td>
+                        <div class="docente-cell">
+                            <div class="docente-avatar">${obtenerIniciales(inv.nombreDocente)}</div>
+                            <div class="fw-bold text-dark">${inv.nombreDocente}</div>
+                        </div>
+                    </td>
+                    <td><div class="fw-bold text-primary-dark">${inv.curso}</div><div class="small text-muted">${inv.programa}</div></td>
+                    <td>${periodoHtml}</td>
+                    <td>${badgeEstado(inv.estado)}${inv.fechaCulminacion ? `<span class="badge-culminada" title="Culminada el ${inv.fechaCulminacion}"><i class="fa-solid fa-flag-checkered"></i> Culminada</span>` : ''}</td>
+                    <td><a href="academica-detalle.html?invId=${inv.id}" class="btn-gestionar"><i class="${iconoBoton}"></i> ${textoBoton}</a></td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+
+            renderPaginacion(totalPaginas);
+        }
+
+        function renderPaginacion(totalPaginas) {
+            const bar = document.getElementById('paginationBar');
+            if (totalPaginas <= 1) { bar.innerHTML = `<span class="text-muted small">Mostrando ${clasesFiltradas.length} de ${clasesFiltradas.length} registros</span>`; return; }
+
+            let botones = `<button class="btn-page" ${paginaActual === 1 ? 'disabled' : ''} onclick="irAPagina(${paginaActual - 1})"><i class="fa-solid fa-chevron-left"></i></button>`;
+            for (let i = 1; i <= totalPaginas; i++) {
+                botones += `<button class="btn-page ${i === paginaActual ? 'active' : ''}" onclick="irAPagina(${i})">${i}</button>`;
+            }
+            botones += `<button class="btn-page" ${paginaActual === totalPaginas ? 'disabled' : ''} onclick="irAPagina(${paginaActual + 1})"><i class="fa-solid fa-chevron-right"></i></button>`;
+
+            bar.innerHTML = `<span class="text-muted small">${clasesFiltradas.length} registros en total</span><div class="d-flex gap-2">${botones}</div>`;
+        }
+
+        function irAPagina(n) {
+            paginaActual = n;
+            renderTabla();
+        }
+    </script>
+</body>
+</html>

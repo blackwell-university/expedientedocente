@@ -116,7 +116,15 @@
             text-decoration: none; color: #94a3b8; position: relative;
             transition: background 0.35s cubic-bezier(.34,1.56,.64,1), padding 0.35s cubic-bezier(.34,1.56,.64,1), color 0.25s ease;
         }
-        .bottom-item .icon-wrap { display: flex; align-items: center; justify-content: center; }
+        .bottom-item .icon-wrap { display: flex; align-items: center; justify-content: center; position: relative; }
+        /* NUEVO: mismo contador rojo de las pestañas, ahora como punto pequeño sobre el ícono del
+           menú inferior (poco espacio ahí para un pill con texto como en desktop) */
+        .nav-icon-badge {
+            position: absolute; top: -5px; right: -9px;
+            background: #ef4444; color: white; font-size: 0.6rem; font-weight: 800;
+            min-width: 15px; height: 15px; border-radius: 50%; padding: 0 3px; line-height: 1;
+            border: 1.5px solid #ffffff; display: none; align-items: center; justify-content: center;
+        }
         .bottom-item .material-symbols-rounded, .bottom-item i {
             font-size: 1.32rem; line-height: 1;
             font-variation-settings: 'FILL' 0, 'wght' 400;
@@ -281,7 +289,7 @@
         </a>
         <div class="nav-links-desktop">
             <a href="dashboard-docente.html" class="nav-item"><span class="material-symbols-rounded">home</span> Dashboard</a>
-            <a href="misexpedientes.html" class="nav-item active"><span class="material-symbols-rounded">folder_open</span> Expedientes</a>
+            <a href="misexpedientes.html" class="nav-item active"><span class="icon-wrap" style="position:relative;"><span class="material-symbols-rounded">folder_open</span><span class="nav-icon-badge" id="nav-count-exp-desktop">0</span></span> Expedientes</a>
             <a href="miscursos.html" class="nav-item"><span class="material-symbols-rounded">co_present</span> Mis Clases</a>
         </div>
         <div class="nav-user d-flex gap-3 align-items-center">
@@ -305,7 +313,7 @@
 
     <nav class="bottom-nav">
         <a href="dashboard-docente.html" class="bottom-item"><span class="icon-wrap"><span class="material-symbols-rounded">home</span></span><span>Inicio</span></a>
-        <a href="misexpedientes.html" class="bottom-item active"><span class="icon-wrap"><span class="material-symbols-rounded">folder_open</span></span><span>Expedientes</span></a>
+        <a href="misexpedientes.html" class="bottom-item active"><span class="icon-wrap"><span class="material-symbols-rounded">folder_open</span><span class="nav-icon-badge" id="nav-count-exp-mobile">0</span></span><span>Expedientes</span></a>
         <a href="miscursos.html" class="bottom-item"><span class="icon-wrap"><span class="material-symbols-rounded">co_present</span></span><span>Clases</span></a>
         <a href="perfil.html" class="bottom-item"><span class="icon-wrap"><span class="material-symbols-rounded">person</span></span><span>Perfil</span></a>
     </nav>
@@ -348,6 +356,7 @@
                     </button>
                     <button class="custom-tab" id="tab-btn-exp" onclick="switchView('expedientes')">
                         <span class="material-symbols-rounded">folder_shared</span> Expedientes Anuales
+                        <span class="badge-count" id="count-exp">0</span>
                     </button>
                 </div>
 
@@ -435,6 +444,32 @@
                 const countBadge = document.getElementById('count-inv');
                 countBadge.innerText = pendientesInv;
                 countBadge.style.display = pendientesInv > 0 ? 'inline-flex' : 'none';
+
+                // NUEVO: mismo indicador rojo, ahora para Expedientes Anuales — cuenta los que están
+                // "Por Completar", "Por Firmar", o con una invitación pendiente de aceptar (que es lo
+                // primero que bloquea seguir llenando ese expediente, ver avisoInvitacion más abajo).
+                const pendientesExp = expedientes.filter(exp => {
+                    const estadoLower = (exp.estado || '').toLowerCase();
+                    const estaPorCompletar = ['pendiente', 'en proceso', 'enviado'].includes(estadoLower);
+                    const estaPorFirmar = estadoLower === 'por firmar';
+                    const invitacionPendiente = !!exp.idInvitacion && !exp.horarioInvitacionConfirmado;
+                    return estaPorCompletar || estaPorFirmar || invitacionPendiente;
+                }).length;
+
+                const countBadgeExp = document.getElementById('count-exp');
+                countBadgeExp.innerText = pendientesExp;
+                countBadgeExp.style.display = pendientesExp > 0 ? 'inline-flex' : 'none';
+
+                // NUEVO: mismo indicador en el menú "Expedientes" (desktop y móvil), pero sumando
+                // invitaciones + expedientes pendientes — ahí no hay pestañas, es un solo número total.
+                const pendientesTotal = pendientesInv + pendientesExp;
+                const navBadgeDesktop = document.getElementById('nav-count-exp-desktop');
+                navBadgeDesktop.innerText = pendientesTotal;
+                navBadgeDesktop.style.display = pendientesTotal > 0 ? 'inline-flex' : 'none';
+
+                const navBadgeMobile = document.getElementById('nav-count-exp-mobile');
+                navBadgeMobile.innerText = pendientesTotal;
+                navBadgeMobile.style.display = pendientesTotal > 0 ? 'flex' : 'none';
 
             } catch (e) {
                 console.error("Error cargando datos:", e);

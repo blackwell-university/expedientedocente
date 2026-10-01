@@ -15,11 +15,11 @@
             } else if (roleUpper === 'EJECUTIVA CREDENCIALES' || roleUpper === 'EJECUTIVO LICENCIAMIENTO') {
                 window.location.href = "Admin/evaluacion-dashboard.html";
             } else if (roleUpper === 'ASESORA ACADEMICA') {
-                window.location.href = "Admin/asesora-dashboard.html";
+                window.location.href = "Admin/academica-dashboard.html";
             } else if (roleUpper === 'JEFE OSE BGU') {
-                window.location.href = "Admin/asesora-dashboard.html";
+                window.location.href = "Admin/academica-dashboard.html";
             } else if (roleUpper === 'E-LEARNING') {
-                window.location.href = "Admin/asesora-dashboard.html";
+                window.location.href = "Admin/academica-dashboard.html";
             } else if (roleUpper === 'ADMINISTRATIVO' || roleUpper === 'ADMINISTRADOR' || roleUpper === 'ADMIN' || roleUpper === 'EJECUTIVA ACADEMICA') {
                 window.location.href = "Admin/administrativo.html";
             }
@@ -211,13 +211,13 @@
                         window.location.href = "Admin/evaluacion-dashboard.html"; // Su panel exclusivo
                     } else if (rolAsignado === 'ASESORA ACADEMICA') {
                         localStorage.setItem('userRole', 'Asesora Academica');
-                        window.location.href = "Admin/asesora-dashboard.html";
+                        window.location.href = "Admin/academica-dashboard.html";
                     } else if (rolAsignado === 'JEFE OSE BGU') {
                         localStorage.setItem('userRole', 'Jefe OSE BGU');
-                        window.location.href = "Admin/asesora-dashboard.html";
+                        window.location.href = "Admin/academica-dashboard.html";
                     } else if (rolAsignado === 'E-LEARNING') {
                         localStorage.setItem('userRole', 'E-learning');
-                        window.location.href = "Admin/asesora-dashboard.html";
+                        window.location.href = "Admin/academica-dashboard.html";
                     } else if (
                         rolAsignado === 'ADMINISTRATIVO' || 
                         rolAsignado === 'ADMINISTRADOR' ||

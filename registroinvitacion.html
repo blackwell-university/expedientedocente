@@ -821,13 +821,41 @@
                 const result = await res.json();
 
                 if (result.status === 'success') {
+                    // NUEVO: a dónde seguir depende de en qué fase está el Expediente vinculado
+                    // (si lo hay). Si sigue en fase de llenado (recién creado junto con esta
+                    // invitación), vamos al wizard completo. Si ya está avanzado/aprobado (el
+                    // docente ya tenía su perfil al día, esto es solo una invitación a otro
+                    // curso), vamos a registroexpediente.html SIN exp= — eso activa su modo
+                    // "soloDatosMode", que solo deja revisar/actualizar el perfil, sin tocar
+                    // el estado de ningún expediente ni chocar con ningún candado.
+                    const idExpVinculado = invitacionData && invitacionData.idExpediente ? invitacionData.idExpediente : "";
+                    const estadosEnLlenado = ["", "por enviar", "enviado", "en proceso"];
+                    const expEstadoLower = (invitacionData && invitacionData.expedienteEstado ? invitacionData.expedienteEstado : "").toLowerCase().trim();
+                    const expedienteSigueEnLlenado = estadosEnLlenado.includes(expEstadoLower);
+
+                    let siguienteUrl = "misexpedientes.html";
+                    let mensajeExito = 'Has confirmado tu horario de clases exitosamente. La administración revisará tu disponibilidad.';
+                    let textoBoton = 'Aceptar';
+
+                    if (idExpVinculado && expedienteSigueEnLlenado) {
+                        siguienteUrl = `registroexpediente.html?exp=${idExpVinculado}`;
+                        mensajeExito = 'Horario confirmado. Ahora continuemos completando tu Expediente de Aprobación.';
+                        textoBoton = 'Continuar con mi Expediente';
+                    } else if (idExpVinculado) {
+                        // Ya tiene un expediente avanzado: lo invitamos a revisar su perfil, sin exp=
+                        siguienteUrl = `registroexpediente.html?origen=invitacion`;
+                        mensajeExito = 'Horario confirmado. Antes de generar tus documentos, revisemos que tu información siga correcta.';
+                        textoBoton = 'Revisar mi información';
+                    }
+
                     Swal.fire({
                         title: '¡Invitación Aceptada!',
-                        text: 'Has confirmado tu horario de clases exitosamente. La administración revisará tu disponibilidad.',
+                        text: mensajeExito,
                         icon: 'success',
+                        confirmButtonText: textoBoton,
                         confirmButtonColor: '#1e40af'
                     }).then(() => {
-                        window.location.href = "misexpedientes.html";
+                        window.location.href = siguienteUrl;
                     });
                 } else {
                     showToast(result.message || "Error al guardar el horario.", "danger");

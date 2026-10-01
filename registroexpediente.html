@@ -376,38 +376,43 @@
         .step-content.active { display: block; animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-        .step-title { font-weight: 800; font-size: 1.7rem; color: var(--text-main); margin-bottom: 12px; }
-        .step-subtitle { color: var(--text-muted); font-size: 1.05rem; margin-bottom: 40px; line-height: 1.6; }
-        .section-divider { border-bottom: 1px dashed var(--border-color); margin: 40px 0; }
+        /* === NUEVO: pasada de diseño — mismos colores y estilo, pero más compacto y liviano ===
+           Antes: títulos/cajas/tarjetas con mucho padding y texto grande, poco ajuste en móvil.
+           Ahora: se reduce padding y tamaño de fuente de forma pareja en todo el formulario
+           (educación, experiencia, competencias usan estas mismas clases base, así que el
+           ajuste se refleja en las tres secciones sin tocarlas una por una). */
+        .step-title { font-weight: 800; font-size: 1.45rem; color: var(--text-main); margin-bottom: 6px; }
+        .step-subtitle { color: var(--text-muted); font-size: 0.92rem; margin-bottom: 24px; line-height: 1.5; }
+        .section-divider { border-bottom: 1px dashed var(--border-color); margin: 28px 0; }
         
-        .section-label { font-size: 0.9rem; text-transform: uppercase; font-weight: 800; color: var(--text-muted); letter-spacing: 0.5px; margin-top: 35px; margin-bottom: 25px; border-bottom: 2px solid var(--primary-light); padding-bottom: 8px; display: inline-block;}
-        .step-content > .section-label:first-of-type { margin-top: 10px; }
+        .section-label { font-size: 0.78rem; text-transform: uppercase; font-weight: 800; color: var(--text-muted); letter-spacing: 0.5px; margin-top: 26px; margin-bottom: 14px; border-bottom: 2px solid var(--primary-light); padding-bottom: 6px; display: inline-block;}
+        .step-content > .section-label:first-of-type { margin-top: 6px; }
 
         /* --- FORMULARIOS --- */
-        .form-label { font-weight: 600; font-size: 0.9rem; color: #475569; margin-bottom: 8px; display: block; }
-        .form-control, .form-select { border-radius: 10px; padding: 10px 14px; border: 1px solid #cbd5e1; background-color: #ffffff; font-size: 0.88rem; color: var(--text-main); transition: var(--transition); width: 100%; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+        .form-label { font-weight: 600; font-size: 0.82rem; color: #475569; margin-bottom: 5px; display: block; }
+        .form-control, .form-select { border-radius: 9px; padding: 8px 12px; border: 1px solid #cbd5e1; background-color: #ffffff; font-size: 0.85rem; color: var(--text-main); transition: var(--transition); width: 100%; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
         .form-control:disabled, .form-select:disabled { background-color: var(--bg-body); color: #94a3b8; }
-        .form-select { appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; background-size: 14px; padding-right: 34px; }
+        .form-select { appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-size: 13px; padding-right: 30px; }
         .form-control:focus, .form-select:focus { background-color: white; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1); outline: none; }
 
         /* --- UPLOAD BOX --- */
-        .file-upload-box { border: 2px dashed #cbd5e1; border-radius: 16px; padding: 45px 20px; text-align: center; background: #ffffff; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;}
+        .file-upload-box { border: 2px dashed #cbd5e1; border-radius: 14px; padding: 30px 18px; text-align: center; background: #ffffff; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;}
         .file-upload-box:hover { border-color: var(--primary); background: var(--primary-light); }
-        .file-upload-box i { font-size: 2.8rem; color: #94a3b8; margin-bottom: 18px; transition: 0.2s; }
+        .file-upload-box i { font-size: 2.2rem; color: #94a3b8; margin-bottom: 12px; transition: 0.2s; }
         .file-upload-box:hover i { color: var(--primary); transform: translateY(-3px);}
 
         /* --- DOCUMENTOS YA SUBIDOS --- */
-        .uploaded-doc-card { background: #ffffff; border: 1px solid var(--border-color); border-radius: 16px; padding: 25px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
-        .uploaded-doc-card .info { display: flex; align-items: center; gap: 18px; }
-        .uploaded-doc-card .info i { font-size: 32px; color: var(--primary); }
+        .uploaded-doc-card { background: #ffffff; border: 1px solid var(--border-color); border-radius: 14px; padding: 16px 18px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+        .uploaded-doc-card .info { display: flex; align-items: center; gap: 14px; }
+        .uploaded-doc-card .info i { font-size: 26px; color: var(--primary); }
 
         /* --- CARDS DINÁMICAS --- */
-        .dynamic-card { background: #ffffff; border: 1px solid var(--border-color); border-radius: 16px; padding: 35px 30px; position: relative; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: 0.3s;}
+        .dynamic-card { background: #ffffff; border: 1px solid var(--border-color); border-radius: 14px; padding: 20px 20px 18px; position: relative; margin-bottom: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: 0.3s;}
         .dynamic-card:hover { border-color: #cbd5e1; box-shadow: 0 8px 25px rgba(0,0,0,0.05); }
-        .btn-remove { position: absolute; top: 20px; right: 20px; background: #fee2e2; color: #ef4444; border: none; border-radius: 10px; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 600; transition: 0.2s;}
+        .btn-remove { position: absolute; top: 14px; right: 14px; background: #fee2e2; color: #ef4444; border: none; border-radius: 9px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 0.88rem; font-weight: 600; transition: 0.2s;}
         .btn-remove:hover { background: #ef4444; color: white; }
         
-        .btn-add-dynamic { background: transparent; border: 2px dashed #cbd5e1; color: var(--text-muted); font-weight: 700; font-size: 1rem; border-radius: 16px; padding: 20px; width: 100%; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px;}
+        .btn-add-dynamic { background: transparent; border: 2px dashed #cbd5e1; color: var(--text-muted); font-weight: 700; font-size: 0.88rem; border-radius: 14px; padding: 14px; width: 100%; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;}
         .btn-add-dynamic:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
 
         /* --- RADIO CARDS (Paso 4) --- */
@@ -480,14 +485,14 @@
         .btn-continue { background: var(--primary); color: white; border: none; font-weight: 600; font-size: 0.9rem; padding: 11px 26px; border-radius: 12px; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;}
         .btn-continue:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(30, 64, 175, 0.25); }
         .btn-continue:disabled { opacity: 0.7; cursor: not-allowed; }
-        .btn-cancel { background: #f8fafc; color: #475569; border: 1px solid var(--border-color); font-weight: 600; font-size: 1.05rem; padding: 15px 35px; border-radius: 14px; transition: 0.2s; display: flex; align-items: center; justify-content: center;}
+        .btn-cancel { background: #f8fafc; color: #475569; border: 1px solid var(--border-color); font-weight: 600; font-size: 0.9rem; padding: 11px 26px; border-radius: 12px; transition: 0.2s; display: flex; align-items: center; justify-content: center;}
         .btn-cancel:hover { background: #f1f5f9; color: var(--text-main); }
 
         /* --- AESTHETIC ALERT (Banner) --- */
-        .alert-aesthetic { background-color: var(--primary-light); border: 1px solid #bfdbfe; border-radius: 16px; padding: 25px; display: flex; align-items: flex-start; gap: 18px; margin-bottom: 35px;}
-        .alert-aesthetic i { font-size: 1.8rem; color: var(--primary); margin-top: 2px;}
-        .alert-aesthetic h6 { font-weight: 800; color: var(--primary-dark); margin-bottom: 8px; font-size: 1.1rem;}
-        .alert-aesthetic p { margin: 0; color: #334155; font-size: 0.95rem; line-height: 1.6;}
+        .alert-aesthetic { background-color: var(--primary-light); border: 1px solid #bfdbfe; border-radius: 14px; padding: 16px 18px; display: flex; align-items: flex-start; gap: 13px; margin-bottom: 22px;}
+        .alert-aesthetic i { font-size: 1.3rem; color: var(--primary); margin-top: 2px;}
+        .alert-aesthetic h6 { font-weight: 800; color: var(--primary-dark); margin-bottom: 3px; font-size: 0.92rem;}
+        .alert-aesthetic p { margin: 0; color: #334155; font-size: 0.82rem; line-height: 1.45;}
 
         /* Ajuste Aesthetic para intl-tel-input */
         .iti { width: 100%; display: block; }
@@ -522,10 +527,19 @@
             .mobile-header { display: flex; }
 
             header { padding: 15px 20px; }
-            .wizard-card { padding: 30px 20px; border-radius: 16px; }
+            .wizard-card { padding: 20px 16px; border-radius: 16px; }
             .page-header h1 { font-size: 1.6rem; }
-            .step-title { font-size: 1.4rem; }
-            .step-subtitle { margin-bottom: 25px; }
+            .step-title { font-size: 1.3rem; }
+            .step-subtitle { font-size: 0.86rem; margin-bottom: 18px; }
+
+            /* NUEVO: en pantallas chicas, todavía un poco más compacto — tarjetas, avisos y
+               secciones más angostas para no comerse el ancho disponible */
+            .dynamic-card { padding: 16px 14px 14px; border-radius: 12px; }
+            .alert-aesthetic { padding: 13px 14px; gap: 10px; margin-bottom: 18px; }
+            .alert-aesthetic i { font-size: 1.1rem; }
+            .section-label { margin-top: 20px; margin-bottom: 12px; font-size: 0.72rem; }
+            .btn-add-dynamic { padding: 12px; font-size: 0.85rem; }
+            .uploaded-doc-card { padding: 12px 14px; }
 
             /* Apilar botones y ocupar el 100% en móviles */
             .d-flex.justify-content-between.align-items-center.mt-5 { flex-direction: column; gap: 20px; text-align: center; }
@@ -852,6 +866,17 @@
                 <div class="page-header desktop-header d-none d-md-block">
                     <h1>Completar Expediente</h1>
                     <p>Complete y verifique la siguiente información para finalizar su registro como docente en Blackwell Global University.</p>
+                </div>
+
+                <!-- NUEVO: aviso de "revisión de perfil" — aparece cuando llega desde una nueva
+                     invitación a otro curso y está en soloDatosMode (sin exp=), para que entienda
+                     por qué está aquí revisando su perfil en vez de llenar algo nuevo. -->
+                <div id="aviso-modo-revision" class="alert-aesthetic mb-4 d-none" style="background-color:#eff6ff; border-color:#bfdbfe;">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <div>
+                        <h6>Revisa tus datos antes de continuar</h6>
+                        <p>Te invitaron a un nuevo curso. Verifica que tus datos sigan correctos antes de generar tus documentos.</p>
+                    </div>
                 </div>
 
                 <!-- HEADER MÓVIL (Estilo App) -->
@@ -1199,7 +1224,7 @@
                                 <i class="fa-light fa-file-signature"></i>
                                 <div>
                                     <h6>Validación de Datos Prellenados</h6>
-                                    <p>Hemos extraído la información principal de sus documentos. Por favor, <b>valide que la información sea correcta y complete los campos vacíos</b> requeridos para formalizar su expediente.</p>
+                                    <p>Extrajimos esta información de sus documentos. <b>Valide que sea correcta y complete lo que falte.</b></p>
                                 </div>
                             </div>
 
@@ -1222,7 +1247,7 @@
                             <div class="mb-2 pt-3 border-top">
                                 <div class="section-label mt-4 d-flex align-items-center gap-2"><i class="fa-solid fa-star text-primary fs-5"></i> Competencias y Habilidades</div>
                                 <div class="alert-aesthetic mb-3 py-3 px-4" style="background-color: #f8fafc; border-color: #e2e8f0;">
-                                    <p class="m-0 small text-muted"><i class="fa-solid fa-circle-info text-primary me-2"></i><strong>Requisito:</strong> Debe registrar al menos <b>una competencia de cada tipo</b> (Tecnológica, Lingüística y Habilidades Blandas).</p>
+                                    <p class="m-0 small text-muted"><i class="fa-solid fa-circle-info text-primary me-2"></i><strong>Requisito:</strong> al menos una competencia <b>Tecnológica, Lingüística y de Habilidades Blandas</b>.</p>
                                 </div>
                                 <div id="ai-skills-container"></div>
                                 <button type="button" class="btn-add-dynamic mt-3" onclick="addSkillField()">
@@ -1263,6 +1288,18 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
         let diplomasBloqueadosPorEjecutiva = false;
         let idExpedienteUrl = new URLSearchParams(window.location.search).get('exp');
+
+        // NUEVO: ?origen=invitacion — llegó aquí tras aceptar una invitación a otro curso
+        // (ver registroinvitacion.html). Solo es un aviso visual: no cambia nada de cómo se
+        // guarda. Si además no hay exp= (ya está en soloDatosMode, ver más abajo), se muestra
+        // un banner explicando por qué está revisando su perfil.
+        const origenInvitacion = new URLSearchParams(window.location.search).get('origen') === 'invitacion';
+        if (origenInvitacion && !idExpedienteUrl) {
+            document.addEventListener('DOMContentLoaded', () => {
+                const aviso = document.getElementById('aviso-modo-revision');
+                if (aviso) aviso.classList.remove('d-none');
+            });
+        }
 
         const pasoAsignacionOculto = true;
 

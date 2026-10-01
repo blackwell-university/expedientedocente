@@ -107,7 +107,15 @@
             text-decoration: none; color: #94a3b8; position: relative;
             transition: background 0.35s cubic-bezier(.34,1.56,.64,1), padding 0.35s cubic-bezier(.34,1.56,.64,1), color 0.25s ease;
         }
-        .bottom-item .icon-wrap { display: flex; align-items: center; justify-content: center; }
+        .bottom-item .icon-wrap { display: flex; align-items: center; justify-content: center; position: relative; }
+        /* NUEVO: contador rojo de invitaciones + expedientes pendientes, mismo estilo en todas
+           las páginas (ver misexpedientes.html, que es donde se calcula el detalle por pestaña) */
+        .nav-icon-badge {
+            position: absolute; top: -5px; right: -9px;
+            background: #ef4444; color: white; font-size: 0.6rem; font-weight: 800;
+            min-width: 15px; height: 15px; border-radius: 50%; padding: 0 3px; line-height: 1;
+            border: 1.5px solid #ffffff; display: none; align-items: center; justify-content: center;
+        }
         .bottom-item .material-symbols-rounded, .bottom-item i {
             font-size: 1.32rem; line-height: 1;
             font-variation-settings: 'FILL' 0, 'wght' 400;
@@ -358,7 +366,7 @@
         </a>
         <div class="nav-links-desktop">
             <a href="dashboard-docente.html" class="nav-item"><span class="material-symbols-rounded">home</span> Dashboard</a>
-            <a href="misexpedientes.html" class="nav-item"><span class="material-symbols-rounded">folder_open</span> Expedientes</a>
+            <a href="misexpedientes.html" class="nav-item"><span class="icon-wrap" style="position:relative;"><span class="material-symbols-rounded">folder_open</span><span class="nav-icon-badge" id="nav-count-exp-desktop">0</span></span> Expedientes</a>
             <a href="miscursos.html" class="nav-item active"><span class="material-symbols-rounded">co_present</span> Mis Clases</a>
         </div>
         <div class="nav-user d-flex gap-3 align-items-center">
@@ -387,7 +395,7 @@
             <span>Inicio</span>
         </a>
         <a href="misexpedientes.html" class="bottom-item">
-            <span class="icon-wrap"><span class="material-symbols-rounded">folder_open</span></span>
+            <span class="icon-wrap"><span class="material-symbols-rounded">folder_open</span><span class="nav-icon-badge" id="nav-count-exp-mobile">0</span></span>
             <span>Expedientes</span>
         </a>
         <a href="miscursos.html" class="bottom-item active">
@@ -605,6 +613,49 @@
 
     <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
+
+        // NUEVO: contador rojo de pendientes en el menú "Expedientes" (invitaciones + expedientes
+        // que necesitan algo del docente). Fetch propio y liviano, no interfiere con lo demás que
+        // cargue esta página. Mismo criterio que usa misexpedientes.html para sus dos pestañas.
+        async function cargarContadorNavExpedientes() {
+            const idDocenteNav = localStorage.getItem('userId');
+            if (!idDocenteNav) return;
+            try {
+                const [resExp, resInv] = await Promise.all([
+                    fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_expedientes_docente', docenteId: idDocenteNav, soloVisiblesDocente: true }) }),
+                    fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_invitationsexpediente', docenteId: idDocenteNav }) })
+                ]);
+                const dataExp = await resExp.json();
+                const dataInv = await resInv.json();
+
+                let expedientes = dataExp.status === 'success' ? dataExp.data : [];
+                let invitaciones = dataInv.status === 'success' ? dataInv.data : [];
+                invitaciones = invitaciones.filter(inv => inv.estado && inv.estado.toLowerCase() !== 'guardado');
+
+                const pendientesInv = invitaciones.filter(i => {
+                    if (!i.horarioConfirmado) return true;
+                    return i.estado.toLowerCase() === 'pendiente firma docente';
+                }).length;
+
+                const pendientesExp = expedientes.filter(exp => {
+                    const estadoLower = (exp.estado || '').toLowerCase();
+                    const estaPorCompletar = ['pendiente', 'en proceso', 'enviado'].includes(estadoLower);
+                    const estaPorFirmar = estadoLower === 'por firmar';
+                    const invitacionPendiente = !!exp.idInvitacion && !exp.horarioInvitacionConfirmado;
+                    return estaPorCompletar || estaPorFirmar || invitacionPendiente;
+                }).length;
+
+                const totalPendientesNav = pendientesInv + pendientesExp;
+                const bDesktopNav = document.getElementById('nav-count-exp-desktop');
+                const bMobileNav = document.getElementById('nav-count-exp-mobile');
+                if (bDesktopNav) { bDesktopNav.innerText = totalPendientesNav; bDesktopNav.style.display = totalPendientesNav > 0 ? 'inline-flex' : 'none'; }
+                if (bMobileNav) { bMobileNav.innerText = totalPendientesNav; bMobileNav.style.display = totalPendientesNav > 0 ? 'flex' : 'none'; }
+            } catch (e) {
+                console.error('Error cargando contador de pendientes del nav:', e);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', cargarContadorNavExpedientes);
+
         
         let invIdGlobal = new URLSearchParams(window.location.search).get('id');
         let docenteIdGlobal = localStorage.getItem('userId');
