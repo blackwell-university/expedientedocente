@@ -739,6 +739,18 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
         // NUEVO: arma el aviso/botón de "Culminar Clase" o "Reabrir Clase" según corresponda.
         // No vuelve a pintar enlaces/sesiones: fechaCulminacion ya se fija antes de esos renders.
+        // NUEVO: formatea la fecha de culminación para mostrarla, sin importar cómo llegue del
+        // backend. GSheets a veces convierte el texto "dd/mm/yyyy" que guarda la acción
+        // set_clase_culminada en una celda de fecha real; al leerla vuelve como ISO
+        // ("2026-10-01T05:00:00.000Z"). Esto lo detecta y lo deja en dd/mm/yyyy de nuevo.
+        function formatFechaCorta(fechaRaw) {
+            if (!fechaRaw) return '';
+            if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(String(fechaRaw).trim())) return fechaRaw; // ya está bien
+            const d = new Date(fechaRaw);
+            if (isNaN(d.getTime())) return fechaRaw; // no se pudo interpretar, mostrar tal cual
+            return d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
         function actualizarZonaCulminacion() {
             const zona = document.getElementById('zonaCulminacion');
             const aviso = document.getElementById('avisoCulminada');
@@ -746,7 +758,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
             if (fechaCulminacion) {
                 aviso.style.display = 'flex';
-                txtAviso.innerText = `Clase culminada el ${fechaCulminacion}`;
+                txtAviso.innerText = `Clase culminada el ${formatFechaCorta(fechaCulminacion)}`;
                 zona.innerHTML = puedeReabrir
                     ? `<button type="button" class="btn-reabrir" onclick="reabrirClase()"><i class="fa-solid fa-rotate-left"></i> Reabrir Clase</button>`
                     : '';

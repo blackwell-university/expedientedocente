@@ -297,6 +297,12 @@
                 asesorasGlobal = data;
                 poblarAsesoras();
                 renderProgramCardsAsesoras();
+                // NUEVO: 'get_all_cursos' y esta petición corren en paralelo — si los cursos
+                // llegan primero, la tabla individual se dibuja con asesorasGlobal todavía vacío
+                // y cada combo queda pegado en "Sin asignar". Volver a aplicar el filtro aquí
+                // redibuja la tabla ya con la lista de asesoras lista, sin importar cuál de las
+                // dos respuestas llegó primero.
+                aplicarFiltrosCursos();
             });
         }
 
