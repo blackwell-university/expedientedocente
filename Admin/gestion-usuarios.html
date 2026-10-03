@@ -5,7 +5,8 @@
         const isLoggedIn = localStorage.getItem('isLoggedIn');
         const userRole = localStorage.getItem('userRole');
 
-        const rolesPermitidos = ['Administrador', 'ADMIN'];
+        // NUEVO: ahora también entran Administrativo y Ejecutiva Academica (antes solo Administrador/ADMIN)
+        const rolesPermitidos = ['Administrador', 'ADMIN', 'Administrativo', 'Ejecutiva Academica'];
 
         if (isLoggedIn !== 'true' || !rolesPermitidos.some(rol => userRole && userRole.toLowerCase() === rol.toLowerCase())) {
             window.location.href = "../index.html";
@@ -100,6 +101,8 @@
         .btn-icon-accion { width: 34px; height: 34px; border-radius: 10px; border: none; background: #f8fafc; color: #94a3b8; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; transition: var(--transition); flex-shrink: 0; }
         .btn-icon-accion:hover { transform: translateY(-1px); }
         .btn-icon-accion.btn-editar:hover { background: #eff6ff; color: var(--primary); }
+        /* NUEVO: botón para enviar las credenciales de acceso por correo */
+        .btn-icon-accion.btn-credenciales:hover { background: #f0fdf4; color: #16a34a; }
 
         .btn-cancelar-modal { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 20px; font-weight: 700; font-size: 0.85rem; transition: var(--transition); }
         .btn-cancelar-modal:hover { background: #f1f5f9; border-color: #cbd5e1; color: #1e293b; }
@@ -352,7 +355,24 @@
         const itemsPerPage = 10;
         let modoEdicion = false;
 
-        function logout() { if (confirm("¿Cerrar sesión?")) { localStorage.clear(); window.location.href = "../index.html"; } }
+        function logout() {
+            Swal.fire({
+                title: '¿Cerrar sesión?',
+                text: 'Vas a salir del portal administrativo.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, cerrar sesión',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    localStorage.clear();
+                    window.location.href = "../index.html";
+                }
+            });
+        }
 
         function toggleSidebar() {
             const sb = document.getElementById('sidebar');
@@ -462,6 +482,10 @@
                         <button type="button" class="btn-icon-accion btn-editar" title="Editar usuario" onclick='abrirModalEditar(${usuarioJson})'>
                             <i class="fa-solid fa-pen"></i>
                         </button>
+                        <!-- NUEVO: enviar usuario y contraseña actuales al correo de este usuario -->
+                        <button type="button" class="btn-icon-accion btn-credenciales" title="Enviar credenciales por correo" onclick='enviarCredenciales(${usuarioJson})'>
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
                     </td>
                 </tr>`;
             }).join('');
@@ -485,6 +509,34 @@
                 span.onclick = () => { currentPage = i; renderTable(); };
                 pageNumbers.appendChild(span);
             }
+        }
+
+        // NUEVO: enviar al usuario su propio correo con su username y contraseña actuales
+        function enviarCredenciales(u) {
+            Swal.fire({
+                title: '¿Enviar credenciales?',
+                html: `Se enviará el usuario y la contraseña actuales de <b>${u.nombre || u.username}</b> a <b>${u.correo}</b>.`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, enviar',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            }).then(async (result) => {
+                if (!result.isConfirmed) return;
+                try {
+                    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'send_staff_credentials', idUsuario: u.idUsuario }) });
+                    const data = await res.json();
+                    if (data.status === 'success') {
+                        showToast('Credenciales enviadas correctamente.');
+                    } else {
+                        Swal.fire('No se pudo enviar', data.message || 'Ocurrió un error.', 'error');
+                    }
+                } catch (e) {
+                    Swal.fire('Error de conexión', 'No se pudo contactar al servidor.', 'error');
+                }
+            });
         }
 
         function abrirModalCrear() {

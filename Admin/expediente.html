@@ -1539,11 +1539,23 @@
             document.getElementById('sidebarOverlay').classList.toggle('active');
         }
 
-        function logout() { 
-            if(confirm("¿Cerrar sesión?")) { 
-                localStorage.clear(); 
-                window.location.href = "../index.html"; 
-            } 
+        function logout() {
+            Swal.fire({
+                title: '¿Cerrar sesión?',
+                text: 'Vas a salir del portal administrativo.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, cerrar sesión',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    localStorage.clear();
+                    window.location.href = "../index.html";
+                }
+            });
         }
 
 
@@ -1913,11 +1925,13 @@
 
             const rolUpper = String(rol || "").toUpperCase();
             const esAdmin = (rolUpper === 'ADMINISTRADOR' || rolUpper === 'ADMIN');
-            const esAdministrativo = (rolUpper === 'ADMINISTRATIVO');
+            // NUEVO: Ejecutiva Academica tiene los mismos permisos que Administrativo aquí
+            const esAdministrativo = (rolUpper === 'ADMINISTRATIVO' || rolUpper === 'EJECUTIVA ACADEMICA');
             document.getElementById('moverEtapaWrapper').style.display = esAdmin ? '' : 'none';
             document.getElementById('btnAbrirCancelarExpediente').style.display = (esAdmin || esAdministrativo) ? '' : 'none';
             const navGU = document.getElementById('navGestionUsuarios');
-            if (navGU) navGU.style.display = esAdmin ? '' : 'none';
+            // NUEVO: ahora Administrativo y Ejecutiva Academica también entran a Gestión de Usuarios
+            if (navGU) navGU.style.display = (esAdmin || esAdministrativo) ? '' : 'none';
 
             if(!expId) {
                 document.getElementById('det-nombre-curso').innerText = "Error: Faltan datos";

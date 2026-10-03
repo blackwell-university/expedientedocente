@@ -7,7 +7,7 @@
         
         const rolesPermitidos = [
             'Administrativo', 'Administrador', 'Ejecutivo Licenciamiento', 
-            'Asesora Academica', 'Ejecutiva Credenciales', 'ADMIN'
+            'Asesora Academica', 'Ejecutiva Credenciales', 'ADMIN', 'Ejecutiva Academica'
         ];
         
         if (isLoggedIn !== 'true' || !rolesPermitidos.some(rol => userRole && userRole.toLowerCase() === rol.toLowerCase())) {
@@ -494,7 +494,24 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         const ICONOS_TIPO = { UPGRADE: 'fa-graduation-cap', MASTER: 'fa-user-graduate', DOCTORADE: 'fa-award' };
         const CLASE_TIPO = { UPGRADE: 'tipo-upgrade', MASTER: 'tipo-master', DOCTORADE: 'tipo-doctorade' };
 
-        function logout() { if(confirm("¿Cerrar sesión?")) { sessionStorage.clear(); localStorage.clear(); window.location.href = "../index.html"; } }
+        function logout() {
+            Swal.fire({
+                title: '¿Cerrar sesión?',
+                text: 'Vas a salir del portal administrativo.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, cerrar sesión',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    localStorage.clear();
+                    window.location.href = "../index.html";
+                }
+            });
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             const name = localStorage.getItem('userName') || "Admin";

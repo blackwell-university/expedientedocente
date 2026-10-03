@@ -7,7 +7,7 @@
         
         const rolesPermitidos = [
             'Administrativo', 'Administrador', 'Ejecutivo Licenciamiento', 
-            'Asesora Academica', 'Ejecutiva Credenciales'
+            'Asesora Academica', 'Ejecutiva Credenciales', 'ADMIN', 'Ejecutiva Academica'
         ];
         
         if (isLoggedIn !== 'true' || !rolesPermitidos.some(rol => userRole && userRole.toLowerCase() === rol.toLowerCase())) {
@@ -1896,6 +1896,7 @@
         function logout() {
             Swal.fire({
                 title: '¿Cerrar sesión?',
+                text: 'Vas a salir del portal administrativo.',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#2563eb',

@@ -191,9 +191,6 @@
         .btn-icon-accion.btn-editar:hover { background: #eff6ff; color: var(--primary); }
         .btn-icon-accion.btn-eliminar:hover { background: #fef2f2; color: #dc2626; }
 
-        /* NUEVO: botón "Cancelar" de los modales — antes usaba .btn-accion (pensado para íconos
-           pequeños de 34px), lo que hacía que el texto se viera roto con el borde por defecto
-           del navegador asomando. Este es un botón de texto propio, consistente con el resto. */
         .btn-cancelar-modal {
             background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; border-radius: 12px;
             padding: 10px 20px; font-weight: 700; font-size: 0.85rem; transition: var(--transition);
@@ -476,7 +473,24 @@
         let currentPage = 1;
         const itemsPerPage = 10;
 
-        function logout() { if(confirm("¿Cerrar sesión?")) { localStorage.clear(); window.location.href = "../index.html"; } }
+        function logout() {
+            Swal.fire({
+                title: '¿Cerrar sesión?',
+                text: 'Vas a salir del portal administrativo.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, cerrar sesión',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    localStorage.clear();
+                    window.location.href = "../index.html";
+                }
+            });
+        }
 
         function toggleSidebar() {
             const sb = document.getElementById('sidebar');
@@ -680,7 +694,8 @@
             document.getElementById('userInitial').innerText = name.trim().substring(0, 2).toUpperCase();
 
             const rolUpperNav = String(rol || '').toUpperCase();
-            if (rolUpperNav === 'ADMINISTRADOR' || rolUpperNav === 'ADMIN') {
+            // NUEVO: Administrativo y Ejecutiva Academica también entran a Gestión de Usuarios
+            if (rolUpperNav === 'ADMINISTRADOR' || rolUpperNav === 'ADMIN' || rolUpperNav === 'ADMINISTRATIVO' || rolUpperNav === 'EJECUTIVA ACADEMICA') {
                 const navGU = document.getElementById('navGestionUsuarios');
                 if (navGU) navGU.style.display = '';
             }
