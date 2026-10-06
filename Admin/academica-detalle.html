@@ -965,6 +965,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     <div class="col-md-1 d-flex justify-content-end">
                         <button class="btn-delete" onclick="eliminarEnlaceUI(${idx})"><i class="fa-solid fa-trash"></i></button>
                     </div>`}
+                    ${enlace.fechaRegistro ? `<div class="col-12"><small class="text-muted" style="font-size:0.74rem;"><i class="fa-regular fa-clock me-1"></i>Registrado el ${enlace.fechaRegistro}</small></div>` : ''}
                 </div>`;
             });
             container.innerHTML = html || '<p class="text-muted m-0" id="noLinksText">No se han registrado enlaces de acceso virtual.</p>';
