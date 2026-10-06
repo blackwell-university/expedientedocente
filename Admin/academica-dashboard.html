@@ -38,7 +38,7 @@
         .btn-limpiar-filtros { background: transparent; color: var(--text-muted); font-weight: 600; font-size: 0.82rem; border: none; padding: 8px 4px; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; margin-left: auto; }
         .btn-limpiar-filtros:hover { color: #ef4444; }
 
-        .table-wrapper { background: white; border-radius: 16px; border: 1px solid var(--gray-border); overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.01); }
+        .table-wrapper { background: white; border-radius: 16px; border: 1px solid var(--gray-border); overflow-x: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.01); } /* NUEVO: antes "overflow: hidden" — si la tabla no entra, escondía el botón de Acción en vez de dejar hacer scroll */
         .custom-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
         .custom-table th { padding: 14px 20px; background: #f8fafc; font-weight: 700; text-align: left; border-bottom: 1px solid var(--gray-border); font-size: 0.72rem; letter-spacing: 0.4px; color: #64748b; }
         .custom-table th.sortable { cursor: pointer; user-select: none; transition: 0.15s; }
@@ -108,7 +108,7 @@
             <li id="navDashboardAdmin" style="display:none;"><a href="administrativo.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
             <li id="navGestionDocentes" style="display:none;"><a href="gestion-docentes.html" class="nav-link"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
             <li id="navExpedientesAdmin" style="display:none;"><a href="gestion-expedientes.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
-            <li id="navGestionCursosAdmin" style="display:none;"><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Catálogo de Cursos</span></a></li>
+            <li id="navGestionCursosAdmin" style="display:none;"><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Gestión Cursos</span></a></li>
             <li><a href="academica-dashboard.html" class="nav-link active"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Gestión de Clases</span></a></li>
             <li id="navGestionAsesoras" style="display:none;"><a href="gestion-asesoras.html" class="nav-link"><i class="fa-solid fa-people-arrows"></i> <span class="link-text">Gestionar Asesoras</span></a></li>
             <li id="navGestionUsuariosAcad" style="display:none;"><a href="gestion-usuarios.html" class="nav-link"><i class="fa-solid fa-user-gear"></i> <span class="link-text">Gestión de Usuarios</span></a></li>
@@ -236,11 +236,12 @@
             document.getElementById('userInitial').innerText = name.trim().substring(0, 2).toUpperCase();
 
             const rolActual = localStorage.getItem('userRole');
+            // NUEVO: muestra el rol real de la persona en vez de una etiqueta fija — antes,
+            // cualquier rol que no fuera Jefe OSE BGU/Administrador/E-learning se quedaba
+            // viendo "Gestión de Cursos" (el texto por defecto del HTML), sin actualizarse.
+            document.getElementById('userRoleLabel').innerText = rolActual === 'E-learning' ? 'E-learning (solo lectura)' : (rolActual || 'Usuario');
             if (rolActual === 'Jefe OSE BGU' || rolActual === 'Administrador') {
                 document.getElementById('navGestionAsesoras').style.display = 'block';
-                document.getElementById('userRoleLabel').innerText = rolActual === 'Jefe OSE BGU' ? 'Jefe OSE BGU' : 'Gestión de Cursos';
-            } else if (rolActual === 'E-learning') {
-                document.getElementById('userRoleLabel').innerText = 'E-learning (solo lectura)';
             }
 
             // NUEVO: módulos del portal administrativo, visibles solo para quien ya tiene acceso

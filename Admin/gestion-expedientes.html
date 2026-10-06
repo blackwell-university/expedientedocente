@@ -71,6 +71,13 @@
 
         /* --- FILTROS INTELIGENTES --- */
         .filter-section { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); margin-bottom: 24px; border: 1px solid rgba(0,0,0,0.04); }
+        /* NUEVO: segunda fila del filtro (rango de fechas), separada por una línea sutil —
+           mismo patrón que ya usa Gestión de Clases */
+        .filter-row-2 { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-top: 16px; padding-top: 16px; border-top: 1px dashed #e2e8f0; }
+        .filter-row-2 .date-group { display: flex; align-items: center; gap: 8px; }
+        .filter-row-2 .date-group span { color: #64748b; font-size: 0.82rem; }
+        .btn-limpiar-filtros { background: transparent; color: #64748b; font-weight: 600; font-size: 0.82rem; border: none; padding: 8px 4px; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; margin-left: auto; }
+        .btn-limpiar-filtros:hover { color: #ef4444; }
         .form-label-sm { font-size: 0.8rem; font-weight: 600; color: #64748b; margin-bottom: 8px; display: block; }
         .input-filter { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 16px; font-size: 0.95rem; color: var(--text-main); transition: var(--transition); }
         .input-filter:focus { background-color: white; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); outline: none; }
@@ -219,11 +226,11 @@
                 <!-- FILTROS AVANZADOS -->
                 <div class="filter-section">
                     <div class="row g-3 align-items-end">
-                        <div class="col-md-5">
+                        <div class="col-md-7">
                             <label class="form-label-sm" id="labelFiltroTexto">Buscar por Docente o ID Expediente</label>
                             <input type="text" id="filterText" class="form-control input-filter" placeholder="Ej: Juan Pérez o EXP-123456...">
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-5">
                             <label class="form-label-sm" id="labelFiltroEstado">Estado de Expediente</label>
                             <select id="filterStatus" class="form-select input-filter" style="cursor: pointer;">
                                 <option value="Todos">Todos los estados</option>
@@ -238,11 +245,22 @@
                                 <option value="Cancelado">Cancelado</option>
                             </select>
                         </div>
-                        <div class="col-md-3">
-                            <button class="btn w-100" style="height: 48px; background: #f1f5f9; border-radius: 12px; font-weight: 600; color: #475569;" onclick="resetFilters()">
-                                Limpiar Filtros
-                            </button>
+                    </div>
+
+                    <!-- NUEVO: rango de fechas de inicio — aplica igual en Expedientes e
+                         Invitaciones, las dos vistas comparten el mismo campo fechaInicio -->
+                    <div class="filter-row-2">
+                        <div class="date-group">
+                            <label class="form-label-sm m-0">Inicio desde</label>
+                            <input type="date" id="filterFechaDesde" class="form-control input-filter" style="width:auto; padding:10px 14px;">
                         </div>
+                        <div class="date-group">
+                            <span>hasta</span>
+                            <input type="date" id="filterFechaHasta" class="form-control input-filter" style="width:auto; padding:10px 14px;">
+                        </div>
+                        <button type="button" class="btn-limpiar-filtros" onclick="resetFilters()">
+                            <i class="fa-solid fa-filter-circle-xmark"></i> Limpiar filtros
+                        </button>
                     </div>
                 </div>
 
@@ -401,6 +419,9 @@
             
             document.getElementById('filterText').addEventListener('input', filtrar);
             document.getElementById('filterStatus').addEventListener('change', filtrar);
+            // NUEVO: rango de fechas
+            document.getElementById('filterFechaDesde').addEventListener('change', filtrar);
+            document.getElementById('filterFechaHasta').addEventListener('change', filtrar);
         });
 
         function cambiarVista(vista) {
@@ -481,9 +502,26 @@
             );
         }
 
+        // NUEVO: ¿la fechaInicio del registro cae dentro del rango elegido? (si no hay rango
+        // elegido, todo pasa; si hay fechaInicio inválida y sí hay rango, no pasa el filtro)
+        function fechaDentroDeRango(fechaInicioRaw, desdeDate, hastaDate) {
+            if (!desdeDate && !hastaDate) return true;
+            const f = fechaInicioRaw ? new Date(fechaInicioRaw) : null;
+            if (!f || isNaN(f.getTime())) return false;
+            if (desdeDate && f < desdeDate) return false;
+            if (hastaDate && f > hastaDate) return false;
+            return true;
+        }
+
         function filtrar() {
             const text = document.getElementById('filterText').value.toLowerCase();
             const status = document.getElementById('filterStatus').value;
+
+            // NUEVO: rango de fechas de inicio, compartido por las dos vistas
+            const desdeVal = document.getElementById('filterFechaDesde').value;
+            const hastaVal = document.getElementById('filterFechaHasta').value;
+            const desdeDate = desdeVal ? new Date(desdeVal + 'T00:00:00') : null;
+            const hastaDate = hastaVal ? new Date(hastaVal + 'T23:59:59') : null;
 
             if (vistaActual === 'invitaciones') {
                 const filtradasInv = todasInvitaciones.filter(inv => {
@@ -491,7 +529,8 @@
                                       (inv.id || '').toLowerCase().includes(text) ||
                                       (inv.curso || '').toLowerCase().includes(text);
                     const matchStatus = status === "Todos" || (inv.estado || '').toLowerCase() === status.toLowerCase();
-                    return matchText && matchStatus;
+                    const matchFecha = fechaDentroDeRango(inv.fechaInicio, desdeDate, hastaDate);
+                    return matchText && matchStatus && matchFecha;
                 });
                 renderTablaInvitaciones(filtradasInv);
                 return;
@@ -500,7 +539,8 @@
             const filtradas = todosExpedientes.filter(exp => {
                 const matchText = exp.nombreDocente.toLowerCase().includes(text) || exp.idExpediente.toLowerCase().includes(text);
                 const matchStatus = status === "Todos" || exp.estado === status;
-                return matchText && matchStatus;
+                const matchFecha = fechaDentroDeRango(exp.fechaInicio, desdeDate, hastaDate);
+                return matchText && matchStatus && matchFecha;
             });
             renderTabla(filtradas);
         }
@@ -697,6 +737,8 @@
         function resetFilters() {
             document.getElementById('filterText').value = '';
             document.getElementById('filterStatus').value = 'Todos';
+            document.getElementById('filterFechaDesde').value = ''; // NUEVO
+            document.getElementById('filterFechaHasta').value = ''; // NUEVO
             filtrar();
         }
     </script>
