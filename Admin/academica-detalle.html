@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <script src="bgu-shell.js"></script>
-    <script>bguGuard(['Asesora Academica', 'Administrador', 'Jefe OSE BGU', 'E-learning']);</script>
+    <script>bguGuard(['Asesora Academica', 'Administrador', 'Jefe OSE BGU', 'E-learning', 'Administrativo', 'Ejecutiva Academica']);</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Clase | Blackwell University</title>
@@ -21,7 +21,7 @@
         .back-link { text-decoration: none; color: var(--text-muted); display: flex; align-items: center; gap: 6px; font-weight: 500;}
         .back-link:hover { color: var(--primary); }
 
-        .page-header h1 { font-weight: 800; font-size: 2rem; color: var(--primary-dark); letter-spacing: -0.03em; margin: 0; }
+        .page-header h1 { font-weight: 800; font-size: 1.6rem; color: var(--primary-dark); letter-spacing: -0.03em; margin: 0; } /* NUEVO: antes 2rem */
         .page-header p { color: var(--text-muted); font-size: 1rem; margin: 4px 0 0 0; }
 
         .form-card { background: white; border-radius: var(--card-radius); padding: 28px; border: 1px solid rgba(0,0,0,0.04); box-shadow: 0 10px 30px rgba(0,0,0,0.01); margin-bottom: 24px; }
@@ -197,8 +197,16 @@
             <div class="avatar" id="userInitial">AA</div><div class="user-meta"><b id="userName">Asesora Académica</b><span id="userRoleLabel">Gestión de Cursos</span></div>
         </div>
         <ul class="nav-list">
+            <!-- NUEVO: módulos del portal administrativo, visibles solo para quien ya tiene
+                 acceso a ellos ahí (Administrativo, Administrador, Ejecutiva Academica).
+                 Orden igualado al del sidebar de administrativo.html. -->
+            <li id="navDashboardAdmin" style="display:none;"><a href="administrativo.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
+            <li id="navGestionDocentes" style="display:none;"><a href="gestion-docentes.html" class="nav-link"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
+            <li id="navExpedientesAdmin" style="display:none;"><a href="gestion-expedientes.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
+            <li id="navGestionCursosAdmin" style="display:none;"><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Catálogo de Cursos</span></a></li>
             <li><a href="academica-dashboard.html" class="nav-link active"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Gestión de Clases</span></a></li>
             <li id="navGestionAsesoras" style="display:none;"><a href="gestion-asesoras.html" class="nav-link"><i class="fa-solid fa-people-arrows"></i> <span class="link-text">Gestionar Asesoras</span></a></li>
+            <li id="navGestionUsuariosAcad" style="display:none;"><a href="gestion-usuarios.html" class="nav-link"><i class="fa-solid fa-user-gear"></i> <span class="link-text">Gestión de Usuarios</span></a></li>
         </ul>
         <a href="#" onclick="logout('portal académico')" class="nav-link" style="color: #f43f5e; margin-top: auto;"><i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span></a>
     </aside>
@@ -445,7 +453,10 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         const rolActual = localStorage.getItem('userRole');
         const esSoloLectura = rolActual === 'E-learning';
         // NUEVO: quién puede culminar/reabrir una clase, y quién puede ver el documento bancario del docente
-        const puedeCulminar = (rolActual === 'Asesora Academica' || rolActual === 'Jefe OSE BGU' || rolActual === 'Administrador');
+        // NUEVO: Administrativo y Ejecutiva Academica quedan al mismo nivel que Asesora Academica
+        // aquí (pueden gestionar y culminar clases) — NO se agregaron a puedeReabrir ni a
+        // puedeVerDirectDeposit, que siguen siendo exclusivos de Jefe OSE BGU/Administrador.
+        const puedeCulminar = (rolActual === 'Asesora Academica' || rolActual === 'Jefe OSE BGU' || rolActual === 'Administrador' || rolActual === 'Administrativo' || rolActual === 'Ejecutiva Academica');
         const puedeReabrir = (rolActual === 'Jefe OSE BGU' || rolActual === 'Administrador');
         const puedeVerDirectDeposit = (rolActual === 'Jefe OSE BGU' || rolActual === 'Administrador');
 
@@ -459,6 +470,19 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
             if (rolActual === 'Jefe OSE BGU' || rolActual === 'Administrador') {
                 document.getElementById('navGestionAsesoras').style.display = 'block';
+            }
+
+            // NUEVO: módulos del portal administrativo, visibles solo para quien ya tiene acceso
+            // ahí — Asesora Academica, Jefe OSE BGU y E-learning NO los ven (solo Gestión de Clases)
+            const rolUpperNav = String(rolActual || '').toUpperCase();
+            if (rolUpperNav === 'ADMINISTRATIVO' || rolUpperNav === 'ADMINISTRADOR' || rolUpperNav === 'ADMIN' || rolUpperNav === 'EJECUTIVA ACADEMICA') {
+                document.getElementById('navDashboardAdmin').style.display = 'block';
+                document.getElementById('navGestionDocentes').style.display = 'block';
+                document.getElementById('navExpedientesAdmin').style.display = 'block';
+                document.getElementById('navGestionCursosAdmin').style.display = 'block';
+            }
+            if (rolUpperNav === 'ADMINISTRADOR' || rolUpperNav === 'ADMIN') {
+                document.getElementById('navGestionUsuariosAcad').style.display = 'block';
             }
 
             // NUEVO: la pestaña "Información Bancaria" solo existe para Jefe OSE BGU / Administrador

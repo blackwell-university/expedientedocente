@@ -25,7 +25,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
-        html { font-size: 15px; }
+        html { font-size: 14px; }
         :root {
             --primary: #2563eb; /* Azul Blackwell Moderno */
             --primary-dark: #1e3a8a; /* Azul Institucional profundo */
@@ -161,7 +161,7 @@
         .back-link:hover { color: var(--primary); }
 
         .page-header h1 { 
-            font-weight: 800; font-size: 1.9rem; margin-bottom: 8px; 
+            font-weight: 800; font-size: 1.6rem; margin-bottom: 8px; 
             letter-spacing: -0.03em; color: var(--primary-dark);
         }
         .page-header p { color: var(--text-muted); font-size: 1.1rem; }
@@ -317,7 +317,9 @@
             <li><a href="administrativo.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
             <li><a href="gestion-docentes.html" class="nav-link active"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
             <li><a href="gestion-expedientes.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
-            <li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Gestión Cursos</span></a></li>
+            <li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Catálogo de Cursos</span></a></li>
+            <!-- NUEVO: solo para Administrativo y Ejecutiva Academica -->
+            <li id="navGestionClases" style="display:none;"><a href="academica-dashboard.html" class="nav-link"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Gestión de Clases</span></a></li>
         </ul>
 
         <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;">
@@ -482,6 +484,13 @@
             const name = sessionStorage.getItem('userName') || "Administrador";
             document.getElementById('userName').innerText = name;
             document.getElementById('userInitial').innerText = name.substring(0,2).toUpperCase();
+
+            // NUEVO: Administrativo y Ejecutiva Academica ya tienen acceso a Gestión Académica
+            const rolUpperNav = String(userRole || '').toUpperCase();
+            if (rolUpperNav === 'ADMINISTRATIVO' || rolUpperNav === 'EJECUTIVA ACADEMICA') {
+                const navGC = document.getElementById('navGestionClases');
+                if (navGC) navGC.style.display = '';
+            }
         });
 
 

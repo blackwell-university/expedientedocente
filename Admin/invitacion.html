@@ -26,7 +26,7 @@
 
     <style>
         body.swal2-height-auto { height: 100% !important; }
-        html { font-size: 15px; }
+        html { font-size: 14px; }
         :root {
             --primary: #2563eb;
             --primary-light: #eff6ff;
@@ -75,7 +75,7 @@
         .back-link:hover { color: var(--primary); }
         
         .page-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px; }
-        .page-header h1 { font-weight: 800; font-size: 1.9rem; margin-bottom: 8px; letter-spacing: -0.03em; color: var(--primary-dark); }
+        .page-header h1 { font-weight: 800; font-size: 1.6rem; margin-bottom: 8px; letter-spacing: -0.03em; color: var(--primary-dark); }
         .page-header p { color: var(--text-muted); font-size: 1.1rem; margin: 0;}
 
         .pipeline-wrapper { margin-bottom: 25px; background: white; border: 1px solid var(--gray-border); border-radius: 12px; padding: 16px 20px; }
@@ -354,7 +354,9 @@
             <li><a href="administrativo.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
             <li><a href="gestion-docentes.html" class="nav-link"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
             <li><a href="gestion-expedientes.html" class="nav-link active"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
-            <li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Gestión Cursos</span></a></li>
+            <li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Catálogo de Cursos</span></a></li>
+            <!-- NUEVO: solo para Administrativo y Ejecutiva Academica -->
+            <li id="navGestionClases" style="display:none;"><a href="academica-dashboard.html" class="nav-link"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Gestión de Clases</span></a></li>
         </ul>
         <a href="#" class="nav-link" onclick="logout()" style="color: #f43f5e; margin-top: auto;">
             <i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span>
@@ -758,6 +760,13 @@
             if(elRol) elRol.innerText = rol;
             const elInicial = document.getElementById('userInitial');
             if(elInicial) elInicial.innerText = name.trim().substring(0, 2).toUpperCase();
+
+            // NUEVO: Administrativo y Ejecutiva Academica ya tienen acceso a Gestión Académica
+            const rolUpperNav = String(rol || '').toUpperCase();
+            if (rolUpperNav === 'ADMINISTRATIVO' || rolUpperNav === 'EJECUTIVA ACADEMICA') {
+                const navGC = document.getElementById('navGestionClases');
+                if (navGC) navGC.style.display = '';
+            }
         });
 
         // FORMATEADOR DE FECHAS ULTRA SEGURO (Evita RangeError con strings DD/MM/AAAA de Google Sheets)

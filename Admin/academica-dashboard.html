@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <script src="bgu-shell.js"></script>
-    <script>bguGuard(['Asesora Academica', 'Administrador', 'Jefe OSE BGU', 'E-learning']);</script>
+    <script>bguGuard(['Asesora Academica', 'Administrador', 'Jefe OSE BGU', 'E-learning', 'Administrativo', 'Ejecutiva Academica']);</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión Académica | Blackwell University</title>
@@ -14,7 +14,7 @@
     <style>
         .main-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; }
         .centered-container { width: 100%; max-width: 1200px; text-align: left; }
-        .page-header h1 { font-weight: 800; font-size: 1.9rem; color: var(--primary-dark); letter-spacing: -0.03em; margin-bottom: 8px; }
+        .page-header h1 { font-weight: 800; font-size: 1.6rem; color: var(--primary-dark); letter-spacing: -0.03em; margin-bottom: 8px; } /* NUEVO: antes 1.9rem */
         .page-header p { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 32px; }
         /* NUEVO: franja de resumen (KPIs) — un vistazo rápido al estado general de las clases,
            antes de meterse a filtrar. Mismo blanco/borde que el resto del portal, un acento de
@@ -102,8 +102,16 @@
             <div class="avatar" id="userInitial">AA</div><div class="user-meta"><b id="userName">Asesora Académica</b><span id="userRoleLabel">Gestión de Cursos</span></div>
         </div>
         <ul class="nav-list">
+            <!-- NUEVO: módulos del portal administrativo, visibles solo para quien ya tiene
+                 acceso a ellos ahí (Administrativo, Administrador, Ejecutiva Academica).
+                 Orden igualado al del sidebar de administrativo.html. -->
+            <li id="navDashboardAdmin" style="display:none;"><a href="administrativo.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
+            <li id="navGestionDocentes" style="display:none;"><a href="gestion-docentes.html" class="nav-link"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
+            <li id="navExpedientesAdmin" style="display:none;"><a href="gestion-expedientes.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
+            <li id="navGestionCursosAdmin" style="display:none;"><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Catálogo de Cursos</span></a></li>
             <li><a href="academica-dashboard.html" class="nav-link active"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Gestión de Clases</span></a></li>
             <li id="navGestionAsesoras" style="display:none;"><a href="gestion-asesoras.html" class="nav-link"><i class="fa-solid fa-people-arrows"></i> <span class="link-text">Gestionar Asesoras</span></a></li>
+            <li id="navGestionUsuariosAcad" style="display:none;"><a href="gestion-usuarios.html" class="nav-link"><i class="fa-solid fa-user-gear"></i> <span class="link-text">Gestión de Usuarios</span></a></li>
         </ul>
         <a href="#" onclick="logout('portal académico')" class="nav-link" style="color: #f43f5e; margin-top: auto;"><i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span></a>
     </aside>
@@ -233,6 +241,19 @@
                 document.getElementById('userRoleLabel').innerText = rolActual === 'Jefe OSE BGU' ? 'Jefe OSE BGU' : 'Gestión de Cursos';
             } else if (rolActual === 'E-learning') {
                 document.getElementById('userRoleLabel').innerText = 'E-learning (solo lectura)';
+            }
+
+            // NUEVO: módulos del portal administrativo, visibles solo para quien ya tiene acceso
+            // ahí — Asesora Academica, Jefe OSE BGU y E-learning NO los ven (solo Gestión de Clases)
+            const rolUpperNav = String(rolActual || '').toUpperCase();
+            if (rolUpperNav === 'ADMINISTRATIVO' || rolUpperNav === 'ADMINISTRADOR' || rolUpperNav === 'ADMIN' || rolUpperNav === 'EJECUTIVA ACADEMICA') {
+                document.getElementById('navDashboardAdmin').style.display = 'block';
+                document.getElementById('navGestionDocentes').style.display = 'block';
+                document.getElementById('navExpedientesAdmin').style.display = 'block';
+                document.getElementById('navGestionCursosAdmin').style.display = 'block';
+            }
+            if (rolUpperNav === 'ADMINISTRADOR' || rolUpperNav === 'ADMIN') {
+                document.getElementById('navGestionUsuariosAcad').style.display = 'block';
             }
 
             cargarClases();

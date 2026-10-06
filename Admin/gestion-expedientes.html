@@ -23,7 +23,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        html { font-size: 15px; }
+        html { font-size: 14px; }
         :root {
             --primary: #2563eb; 
             --primary-dark: #1e3a8a; 
@@ -66,7 +66,7 @@
         .content-area { padding: 40px; display: flex; flex-direction: column; align-items: center; width: 100%; font-size: var(--dynamic-font-size); }
         .centered-container { width: 100%; max-width: 1200px; text-align: left; }
 
-        .page-header h1 { font-weight: 800; font-size: 1.9rem; margin-bottom: 8px; letter-spacing: -0.03em; color: var(--primary-dark); }
+        .page-header h1 { font-weight: 800; font-size: 1.6rem; margin-bottom: 8px; letter-spacing: -0.03em; color: var(--primary-dark); }
         .page-header p { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 30px;}
 
         /* --- FILTROS INTELIGENTES --- */
@@ -174,7 +174,9 @@
             <li><a href="administrativo.html" class="nav-link "><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
             <li><a href="gestion-docentes.html" class="nav-link"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
             <li><a href="gestion-expedientes.html" class="nav-link active"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
-            <li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Gestión Cursos</span></a></li>
+            <li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Catálogo de Cursos</span></a></li>
+            <!-- NUEVO: solo para Administrativo y Ejecutiva Academica -->
+            <li id="navGestionClases" style="display:none;"><a href="academica-dashboard.html" class="nav-link"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Gestión de Clases</span></a></li>
             <li id="navGestionUsuarios" style="display:none;"><a href="gestion-usuarios.html" class="nav-link"><i class="fa-solid fa-user-gear"></i> <span class="link-text">Gestión de Usuarios</span></a></li>
         </ul>
         <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;">
@@ -384,10 +386,14 @@
             document.getElementById('userInitial').innerText = name.trim().substring(0, 2).toUpperCase();
 
             const rolUpperNav = String(rol || '').toUpperCase();
-            // NUEVO: Administrativo y Ejecutiva Academica también entran a Gestión de Usuarios
-            if (rolUpperNav === 'ADMINISTRADOR' || rolUpperNav === 'ADMIN' || rolUpperNav === 'ADMINISTRATIVO' || rolUpperNav === 'EJECUTIVA ACADEMICA') {
+            if (rolUpperNav === 'ADMINISTRADOR' || rolUpperNav === 'ADMIN') {
                 const navGU = document.getElementById('navGestionUsuarios');
                 if (navGU) navGU.style.display = '';
+            }
+            // NUEVO: Administrativo y Ejecutiva Academica ya tienen acceso a Gestión Académica
+            if (rolUpperNav === 'ADMINISTRATIVO' || rolUpperNav === 'EJECUTIVA ACADEMICA') {
+                const navGC = document.getElementById('navGestionClases');
+                if (navGC) navGC.style.display = '';
             }
 
             cargarTodosExpedientes();
