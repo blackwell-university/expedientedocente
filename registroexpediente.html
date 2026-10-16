@@ -1079,7 +1079,10 @@
                             
                             <div class="section-label">Información de Contacto</div>
                             <div class="row g-4 mb-4">
-                                <div class="col-md-6"><label class="form-label">Correo Electrónico *</label><input type="email" class="form-control" id="reg-correo"></div>
+                                <div class="col-md-6"><label class="form-label">Correo Personal *</label><input type="email" class="form-control" id="reg-correo">
+                                    <!-- NUEVO: solo se muestra si la universidad ya le asignó un correo institucional (no editable por el docente) -->
+                                    <div id="reg-correo-inst-nota" style="display:none; font-size:0.78rem; color:#64748b; margin-top:6px;"><i class="fa-solid fa-building-columns me-1" style="color:#2563eb;"></i>Tu correo institucional es <b id="reg-correo-inst-valor"></b> y lo gestiona la universidad.</div>
+                                </div>
                                 <div class="col-md-6"><label class="form-label">Teléfono Móvil *</label><input type="text" class="form-control" id="reg-celular"></div>
                             </div>
 
@@ -1826,6 +1829,10 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
                     // Asignar campos del paso 3 
                     if(d.correo) document.getElementById('reg-correo').value = d.correo;
+                    if (d.correoInstitucional) {
+                        document.getElementById('reg-correo-inst-valor').innerText = d.correoInstitucional;
+                        document.getElementById('reg-correo-inst-nota').style.display = 'block';
+                    }
                     if(d.celular) document.getElementById('reg-celular').value = d.celular;
                     if(d.nombres) document.getElementById('reg-nombres').value = d.nombres;
                     if(d.apellidos) document.getElementById('reg-apellidos').value = d.apellidos;

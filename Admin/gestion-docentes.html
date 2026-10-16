@@ -101,7 +101,7 @@
             margin-bottom: 6px; transition: var(--transition); white-space: nowrap;
         }
 
-        .nav-link i { font-size: 18px; width: 24px; text-align: center; }
+        .nav-link i { font-size: 14px; width: 20px; text-align: center; }
         .nav-link:hover, .nav-link.active { background: #eff6ff; color: var(--primary); }
         .nav-link.active { font-weight: 600; }
         .sidebar.collapsed .link-text { display: none; }
@@ -191,9 +191,6 @@
         .btn-icon-accion.btn-editar:hover { background: #eff6ff; color: var(--primary); }
         .btn-icon-accion.btn-eliminar:hover { background: #fef2f2; color: #dc2626; }
 
-        /* NUEVO: botón "Cancelar" de los modales — antes usaba .btn-accion (pensado para íconos
-           pequeños de 34px), lo que hacía que el texto se viera roto con el borde por defecto
-           del navegador asomando. Este es un botón de texto propio, consistente con el resto. */
         .btn-cancelar-modal {
             background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; border-radius: 12px;
             padding: 10px 20px; font-weight: 700; font-size: 0.85rem; transition: var(--transition);
@@ -340,7 +337,6 @@
     </style>
 </head>
 <body>
-    <!-- NUEVO: Overlay oscuro para móvil -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
 
     <!-- Sidebar Blackwell -->
@@ -367,7 +363,6 @@
             <li><a href="gestion-docentes.html" class="nav-link active"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
             <li><a href="gestion-expedientes.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
             <li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Catálogo de Cursos</span></a></li>
-            <!-- NUEVO: solo para Administrativo y Ejecutiva Academica -->
             <li id="navGestionClases" style="display:none;"><a href="academica-dashboard.html" class="nav-link"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Gestión de Clases</span></a></li>
             <li id="navGestionUsuarios" style="display:none;"><a href="gestion-usuarios.html" class="nav-link"><i class="fa-solid fa-user-gear"></i> <span class="link-text">Gestión de Usuarios</span></a></li>
         </ul>
@@ -380,7 +375,6 @@
     <div class="main-wrapper">
         <header>
             <div class="d-flex align-items-center gap-3">
-                <!-- NUEVO: Botón Hamburguesa (Solo visible en móviles) -->
                 <button class="btn border-0 p-0 d-md-none text-dark fs-4" onclick="toggleMobileSidebar()">
                     <i class="fa-solid fa-bars"></i>
                 </button>
@@ -619,9 +613,6 @@
             }
         }
 
-        // NUEVO: la edición del docente (datos + Activo/Inactivo) ahora vive en
-        // detallesdocente.html, así que ese modal y su lógica se quitaron de aquí.
-
         // --- ELIMINAR DOCENTE (con validación de expedientes en el backend) ---
         function confirmarEliminar(id, nombreCompleto) {
             Swal.fire({
@@ -703,7 +694,6 @@
                 const navGU = document.getElementById('navGestionUsuarios');
                 if (navGU) navGU.style.display = '';
             }
-            // NUEVO: Administrativo y Ejecutiva Academica ya tienen acceso a Gestión Académica
             if (rolUpperNav === 'ADMINISTRATIVO' || rolUpperNav === 'EJECUTIVA ACADEMICA') {
                 const navGC = document.getElementById('navGestionClases');
                 if (navGC) navGC.style.display = '';

@@ -197,9 +197,6 @@
             <div class="avatar" id="userInitial">AA</div><div class="user-meta"><b id="userName">Asesora Académica</b><span id="userRoleLabel">Catálogo de Cursos</span></div>
         </div>
         <ul class="nav-list">
-            <!-- NUEVO: módulos del portal administrativo, visibles solo para quien ya tiene
-                 acceso a ellos ahí (Administrativo, Administrador, Ejecutiva Academica).
-                 Orden igualado al del sidebar de administrativo.html. -->
             <li id="navDashboardAdmin" style="display:none;"><a href="administrativo.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
             <li id="navGestionDocentes" style="display:none;"><a href="gestion-docentes.html" class="nav-link"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
             <li id="navExpedientesAdmin" style="display:none;"><a href="gestion-expedientes.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
@@ -233,13 +230,11 @@
                             <h1 id="txtCursoNombre">Cargando Curso...</h1>
                             <p id="txtPrograma">Obteniendo programa...</p>
                         </div>
-                        <!-- NUEVO: zona de estado de culminación de la clase -->
                         <div id="zonaCulminacion"></div>
                     </div>
                     <div id="avisoSoloLectura" style="display:none; margin-top:10px; background:#fffbeb; border:1px solid #fde68a; color:#b45309; font-size:0.82rem; font-weight:600; padding:10px 16px; border-radius:10px; display:none; align-items:center; gap:8px; width:fit-content;">
                         <i class="fa-solid fa-eye"></i> Estás en modo solo lectura: puedes ver los enlaces y la asistencia, pero no editarlos.
                     </div>
-                    <!-- NUEVO: aviso cuando la clase ya está culminada y bloqueada para edición -->
                     <div id="avisoCulminada" style="display:none; margin-top:10px; background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; font-size:0.82rem; font-weight:600; padding:10px 16px; border-radius:10px; align-items:center; gap:8px; width:fit-content;">
                         <i class="fa-solid fa-circle-check"></i> <span id="txtAvisoCulminada"></span>
                     </div>
@@ -361,8 +356,6 @@
                                 <div class="form-card">
                                     <div class="form-card-header">
                                         <span class="section-badge m-0" style="background:#fef2f2; color:#b91c1c;"><i class="fa-solid fa-file-invoice-dollar me-2"></i>Documento Direct Deposit</span>
-                                        <!-- TEMPORAL: botón oculto hasta terminar la función de actualizar en línea.
-                                             Para reactivarlo, borra el style="display:none;" de esta línea. -->
                                         <button type="button" class="btn-save-local" id="btnActualizarDD" onclick="actualizarDirectDeposit()" style="display:none;">
                                             <i class="fa-solid fa-arrows-rotate"></i> Actualizar Documento
                                         </button>
@@ -373,13 +366,8 @@
                                         <i class="fa-solid fa-spinner fa-spin"></i> Buscando documento...
                                     </div>
 
-                                    <!-- NUEVO (temporal, mientras el botón de arriba está oculto) -->
                                     <p class="text-muted small mb-0">Revisa el documento con el enlace de arriba. Si falta algún dato o hay que corregir algo, edítalo directamente ahí, en el propio documento.</p>
 
-                                    <!-- TEMPORAL: todo lo de aquí abajo queda oculto hasta terminar la función de
-                                         actualizar en línea. Para reactivarlo, borra el style="display:none;" del
-                                         siguiente div (#dd-edicion-temporal) — nada más cambia, el JS ya sigue
-                                         funcionando igual por dentro, solo estaba invisible. -->
                                     <div id="dd-edicion-temporal" style="display:none;">
                                         <p class="text-muted small mb-3 mt-3">Estos datos son del docente (son los mismos en todos sus cursos). Al actualizar, se rellenan en el documento solo los campos que aún muestran <code>{'{{...}}'}</code> sin llenar — lo que ya tenía un valor no se toca.</p>
 
@@ -452,15 +440,10 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         // El rol E-learning solo puede visualizar: no debe poder editar enlaces ni asistencias/reprogramaciones
         const rolActual = localStorage.getItem('userRole');
         const esSoloLectura = rolActual === 'E-learning';
-        // NUEVO: quién puede culminar/reabrir una clase, y quién puede ver el documento bancario del docente
-        // NUEVO: Administrativo y Ejecutiva Academica quedan al mismo nivel que Asesora Academica
-        // aquí (pueden gestionar y culminar clases) — NO se agregaron a puedeReabrir ni a
-        // puedeVerDirectDeposit, que siguen siendo exclusivos de Jefe OSE BGU/Administrador.
         const puedeCulminar = (rolActual === 'Asesora Academica' || rolActual === 'Jefe OSE BGU' || rolActual === 'Administrador' || rolActual === 'Administrativo' || rolActual === 'Ejecutiva Academica');
         const puedeReabrir = (rolActual === 'Jefe OSE BGU' || rolActual === 'Administrador');
         const puedeVerDirectDeposit = (rolActual === 'Jefe OSE BGU' || rolActual === 'Administrador');
 
-        // NUEVO: combina solo-lectura por rol + bloqueo por clase ya culminada, para no repetir el mismo "if" en cada función
         function edicionBloqueada() { return esSoloLectura || !!fechaCulminacion; }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -468,16 +451,12 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             document.getElementById('userName').innerText = name;
             document.getElementById('userInitial').innerText = name.trim().substring(0, 2).toUpperCase();
 
-            // NUEVO: esta página nunca actualizaba el cargo mostrado — se quedaba con
-            // "Gestión de Cursos" fijo del HTML sin importar el rol de quien entrara.
             document.getElementById('userRoleLabel').innerText = rolActual === 'E-learning' ? 'E-learning (solo lectura)' : (rolActual || 'Usuario');
 
             if (rolActual === 'Jefe OSE BGU' || rolActual === 'Administrador') {
                 document.getElementById('navGestionAsesoras').style.display = 'block';
             }
 
-            // NUEVO: módulos del portal administrativo, visibles solo para quien ya tiene acceso
-            // ahí — Asesora Academica, Jefe OSE BGU y E-learning NO los ven (solo Gestión de Clases)
             const rolUpperNav = String(rolActual || '').toUpperCase();
             if (rolUpperNav === 'ADMINISTRATIVO' || rolUpperNav === 'ADMINISTRADOR' || rolUpperNav === 'ADMIN' || rolUpperNav === 'EJECUTIVA ACADEMICA') {
                 document.getElementById('navDashboardAdmin').style.display = 'block';
@@ -489,7 +468,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 document.getElementById('navGestionUsuariosAcad').style.display = 'block';
             }
 
-            // NUEVO: la pestaña "Información Bancaria" solo existe para Jefe OSE BGU / Administrador
             if (puedeVerDirectDeposit) {
                 document.getElementById('tabItemBancaria').style.display = 'block';
             }
@@ -524,9 +502,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 const match = (url || '').match(/[-\w]{25,}/);
                 return match ? `https://drive.google.com/file/d/${match[0]}/view` : url;
             };
-            // NUEVO: la URL que guarda el backend (file.getUrl()) es la de VISTA de Drive, no una
-            // de descarga real -- por eso "Descargar" abría el archivo en vez de bajarlo. Esta
-            // construye la URL que sí fuerza la descarga del archivo.
             const getDownloadUrl = (url) => {
                 const match = (url || '').match(/[-\w]{25,}/);
                 return match ? `https://drive.google.com/uc?export=download&id=${match[0]}` : url;
@@ -546,8 +521,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 </div>`).join('');
         }
 
-        // Mismo método que ya funciona en perfil.html: "docs.google.com/uc?export=view" no siempre
-        // renderiza bien como <img> en todos los navegadores; lh3.googleusercontent.com sí es confiable.
         function getSafeImgUrl(url) {
             if (!url) return "";
             const match = url.match(/[-\w]{25,}/);
@@ -555,8 +528,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             return `https://lh3.googleusercontent.com/d/${match[0]}=s300`;
         }
 
-        // Para "Ver" (pestaña de Drive) y "Descargar" seguimos usando enlaces distintos al de <img>,
-        // ya que lh3.googleusercontent.com sirve para mostrar la miniatura, no para verla/bajarla.
         function getDriveViewUrl(url) {
             if (!url) return "";
             const match = url.match(/[-\w]{25,}/);
@@ -591,9 +562,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 .then(res => res.json())
                 .then(response => {
                     if (response.status === 'success') {
-                        // NUEVO: directDeposit se incluye también en lo que se guarda en caché,
-                        // si no, la tarjeta del documento bancario quedaría vacía al recargar desde caché.
-                        // NUEVO: directDeposit ahora es {url, estado} y se suma bancario (los 7 campos editables)
                         const fresh = { invitacion: response.invitacion, docente: response.docente, directDeposit: response.directDeposit || {}, bancario: response.bancario || {} };
                         const freshStr = JSON.stringify(fresh);
                         if (freshStr !== cachedData) {
@@ -615,7 +583,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     const inv = datos.invitacion;
                     const doc = datos.docente;
 
-                    // NUEVO: se fija antes de pintar enlaces/sesiones, para que ya nazcan bloqueados si corresponde
                     fechaCulminacion = inv.fechaCulminacion || "";
 
                     document.getElementById('txtCursoNombre').innerText = inv.cursoNombre;
@@ -649,8 +616,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         const viewUrl = getDriveViewUrl(doc.url_foto);
                         const downloadUrl = getDriveDownloadUrl(doc.url_foto);
                         const initials = doc.nombres ? doc.nombres.substring(0,2).toUpperCase() : 'DOC';
-                        // Si la imagen no carga, avisamos con un mensaje corto (sin desbordar la card)
-                        // en vez de dejar solo las iniciales sin explicación.
                         avatarEl.innerHTML = `<img src="${imgUrl}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" onerror="this.parentElement.innerHTML='<span>${initials}</span>'; document.getElementById('fotoErrorMsg').style.display='block';">`;
 
                         fotoAcciones.innerHTML = `
@@ -673,8 +638,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
                     availableSlots = extractTimeSlots(inv.franjas);
 
-                    // NUEVO: se parsea arraySesiones ANTES de construir la Agenda Original,
-                    // para poder cruzar cada día con su estado real (reprogramada/realizada)
                     try { arraySesiones = JSON.parse(inv.sesiones); } catch(e) { arraySesiones = []; }
                     if (!Array.isArray(arraySesiones)) arraySesiones = [];
 
@@ -686,10 +649,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         let horaStr = horasArr[idx] || "";
                         if(horaStr.includes(': ')) horaStr = horaStr.split(/:\s*(.*)/s)[1].trim();
 
-                        // FIX: antes esta lista se armaba solo con la fecha original y nunca
-                        // reflejaba una reprogramación guardada. Ahora se cruza con arraySesiones
-                        // y usa fechaBase/horaBase, que es la fecha REAL vigente de la sesión
-                        // (se actualiza al confirmar una reprogramación, no depende de nuevaFecha).
                         const sesionRel = arraySesiones.find(s => s.num === idx + 1);
                         let fechaMostrar = dia;
                         let horaMostrar = horaStr;
@@ -702,10 +661,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                             if (sesionRel.estado === 'Realizada') {
                                 badgeExtra = `<span class="agenda-estado-badge badge-realizada"><i class="fa-solid fa-check"></i> Realizada</span>`;
                             } else if (sesionRel.fechaOriginal) {
-                                // NUEVO: la marca de "Reprogramada" ya no depende del estado actual de la
-                                // sesión (que ahora vuelve a "Pendiente" tras confirmar), sino de si guarda
-                                // una fecha original. Así la marca queda visible de forma permanente aunque
-                                // la sesión vuelva a estar pendiente de dictarse.
                                 const fOrig = sesionRel.fechaOriginal || dia;
                                 const hOrig = sesionRel.horaOriginal || horaStr;
                                 badgeExtra = `<span class="agenda-estado-badge badge-repro" title="Fecha original: ${fOrig} · ${hOrig}"><i class="fa-solid fa-rotate"></i> Reprogramada</span>`;
@@ -749,10 +704,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     if (!Array.isArray(archivosDocente)) archivosDocente = [];
                     renderMaterialCurso(archivosDocente);
 
-                    // NUEVO: zona de "Culminar Clase" / "Reabrir Clase" (usa arraySesiones ya cargado)
                     actualizarZonaCulminacion();
 
-                    // NUEVO: documento Direct Deposit, visible solo para Jefe OSE BGU / Administrador
                     if (puedeVerDirectDeposit) renderInfoBancaria(datos.directDeposit || {}, datos.bancario || {});
                 }
             } catch (error) {
@@ -760,22 +713,15 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             }
         }
 
-        // NUEVO: ¿ya se dictaron todas las sesiones de esta clase?
         function todasSesionesRealizadas() {
             return arraySesiones.length > 0 && arraySesiones.every(s => s.estado === 'Realizada');
         }
 
-        // NUEVO: arma el aviso/botón de "Culminar Clase" o "Reabrir Clase" según corresponda.
-        // No vuelve a pintar enlaces/sesiones: fechaCulminacion ya se fija antes de esos renders.
-        // NUEVO: formatea la fecha de culminación para mostrarla, sin importar cómo llegue del
-        // backend. GSheets a veces convierte el texto "dd/mm/yyyy" que guarda la acción
-        // set_clase_culminada en una celda de fecha real; al leerla vuelve como ISO
-        // ("2026-10-01T05:00:00.000Z"). Esto lo detecta y lo deja en dd/mm/yyyy de nuevo.
         function formatFechaCorta(fechaRaw) {
             if (!fechaRaw) return '';
             if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(String(fechaRaw).trim())) return fechaRaw; // ya está bien
             const d = new Date(fechaRaw);
-            if (isNaN(d.getTime())) return fechaRaw; // no se pudo interpretar, mostrar tal cual
+            if (isNaN(d.getTime())) return fechaRaw;
             return d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
         }
 
@@ -797,8 +743,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     : '';
             }
 
-            // NUEVO: si quedó bloqueada (ya culminada), se ocultan los botones de edición aunque el
-            // rol normalmente pudiera editar. Si esSoloLectura ya los había ocultado, esto no cambia nada.
             const mostrarEdicion = !edicionBloqueada();
             document.getElementById('btnSaveLinks').style.display = mostrarEdicion ? '' : 'none';
             document.getElementById('btnAddLink').style.display = mostrarEdicion ? '' : 'none';
@@ -922,7 +866,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         return;
                     }
                     mostrarResultadoDD(json);
-                    // Refresca el estado del documento (por si cambió) sin perder el resultado recién mostrado
                     localStorage.removeItem(`cache_asesora_course_detail_${invId}`);
                 })
                 .catch(() => {
@@ -977,7 +920,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         function renderEnlacesUI() {
             const container = document.getElementById('contenedorEnlaces');
             let html = "";
-            // NUEVO: usa edicionBloqueada() (solo-lectura por rol O clase ya culminada), no solo esSoloLectura
             const bloqueado = edicionBloqueada();
             const soloLecturaAttr = bloqueado ? 'disabled' : '';
             arrayEnlaces.forEach((enlace, idx) => {
@@ -1148,9 +1090,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 }
                 ses.fechaBase = nuevaFechaFmt;
                 ses.horaBase = nuevaHora;
-                // NUEVO: ya se reprogramó, así que la sesión vuelve a "Pendiente" (sigue por dictarse,
-                // solo que en la nueva fecha). La marca de que fue reprogramada queda en fechaOriginal,
-                // que alimenta tanto el tachado en la tarjeta como la etiqueta en la Agenda Original.
                 ses.estado = 'Pendiente';
                 ses.nuevaFecha = "";
                 ses.nuevaHora = "";
@@ -1218,9 +1157,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         }
                         ses.fechaBase = nuevaFechaFmt;
                         ses.horaBase = nuevaHora;
-                        // NUEVO: misma regla que al "Confirmar Reprogramación" — una vez que ya
-                        // quedó la nueva fecha, la sesión vuelve a "Pendiente". Si no se completó
-                        // fecha/hora, se queda en "Reprogramada" para recordar que falta llenarlas.
                         ses.estado = 'Pendiente';
                     }
                     ses.nuevaFecha = "";

@@ -544,9 +544,14 @@
                 ${campoInput('Nombres', 'inp-nombres', d.nombres)}
                 ${campoInput('Apellidos', 'inp-apellidos', d.apellidos)}
                 <div class="col-md-4 dato-campo">
-                    <span class="info-label">Correo (no editable aquí)</span>
+                    <span class="info-label">Correo personal (no editable aquí)</span>
                     <div class="dato-valor">${d.correo || 'Sin llenar'}</div>
                 </div>
+                ${d.correoInstitucional ? `
+                <div class="col-md-4 dato-campo">
+                    <span class="info-label"><i class="fa-solid fa-lock me-1" style="font-size:0.7rem;"></i>Correo institucional (lo asigna la universidad)</span>
+                    <div class="dato-valor">${d.correoInstitucional}</div>
+                </div>` : ''}
                 ${campoInput('Celular', 'inp-celular', d.celular)}
                 ${campoInput('Fecha de Nacimiento', 'inp-fecha_nacimiento', d.fecha_nacimiento ? String(d.fecha_nacimiento).split('T')[0] : '', 'date')}
                 ${campoInput('Código Postal', 'inp-cp', d.cp)}
@@ -834,7 +839,7 @@
                 const nombreCompleto = `${d.nombres || ''} ${d.apellidos || ''}`.trim() || fullName;
 
                 document.getElementById('nombreCompletoPerfil').innerText = nombreCompleto;
-                document.getElementById('correoPerfil').innerText = d.correo || '-';
+                document.getElementById('correoPerfil').innerText = d.correoInstitucional || d.correo || '-'; // NUEVO: si hay institucional, ese es el principal
                 document.getElementById('idDocentePerfil').innerText = docenteIdGlobal;
 
                 const iniciales = nombreCompleto.substring(0, 2).toUpperCase();

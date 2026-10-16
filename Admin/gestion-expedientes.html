@@ -54,7 +54,7 @@
         .sidebar.collapsed .user-meta { display: none; }
         .nav-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
         .nav-link { display: flex; align-items: center; gap: 16px; padding: 12px 14px; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 6px; transition: var(--transition); white-space: nowrap; }
-        .nav-link i { font-size: 18px; width: 24px; text-align: center; }
+        .nav-link i { font-size: 14px; width: 20px; text-align: center; } 
         .nav-link:hover, .nav-link.active { background: #eff6ff; color: var(--primary); } .nav-link.active { font-weight: 600; }
         .sidebar.collapsed .link-text { display: none; }
         .collapse-btn { position: absolute; right: -12px; top: 48px; width: 24px; height: 24px; background: white; border: 1px solid #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; font-size: 10px; color: var(--text-muted); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
@@ -71,8 +71,6 @@
 
         /* --- FILTROS INTELIGENTES --- */
         .filter-section { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); margin-bottom: 24px; border: 1px solid rgba(0,0,0,0.04); }
-        /* NUEVO: segunda fila del filtro (rango de fechas), separada por una línea sutil —
-           mismo patrón que ya usa Gestión de Clases */
         .filter-row-2 { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-top: 16px; padding-top: 16px; border-top: 1px dashed #e2e8f0; }
         .filter-row-2 .date-group { display: flex; align-items: center; gap: 8px; }
         .filter-row-2 .date-group span { color: #64748b; font-size: 0.82rem; }
@@ -111,7 +109,6 @@
             border-radius: 8px; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 6px;
         }
 
-        /* NUEVO: Chips para alternar entre Expedientes Anuales e Invitaciones */
         .chip-vista {
             border: 1px solid #e2e8f0; background: #ffffff; color: var(--text-muted);
             padding: 10px 18px; border-radius: 50px; font-weight: 600; font-size: 0.85rem;
@@ -120,7 +117,6 @@
         .chip-vista.active { background: var(--primary-dark); color: #ffffff; border-color: var(--primary-dark); }
         .chip-vista:hover:not(.active) { background: #f1f5f9; }
 
-        /* NUEVO: Badge de vigencia de contrato (vencido / por vencer / vigente) */
         .badge-vigencia-ok { background: #f0fdf4; color: #15803d; }
         .badge-vigencia-porvencer { background: #fffbeb; color: #b45309; }
         .badge-vigencia-vencido { background: #fef2f2; color: #b91c1c; }
@@ -182,7 +178,6 @@
             <li><a href="gestion-docentes.html" class="nav-link"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
             <li><a href="gestion-expedientes.html" class="nav-link active"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
             <li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Catálogo de Cursos</span></a></li>
-            <!-- NUEVO: solo para Administrativo y Ejecutiva Academica -->
             <li id="navGestionClases" style="display:none;"><a href="academica-dashboard.html" class="nav-link"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Gestión de Clases</span></a></li>
             <li id="navGestionUsuarios" style="display:none;"><a href="gestion-usuarios.html" class="nav-link"><i class="fa-solid fa-user-gear"></i> <span class="link-text">Gestión de Usuarios</span></a></li>
         </ul>
@@ -247,8 +242,6 @@
                         </div>
                     </div>
 
-                    <!-- NUEVO: rango de fechas de inicio — aplica igual en Expedientes e
-                         Invitaciones, las dos vistas comparten el mismo campo fechaInicio -->
                     <div class="filter-row-2">
                         <div class="date-group">
                             <label class="form-label-sm m-0">Inicio desde</label>
@@ -288,7 +281,6 @@
                     </div>
                 </div>
 
-                <!-- NUEVO: TABLA DE RESULTADOS — INVITACIONES (CURSOS ASIGNADOS) -->
                 <div class="table-card d-none" id="tabla-invitaciones-wrap">
                     <div class="table-responsive">
                         <table class="table mb-0 align-middle">
@@ -408,7 +400,6 @@
                 const navGU = document.getElementById('navGestionUsuarios');
                 if (navGU) navGU.style.display = '';
             }
-            // NUEVO: Administrativo y Ejecutiva Academica ya tienen acceso a Gestión Académica
             if (rolUpperNav === 'ADMINISTRATIVO' || rolUpperNav === 'EJECUTIVA ACADEMICA') {
                 const navGC = document.getElementById('navGestionClases');
                 if (navGC) navGC.style.display = '';
@@ -419,7 +410,6 @@
             
             document.getElementById('filterText').addEventListener('input', filtrar);
             document.getElementById('filterStatus').addEventListener('change', filtrar);
-            // NUEVO: rango de fechas
             document.getElementById('filterFechaDesde').addEventListener('change', filtrar);
             document.getElementById('filterFechaHasta').addEventListener('change', filtrar);
         });
@@ -461,8 +451,6 @@
             filtrar();
         }
 
-        // NUEVO: trae todas las invitaciones (cursos asignados) del sistema, ya sea que
-        // vengan de un "Crear Expediente + Invitación" o de un "Asignar Curso" posterior.
         function cargarTodasInvitaciones() {
             cargarDatosOptimizadosAdmin(
                 'get_all_invitations_global',
@@ -480,7 +468,6 @@
         }
 
         function cargarTodosExpedientes() {
-            // Usamos nuestra función optimizada
             cargarDatosOptimizadosAdmin(
                 'get_all_expedientes_global', 
                 {}, 
@@ -502,8 +489,6 @@
             );
         }
 
-        // NUEVO: ¿la fechaInicio del registro cae dentro del rango elegido? (si no hay rango
-        // elegido, todo pasa; si hay fechaInicio inválida y sí hay rango, no pasa el filtro)
         function fechaDentroDeRango(fechaInicioRaw, desdeDate, hastaDate) {
             if (!desdeDate && !hastaDate) return true;
             const f = fechaInicioRaw ? new Date(fechaInicioRaw) : null;
@@ -517,7 +502,6 @@
             const text = document.getElementById('filterText').value.toLowerCase();
             const status = document.getElementById('filterStatus').value;
 
-            // NUEVO: rango de fechas de inicio, compartido por las dos vistas
             const desdeVal = document.getElementById('filterFechaDesde').value;
             const hastaVal = document.getElementById('filterFechaHasta').value;
             const desdeDate = desdeVal ? new Date(desdeVal + 'T00:00:00') : null;
@@ -553,8 +537,6 @@
             return '';
         }
 
-        // Traduce el valor real de estado de Expediente a lo que ve la Ejecutiva/Administrativo:
-        // etiqueta amigable + clase CSS (evita el bug de clases con espacios en el nombre)
         function traducirEstadoExpediente(estadoReal) {
             const e = String(estadoReal || '').trim();
             const mapa = {
@@ -630,8 +612,6 @@
             }).join('');
         }
 
-        // NUEVO: pinta la tabla de Invitaciones (cursos asignados), sin importar si nacieron
-        // junto con un Expediente o fueron un "Asignar Curso" posterior sobre uno ya existente.
         function renderTablaInvitaciones(datos) {
             const tbody = document.getElementById('lista-invitaciones');
             if (datos.length === 0) {
@@ -646,9 +626,6 @@
                     ? `<a href="expediente.html?expId=${inv.idExpediente}" class="btn-revisar-link"><i class="fa-regular fa-folder-open"></i> ${inv.idExpediente}</a>`
                     : '<span class="text-muted">Sin vincular</span>';
 
-                // NUEVO: el curso inicial (el que nació junto con el Expediente) se sigue
-                // listando aquí, pero "Revisar" debe llevar al Expediente — ahí es donde viven
-                // sus documentos. Los demás cursos (Asignar Curso) llevan a invitacion.html.
                 const badgeGenesis = inv.esInvitacionInicial
                     ? `<span class="badge bg-primary bg-opacity-10 text-primary border border-primary" style="font-size: 0.65rem; font-weight: 700; margin-left: 6px;">Curso inicial del contrato</span>`
                     : '';
@@ -737,8 +714,8 @@
         function resetFilters() {
             document.getElementById('filterText').value = '';
             document.getElementById('filterStatus').value = 'Todos';
-            document.getElementById('filterFechaDesde').value = ''; // NUEVO
-            document.getElementById('filterFechaHasta').value = ''; // NUEVO
+            document.getElementById('filterFechaDesde').value = '';
+            document.getElementById('filterFechaHasta').value = ''; 
             filtrar();
         }
     </script>

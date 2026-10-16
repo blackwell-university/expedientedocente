@@ -54,7 +54,7 @@
 
         .nav-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
         .nav-link { display: flex; align-items: center; gap: 16px; padding: 12px 14px; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 6px; transition: var(--transition); font-weight: 500; white-space: nowrap;}
-        .nav-link i { font-size: 18px; width: 24px; text-align: center; }
+        .nav-link i { font-size: 14px; width: 20px; text-align: center; }        
         .nav-link:hover, .nav-link.active { background: #eff6ff; color: var(--primary); font-weight: 600;}
         .sidebar.collapsed .link-text { display: none; }
         
@@ -483,7 +483,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         let cursosFiltrados = [];
         let listaAsesorasGlobal = [];
         let tipoProgramaActivo = '';
-        let programaCardActivo = null; // {tipo, programa} de la tarjeta seleccionada, si aplica
+        let programaCardActivo = null;
 
         // Paginación
         let currentPage = 1;
@@ -522,7 +522,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             document.getElementById('userRoleLabel').innerText = rol;
             document.getElementById('userInitial').innerText = name.trim().substring(0, 2).toUpperCase();
 
-            // NUEVO: Administrativo y Ejecutiva Academica ya tienen acceso a Gestión Académica
             const rolUpperNav = String(rol || '').toUpperCase();
             if (rolUpperNav === 'ADMINISTRATIVO' || rolUpperNav === 'EJECUTIVA ACADEMICA') {
                 const navGC = document.getElementById('navGestionClases');
@@ -538,7 +537,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_usuarios_por_rol', rol: 'Asesora Academica' }) });
                 const json = await res.json();
                 if (json.status === 'success') listaAsesorasGlobal = json.data || [];
-            } catch (e) { /* silencioso: la asignación de asesoras no bloquea el resto de la página */ }
+            } catch (e) { }
         }
 
         function nombreAsesora(username) {
@@ -561,8 +560,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     listaCursosGlobal = json.data;
                     cursosFiltrados = [...listaCursosGlobal];
 
-                    // Por defecto mostramos el primer tipo de programa disponible (ya no existe la pestaña "Todos",
-                    // para no abrumar con demasiadas tarjetas a la vez)
                     const tiposDisponibles = [...new Set(listaCursosGlobal.map(c => c.tipoPrograma).filter(Boolean))];
                     if (!tipoProgramaActivo || !tiposDisponibles.includes(tipoProgramaActivo)) {
                         tipoProgramaActivo = tiposDisponibles[0] || '';
@@ -727,8 +724,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
         function poblarFiltroProgramas() {
             const select = document.getElementById('filterPrograma');
-            // Solo los programas del tipo activo (UPGRADE/MASTER/DOCTORADE), para no ofrecer
-            // opciones que después no calcen con ningún resultado en la tabla.
             const programasUnicos = [...new Set(listaCursosGlobal.filter(c => c.tipoPrograma === tipoProgramaActivo).map(c => c.programa))].filter(p => p);
             
             let html = '<option value="Todos">Todos los Programas</option>';
@@ -744,8 +739,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             const hint = document.getElementById('hintBusquedaGlobal');
 
             if (txt) {
-                // Búsqueda global: el usuario puede no saber a qué programa pertenece el curso,
-                // así que buscamos en TODO el catálogo, sin importar la pestaña de tipo ni el programa activos.
                 cursosFiltrados = listaCursosGlobal.filter(c =>
                     c.nombre.toLowerCase().includes(txt) || c.codigo.toLowerCase().includes(txt)
                 );
@@ -762,7 +755,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 hint.style.display = 'none';
             }
             
-            currentPage = 1; // Volver a la página 1 al filtrar
+            currentPage = 1;
             renderTablaPaginada();
         }
 
@@ -771,7 +764,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             document.getElementById('filterPrograma').value = 'Todos';
             programaCardActivo = null;
             renderProgramCards();
-            filtrarCursos(); // Vuelve a cargar la tabla completa (dentro del tipo de programa activo)
+            filtrarCursos();
         }
 
         function renderTablaPaginada() {
@@ -780,8 +773,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             const thPrograma = document.getElementById('thPrograma');
             const buscando = document.getElementById('searchInput').value.trim() !== '';
 
-            // Si ya se filtró a un programa específico (y no se está buscando en todo el catálogo),
-            // esa columna es redundante en cada fila: la ocultamos para liberar espacio.
             const progSeleccionado = !buscando && document.getElementById('filterPrograma').value !== 'Todos';
             thPrograma.style.display = progSeleccionado ? 'none' : '';
             
@@ -791,7 +782,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 return;
             }
 
-            // Lógica de partición de datos
             const startIndex = (currentPage - 1) * rowsPerPage;
             const endIndex = startIndex + rowsPerPage;
             const cursosPagina = cursosFiltrados.slice(startIndex, endIndex);
@@ -854,15 +844,12 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             
             paginationCtr.style.display = 'flex';
             
-            // Texto descriptivo
             const start = ((currentPage - 1) * rowsPerPage) + 1;
             const end = Math.min(currentPage * rowsPerPage, cursosFiltrados.length);
             infoText.innerHTML = `Mostrando <b>${start}-${end}</b> de <b>${cursosFiltrados.length}</b> cursos`;
 
-            // Botones
             let btns = `<button class="btn-page" onclick="irPagina(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-left"></i></button>`;
             
-            // Lógica para mostrar máximo 5 botones numéricos (Simplificado)
             let startPage = Math.max(1, currentPage - 2);
             let endPage = Math.min(totalPages, startPage + 4);
             if(endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
@@ -957,10 +944,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
         /* --- LÓGICA DEL PANEL DE MATERIALES (OFFCANVAS) --- */
 
-        // El backend entrega el horario como un texto crudo tipo:
-        // "05/10/2026, 12/10/2026 a las 05/10/2026: 19:00 a 20:30 | 12/10/2026: 19:00 a 20:30"
-        // Nos quedamos solo con la parte útil (después de "a las"), que ya trae "fecha: horario" por sesión,
-        // y la convertimos en una lista de fechas legible.
         function formatearSesionesHorario(horarioStr) {
             if (!horarioStr) return '<p class="text-muted small m-0 fst-italic">Horario por confirmar.</p>';
 

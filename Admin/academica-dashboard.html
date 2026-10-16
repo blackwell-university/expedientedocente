@@ -16,9 +16,6 @@
         .centered-container { width: 100%; max-width: 1200px; text-align: left; }
         .page-header h1 { font-weight: 800; font-size: 1.6rem; color: var(--primary-dark); letter-spacing: -0.03em; margin-bottom: 8px; } /* NUEVO: antes 1.9rem */
         .page-header p { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 32px; }
-        /* NUEVO: franja de resumen (KPIs) — un vistazo rápido al estado general de las clases,
-           antes de meterse a filtrar. Mismo blanco/borde que el resto del portal, un acento de
-           color por tarjeta para diferenciarlas sin romper la paleta. */
         .kpi-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
         .kpi-card { background: white; border: 1px solid var(--gray-border); border-radius: 16px; padding: 18px 20px; display: flex; align-items: center; gap: 14px; }
         .kpi-card .kpi-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0; }
@@ -30,8 +27,6 @@
         @media (max-width: 900px) { .kpi-strip { grid-template-columns: repeat(2, 1fr); } }
 
         .filter-card { background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--gray-border); margin-bottom: 24px; }
-        /* NUEVO: segunda fila del filtro (rango de fechas) separada por una línea sutil, y botón
-           para limpiar todo de una — útil ahora que hay más de 4 filtros disponibles */
         .filter-row-2 { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--gray-border); }
         .filter-row-2 .date-group { display: flex; align-items: center; gap: 8px; }
         .filter-row-2 .date-group span { color: var(--text-muted); font-size: 0.82rem; }
@@ -46,18 +41,13 @@
         .custom-table th.sortable i { font-size: 0.65rem; margin-left: 4px; opacity: 0.5; }
         .custom-table th.sortable.sort-active i { opacity: 1; color: var(--primary); }
         .custom-table td { padding: 16px 20px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-        /* NUEVO: resalte sutil al pasar el mouse sobre una fila, estándar en tablas de gestión */
         .custom-table tbody tr { transition: background-color 0.12s; }
         .custom-table tbody tr:hover { background-color: #f8fafc; }
         .custom-table tbody tr:last-child td { border-bottom: none; }
 
-        /* NUEVO: avatar con iniciales junto al nombre del docente — da jerarquía visual a la
-           columna más importante de la tabla y es consistente con el resto del portal (sidebar,
-           header) que ya usa este mismo patrón de iniciales en círculo */
         .docente-cell { display: flex; align-items: center; gap: 12px; }
         .docente-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--primary-light); color: var(--primary-dark); font-weight: 800; font-size: 0.78rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
-        /* NUEVO: columna de periodo de clases, con ícono de calendario a la izquierda */
         .periodo-cell { display: flex; align-items: center; gap: 8px; color: var(--text-main); font-weight: 600; font-size: 0.83rem; white-space: nowrap; }
         .periodo-cell i { color: #94a3b8; font-size: 0.85rem; }
         .periodo-cell.sin-fecha { color: #94a3b8; font-weight: 500; font-style: italic; }
@@ -65,8 +55,6 @@
         .btn-gestionar { background: #eff6ff; color: var(--primary); font-weight: 700; font-size: 0.8rem; border: none; padding: 8px 16px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: 0.2s; }
         .btn-gestionar:hover { background: var(--primary); color: white; }
 
-        /* badges de estado con color diferenciado, para que la asesora identifique de un
-           vistazo si el docente ya aceptó, sigue esperando respuesta, o ya está en firma */
         .badge-estado { display: inline-block; padding: 5px 12px; border-radius: 30px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
         .badge-enviado { background: #eff6ff; color: #1d4ed8; }
         .badge-aceptado { background: #f0fdf4; color: #15803d; }
@@ -75,8 +63,6 @@
         .badge-firmado { background: #ecfdf5; color: #047857; }
         .badge-completado { background: #dcfce7; color: #166534; }
         .badge-default { background: #f1f5f9; color: #475569; }
-        /* NUEVO: marca aparte de "Clase Culminada" (dictado de sesiones), independiente del badge de
-           estado de arriba (que es sobre el trámite de contrato/documentos, otra cosa distinta) */
         .badge-culminada { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 30px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; background: #dcfce7; color: #166534; margin-left: 6px; }
 
         /* paginación */
@@ -99,16 +85,13 @@
             <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div><span class="brand-text">Blackwell</span>
         </a>
         <div class="user-preview">
-            <div class="avatar" id="userInitial">AA</div><div class="user-meta"><b id="userName">Asesora Académica</b><span id="userRoleLabel">Gestión de Cursos</span></div>
+            <div class="avatar" id="userInitial">AA</div><div class="user-meta"><b id="userName">Asesora Académica</b><span id="userRoleLabel">Catálogo de Cursos</span></div>
         </div>
         <ul class="nav-list">
-            <!-- NUEVO: módulos del portal administrativo, visibles solo para quien ya tiene
-                 acceso a ellos ahí (Administrativo, Administrador, Ejecutiva Academica).
-                 Orden igualado al del sidebar de administrativo.html. -->
             <li id="navDashboardAdmin" style="display:none;"><a href="administrativo.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
             <li id="navGestionDocentes" style="display:none;"><a href="gestion-docentes.html" class="nav-link"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
             <li id="navExpedientesAdmin" style="display:none;"><a href="gestion-expedientes.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
-            <li id="navGestionCursosAdmin" style="display:none;"><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Gestión Cursos</span></a></li>
+            <li id="navGestionCursosAdmin" style="display:none;"><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Catálogo de Cursos</span></a></li>
             <li><a href="academica-dashboard.html" class="nav-link active"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Gestión de Clases</span></a></li>
             <li id="navGestionAsesoras" style="display:none;"><a href="gestion-asesoras.html" class="nav-link"><i class="fa-solid fa-people-arrows"></i> <span class="link-text">Gestionar Asesoras</span></a></li>
             <li id="navGestionUsuariosAcad" style="display:none;"><a href="gestion-usuarios.html" class="nav-link"><i class="fa-solid fa-user-gear"></i> <span class="link-text">Gestión de Usuarios</span></a></li>
@@ -132,8 +115,6 @@
                     <p>Monitorea los horarios, proporciona los enlaces de acceso y registra la asistencia de las sesiones.</p>
                 </div>
 
-                <!-- NUEVO: franja de resumen — siempre sobre el total real, sin importar los filtros
-                     activos en la tabla, para que de un vistazo se sepa el estado general -->
                 <div class="kpi-strip" id="kpiStrip">
                     <div class="kpi-card kpi-curso">
                         <div class="kpi-icon"><i class="fa-solid fa-chalkboard-user"></i></div>
@@ -167,7 +148,6 @@
                                 <option value="">Todos los programas</option>
                             </select>
                         </div>
-                        <!-- NUEVO: filtro por si ya se culminó el dictado de las sesiones -->
                         <div class="col-md-2">
                             <label class="form-label fw-600 text-muted small">Dictado</label>
                             <select id="filtroDictado" class="form-select" onchange="aplicarFiltros()">
@@ -178,8 +158,6 @@
                         </div>
                     </div>
 
-                    <!-- NUEVO: rango de fechas de inicio, para encontrar rápido las clases que
-                         empiezan (o empezaron) dentro de un periodo concreto -->
                     <div class="filter-row-2">
                         <div class="date-group">
                             <label class="form-label fw-600 text-muted small m-0">Inicio desde</label>
@@ -223,11 +201,9 @@
         let paginaActual = 1;
         const FILAS_POR_PAGINA = 10;
 
-        // NUEVO: estado de orden de la tabla (columna activa + dirección)
         let ordenCampo = null;
         let ordenAscendente = true;
 
-        // El rol E-learning solo puede visualizar la información, no editar enlaces ni asistencias
         const esSoloLectura = localStorage.getItem('userRole') === 'E-learning';
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -236,16 +212,11 @@
             document.getElementById('userInitial').innerText = name.trim().substring(0, 2).toUpperCase();
 
             const rolActual = localStorage.getItem('userRole');
-            // NUEVO: muestra el rol real de la persona en vez de una etiqueta fija — antes,
-            // cualquier rol que no fuera Jefe OSE BGU/Administrador/E-learning se quedaba
-            // viendo "Gestión de Cursos" (el texto por defecto del HTML), sin actualizarse.
             document.getElementById('userRoleLabel').innerText = rolActual === 'E-learning' ? 'E-learning (solo lectura)' : (rolActual || 'Usuario');
             if (rolActual === 'Jefe OSE BGU' || rolActual === 'Administrador') {
                 document.getElementById('navGestionAsesoras').style.display = 'block';
             }
 
-            // NUEVO: módulos del portal administrativo, visibles solo para quien ya tiene acceso
-            // ahí — Asesora Academica, Jefe OSE BGU y E-learning NO los ven (solo Gestión de Clases)
             const rolUpperNav = String(rolActual || '').toUpperCase();
             if (rolUpperNav === 'ADMINISTRATIVO' || rolUpperNav === 'ADMINISTRADOR' || rolUpperNav === 'ADMIN' || rolUpperNav === 'EJECUTIVA ACADEMICA') {
                 document.getElementById('navDashboardAdmin').style.display = 'block';
@@ -260,7 +231,6 @@
             cargarClases();
         });
 
-        // NUEVO: formato corto y legible de una fecha ("12 ago 2026"); '—' si no hay fecha válida
         function formatFechaCorta(fechaRaw) {
             if (!fechaRaw) return null;
             const d = new Date(fechaRaw);
@@ -268,8 +238,6 @@
             return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).replace('.', '');
         }
 
-        // NUEVO: arma "12 ago – 20 sept 2026" (un solo año al final si ambas fechas caen en el
-        // mismo año, para no repetirlo dos veces y que se lea más limpio)
         function formatPeriodo(inicioRaw, finRaw) {
             const dIni = inicioRaw ? new Date(inicioRaw) : null;
             const dFin = finRaw ? new Date(finRaw) : null;
@@ -348,8 +316,6 @@
             );
         }
 
-        // NUEVO: franja de resumen — calculada siempre sobre el total (clasesGlobal), no sobre
-        // lo que esté filtrado en ese momento en la tabla
         function renderKPIs() {
             const hoy = new Date();
 
@@ -422,7 +388,6 @@
             renderTabla();
         }
 
-        // NUEVO: limpia los 6 filtros de una vez y vuelve a mostrar todo
         function limpiarFiltros() {
             document.getElementById('searchInput').value = '';
             document.getElementById('filtroEstado').value = '';
@@ -433,8 +398,6 @@
             aplicarFiltros();
         }
 
-        // NUEVO: ordenar la tabla al hacer clic en un encabezado — mismo campo de nuevo invierte
-        // la dirección, campo distinto empieza ascendente
         function ordenarPor(campo) {
             if (ordenCampo === campo) {
                 ordenAscendente = !ordenAscendente;
@@ -502,7 +465,6 @@
 
             let html = "";
             pageItems.forEach(inv => {
-                // NUEVO: periodo de clases (fecha inicio – fecha fin), con estado vacío prolijo
                 const periodoTxt = formatPeriodo(inv.fechaInicio, inv.fechaFin);
                 const periodoHtml = periodoTxt
                     ? `<div class="periodo-cell"><i class="fa-regular fa-calendar"></i> ${periodoTxt}</div>`
