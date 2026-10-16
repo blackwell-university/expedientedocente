@@ -389,11 +389,15 @@
         .step-content > .section-label:first-of-type { margin-top: 6px; }
 
         /* --- FORMULARIOS --- */
-        .form-label { font-weight: 600; font-size: 0.82rem; color: #475569; margin-bottom: 5px; display: block; }
-        .form-control, .form-select { border-radius: 9px; padding: 8px 12px; border: 1px solid #cbd5e1; background-color: #ffffff; font-size: 0.85rem; color: var(--text-main); transition: var(--transition); width: 100%; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
-        .form-control:disabled, .form-select:disabled { background-color: var(--bg-body); color: #94a3b8; }
-        .form-select { appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-size: 13px; padding-right: 30px; }
-        .form-control:focus, .form-select:focus { background-color: white; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1); outline: none; }
+        /* Estilo de inputs "aesthetic" (igual al modal de Editar Invitación): fondo gris suave, compactos, etiquetas pequeñas en mayúsculas */
+        .form-label, .form-label.small { font-weight: 600; font-size: 0.7rem; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; display: block; }
+        .form-control, .form-select { border-radius: 8px; padding: 7px 11px; border: 1px solid #e2e8f0; background-color: #f8fafc; font-size: 0.84rem; line-height: 1.4; color: #1e293b; transition: var(--transition); width: 100%; box-shadow: none; }
+        .form-control::placeholder { color: #94a3b8; }
+        .form-control:disabled, .form-select:disabled { background-color: #f1f5f9; color: #94a3b8; }
+        .form-select { appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 11px center; background-size: 12px; padding-right: 28px; }
+        .form-control:focus, .form-select:focus { background-color: #ffffff; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); outline: none; }
+        .form-control[type="file"] { padding: 5px 8px; }
+        .form-control[type="file"]::file-selector-button { background: #e2e8f0; border: none; border-radius: 6px; padding: 4px 10px; margin-right: 10px; font-size: 0.78rem; font-weight: 600; color: #475569; }
 
         /* --- UPLOAD BOX --- */
         .file-upload-box { border: 2px dashed #cbd5e1; border-radius: 14px; padding: 30px 18px; text-align: center; background: #ffffff; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;}
@@ -407,10 +411,32 @@
         .uploaded-doc-card .info i { font-size: 26px; color: var(--primary); }
 
         /* --- CARDS DINÁMICAS --- */
-        .dynamic-card { background: #ffffff; border: 1px solid var(--border-color); border-radius: 14px; padding: 20px 20px 18px; position: relative; margin-bottom: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: 0.3s;}
+        .dynamic-card { background: #ffffff; border: 1px solid var(--border-color); border-radius: 14px; padding: 20px 18px 20px; position: relative; margin-bottom: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: 0.3s;}
         .dynamic-card:hover { border-color: #cbd5e1; box-shadow: 0 8px 25px rgba(0,0,0,0.05); }
-        .btn-remove { position: absolute; top: 14px; right: 14px; background: #fee2e2; color: #ef4444; border: none; border-radius: 9px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 0.88rem; font-weight: 600; transition: 0.2s;}
-        .btn-remove:hover { background: #ef4444; color: white; }
+        /* Botón eliminar estilo "modal": píldora suave con ícono + texto */
+        .btn-remove { position: absolute; top: 12px; right: 14px; display: inline-flex; align-items: center; gap: 6px; background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; border-radius: 8px; padding: 4px 11px; height: 28px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.2px; line-height: 1; transition: 0.2s; cursor: pointer; }
+        .btn-remove i { font-size: 0.78rem; }
+        .btn-remove::after { content: "Eliminar"; }
+        .btn-remove:hover { background: #dc2626; border-color: #dc2626; color: #ffffff; }
+        @media (max-width: 480px) { .btn-remove::after { content: none; } .btn-remove { padding: 0; width: 28px; justify-content: center; } }
+
+        /* Numeración automática de tarjetas (se actualiza sola al agregar o eliminar) */
+        #ai-experience-container { counter-reset: expn; }
+        #ai-skills-container { counter-reset: skn; }
+        #ai-education-container { counter-reset: edun; }
+        .exp-item { counter-increment: expn; }
+        .skill-item { counter-increment: skn; }
+        .ai-edu-record { counter-increment: edun; }
+        .card-num { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; min-height: 28px; padding-right: 100px; }
+        .card-badge { display: inline-flex; align-items: center; gap: 7px; background: #eff6ff; color: #1d4ed8; border-radius: 8px; padding: 5px 12px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; }
+        .card-badge::before { font-family: "Font Awesome 6 Free"; font-weight: 900; font-size: 0.7rem; }
+        .badge-exp::before { content: "\f0b1"; }
+        .badge-skill::before { content: "\f005"; }
+        .badge-edu::before { content: "\f19d"; }
+        .badge-exp::after { content: "Experiencia " counter(expn); }
+        .badge-skill::after { content: "Competencia " counter(skn); }
+        .badge-edu::after { content: "Formación " counter(edun); }
+        .card-sub { font-size: 0.82rem; font-weight: 600; color: #475569; }
         
         .btn-add-dynamic { background: transparent; border: 2px dashed #cbd5e1; color: var(--text-muted); font-weight: 700; font-size: 0.88rem; border-radius: 14px; padding: 14px; width: 100%; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;}
         .btn-add-dynamic:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
@@ -1380,14 +1406,43 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
 
         function formatToMonthInput(dateString) {
-            if (!dateString) return "";
-            const texto = String(dateString);
-            if (texto.toLowerCase().includes('actual')) return "";
-            const date = new Date(dateString);
+            if (dateString === null || dateString === undefined || dateString === '') return "";
+            // La hoja guarda a veces solo el año como NÚMERO (2024), o textos como "2025-1" / "1988-03"
+            if (typeof dateString === 'number') {
+                if (dateString >= 1900 && dateString <= 2100) return `${dateString}-01`;
+                const dn = new Date(dateString);
+                return isNaN(dn.getTime()) ? "" : `${dn.getFullYear()}-${String(dn.getMonth() + 1).padStart(2, '0')}`;
+            }
+            const texto = String(dateString).trim();
+            if (!texto || texto.toLowerCase().includes('actual')) return "";
+            let m = texto.match(/^(\d{4})$/);
+            if (m) return `${m[1]}-01`;
+            m = texto.match(/^(\d{4})[-\/](\d{1,2})(?:[-\/]\d{1,2})?$/);
+            if (m && +m[2] >= 1 && +m[2] <= 12) return `${m[1]}-${m[2].padStart(2, '0')}`;
+            const date = new Date(texto);
             if (isNaN(date.getTime())) return "";
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            return `${year}-${month}`;
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        }
+
+        // Fecha completa (yyyy-mm-dd) para <input type="date">. Acepta lo que ya hay en la hoja:
+        // "2023-05-01", "2024-03" (solo mes -> día 1), "2024" o 2024 (solo año -> 1 de enero) y fechas ISO.
+        function formatToDateInput(v) {
+            if (v === null || v === undefined || v === '') return "";
+            const p2 = n => String(n).padStart(2, '0');
+            if (typeof v === 'number') {
+                if (v >= 1900 && v <= 2100) return `${v}-01-01`;
+                const dn = new Date(v);
+                return isNaN(dn.getTime()) ? "" : `${dn.getFullYear()}-${p2(dn.getMonth() + 1)}-${p2(dn.getDate())}`;
+            }
+            const t = String(v).trim();
+            if (!t || t.toLowerCase().includes('actual')) return "";
+            let m = t.match(/^(\d{4})$/);
+            if (m) return `${m[1]}-01-01`;
+            m = t.match(/^(\d{4})[-\/](\d{1,2})(?:[-\/](\d{1,2}))?$/);
+            if (m && +m[2] >= 1 && +m[2] <= 12) return `${m[1]}-${p2(m[2])}-${p2(m[3] || 1)}`;
+            const d = new Date(t);
+            if (isNaN(d.getTime())) return "";
+            return `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
         }
 
         // --- FUNCIÓN PARA MOSTRAR ALERTAS TOAST ---
@@ -1484,7 +1539,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             div.dataset.id = data.id_experiencia || ("EXPV-" + Date.now().toString().slice(-6) + Math.floor(Math.random() * 1000));
 
             div.innerHTML = `
-                <button type="button" class="btn-remove" onclick="this.parentElement.remove()"><i class="fa-solid fa-trash"></i></button>
+                <button type="button" class="btn-remove" title="Eliminar" onclick="this.parentElement.remove()"><i class="fa-regular fa-trash-can"></i></button>
+                <div class="card-num"><span class="card-badge badge-skill"></span></div>
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label class="form-label small fw-bold">Tipo de Competencia *</label>
@@ -1893,6 +1949,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         if (eduCont) eduCont.innerHTML = '';
                         if (expCont) expCont.innerHTML = '';
                         if (skillCont) skillCont.innerHTML = '';
+                        window.expDraftsCargados = true; // las experiencias ya se pintaron: es seguro sincronizar borrados
                         
                         if (result.drafts.educacion && result.drafts.educacion.length > 0) { 
                             result.drafts.educacion.forEach(edu => addEduReviewField(edu)); 
@@ -2169,7 +2226,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             const grado = card.dataset.grado || "";
             
             card.innerHTML = `
-                <button type="button" class="btn-remove" onclick="this.parentElement.remove()"><i class="fa-solid fa-trash"></i></button>
+                <button type="button" class="btn-remove" title="Eliminar" onclick="this.parentElement.remove()"><i class="fa-regular fa-trash-can"></i></button>
                 <div class="row g-3">
                     <div class="col-md-12">
                         <label class="form-label">Nivel de Grado *</label>
@@ -2191,7 +2248,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             const div = document.createElement('div');
             div.className = 'dynamic-card diploma-item edit-mode-dip mb-3';
             div.innerHTML = `
-                <button type="button" class="btn-remove" onclick="this.parentElement.remove()"><i class="fa-solid fa-trash"></i></button>
+                <button type="button" class="btn-remove" title="Eliminar" onclick="this.parentElement.remove()"><i class="fa-regular fa-trash-can"></i></button>
                 <div class="row g-3">
                     <div class="col-md-12"><label class="form-label">Nivel de Grado *</label><select class="form-select dip-grado"><option value="">Seleccionar...</option><option value="Bachelor">Bachelor</option><option value="Master">Master</option><option value="Doctorado">Doctorado</option></select></div>
                     <div class="col-md-6"><label class="form-label">Diploma (PDF) *</label><input type="file" class="form-control dip-file" accept=".pdf"></div>
@@ -2538,6 +2595,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
         // CARGAR INVITACIONES
         async function cargarCursosPendientes() {
+            // El paso 4 (asignación de curso) ya no existe en este asistente: no hay dónde pintar la lista, así que ni se consulta
+            if (typeof pasoAsignacionOculto !== 'undefined' && pasoAsignacionOculto) return;
+            if (!document.getElementById('lista-invitaciones')) return;
             // Le enviamos el idExpedienteUrl al backend para que nos devuelva solo 1 curso
             const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_invitationsexpediente', docenteId: userId, idExpediente: idExpedienteUrl }) });
             const result = await response.json();
@@ -3012,6 +3072,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         };
                     });
                     payload.experiencia = [...experienciasG, ...habilidadesG];
+                    // Le avisa al servidor que esta lista es la completa: lo que no venga aquí fue eliminado por el usuario
+                    payload.sincronizarExperiencias = (window.expDraftsCargados === true);
 
                 }
 
@@ -3057,6 +3119,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                             document.getElementById('ai-education-container').innerHTML = '';
                             document.getElementById('ai-experience-container').innerHTML = '';
                             document.getElementById('ai-skills-container').innerHTML = ''; // FIX: también se limpia, antes no se limpiaba y podía duplicar competencias visibles
+                            window.expDraftsCargados = true;
                             if(res.drafts.educacion) res.drafts.educacion.forEach(edu => addEduReviewField(edu));
                         
                             if (res.drafts.experiencia) renderExperienciaYCompetencias(res.drafts.experiencia);
@@ -3087,8 +3150,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             div.dataset.grado = data.grado || "";
 
             div.innerHTML = `
-                <button type="button" class="btn-remove" onclick="this.parentElement.remove()"><i class="fa-solid fa-trash"></i></button>
-                <h6 class="fw-bold mb-3 text-primary">Grado: ${data.grado || 'Detectado'}</h6>
+                <button type="button" class="btn-remove" title="Eliminar" onclick="this.parentElement.remove()"><i class="fa-regular fa-trash-can"></i></button>
+                <div class="card-num"><span class="card-badge badge-edu"></span><span class="card-sub">Grado: ${data.grado || 'Detectado'}</span></div>
                 <div class="row g-3">
                     <div class="col-md-6"><label class="form-label small fw-bold">Carrera *</label><input type="text" class="form-control ai-rama" value="${data.rama || data.carrera || ''}"></div>
                     <div class="col-md-6"><label class="form-label small fw-bold">Institución *</label><input type="text" class="form-control ai-institucion" value="${data.instituto || ''}"></div>
@@ -3108,10 +3171,11 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
             div.dataset.id = data.id_experiencia || ("EXPV-" + Date.now().toString().slice(-6) + Math.floor(Math.random() * 1000));
 
-            const isActualidad = data.fin && data.fin.toLowerCase().includes('actual');
+            const isActualidad = String(data.fin === null || data.fin === undefined ? '' : data.fin).toLowerCase().includes('actual');
 
             div.innerHTML = `
-                <button type="button" class="btn-remove" onclick="this.parentElement.remove()"><i class="fa-solid fa-trash"></i></button>
+                <button type="button" class="btn-remove" title="Eliminar" onclick="this.parentElement.remove()"><i class="fa-regular fa-trash-can"></i></button>
+                <div class="card-num"><span class="card-badge badge-exp"></span></div>
                 <div class="row g-3">
                     <div class="col-md-6"><label class="form-label small fw-bold">Empresa</label><input type="text" class="form-control exp-empresa" value="${data.empresa || ''}"></div>
                     <div class="col-md-6"><label class="form-label small fw-bold">Tipo de Experiencia</label>
@@ -3123,7 +3187,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     <div class="col-md-12"><label class="form-label small fw-bold">Cargo</label><input type="text" class="form-control exp-cargo" value="${data.cargo || ''}"></div>
                     <div class="col-md-12"><label class="form-label small fw-bold">Área de enseñanza (*Solo si enseñó)</label><input type="text" class="form-control exp-area" value="${data.area || ''}"></div>
                     <div class="col-md-12"><label class="form-label small fw-bold">Dirección (Calle, Ciudad/Pais, Opcional: Código postal)</label><input type="text" class="form-control exp-direccion" value="${data.direccion || ''}"></div>
-                    <div class="col-md-6"><label class="form-label small fw-bold">Inicio</label><input type="month" class="form-control exp-inicio" value="${formatToMonthInput(data.inicio)}"></div>
+                    <div class="col-md-6"><label class="form-label small fw-bold">Inicio</label><input type="date" class="form-control exp-inicio" value="${formatToDateInput(data.inicio)}"></div>
                     <div class="col-md-6">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <label class="form-label small fw-bold m-0">Culminación</label>
@@ -3131,7 +3195,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                                 <input type="checkbox" class="actualidad-check" onchange="toggleActualidad(this)" ${isActualidad ? 'checked' : ''}> Actualidad
                             </label>
                         </div>
-                        <input type="month" class="form-control exp-fin" value="${isActualidad ? '' : formatToMonthInput(data.fin)}" ${isActualidad ? 'disabled' : ''}>
+                        <input type="date" class="form-control exp-fin" value="${isActualidad ? '' : formatToDateInput(data.fin)}" ${isActualidad ? 'disabled' : ''}>
                     </div>
                 </div>`;
             container.appendChild(div);

@@ -773,6 +773,8 @@
                     </div>
                 </div>
 
+                <div id="aviso-expediente-no-enviado"></div>
+
                 <ul class="nav nav-tabs" id="expedienteTabs" role="tablist">
                     <li class="nav-item">
                         <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#datos">Datos del Expediente</button>
@@ -800,16 +802,26 @@
 
                         <div class="form-card mb-4">
                             <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
-                                <span class="section-badge"><i class="fa-solid fa-circle-info me-2"></i>Información de la Invitación</span>
-                                <button type="button" class="action-btn" onclick="abrirModalEditarInvitacion()">
-                                    <i class="fa-solid fa-pen"></i> Editar Invitación
-                                </button>
+                                <span class="section-badge"><i class="fa-solid fa-chalkboard-user me-2"></i>Datos de la Invitación</span>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <button type="button" class="action-btn action-btn-primary d-none" id="btnEnviarInvitacionDocente" onclick="confirmarEnviarInvitacionDocente()">
+                                        <i class="fa-solid fa-paper-plane"></i> Enviar Invitación al Docente
+                                    </button>
+                                    <button type="button" class="action-btn" onclick="abrirModalEditarInvitacion()">
+                                        <i class="fa-solid fa-pen"></i> Editar Invitación
+                                    </button>
+                                </div>
                             </div>
                             <div class="row g-3">
-                                <div class="col-md-3"><span class="info-label">Estado</span><div id="view-estado" class="info-value fw-bold text-primary">-</div></div>
-                                <div class="col-md-3"><span class="info-label">Curso Propuesto</span><div id="view-curso" class="info-value">-</div></div>
-                                <div class="col-md-3"><span class="info-label">Día / Horario Elegido</span><div id="view-horario" class="info-value">-</div></div>
-                                <div class="col-md-3"><span class="info-label">Pago Acordado</span><div id="view-pago" class="info-value text-success fw-bold">-</div></div>
+                                <div class="col-12"><span class="info-label"><i class="fa-solid fa-book-open me-1" style="opacity:.45;font-size:.75rem;"></i>Programa / Curso</span><div class="info-value fw-bold" id="view-curso">-</div></div>
+                                <div class="col-md-6"><span class="info-label"><i class="fa-regular fa-calendar me-1" style="opacity:.45;font-size:.75rem;"></i>Período</span><div class="info-value" id="view-periodo">-</div></div>
+                                <div class="col-md-6"><span class="info-label"><i class="fa-solid fa-layer-group me-1" style="opacity:.45;font-size:.75rem;"></i>Cantidad de Sesiones</span><div class="info-value" id="view-sesiones">-</div></div>
+                                <div class="col-12">
+                                    <span class="info-label"><i class="fa-regular fa-clock me-1" style="opacity:.45;font-size:.75rem;"></i>Horario elegido por el docente</span>
+                                    <div class="info-value" id="view-horario">-</div>
+                                </div>
+                                <div class="col-12" style="border-top: 1px solid #f1f5f9; margin-top: 4px; padding-top: 18px;"></div>
+                                <div class="col-md-6"><span class="info-label"><i class="fa-solid fa-sack-dollar me-1" style="opacity:.45;font-size:.75rem;"></i>Pago Acordado</span><div class="info-value text-success fw-bold" id="view-pago">-</div></div>
                             </div>
 
                             <!-- NUEVO: widget de aprobación de sábado -- cada fecha tiene su propio par de
@@ -2063,24 +2075,61 @@
 
                     renderBotonesDinamicos(estadoExp);
 
-                    document.getElementById('view-estado').innerText = exp.estado;
-                    document.getElementById('view-curso').innerText = inv.curso || "No especificado";
-                    
-                    if (inv.horario && inv.horario.trim() !== '-' && inv.horario.includes(':')) {
-                        let horariosHtml = '<div class="d-flex flex-column gap-1 mt-1">';
-                        const sesiones = inv.horario.split('|');
-                        sesiones.forEach(sesion => {
-                            if(sesion.trim()) {
-                                horariosHtml += `<div style="font-size: 0.75rem; background: #f8fafc; border: 1px solid #e2e8f0; padding: 5px 8px; border-radius: 6px; color: #475569; line-height: 1.3; width: fit-content;"><i class="fa-regular fa-calendar-check text-primary me-1"></i> ${sesion.trim()}</div>`;
+                    // Datos de la invitación (mismo formato que Admin/invitacion.html)
+                    document.getElementById('view-curso').innerText = `${inv.curso || '-'} — ${inv.programa || '-'}`;
+                    document.getElementById('view-periodo').innerText = `${safeFormatDate(inv.fechaInicio)} al ${safeFormatDate(inv.fechaFin)}`;
+                    document.getElementById('view-sesiones').innerText = inv.clases || '-';
+
+                    const elHorario = document.getElementById('view-horario');
+                    const horarioStr = inv.horario ? String(inv.horario).trim() : '';
+                    const diasStr = inv.dias ? String(inv.dias).trim() : '';
+                    if (horarioStr && horarioStr !== '-' && horarioStr.includes(':')) {
+                        let horariosHtml = '<div class="d-flex flex-wrap gap-1 mt-1">';
+                        horarioStr.split('|').forEach(sesion => {
+                            if (sesion.trim()) {
+                                horariosHtml += `<span class="badge bg-light text-dark border me-1 mb-1" style="font-weight:600; font-size:0.75rem; padding:5px 10px;"><i class="fa-regular fa-calendar-check text-primary me-1"></i> ${sesion.trim()}</span>`;
                             }
                         });
                         horariosHtml += '</div>';
-                        document.getElementById('view-horario').innerHTML = horariosHtml;
+                        elHorario.innerHTML = horariosHtml;
+                    } else if (diasStr || horarioStr) {
+                        elHorario.innerText = `${diasStr} ${horarioStr}`.trim();
                     } else {
-                        document.getElementById('view-horario').innerText = inv.dias || "-";
+                        elHorario.innerHTML = '<span class="text-muted fst-italic">Aún no confirmado por el docente</span>';
                     }
-                    
-                    document.getElementById('view-pago').innerText = inv.pago || "-";
+
+                    document.getElementById('view-pago').innerText = (inv.pago || '').trim() || '-';
+                    // Aviso: mientras el expediente esté "Por enviar", el docente no lo ve ni ve su invitación
+                    const avisoNoEnviado = document.getElementById('aviso-expediente-no-enviado');
+                    if (avisoNoEnviado) {
+                        avisoNoEnviado.innerHTML = ['por enviar', ''].includes(estadoExp.toLowerCase())
+                            ? `<div class="mb-3 d-flex align-items-start gap-3" style="background:#fffbeb; border:1px solid #fde68a; border-radius:12px; padding:16px 20px;">
+                                    <i class="fa-regular fa-eye-slash mt-1" style="color:#b45309; font-size:1.1rem;"></i>
+                                    <div>
+                                        <div style="font-weight:700; color:#92400e; font-size:0.92rem;">El docente todavía no puede ver este expediente ni su invitación</div>
+                                        <div style="color:#78350f; font-size:0.85rem; margin-top:2px;">
+                                            Mientras el estado sea <b>Por enviar</b>, ni el expediente ni la invitación aparecen en su portal — todavía no se le ha enviado el correo.
+                                            Usa el botón <b>"Enviar Invitación"</b> para notificarlo y que pueda verlos y completarlos.
+                                        </div>
+                                    </div>
+                                </div>`
+                            : '';
+                    }
+
+                    // Botón de envío (misma lógica que la tarjeta del expediente en Detalles del Docente):
+                    // Guardado/Pendiente -> "Enviar Invitación"; ya enviada -> "Reenviar". Oculto si está cancelado.
+                    const btnEnvInv = document.getElementById('btnEnviarInvitacionDocente');
+                    if (btnEnvInv) {
+                        const estInvLower = String(inv.estado || 'Pendiente').trim().toLowerCase();
+                        const sinEnviar = ['guardado', 'pendiente', 'por enviar', ''].includes(estInvLower);
+                        btnEnvInv.dataset.reenvio = sinEnviar ? '0' : '1';
+                        btnEnvInv.className = 'action-btn ' + (sinEnviar ? 'action-btn-primary' : '');
+                        btnEnvInv.innerHTML = sinEnviar
+                            ? '<i class="fa-regular fa-paper-plane"></i> Enviar Invitación'
+                            : '<i class="fa-solid fa-rotate-right"></i> Reenviar Invitación';
+                        btnEnvInv.disabled = false;
+                        btnEnvInv.classList.toggle('d-none', !idInvitacionActual || estadoExp === 'Cancelado');
+                    }
 
                     // NUEVO: widget de aprobación de sábado
                     estadoInvitacionActual = inv.estado || "";
@@ -2114,6 +2163,93 @@
             } catch (e) {
                 console.error("Error al cargar expediente:", e);
                 mostrarErrorDatos();
+            }
+        }
+
+        function safeFormatDate(dateVal) {
+            if (!dateVal) return '-';
+            let str = String(dateVal).trim();
+            if (!str || str === '-') return '-';
+            if (str.includes('/')) {
+                const parts = str.split('/');
+                if (parts.length === 3) str = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+            }
+            const d = new Date(str);
+            if (isNaN(d.getTime())) return String(dateVal);
+            return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+
+        // ==================== ENVIAR / REENVIAR INVITACIÓN DEL EXPEDIENTE (misma función que Detalles del Docente) ====================
+        function confirmarEnviarInvitacionDocente() {
+            const btn = document.getElementById('btnEnviarInvitacionDocente');
+            const esReenvio = !!btn && btn.dataset.reenvio === '1';
+            Swal.fire({
+                title: esReenvio ? '¿Reenviar Invitación al Docente?' : '¿Enviar Invitación al Docente?',
+                text: esReenvio
+                    ? "Se volverá a enviar el correo con el Expediente de Aprobación de la contratación, por si el docente lo eliminó o no lo recibió."
+                    : "Se enviará el correo oficial y el estado de la invitación cambiará a 'Enviado'.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: esReenvio ? '<i class="fa-solid fa-rotate-right me-1"></i> Sí, reenviar' : '<i class="fa-regular fa-paper-plane me-1"></i> Sí, enviar',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) enviarInvitacionDocente(esReenvio);
+            });
+        }
+
+        async function enviarInvitacionDocente(esReenvio = false) {
+            const btn = document.getElementById('btnEnviarInvitacionDocente');
+            if (btn) btn.disabled = true;
+            showToast(esReenvio ? "Reenviando correo..." : "Recopilando datos y enviando correo...", "info");
+            try {
+                if (!idInvitacionActual) { showToast("Error: No se encontró la invitación asociada.", "danger"); if (btn) btn.disabled = false; return; }
+
+                // Documentos solicitados en este expediente (los lista el correo)
+                let documentosExp = '';
+                try {
+                    const resExps = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_expedientes_docente', docenteId: docId }) });
+                    const jsonExps = await resExps.json();
+                    const miExp = (jsonExps.data || []).find(e => String(e.idExpediente).trim() === String(expId).trim());
+                    documentosExp = (miExp && miExp.documentos) || '';
+                } catch (e) { /* si falla, el correo sale sin la lista de documentos */ }
+
+                const resInv = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_invitation_for_email', idInvitacion: idInvitacionActual }) });
+                const jsonInv = await resInv.json();
+                if (jsonInv.status !== 'success') { showToast("Error al obtener detalles del curso.", "danger"); if (btn) btn.disabled = false; return; }
+
+                const d = jsonInv.data;
+                const payloadEmail = {
+                    action: 'send_invitation_email',
+                    modo: 'expediente',
+                    idInvitacion: idInvitacionActual,
+                    docenteId: docId,
+                    docenteCorreo: docenteCorreoActual,
+                    docenteNombre: (docenteNombreActual || '').split(' ')[0],
+                    programa: d.programa,
+                    curso: d.curso,
+                    rangoFechas: `${new Date(d.fechaInicio).toLocaleDateString('es-ES')} al ${new Date(d.fechaFin).toLocaleDateString('es-ES')}`,
+                    horario: d.franjas,
+                    cantidadClases: d.clases,
+                    monedaSimbolo: d.moneda,
+                    costo: d.costo,
+                    documentos: documentosExp
+                };
+
+                const resEmail = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payloadEmail) });
+                const jsonEmail = await resEmail.json();
+                if (jsonEmail.status === 'success') {
+                    showToast(esReenvio ? "¡Correo reenviado exitosamente!" : "¡Correo enviado exitosamente!", "success");
+                    cargarExpediente();
+                } else {
+                    showToast(jsonEmail.message || "Error del servidor al enviar el correo.", "danger");
+                    if (btn) btn.disabled = false;
+                }
+            } catch (e) {
+                showToast("Error de conexión al procesar el envío.", "danger");
+                if (btn) btn.disabled = false;
             }
         }
 
