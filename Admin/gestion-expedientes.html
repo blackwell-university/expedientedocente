@@ -121,6 +121,14 @@
         .badge-vigencia-porvencer { background: #fffbeb; color: #b45309; }
         .badge-vigencia-vencido { background: #fef2f2; color: #b91c1c; }
 
+        /* NUEVO: paginación (mismo estilo que Gestión de Clases) */
+        .pagination-bar { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-top: 1px solid #eef1f5; flex-wrap: wrap; gap: 12px; }
+        .pagination-bar .btn-page { background: white; border: 1px solid #e2e8f0; color: var(--text-main); font-weight: 600; font-size: 0.82rem; padding: 6px 14px; border-radius: 8px; transition: var(--transition); }
+        .pagination-bar .btn-page:hover:not(:disabled):not(.active) { background: #f1f5f9; }
+        .pagination-bar .btn-page:disabled { opacity: 0.4; cursor: not-allowed; }
+        .pagination-bar .btn-page.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .pagination-bar .pag-dots { color: var(--text-muted); padding: 0 4px; align-self: center; }
+
         @media (max-width: 768px) { .sidebar { display: none; } header, .content-area { padding: 20px; } }
     
         /* --- REDISEÑO DE SWEETALERT2 (UI Corporativa) --- */
@@ -275,6 +283,7 @@
                             </tbody>
                         </table>
                     </div>
+                    <div class="pagination-bar" id="paginationBarExp"></div>
                     <div id="loading-spinner" class="text-center py-5">
                         <i class="fa-solid fa-circle-notch fa-spin fs-2" style="color: var(--primary);"></i>
                         <p class="mt-3 text-muted fw-medium">Obteniendo expedientes del sistema...</p>
@@ -299,6 +308,7 @@
                             </tbody>
                         </table>
                     </div>
+                    <div class="pagination-bar" id="paginationBarInv"></div>
                     <div id="loading-spinner-inv" class="text-center py-5 d-none">
                         <i class="fa-solid fa-circle-notch fa-spin fs-2" style="color: var(--primary);"></i>
                         <p class="mt-3 text-muted fw-medium">Obteniendo invitaciones del sistema...</p>
@@ -319,6 +329,13 @@
         let todosExpedientes = [];
         let todasInvitaciones = [];
         let vistaActual = 'expedientes'; // NUEVO: 'expedientes' (contratos anuales) o 'invitaciones' (cursos)
+
+        // NUEVO: paginación (una página actual por cada vista)
+        const FILAS_POR_PAGINA = 10;
+        let filtradasExp = [];
+        let filtradasInv = [];
+        let paginaExp = 1;
+        let paginaInv = 1;
 
         // UI Helpers
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); document.getElementById('toggleIcon').classList.toggle('fa-chevron-right'); document.getElementById('toggleIcon').classList.toggle('fa-chevron-left');}
@@ -408,10 +425,10 @@
             cargarTodosExpedientes();
             cargarTodasInvitaciones();
             
-            document.getElementById('filterText').addEventListener('input', filtrar);
-            document.getElementById('filterStatus').addEventListener('change', filtrar);
-            document.getElementById('filterFechaDesde').addEventListener('change', filtrar);
-            document.getElementById('filterFechaHasta').addEventListener('change', filtrar);
+            document.getElementById('filterText').addEventListener('input', () => filtrar());
+            document.getElementById('filterStatus').addEventListener('change', () => filtrar());
+            document.getElementById('filterFechaDesde').addEventListener('change', () => filtrar());
+            document.getElementById('filterFechaHasta').addEventListener('change', () => filtrar());
         });
 
         function cambiarVista(vista) {
@@ -461,7 +478,7 @@
                     spinner.classList.add('d-none');
                     if (data) {
                         todasInvitaciones = data;
-                        if (vistaActual === 'invitaciones') filtrar();
+                        if (vistaActual === 'invitaciones') filtrar(true);
                     }
                 }
             );
@@ -483,7 +500,7 @@
                     spinner.style.display = 'none';
                     if (data) {
                         todosExpedientes = data;
-                        filtrar();
+                        filtrar(true);
                     }
                 }
             );
@@ -498,7 +515,9 @@
             return true;
         }
 
-        function filtrar() {
+        // conservarPagina=true: se usa al refrescar datos o eliminar, para no mandar al usuario a la página 1
+        function filtrar(conservarPagina = false) {
+            if (!conservarPagina) { paginaExp = 1; paginaInv = 1; }
             const text = document.getElementById('filterText').value.toLowerCase();
             const status = document.getElementById('filterStatus').value;
 
@@ -508,7 +527,7 @@
             const hastaDate = hastaVal ? new Date(hastaVal + 'T23:59:59') : null;
 
             if (vistaActual === 'invitaciones') {
-                const filtradasInv = todasInvitaciones.filter(inv => {
+                const filtradasInvTmp = todasInvitaciones.filter(inv => {
                     const matchText = (inv.nombreDocente || '').toLowerCase().includes(text) ||
                                       (inv.id || '').toLowerCase().includes(text) ||
                                       (inv.curso || '').toLowerCase().includes(text);
@@ -516,7 +535,7 @@
                     const matchFecha = fechaDentroDeRango(inv.fechaInicio, desdeDate, hastaDate);
                     return matchText && matchStatus && matchFecha;
                 });
-                renderTablaInvitaciones(filtradasInv);
+                renderTablaInvitaciones(filtradasInvTmp);
                 return;
             }
 
@@ -563,14 +582,49 @@
             return d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
         }
 
+        // NUEVO: dibuja la barra de paginación de una vista (ventana de páginas con "…" para que no se desborde)
+        function renderPaginacion(barId, total, pagina, fnIrA) {
+            const bar = document.getElementById(barId);
+            const totalPaginas = Math.ceil(total / FILAS_POR_PAGINA);
+            if (total === 0) { bar.innerHTML = ''; return; }
+            const desde = (pagina - 1) * FILAS_POR_PAGINA + 1;
+            const hasta = Math.min(pagina * FILAS_POR_PAGINA, total);
+            if (totalPaginas <= 1) { bar.innerHTML = `<span class="text-muted small">${total} ${total === 1 ? 'registro' : 'registros'} en total</span>`; return; }
+
+            const nums = [];
+            for (let i = 1; i <= totalPaginas; i++) {
+                if (i === 1 || i === totalPaginas || Math.abs(i - pagina) <= 1) nums.push(i);
+                else if (nums[nums.length - 1] !== '…') nums.push('…');
+            }
+            let botones = `<button class="btn-page" ${pagina === 1 ? 'disabled' : ''} onclick="${fnIrA}(${pagina - 1})"><i class="fa-solid fa-chevron-left"></i></button>`;
+            nums.forEach(n => {
+                botones += n === '…'
+                    ? `<span class="pag-dots">…</span>`
+                    : `<button class="btn-page ${n === pagina ? 'active' : ''}" onclick="${fnIrA}(${n})">${n}</button>`;
+            });
+            botones += `<button class="btn-page" ${pagina === totalPaginas ? 'disabled' : ''} onclick="${fnIrA}(${pagina + 1})"><i class="fa-solid fa-chevron-right"></i></button>`;
+            bar.innerHTML = `<span class="text-muted small">Mostrando ${desde}–${hasta} de ${total} registros</span><div class="d-flex gap-2 flex-wrap">${botones}</div>`;
+        }
+
+        function irAPaginaExp(n) { paginaExp = n; renderTabla(filtradasExp); }
+        function irAPaginaInv(n) { paginaInv = n; renderTablaInvitaciones(filtradasInv); }
+
         function renderTabla(datos) {
+            filtradasExp = datos;
             const tbody = document.getElementById('lista-expedientes');
             if(datos.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted"><i class="fa-regular fa-folder-open fs-2 mb-2 opacity-50"></i><br>No se encontraron expedientes.</td></tr>';
+                renderPaginacion('paginationBarExp', 0, 1, 'irAPaginaExp');
                 return;
             }
 
-            tbody.innerHTML = datos.map(exp => {
+            const totalPaginas = Math.ceil(datos.length / FILAS_POR_PAGINA);
+            if (paginaExp > totalPaginas) paginaExp = totalPaginas;
+            if (paginaExp < 1) paginaExp = 1;
+            const itemsPagina = datos.slice((paginaExp - 1) * FILAS_POR_PAGINA, paginaExp * FILAS_POR_PAGINA);
+            renderPaginacion('paginationBarExp', datos.length, paginaExp, 'irAPaginaExp');
+
+            tbody.innerHTML = itemsPagina.map(exp => {
                 const fIni = formatCustomDate(exp.fechaInicio);
                 const fFin = formatCustomDate(exp.fechaFin);
 
@@ -613,13 +667,21 @@
         }
 
         function renderTablaInvitaciones(datos) {
+            filtradasInv = datos;
             const tbody = document.getElementById('lista-invitaciones');
             if (datos.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted"><i class="fa-solid fa-chalkboard-user fs-2 mb-2 opacity-50"></i><br>No se encontraron invitaciones.</td></tr>';
+                renderPaginacion('paginationBarInv', 0, 1, 'irAPaginaInv');
                 return;
             }
 
-            tbody.innerHTML = datos.map(inv => {
+            const totalPaginas = Math.ceil(datos.length / FILAS_POR_PAGINA);
+            if (paginaInv > totalPaginas) paginaInv = totalPaginas;
+            if (paginaInv < 1) paginaInv = 1;
+            const itemsPagina = datos.slice((paginaInv - 1) * FILAS_POR_PAGINA, paginaInv * FILAS_POR_PAGINA);
+            renderPaginacion('paginationBarInv', datos.length, paginaInv, 'irAPaginaInv');
+
+            tbody.innerHTML = itemsPagina.map(inv => {
                 const fIni = formatCustomDate(inv.fechaInicio);
                 const fFin = formatCustomDate(inv.fechaFin);
                 const expHtml = inv.idExpediente
@@ -695,7 +757,7 @@
                 const result = await res.json();
                 if (result.status === 'success') {
                     todasInvitaciones = todasInvitaciones.filter(inv => inv.id !== idInvitacion);
-                    filtrar();
+                    filtrar(true);
                     Swal.fire({
                         title: 'Invitación eliminada',
                         icon: 'success',

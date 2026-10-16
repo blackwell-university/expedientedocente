@@ -431,6 +431,16 @@
                 // Excluimos las que estén en borrador ('Guardado')
                 invitaciones = invitaciones.filter(inv => inv.estado && inv.estado.toLowerCase() !== 'guardado');
 
+                // NUEVO: lo cancelado no se lista al docente (ni expedientes ni invitaciones).
+                // Al filtrar aquí, también quedan fuera de los contadores rojos.
+                const esCancelado = (x) => String((x && x.estado) || '').trim().toLowerCase() === 'cancelado';
+                // Si el expediente está cancelado, su invitación ligada también se oculta (la cancelación aplica a ambos).
+                const invLigadasACancelados = new Set(
+                    expedientes.filter(esCancelado).map(exp => String(exp.idInvitacion || '').trim()).filter(Boolean)
+                );
+                expedientes = expedientes.filter(exp => !esCancelado(exp));
+                invitaciones = invitaciones.filter(inv => !esCancelado(inv) && !invLigadasACancelados.has(String(inv.id || '').trim()));
+
                 renderInvitaciones(invitaciones);
                 renderExpedientes(expedientes);
 
