@@ -274,6 +274,35 @@
         .app-card-blue .btn-aula:hover { color: #2563eb; }
         .app-card-dark .btn-aula:hover { color: #0f172a; }
 
+        /* NUEVO: tarjetas de clase clicables + chip de fecha relativa */
+        a.app-card { text-decoration: none; color: white; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        a.app-card:hover { transform: translateY(-3px); box-shadow: 0 14px 28px rgba(0,0,0,0.12); color: white; }
+        .card-chip { background: #ffffff; color: #1e3a8a; font-size: 0.7rem; font-weight: 800; padding: 5px 12px; border-radius: 20px; white-space: nowrap; }
+        .card-chip.urgente { background: #fef3c7; color: #92400e; }
+        .card-chip.pendiente { background: #ffedd5; color: #c2410c; }
+        .card-chip.fin { background: rgba(255,255,255,0.2); color: #fff; }
+
+        /* NUEVO: bloque "Requiere tu atención" */
+        .atencion-wrap { margin-bottom: 28px; }
+        .atencion-wrap .section-title { margin-top: 0; display: flex; align-items: center; gap: 10px; }
+        .atencion-count { background: #ef4444; color: #fff; font-size: 0.72rem; font-weight: 800; padding: 2px 9px; border-radius: 20px; }
+        .atencion-list { display: flex; flex-direction: column; gap: 10px; }
+        .atencion-item { display: flex; align-items: center; gap: 14px; background: #fff; border: 1px solid var(--border-color); border-left: 4px solid #f97316; border-radius: 18px; padding: 14px 18px; text-decoration: none; color: var(--text-main); box-shadow: 0 4px 15px rgba(0,0,0,0.02); transition: 0.2s; }
+        .atencion-item:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(0,0,0,0.06); color: var(--text-main); }
+        .atencion-item.firma { border-left-color: #2563eb; }
+        .atencion-item.invitacion { border-left-color: #f97316; }
+        .atencion-item.expediente { border-left-color: #8b5cf6; }
+        .atencion-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .atencion-item.firma .atencion-icon { background: #eff6ff; color: #2563eb; }
+        .atencion-item.invitacion .atencion-icon { background: #fff7ed; color: #ea580c; }
+        .atencion-item.expediente .atencion-icon { background: #faf5ff; color: #9333ea; }
+        .atencion-text { flex-grow: 1; min-width: 0; }
+        .atencion-title { font-weight: 800; font-size: 0.95rem; line-height: 1.25; }
+        .atencion-sub { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+        .atencion-cta { flex-shrink: 0; font-weight: 700; font-size: 0.85rem; color: var(--primary); display: flex; align-items: center; gap: 4px; }
+        .atencion-ok { display: flex; align-items: center; gap: 14px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 18px; padding: 14px 18px; color: #166534; font-weight: 700; font-size: 0.92rem; }
+        @media (max-width: 576px) { .atencion-item { flex-wrap: wrap; } .atencion-cta { width: 100%; justify-content: flex-end; } }
+
         /* LISTA ESTILO "POPULAR LANGUAGE" */
         .shortcut-list { display: flex; flex-direction: column; gap: 12px; }
         .shortcut-item {
@@ -451,6 +480,12 @@
                     </div>
                 </div>
 
+                <!-- NUEVO: REQUIERE TU ATENCIÓN (se llena en cargarContadorNavExpedientes) -->
+                <div class="atencion-wrap" id="atencionWrap" style="display:none;">
+                    <h3 class="section-title">Requiere tu atención <span class="atencion-count" id="atencionCount" style="display:none;"></span></h3>
+                    <div class="atencion-list" id="atencionList"></div>
+                </div>
+
                 <!-- TARJETAS DE INDICADORES (KPI Grid) -->
                 <div class="kpi-grid">
                     <div class="kpi-card">
@@ -575,6 +610,70 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         // NUEVO: contador rojo de pendientes en el menú "Expedientes" (invitaciones + expedientes
         // que necesitan algo del docente). Fetch propio y liviano, no interfiere con lo demás que
         // cargue esta página. Mismo criterio que usa misexpedientes.html para sus dos pestañas.
+        // NUEVO: lo cancelado no se le muestra al docente. Si el expediente está cancelado, su invitación ligada también.
+        const _esCancelado = (x) => String((x && x.estado) || '').trim().toLowerCase() === 'cancelado';
+        function idsInvitacionesDeCancelados(expedientes) {
+            return new Set((expedientes || []).filter(_esCancelado).map(e => String(e.idInvitacion || '').trim()).filter(Boolean));
+        }
+
+        // NUEVO: arma la lista de trámites que el docente debe atender (mismos criterios que misexpedientes.html)
+        function renderAtencion(expedientes, invitaciones) {
+            const wrap = document.getElementById('atencionWrap');
+            const list = document.getElementById('atencionList');
+            const count = document.getElementById('atencionCount');
+            if (!wrap || !list) return;
+
+            const items = [];
+            const vistos = new Set();
+            const agregar = (key, it) => { if (!vistos.has(key)) { vistos.add(key); items.push(it); } };
+
+            // 1) Firmas (lo más urgente)
+            expedientes.forEach(exp => {
+                if (String(exp.estado || '').toLowerCase() === 'por firmar') {
+                    agregar('exp:' + exp.idExpediente, { tipo: 'firma', icono: 'edit_document', titulo: 'Firma tu contrato anual', sub: 'Expediente de Aprobación de la Contratación', href: `contrato-detalle.html?exp=${exp.idExpediente}`, cta: 'Firmar' });
+                }
+            });
+            invitaciones.forEach(inv => {
+                if (inv.horarioConfirmado && String(inv.estado || '').toLowerCase() === 'pendiente firma docente') {
+                    agregar('invfirma:' + inv.id, { tipo: 'firma', icono: 'edit_document', titulo: `Firma los documentos de "${inv.curso || 'tu curso'}"`, sub: 'Invitación a dictado', href: `contrato-detalle.html?inv=${inv.id}`, cta: 'Firmar' });
+                }
+            });
+            // 2) Invitaciones por aceptar
+            invitaciones.forEach(inv => {
+                if (!inv.horarioConfirmado) {
+                    agregar('inv:' + inv.id, { tipo: 'invitacion', icono: 'mail', titulo: `Acepta tu invitación a "${inv.curso || 'un curso'}"`, sub: 'Confirma tu horario de dictado', href: `registroinvitacion.html?inv=${inv.id}`, cta: 'Responder' });
+                }
+            });
+            // 3) Expedientes por completar (o bloqueados por una invitación sin aceptar)
+            expedientes.forEach(exp => {
+                const est = String(exp.estado || '').toLowerCase();
+                const invPend = !!exp.idInvitacion && !exp.horarioInvitacionConfirmado;
+                if (invPend) {
+                    agregar('inv:' + exp.idInvitacion, { tipo: 'invitacion', icono: 'mail', titulo: 'Acepta tu invitación para continuar tu expediente', sub: 'Es necesaria para terminar el llenado', href: `registroinvitacion.html?inv=${exp.idInvitacion}`, cta: 'Responder' });
+                } else if (['pendiente', 'en proceso', 'enviado'].includes(est)) {
+                    agregar('expc:' + exp.idExpediente, { tipo: 'expediente', icono: 'upload_file', titulo: 'Completa tu expediente anual', sub: 'Sube tu información y documentos', href: `registroexpediente.html?exp=${exp.idExpediente}`, cta: 'Completar' });
+                }
+            });
+
+            wrap.style.display = 'block';
+            if (items.length === 0) {
+                count.style.display = 'none';
+                list.innerHTML = `<div class="atencion-ok"><span class="material-symbols-rounded">task_alt</span> Estás al día. No tienes trámites pendientes.</div>`;
+                return;
+            }
+            count.innerText = items.length;
+            count.style.display = 'inline-block';
+            list.innerHTML = items.map(it => `
+                <a href="${it.href}" class="atencion-item ${it.tipo}">
+                    <div class="atencion-icon"><span class="material-symbols-rounded">${it.icono}</span></div>
+                    <div class="atencion-text">
+                        <div class="atencion-title">${it.titulo}</div>
+                        <div class="atencion-sub">${it.sub}</div>
+                    </div>
+                    <div class="atencion-cta">${it.cta} <span class="material-symbols-rounded" style="font-size:1.1rem;">arrow_forward</span></div>
+                </a>`).join('');
+        }
+
         async function cargarContadorNavExpedientes() {
             const idDocenteNav = localStorage.getItem('userId');
             if (!idDocenteNav) return;
@@ -589,6 +688,13 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 let expedientes = dataExp.status === 'success' ? dataExp.data : [];
                 let invitaciones = dataInv.status === 'success' ? dataInv.data : [];
                 invitaciones = invitaciones.filter(inv => inv.estado && inv.estado.toLowerCase() !== 'guardado');
+
+                // NUEVO: excluir cancelados (y las invitaciones ligadas a un expediente cancelado)
+                const invLigadasNav = idsInvitacionesDeCancelados(expedientes);
+                expedientes = expedientes.filter(exp => !_esCancelado(exp));
+                invitaciones = invitaciones.filter(inv => !_esCancelado(inv) && !invLigadasNav.has(String(inv.id || '').trim()));
+
+                renderAtencion(expedientes, invitaciones); // NUEVO
 
                 const pendientesInv = invitaciones.filter(i => {
                     if (!i.horarioConfirmado) return true;
@@ -736,11 +842,22 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             const futuras = candidatas.filter(s => s.fecha >= hoy);
 
             if (futuras.length > 0) {
-                return { fecha: futuras[0].textoFecha, hora: futuras[0].hora, hayFecha: true };
+                return { fecha: futuras[0].textoFecha, hora: futuras[0].hora, hayFecha: true, fechaObj: futuras[0].fecha };
             }
             // Ya no hay sesiones futuras: mostramos solo la franja horaria general del curso
             return { fecha: null, hora: c.franjas || c.horaElegida || 'Por confirmar', hayFecha: false };
         }
+
+        // NUEVO: "Hoy" / "Mañana" / "En N días" (solo si es dentro de 7 días; más lejos ya lo dice la fecha)
+        function chipRelativo(fechaObj) {
+            const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+            const d = Math.round((fechaObj - hoy) / 86400000);
+            if (d === 0) return { txt: 'Hoy', clase: 'urgente' };
+            if (d === 1) return { txt: 'Mañana', clase: 'urgente' };
+            if (d > 1 && d <= 7) return { txt: `En ${d} días`, clase: '' };
+            return null;
+        }
+        const ESTADOS_CURSO_CONFIRMADO = ['respondido', 'completado', 'aprobado', 'aceptado', 'pendiente firma docente', 'firmado por docente', 'pendiente firma directores'];
 
         // --- CARGA DE CURSOS/CLASES REALES  ---
         async function cargarCursosReales(idDocente) {
@@ -748,15 +865,25 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             const kpiCursos = document.getElementById('kpiCursosVal');
             const kpiDocs = document.getElementById('kpiDocsVal');
 
+            // NUEVO: los expedientes se piden en paralelo; sirven para ocultar cursos cancelados y para el KPI de docs pendientes
+            const promesaExp = fetch(GAS_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'get_expedientes_docente', docenteId: idDocente })
+            }).then(r => r.json()).catch(() => null);
+
             try {
                 const response = await fetch(GAS_URL, {
                     method: 'POST',
                     body: JSON.stringify({ action: 'get_mis_cursos', docenteId: idDocente })
                 });
                 const result = await response.json();
+                const resultExpPrevio = await promesaExp;
 
                 if (result.status === 'success') {
-                    const cursos = result.data || [];
+                    const invLigadas = idsInvitacionesDeCancelados(resultExpPrevio && resultExpPrevio.status === 'success' ? resultExpPrevio.data : []);
+                    const cursos = (result.data || []).filter(c =>
+                        !_esCancelado(c) && !invLigadas.has(String(c.idInvitacion || '').trim())
+                    );
 
                     if (kpiCursos) {
                         kpiCursos.classList.remove('skeleton-text');
@@ -772,21 +899,40 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                             </div>`;
                     } else {
                         const paletas = ['app-card-blue', 'app-card-dark'];
-                        slider.innerHTML = cursos.slice(0, 6).map((c, idx) => {
+                        const hoyRef = new Date(); hoyRef.setHours(0, 0, 0, 0);
+                        // NUEVO: ordenadas por la próxima sesión (las que tienen fecha primero, la más cercana arriba)
+                        const conSesion = cursos.map(c => ({ c, sesion: obtenerProximaSesion(c) }));
+                        conSesion.sort((a, b) => {
+                            const fa = a.sesion.hayFecha ? a.sesion.fechaObj.getTime() : Infinity;
+                            const fb = b.sesion.hayFecha ? b.sesion.fechaObj.getTime() : Infinity;
+                            return fa - fb;
+                        });
+                        slider.innerHTML = conSesion.slice(0, 6).map(({ c, sesion }, idx) => {
                             const clase = paletas[idx % paletas.length];
-                            const sesion = obtenerProximaSesion(c);
-                            const etiqueta = sesion.hayFecha ? 'Próxima clase' : (c.programaTipo || 'Curso');
+                            const confirmado = ESTADOS_CURSO_CONFIRMADO.includes(String(c.estado || '').toLowerCase());
+
+                            // Chip de la esquina: prioridad = por confirmar > hoy/mañana/en N días > finalizado
+                            let chip = '';
+                            const fFin = c.fechaFin ? new Date(c.fechaFin) : null;
+                            if (!confirmado) chip = `<span class="card-chip pendiente">Por confirmar</span>`;
+                            else if (sesion.hayFecha) { const r = chipRelativo(sesion.fechaObj); if (r) chip = `<span class="card-chip ${r.clase}">${r.txt}</span>`; }
+                            else if (fFin && !isNaN(fFin) && fFin < hoyRef) chip = `<span class="card-chip fin">Finalizado</span>`;
+
+                            // Confirmado -> panel del curso; sin confirmar -> aceptar la invitación (igual que Mis Clases)
+                            const href = confirmado ? `curso.html?id=${c.idInvitacion}` : `registroinvitacion.html?inv=${c.idInvitacion}`;
                             return `
-                            <div class="app-card ${clase}">
+                            <a href="${href}" class="app-card ${clase}">
                                 <div class="card-top">
-                                    <div class="card-pill">${etiqueta}</div>
+                                    <div class="card-pill">${c.programaTipo || 'Curso'}</div>
+                                    ${chip}
                                 </div>
                                 <h3>${c.cursoNombre || 'Curso sin nombre'}</h3>
                                 <div class="app-card-footer">
                                     ${sesion.hayFecha ? `<div><i class="fa-regular fa-calendar"></i> ${sesion.fecha}</div>` : ''}
                                     <div><i class="fa-regular fa-clock"></i> ${sesion.hora}</div>
+                                    <i class="fa-solid fa-arrow-right"></i>
                                 </div>
-                            </div>`;
+                            </a>`;
                         }).join('');
                     }
                 }
@@ -797,13 +943,10 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
             // Docs Pendientes: se basa en expedientes que aún no están 100% completados
             try {
-                const respExp = await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'get_expedientes_docente', docenteId: idDocente })
-                });
-                const resultExp = await respExp.json();
+                const resultExp = await promesaExp;
+                if (!resultExp) throw new Error('sin datos de expedientes');
                 if (resultExp.status === 'success' && kpiDocs) {
-                    const pendientes = (resultExp.data || []).filter(e => e.estado !== 'Completado').length;
+                    const pendientes = (resultExp.data || []).filter(e => e.estado !== 'Completado' && !_esCancelado(e)).length;
                     kpiDocs.classList.remove('skeleton-text');
                     kpiDocs.innerText = pendientes;
                 }
