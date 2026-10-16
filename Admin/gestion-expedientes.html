@@ -94,6 +94,7 @@
         .status-Completado { background: #eff6ff; color: #1d4ed8; }
         .status-Aprobado { background: #f0fdf4; color: #15803d; }
         .status-Rechazado { background: #fef2f2; color: #b91c1c; }
+        .status-Neutro { background: #f1f5f9; color: #475569; }
 
         /* Botón "Revisar" — mismo lenguaje visual que "Expediente" en Gestión de Docentes */
         .btn-revisar-link {
@@ -298,7 +299,6 @@
                                     <th>Docente</th>
                                     <th>Curso / Programa</th>
                                     <th>Período (Inicio - Fin)</th>
-                                    <th>Expediente Vinculado</th>
                                     <th>Estado</th>
                                     <th class="text-center">Acción</th>
                                 </tr>
@@ -463,7 +463,8 @@
                     <option value="Guardado">Guardado (Sin enviar)</option>
                     <option value="Enviado">Enviado</option>
                     <option value="Aceptado">Aceptado</option>
-                    <option value="Respondido">Respondido</option>`;
+                    <option value="Respondido">Respondido</option>
+                    <option value="Cancelado">Cancelado</option>`;
             }
             filtrar();
         }
@@ -575,6 +576,24 @@
             return mapa[e] || { label: e || 'Sin estado', clase: 'status-Pendiente', icon: 'fa-circle-question' };
         }
 
+        // NUEVO: mismo código de color que la tabla de expedientes, para los estados de una invitación
+        function traducirEstadoInvitacion(estadoReal) {
+            const e = String(estadoReal || '').trim();
+            const l = e.toLowerCase();
+            if (l === 'guardado') return { label: 'Guardado', clase: 'status-Neutro', icon: 'fa-floppy-disk' };
+            if (l === 'enviado') return { label: 'Enviado', clase: 'status-Pendiente', icon: 'fa-paper-plane' };
+            if (l === 'aceptado') return { label: 'Aceptado', clase: 'status-EnProceso', icon: 'fa-thumbs-up' };
+            if (l === 'respondido') return { label: 'Respondido', clase: 'status-EnProceso', icon: 'fa-inbox' };
+            if (l === 'documentos generados') return { label: 'Documentos generados', clase: 'status-EnProceso', icon: 'fa-file-lines' };
+            if (l.includes('sábado') || l.includes('sabado')) return { label: e, clase: 'status-Pendiente', icon: 'fa-calendar-day' };
+            if (l === 'pendiente firma docente') return { label: 'Firma del docente', clase: 'status-Pendiente', icon: 'fa-signature' };
+            if (l === 'firmado por docente') return { label: 'Firmado (Docente)', clase: 'status-Aprobado', icon: 'fa-signature' };
+            if (l === 'pendiente firma directores') return { label: 'Por contratar', clase: 'status-Aprobado', icon: 'fa-user-tie' };
+            if (l === 'completado' || l === 'formalizado' || l === 'contratado') return { label: e, clase: 'status-Aprobado', icon: 'fa-check-double' };
+            if (l === 'cancelado') return { label: 'Cancelado', clase: 'status-Rechazado', icon: 'fa-ban' };
+            return { label: e || 'Sin estado', clase: 'status-Pendiente', icon: 'fa-circle-question' };
+        }
+
         function formatCustomDate(dateString) {
             if(!dateString) return '-';
             const d = new Date(dateString);
@@ -670,7 +689,7 @@
             filtradasInv = datos;
             const tbody = document.getElementById('lista-invitaciones');
             if (datos.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted"><i class="fa-solid fa-chalkboard-user fs-2 mb-2 opacity-50"></i><br>No se encontraron invitaciones.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted"><i class="fa-solid fa-chalkboard-user fs-2 mb-2 opacity-50"></i><br>No se encontraron invitaciones.</td></tr>';
                 renderPaginacion('paginationBarInv', 0, 1, 'irAPaginaInv');
                 return;
             }
@@ -684,9 +703,10 @@
             tbody.innerHTML = itemsPagina.map(inv => {
                 const fIni = formatCustomDate(inv.fechaInicio);
                 const fFin = formatCustomDate(inv.fechaFin);
-                const expHtml = inv.idExpediente
-                    ? `<a href="expediente.html?expId=${inv.idExpediente}" class="btn-revisar-link"><i class="fa-regular fa-folder-open"></i> ${inv.idExpediente}</a>`
-                    : '<span class="text-muted">Sin vincular</span>';
+                // El expediente vinculado ahora va debajo del ID de la invitación (ya no es una columna aparte)
+                const expLinea = inv.idExpediente
+                    ? `<br> Exp: <a href="expediente.html?expId=${inv.idExpediente}" class="fw-medium" style="color: var(--primary); text-decoration: none;" title="Abrir expediente">${inv.idExpediente}</a>`
+                    : '';
 
                 const badgeGenesis = inv.esInvitacionInicial
                     ? `<span class="badge bg-primary bg-opacity-10 text-primary border border-primary" style="font-size: 0.65rem; font-weight: 700; margin-left: 6px;">Curso inicial del contrato</span>`
@@ -703,7 +723,7 @@
                 <tr>
                     <td>
                         <div class="fw-bold" style="color: var(--primary-dark)">${inv.nombreDocente}</div>
-                        <div class="text-muted" style="font-size: 0.75rem;">Docente: <span class="fw-medium">${inv.docenteId}</span> <br> Inv: <span class="text-dark fw-medium">${inv.id}</span></div>
+                        <div class="text-muted" style="font-size: 0.75rem;">Docente: <span class="fw-medium">${inv.docenteId}</span> <br> Inv: <span class="text-dark fw-medium">${inv.id}</span>${expLinea}</div>
                     </td>
                     <td>
                         <div class="fw-bold" style="font-size: 0.85rem;">${inv.curso}${badgeGenesis}</div>
@@ -714,8 +734,7 @@
                             ${fIni} <i class="fa-solid fa-arrow-right text-muted" style="font-size: 0.7rem;"></i> ${fFin}
                         </div>
                     </td>
-                    <td>${expHtml}</td>
-                    <td><span class="badge-status status-Completado">${estadoMostrado}</span></td>
+                    <td>${(() => { const info = inv.esInvitacionInicial ? traducirEstadoExpediente(estadoMostrado) : traducirEstadoInvitacion(estadoMostrado); return `<span class="badge-status ${info.clase}"><i class="fa-solid ${info.icon}"></i> ${info.label}</span>`; })()}</td>
                     <td class="text-center">
                         <div class="d-flex gap-2 justify-content-center">
                             <a href="${linkRevisar}" class="btn-revisar-link">

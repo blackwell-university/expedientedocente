@@ -188,6 +188,34 @@
         .file-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex-shrink: 0; }
         .btn-ver-file { font-size: 0.8rem; font-weight: 700; color: var(--primary); text-decoration: none; background: #e0e7ff; padding: 6px 12px; border-radius: 8px; flex-shrink: 0; cursor: pointer; border: none;}
 
+        /* NUEVO: modal con el mismo estilo que "Configurar Cuenta del Docente" (detallesdocente.html) */
+        .modal-aesthetic .modal-content { border: 1px solid rgba(0,0,0,0.05); border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); overflow: hidden; }
+        .modal-aesthetic .modal-header { background: #ffffff; border-bottom: 1px solid #f1f5f9; padding: 20px 30px; align-items: flex-start; }
+        .modal-aesthetic .modal-body { padding: 24px 30px; background: #ffffff; }
+        .modal-aesthetic .modal-footer { background: #f8fafc; border-top: 1px solid #f1f5f9; padding: 16px 30px; display: flex; gap: 12px; justify-content: flex-end; }
+        .input-aesthetic { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; font-size: 0.9rem; color: #1e293b; transition: 0.2s; box-shadow: none; }
+        .input-aesthetic:focus { background-color: #ffffff; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); outline: none; }
+        .label-aesthetic { font-size: 0.75rem; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block; }
+        .modal-aesthetic .input-group-text { background: #f8fafc; border: 1px solid #e2e8f0; border-right: none; border-radius: 8px 0 0 8px; color: #64748b; }
+        .modal-aesthetic .input-group .input-aesthetic { border-left: none; border-radius: 0 8px 8px 0; }
+        .btn-cancelar-modal { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 20px; font-weight: 700; font-size: 0.85rem; transition: var(--transition); }
+        .btn-cancelar-modal:hover { background: #f1f5f9; border-color: #cbd5e1; color: #1e293b; }
+        .btn-modal-primary, .btn-modal-success { border: none; border-radius: 12px; padding: 11px 22px; font-weight: 700; font-size: 0.875rem; color: #fff; transition: var(--transition); display: inline-flex; align-items: center; gap: 8px; }
+        .btn-modal-primary { background: var(--primary); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); }
+        .btn-modal-primary:hover { transform: translateY(-2px); background: var(--primary-dark); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35); color: #fff; }
+        .btn-modal-success { background: #16a34a; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25); }
+        .btn-modal-success:hover { transform: translateY(-2px); background: #15803d; color: #fff; }
+        .btn-modal-primary:disabled, .btn-modal-success:disabled { opacity: 0.6; transform: none; }
+
+        /* NUEVO: franja compacta para "Completar formulario del docente" */
+        .asistente-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 12px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 8px 14px; margin-bottom: 20px; }
+        .asistente-bar .asistente-text { font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
+        .asistente-bar .asistente-text i { color: #94a3b8; cursor: help; }
+        .btn-asistente { background: white; border: 1px solid var(--gray-border); color: var(--primary-dark); font-weight: 600; font-size: 0.78rem; padding: 6px 14px; border-radius: 20px; white-space: nowrap; transition: 0.2s; }
+        .btn-asistente i { margin-right: 6px; color: var(--primary); }
+        .btn-asistente:hover { background: var(--primary-dark); border-color: var(--primary-dark); color: #fff; }
+        .btn-asistente:hover i { color: #fff; }
+
         /* Toolbar de acciones */
         .action-toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 28px; border-bottom: 1px solid var(--gray-border); padding-bottom: 20px; }
         .action-btn { background: white; border: 1px solid var(--gray-border); padding: 8px 18px; border-radius: 30px; font-size: 0.8rem; font-weight: 500; color: var(--text-main); transition: 0.2s; }
@@ -759,21 +787,15 @@
                     <!-- PESTAÑA 1: DATOS DEL EXPEDIENTE -->
                     <div class="tab-pane fade show active" id="datos" role="tabpanel">
                         
-                        <!-- BLOQUE EXPLICATIVO DEL ASISTENTE (antes solo era un botón sin contexto) -->
-                        <div class="form-card mb-4" style="background: #eff6ff; border: 1px dashed #93c5fd;">
-                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                                <div>
-                                    <h6 class="fw-bold mb-1" style="color: var(--primary-dark);"><i class="fa-solid fa-circle-info me-2"></i>¿El docente no puede subir sus documentos?</h6>
-                                    <p class="text-muted m-0" style="font-size: 0.85rem; max-width: 560px;">
-                                        Este botón abre, en una pestaña nueva, el mismo formulario paso a paso que llena el docente
-                                        (documentos, educación, datos personales, banco, etc.). Tú puedes completarlo en su nombre,
-                                        subiendo ahí sus PDFs y llenando sus datos directamente.
-                                    </p>
-                                </div>
-                                <button type="button" class="action-btn" style="background: var(--primary-dark); color: white; border-color: var(--primary-dark); white-space: nowrap;" onclick="abrirAsistenteRegistroDocente()">
-                                    <i class="fa-solid fa-user-pen"></i> Completar formulario del docente
-                                </button>
-                            </div>
+                        <!-- Acceso compacto al asistente: la ejecutiva completa el formulario en nombre del docente -->
+                        <div class="asistente-bar">
+                            <span class="asistente-text">
+                                <i class="fa-solid fa-circle-info" title="Abre en una pestaña nueva el mismo formulario paso a paso que llena el docente (documentos, educación, datos personales, banco, etc.). Puedes completarlo en su nombre, subiendo sus PDFs y llenando sus datos directamente."></i>
+                                ¿El docente no puede subir sus documentos?
+                            </span>
+                            <button type="button" class="btn-asistente" onclick="abrirAsistenteRegistroDocente()">
+                                <i class="fa-solid fa-user-pen"></i> Completar formulario del docente
+                            </button>
                         </div>
 
                         <div class="form-card mb-4">
@@ -1125,76 +1147,85 @@
     </div>
 
     <!-- MODAL PARA EDITAR LOS DATOS DE LA INVITACIÓN (curso, fechas, horario y pago) -->
-    <div class="modal fade" id="modalEditarInvitacion" tabindex="-1">
+    <div class="modal fade modal-aesthetic" id="modalEditarInvitacion" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
-                <div class="modal-header border-0 pb-0 pt-4 px-4">
+            <div class="modal-content">
+                <div class="modal-header">
                     <div>
-                        <h5 class="fw-bold text-dark fs-5 m-0"><i class="fa-solid fa-pen-to-square text-primary me-2"></i>Editar Invitación</h5>
+                        <h5 class="fw-bold m-0" style="color: var(--primary-dark); letter-spacing: -0.01em;">
+                            <i class="fa-solid fa-pen-to-square me-2 text-primary"></i>Editar Invitación
+                        </h5>
                         <p class="text-muted small m-0 mt-1">Corrige el curso, fechas, horario o pago asignado a este docente.</p>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body p-4">
+                <div class="modal-body">
                     <div id="editInvLoading" class="text-center text-muted py-3">
                         <i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando datos de la invitación...
                     </div>
                     <form id="formEditarInvitacion" class="d-none">
-                        <div class="row g-3">
+                        <span class="section-badge"><i class="fa-solid fa-book-open me-2"></i>Curso</span>
+                        <div class="row g-3 mb-4">
                             <div class="col-md-6">
-                                <span class="info-label">Programa Académico</span>
-                                <select id="editSelPrograma" class="form-select" onchange="filtrarCursosEdit()">
+                                <label class="label-aesthetic">Programa Académico</label>
+                                <select id="editSelPrograma" class="form-select input-aesthetic" onchange="filtrarCursosEdit()">
                                     <option value="">Cargando...</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <span class="info-label">Curso Asignado</span>
-                                <select id="editSelCurso" class="form-select">
+                                <label class="label-aesthetic">Curso Asignado</label>
+                                <select id="editSelCurso" class="form-select input-aesthetic">
                                     <option value="">Seleccionar curso</option>
                                 </select>
                             </div>
+                        </div>
 
+                        <span class="section-badge"><i class="fa-solid fa-calendar-days me-2"></i>Fechas y Horario</span>
+                        <div class="row g-3 mb-4">
                             <div class="col-md-4">
-                                <span class="info-label">Inicio de Clases</span>
-                                <input type="date" id="editFechaInicio" class="form-control">
+                                <label class="label-aesthetic">Inicio de Clases</label>
+                                <input type="date" id="editFechaInicio" class="form-control input-aesthetic">
                             </div>
                             <div class="col-md-4">
-                                <span class="info-label">Fin de Clases</span>
-                                <input type="date" id="editFechaFin" class="form-control">
+                                <label class="label-aesthetic">Fin de Clases</label>
+                                <input type="date" id="editFechaFin" class="form-control input-aesthetic">
                             </div>
                             <div class="col-md-4">
-                                <span class="info-label">Cantidad Sesiones</span>
-                                <input type="text" id="editCantClases" class="form-control" value="cuatro">
+                                <label class="label-aesthetic">Cantidad de Sesiones</label>
+                                <input type="text" id="editCantClases" class="form-control input-aesthetic" value="cuatro">
                             </div>
+                            <div class="col-12">
+                                <label class="label-aesthetic">Franjas Horarias</label>
+                                <input type="text" id="editHorario" class="form-control input-aesthetic">
+                            </div>
+                        </div>
 
-                            <div class="col-md-12">
-                                <span class="info-label">Franjas Horarias</span>
-                                <input type="text" id="editHorario" class="form-control">
-                            </div>
+                        <span class="section-badge"><i class="fa-solid fa-money-bill-wave me-2"></i>Pago</span>
+                        <div class="row g-3">
                             <div class="col-md-6">
-                                <span class="info-label">Moneda de Pago</span>
-                                <select id="editMoneda" class="form-select">
+                                <label class="label-aesthetic">Moneda de Pago</label>
+                                <select id="editMoneda" class="form-select input-aesthetic">
                                     <option value="$">Dólares ($ USD)</option>
                                     <option value="S/.">Soles (S/. PEN)</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <span class="info-label">Pago Total a depositar</span>
+                                <label class="label-aesthetic">Pago Total a depositar</label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-light border-end-0 text-muted px-3"><i class="fa-solid fa-money-bill-wave"></i></span>
-                                    <input type="number" id="editCosto" class="form-control border-start-0 ps-0" placeholder="0.00">
+                                    <span class="input-group-text"><i class="fa-solid fa-money-bill-wave"></i></span>
+                                    <input type="number" id="editCosto" class="form-control input-aesthetic" placeholder="0.00">
                                 </div>
                             </div>
                         </div>
                     </form>
                 </div>
-                <div class="modal-footer border-0 p-4 pt-0 d-flex gap-2">
-                    <button type="button" class="btn btn-white border fw-bold px-4 flex-grow-1" style="border-radius: 12px; padding: 12px; color: var(--text-muted);" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary fw-bold px-4 flex-grow-1" style="border-radius: 12px; padding: 12px;" id="btnGuardarEdicionInv" onclick="guardarEdicionInvitacion()">
-                        <i class="fa-solid fa-floppy-disk me-2"></i>Guardar Cambios
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancelar-modal" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn-modal-success d-none" id="btnEnviarCorreoActualizacion" onclick="enviarCorreoActualizacionInvitacion()">
+                        <i class="fa-regular fa-paper-plane"></i> Notificar al Docente
                     </button>
-                    <button type="button" class="btn btn-success fw-bold px-4 flex-grow-1 d-none" style="border-radius: 12px; padding: 12px;" id="btnEnviarCorreoActualizacion" onclick="enviarCorreoActualizacionInvitacion()">
-                        <i class="fa-regular fa-paper-plane me-2"></i>Notificar al Docente
+                    <button type="button" class="btn-modal-primary" id="btnGuardarEdicionInv" onclick="guardarEdicionInvitacion()">
+                        <i class="fa-solid fa-check"></i> Guardar Cambios
                     </button>
                 </div>
             </div>
@@ -2102,7 +2133,7 @@
             form.classList.add('d-none');
             btnGuardar.classList.remove('d-none');
             btnGuardar.disabled = false;
-            btnGuardar.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i>Guardar Cambios';
+            btnGuardar.innerHTML = '<i class="fa-solid fa-check"></i> Guardar Cambios';
             btnEnviar.classList.add('d-none');
 
             new bootstrap.Modal(document.getElementById('modalEditarInvitacion')).show();
@@ -2176,7 +2207,7 @@
 
             const btnGuardar = document.getElementById('btnGuardarEdicionInv');
             btnGuardar.disabled = true;
-            btnGuardar.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Guardando...';
+            btnGuardar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
 
             const payload = {
                 action: 'update_invitation_details',
@@ -2202,20 +2233,20 @@
                 } else {
                     showToast(result.message || "No se pudo actualizar la invitación.", "danger");
                     btnGuardar.disabled = false;
-                    btnGuardar.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i>Guardar Cambios';
+                    btnGuardar.innerHTML = '<i class="fa-solid fa-check"></i> Guardar Cambios';
                 }
             } catch (e) {
                 console.error(e);
                 showToast("Error de conexión al guardar los cambios.", "danger");
                 btnGuardar.disabled = false;
-                btnGuardar.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i>Guardar Cambios';
+                btnGuardar.innerHTML = '<i class="fa-solid fa-check"></i> Guardar Cambios';
             }
         }
 
         async function enviarCorreoActualizacionInvitacion() {
             const btn = document.getElementById('btnEnviarCorreoActualizacion');
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-paper-plane fa-bounce me-2"></i>Enviando...';
+            btn.innerHTML = '<i class="fa-solid fa-paper-plane fa-bounce"></i> Enviando...';
 
             const selP = document.getElementById('editSelPrograma');
             const selC = document.getElementById('editSelCurso');
@@ -2252,7 +2283,7 @@
                 showToast("Error de conexión al enviar el correo.", "danger");
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fa-regular fa-paper-plane me-2"></i>Notificar al Docente';
+                btn.innerHTML = '<i class="fa-regular fa-paper-plane"></i> Notificar al Docente';
             }
         }
 
