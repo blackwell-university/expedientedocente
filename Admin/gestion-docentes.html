@@ -525,7 +525,8 @@
 
             filteredTeachers = allTeachers.filter(t => {
                 const matchesSearch = (t.nombres + " " + t.apellidos).toLowerCase().includes(searchTerm) || 
-                                     t.correo.toLowerCase().includes(searchTerm) ||
+                                     (t.correo || '').toLowerCase().includes(searchTerm) ||
+                                     (t.correoInstitucional || '').toLowerCase().includes(searchTerm) || // NUEVO: también busca por el institucional
                                      t.id.toLowerCase().includes(searchTerm);
                 const matchesStatus = statusFilter === 'all' || t.estado === statusFilter;
                 return matchesSearch && matchesStatus;
@@ -566,7 +567,12 @@
                         </div>
                     </td>
                     <td>
-                        <div style="font-size: 0.85rem;"><i class="fa-regular fa-envelope me-2 text-muted"></i>${d.correo}</div>
+                        ${d.correoInstitucional ? `
+                        <div style="font-size: 0.85rem;" title="Correo institucional (usuario de acceso)"><i class="fa-solid fa-building-columns me-2" style="color: var(--primary);"></i>${d.correoInstitucional}</div>
+                        <div class="text-muted" style="font-size: 0.74rem; margin-top: 2px;" title="Correo personal"><i class="fa-regular fa-envelope me-2"></i>${d.correo}</div>
+                        ` : `
+                        <div style="font-size: 0.85rem;" title="Correo personal"><i class="fa-regular fa-envelope me-2 text-muted"></i>${d.correo}</div>
+                        `}
                     </td>
                     <td>
                         <span class="badge-status ${statusClass}">${textoEstado}</span>

@@ -1159,7 +1159,7 @@
 
                 estadoActual = inv.estado || "Guardado";
                 docId = doc.id || "";
-                docenteCorreoActual = doc.correo || "";
+                docenteCorreoActual = doc.correoEfectivo || doc.correo || ""; // NUEVO: institucional si existe
 
                 renderSabadosPendientes(inv.sabadosDetectados || []);
 
@@ -1215,7 +1215,7 @@
                 const docDni = doc.dni || '-';
                 const docTipoId = doc.tipo_id || 'ID';
                 document.getElementById('ui-dni').innerText = `${docDni} (${docTipoId})`;
-                document.getElementById('ui-correo').innerText = doc.correo || '-';
+                document.getElementById('ui-correo').innerText = doc.correoEfectivo || doc.correo || '-'; // NUEVO: institucional si existe
                 document.getElementById('ui-telefono').innerText = doc.celular || '-';
                 document.getElementById('ui-pais').innerText = doc.pais || '-';
                 document.getElementById('ui-direccion').innerText = doc.direccion || '-';

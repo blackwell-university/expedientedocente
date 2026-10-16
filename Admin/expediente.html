@@ -1281,7 +1281,7 @@
 
                 const camposPersonales = [
                     ['DNI / Pasaporte', d.dni], ['Tipo de Documento', d.tipo_id], ['Nombres', d.nombres], ['Apellidos', d.apellidos],
-                    ['Correo', d.correo], ['Celular', d.celular], ['Fecha de Nacimiento', formatFechaCompleta(d.fecha_nacimiento)], ['Código Postal', d.cp],
+                    ['Correo personal', d.correo], ['Celular', d.celular], ['Fecha de Nacimiento', formatFechaCompleta(d.fecha_nacimiento)], ['Código Postal', d.cp],
                     ['País', d.pais], ['Ciudad', d.ciudad], ['Dirección', d.direccion]
                 ];
                 let htmlPersonales = camposPersonales.map(([l, v]) => campoDato(l, v)).join('');
@@ -1990,7 +1990,7 @@
 
                     idInvitacionActual = exp.idInvitacion || "";
                     docenteNombreActual = `${d.nombres || ''} ${d.apellidos || ''}`.trim();
-                    docenteCorreoActual = d.correo || "";
+                    docenteCorreoActual = d.correoEfectivo || d.correo || ""; // NUEVO: institucional si existe
                     
                     document.getElementById('det-nombre-curso').innerText = `Expediente: ${exp.idExpediente}`;
                     document.getElementById('det-subtitle').innerHTML = `Docente: ${d.nombres} ${d.apellidos}`;
@@ -2225,6 +2225,7 @@
             const payload = {
                 action: 'send_invitation_update_email',
                 idInvitacion: idInvitacionActual,
+                docenteId: docId, // NUEVO: el backend resuelve el correo (institucional si existe)
                 docenteCorreo: docenteCorreoActual,
                 docenteNombre: docenteNombreActual.split(' ')[0],
                 programa: selP.options[selP.selectedIndex] ? selP.options[selP.selectedIndex].text : '',
@@ -2799,7 +2800,7 @@
                     return;
                 }
 
-                const correoDocenteActual = (perfilCompletoGlobal && perfilCompletoGlobal.data) ? perfilCompletoGlobal.data.correo : '';
+                const correoDocenteActual = (perfilCompletoGlobal && perfilCompletoGlobal.data) ? (perfilCompletoGlobal.data.correoEfectivo || perfilCompletoGlobal.data.correo) : ''; // NUEVO: institucional si existe
 
                 listaUsuariosNotifGlobal = [...result.data].sort((a, b) => {
                     if (a.correo === correoDocenteActual) return -1;

@@ -460,7 +460,20 @@
                                     <span class="section-badge"><i class="fa-solid fa-user me-2"></i>Datos Personales</span>
                                     <div class="row g-3 mb-4">
                                         <div class="col-md-4"><span class="info-label">DNI / Pasaporte</span><div class="info-value" id="det-dni">-</div></div>
-                                        <div class="col-md-8"><span class="info-label">Correo Electrónico</span><div class="info-value text-primary fw-bold" id="det-correo">-</div></div>
+                                        <div class="col-md-8"><span class="info-label">Correo Personal</span><div class="info-value" id="det-correo-personal">-</div></div>
+                                        <!-- NUEVO: correo institucional. Solo Ejecutiva Academica / Administrador ven el lápiz para
+                                             asignarlo o cambiarlo (el backend lo valida otra vez). Es el usuario de acceso del docente. -->
+                                        <div class="col-12">
+                                            <span class="info-label"><i class="fa-solid fa-building-columns me-1" style="opacity:.55; font-size:.75rem;"></i>Correo Institucional <span id="det-correo-inst-badge" style="display:none; background:#dcfce7; color:#15803d; font-size:0.65rem; font-weight:700; padding:2px 8px; border-radius:20px; margin-left:6px;">Usuario de acceso</span></span>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="info-value text-primary fw-bold" id="det-correo-inst">-</div>
+                                                <button type="button" id="btnEditarCorreoInst" onclick="editarCorreoInstitucional()" title="Asignar o cambiar el correo institucional" style="display:none; width:28px; height:28px; border-radius:8px; border:none; background:#eff6ff; color:var(--primary); font-size:0.75rem; cursor:pointer;">
+                                                    <i class="fa-solid fa-pen"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <!-- Oculto: correo al que el sistema le escribe al docente (institucional si existe, si no el personal). Lo leen los envíos de correo de esta página. -->
+                                        <span id="det-correo" class="d-none">-</span>
                                         <div class="col-md-4"><span class="info-label">Teléfono</span><div class="info-value" id="det-telefono">-</div></div>
                                         <div class="col-md-4"><span class="info-label">País</span><div class="info-value" id="det-pais">-</div></div>
                                         <div class="col-12"><span class="info-label">Dirección Completa</span><div class="info-value" id="det-direccion">-</div></div>
@@ -763,12 +776,19 @@
                                 <input type="text" class="form-control input-aesthetic" id="cuenta-apellidos" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="label-aesthetic">Correo</label>
+                                <label class="label-aesthetic">Correo personal</label>
                                 <input type="email" class="form-control input-aesthetic" id="cuenta-correo" required>
+                                <div class="text-muted mt-1" style="font-size: 0.72rem; line-height: 1.35;">Si el docente ya tiene correo institucional, su usuario de acceso no cambia al editar este campo.</div>
                             </div>
                             <div class="col-md-6">
                                 <label class="label-aesthetic">Nueva Contraseña (opcional)</label>
                                 <input type="text" class="form-control input-aesthetic" id="cuenta-password" placeholder="Dejar en blanco para no cambiarla">
+                            </div>
+                            <!-- NUEVO: correo institucional. Solo lo ven Ejecutiva Academica / Administrador (el backend lo valida de nuevo). -->
+                            <div class="col-12" id="cuenta-correo-inst-wrap" style="display:none;">
+                                <label class="label-aesthetic"><i class="fa-solid fa-building-columns me-1"></i>Correo institucional</label>
+                                <input type="email" class="form-control input-aesthetic" id="cuenta-correo-inst" placeholder="nombre.apellido@dominio.edu" autocomplete="off" spellcheck="false">
+                                <div class="text-muted mt-1" style="font-size: 0.72rem; line-height: 1.35;">Será el <b>usuario de acceso</b> del docente y el destino de todos los correos. Su contraseña no cambia y se le avisa por correo. Déjalo vacío si aún no tiene uno.</div>
                             </div>
                         </div>
 
@@ -873,6 +893,82 @@
         // de "Configurar Cuenta" sin tener que volver a pedirlo al servidor.
         let perfilActualDocente = null;
 
+        // ==================== CORREO INSTITUCIONAL ====================
+        // Solo estos roles ven el lápiz de edición. El backend lo vuelve a validar por ID de usuario,
+        // así que esconder el botón no es la única barrera.
+        const ROLES_CORREO_INSTITUCIONAL = ['EJECUTIVA ACADEMICA', 'ADMINISTRADOR', 'ADMIN'];
+        const PUEDE_EDITAR_CORREO_INST = ROLES_CORREO_INSTITUCIONAL.includes(String(userRole || '').trim().toUpperCase());
+
+        const REGEX_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        // Llama al backend (que valida el rol por ID de usuario). Lo usan el lápiz y el modal "Configurar Cuenta".
+        async function llamarCorreoInstitucional(nuevo) {
+            const res = await fetch(GAS_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'update_correo_institucional',
+                    solicitanteId: localStorage.getItem('userId'),
+                    docenteId: docenteId,
+                    correoInstitucional: nuevo
+                })
+            });
+            return await res.json();
+        }
+
+        function textoResultadoCorreoInst(nuevo, json) {
+            if (json.sinCambios) return 'No había correo institucional que quitar.';
+            if (!nuevo) return 'Correo institucional quitado. El docente vuelve a usar su correo personal.';
+            return json.avisoEnviado ? 'Correo institucional guardado. Se avisó al docente.' : 'Correo institucional guardado, pero no se pudo enviar el aviso al docente.';
+        }
+
+        async function editarCorreoInstitucional() {
+            if (!PUEDE_EDITAR_CORREO_INST || !perfilActualDocente) return;
+            const actual = String(perfilActualDocente.correoInstitucional || '').trim();
+            const nombre = `${perfilActualDocente.nombres || ''} ${perfilActualDocente.apellidos || ''}`.trim();
+
+            const { isConfirmed, value } = await Swal.fire({
+                title: actual ? 'Cambiar correo institucional' : 'Asignar correo institucional',
+                html: `<div style="text-align:left; font-size:0.9rem;">
+                         Para <b>${nombre}</b>. Este correo pasará a ser su <b>usuario de acceso</b> y el destino de todos los correos del sistema.
+                         Su contraseña no cambia y se le avisará a su correo personal y al nuevo.
+                         ${actual ? '<br><br>Déjalo vacío si quieres <b>quitarlo</b> y que vuelva a ingresar con su correo personal.' : ''}
+                       </div>`,
+                input: 'text',
+                inputValue: actual,
+                inputPlaceholder: 'nombre.apellido@dominio.edu',
+                inputAttributes: { autocapitalize: 'off', autocomplete: 'off', spellcheck: 'false' },
+                showCancelButton: true,
+                confirmButtonText: 'Guardar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#64748b',
+                reverseButtons: true,
+                inputValidator: (v) => {
+                    const val = String(v || '').trim();
+                    if (!val) return actual ? undefined : 'Escribe el correo institucional.';
+                    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) return 'El correo no tiene un formato válido.';
+                }
+            });
+            if (!isConfirmed) return;
+
+            const nuevo = String(value || '').trim();
+            if (nuevo.toLowerCase() === actual.toLowerCase()) return; // sin cambios
+
+            Swal.fire({ title: 'Guardando...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
+            try {
+                const json = await llamarCorreoInstitucional(nuevo);
+                if (json.status === 'success') {
+                    Swal.close();
+                    showToast(textoResultadoCorreoInst(nuevo, json));
+                    cargarPerfilDocente(docenteId);
+                } else {
+                    Swal.fire('No se pudo guardar', json.message || 'Ocurrió un error.', 'error');
+                }
+            } catch (err) {
+                Swal.fire('Error de conexión', 'No se pudo contactar al servidor.', 'error');
+            }
+        }
+
         async function cargarPerfilDocente(id) {
             try {
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: id }) });
@@ -882,7 +978,18 @@
                     perfilActualDocente = d;
                     document.getElementById('det-nombre').innerText = `${d.nombres} ${d.apellidos}` || "No especificado";
                     document.getElementById('det-dni').innerText = d.dni || "-";
-                    document.getElementById('det-correo').innerText = d.correo || "-";
+                    // NUEVO: 'det-correo' (oculto) guarda el correo EFECTIVO al que se le escribe al docente.
+                    document.getElementById('det-correo').innerText = d.correoEfectivo || d.correo || "-";
+                    document.getElementById('det-correo-personal').innerText = d.correo || "-";
+                    const tieneInst = !!(d.correoInstitucional && String(d.correoInstitucional).trim());
+                    const elInst = document.getElementById('det-correo-inst');
+                    elInst.innerText = tieneInst ? d.correoInstitucional : 'Aún no asignado';
+                    elInst.className = 'info-value fw-bold ' + (tieneInst ? 'text-primary' : 'text-muted');
+                    elInst.style.fontWeight = tieneInst ? '' : '500';
+                    document.getElementById('det-correo-inst-badge').style.display = tieneInst ? 'inline-block' : 'none';
+                    const btnInst = document.getElementById('btnEditarCorreoInst');
+                    if (btnInst) btnInst.style.display = PUEDE_EDITAR_CORREO_INST ? 'inline-flex' : 'none';
+                    if (btnInst) { btnInst.style.alignItems = 'center'; btnInst.style.justifyContent = 'center'; }
                     document.getElementById('det-banco').innerText = d.banco || "-";
                     document.getElementById('det-cuenta').innerText = d.cuenta || "-";
 
@@ -928,6 +1035,9 @@
             document.getElementById('cuenta-apellidos').value = d.apellidos || '';
             document.getElementById('cuenta-correo').value = d.correo || '';
             document.getElementById('cuenta-password').value = ''; // siempre vacío, es de solo-escritura por seguridad
+            // NUEVO: el campo de correo institucional solo aparece para quien puede editarlo
+            document.getElementById('cuenta-correo-inst').value = d.correoInstitucional || '';
+            document.getElementById('cuenta-correo-inst-wrap').style.display = PUEDE_EDITAR_CORREO_INST ? '' : 'none';
             seleccionarEstadoCuenta((d.estadoCuenta || 'Activo').trim());
 
             if (!modalConfigurarCuentaInstance) {
@@ -941,6 +1051,31 @@
             // NUEVO: el botón "Guardar Cambios" vive en el modal-footer, fuera del <form>
             // (se conecta vía el atributo form="formConfigurarCuenta"), así que se busca
             // directo en el modal en vez de e.target.querySelector(...).
+            // NUEVO: ¿cambió el correo institucional? (solo si el rol puede editarlo). Se valida y confirma ANTES de guardar nada.
+            const instAnterior = String((perfilActualDocente && perfilActualDocente.correoInstitucional) || '').trim();
+            const instNuevo = PUEDE_EDITAR_CORREO_INST ? document.getElementById('cuenta-correo-inst').value.trim() : instAnterior;
+            const cambioInst = PUEDE_EDITAR_CORREO_INST && instNuevo.toLowerCase() !== instAnterior.toLowerCase();
+            if (cambioInst) {
+                if (instNuevo && !REGEX_CORREO.test(instNuevo)) {
+                    Swal.fire('Correo institucional no válido', 'Revisa el formato del correo institucional (ej: nombre.apellido@dominio.edu).', 'warning');
+                    return;
+                }
+                const conf = await Swal.fire({
+                    title: instNuevo ? (instAnterior ? '¿Cambiar el correo institucional?' : '¿Asignar el correo institucional?') : '¿Quitar el correo institucional?',
+                    html: instNuevo
+                        ? `<b>${instNuevo}</b> pasará a ser el <b>usuario de acceso</b> del docente y el destino de todos los correos del sistema. Su contraseña no cambia y se le avisará a su correo personal y al nuevo.`
+                        : 'El docente volverá a ingresar con su <b>correo personal</b> y los correos del sistema irán a ese correo.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, continuar',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#2563eb',
+                    cancelButtonColor: '#64748b',
+                    reverseButtons: true
+                });
+                if (!conf.isConfirmed) return;
+            }
+
             const btn = document.querySelector('#modalConfigurarCuenta button[type="submit"]');
             const originalHTML = btn.innerHTML;
             btn.disabled = true;
@@ -960,8 +1095,28 @@
                 const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const result = await response.json();
                 if (result.status === 'success') {
+                    // NUEVO: si cambió el correo institucional, se guarda con la acción protegida
+                    let msgInst = '';
+                    if (cambioInst) {
+                        try {
+                            const rInst = await llamarCorreoInstitucional(instNuevo);
+                            if (rInst.status === 'success') {
+                                msgInst = textoResultadoCorreoInst(instNuevo, rInst);
+                            } else {
+                                modalConfigurarCuentaInstance.hide();
+                                cargarPerfilDocente(docenteId);
+                                Swal.fire('Cuenta actualizada, pero el correo institucional no', rInst.message || 'No se pudo guardar el correo institucional.', 'warning');
+                                return;
+                            }
+                        } catch (errInst) {
+                            modalConfigurarCuentaInstance.hide();
+                            cargarPerfilDocente(docenteId);
+                            Swal.fire('Cuenta actualizada, pero el correo institucional no', 'No se pudo contactar al servidor para guardar el correo institucional. Inténtalo de nuevo.', 'warning');
+                            return;
+                        }
+                    }
                     modalConfigurarCuentaInstance.hide();
-                    showToast('Cuenta del docente actualizada correctamente.');
+                    showToast(msgInst || 'Cuenta del docente actualizada correctamente.');
                     cargarPerfilDocente(docenteId);
                 } else {
                     Swal.fire('Error', result.message || 'No se pudo actualizar la cuenta.', 'error');
@@ -1015,7 +1170,7 @@
             const paisEsEEUU = /estados unidos|united states|^usa$/i.test((d.pais || '').trim());
             const camposPersonales = [
                 ['DNI / Pasaporte', d.dni], ['Tipo de Documento', d.tipo_id], ['Nombres', d.nombres], ['Apellidos', d.apellidos],
-                ['Correo', d.correo], ['Celular', d.celular], ['Fecha de Nacimiento', formatFechaCompleta(d.fecha_nacimiento)], ['Código Postal', d.cp],
+                ['Correo personal', d.correo], ['Celular', d.celular], ['Fecha de Nacimiento', formatFechaCompleta(d.fecha_nacimiento)], ['Código Postal', d.cp],
                 ['País', d.pais], ['Ciudad', d.ciudad], ['Dirección', d.direccion]
             ];
             let htmlPersonales = camposPersonales.map(([l, v]) => campoDato(l, v)).join('');
@@ -1100,7 +1255,7 @@
 
             Swal.fire({
                 title: '¿Enviar accesos al docente?',
-                text: `Se enviarán las credenciales de acceso (Usuario y Contraseña) al correo institucional: ${correoDocente}. ¿Estás seguro de continuar?`,
+                text: `Se enviarán las credenciales de acceso (Usuario y Contraseña) al correo: ${correoDocente}. ¿Estás seguro de continuar?`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#2563eb',
