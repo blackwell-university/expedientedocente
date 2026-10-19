@@ -43,6 +43,24 @@
     <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@24.5.0/build/js/intlTelInput.min.js"></script>
     
     <style>
+        .material-symbols-rounded {
+            font-family: 'Material Symbols Rounded';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+    
+    <style>
         :root {
             --primary: #1e40af; 
             --primary-light: #eff6ff;
@@ -430,6 +448,41 @@
         .card-num { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; min-height: 28px; padding-right: 100px; }
         .card-badge { display: inline-flex; align-items: center; gap: 7px; background: #eff6ff; color: #1d4ed8; border-radius: 8px; padding: 5px 12px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; }
         .card-badge::before { font-family: "Font Awesome 6 Free"; font-weight: 900; font-size: 0.7rem; }
+        #ai-cert-container, #cert-up-container { counter-reset: certn; }
+        .cert-item, .cert-up-card { counter-increment: certn; }
+        /* Menú de 3 puntos en tarjetas de documentos */
+        .minimal-doc-card { flex-wrap: wrap; gap: 12px; }
+        .minimal-doc-info { flex: 1 1 260px; min-width: 0; }
+        .minimal-doc-actions { flex-wrap: wrap; align-items: center; }
+        .doc-menu { position: relative; display: inline-flex; }
+        .doc-menu-list { display: none; position: absolute; top: calc(100% + 6px); right: 0; min-width: 210px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 12px 30px rgba(15,23,42,0.14); padding: 6px; z-index: 50; }
+        .doc-menu.open .doc-menu-list { display: block; }
+        .doc-menu-item { display: flex; align-items: center; gap: 10px; width: 100%; background: transparent; border: 0; border-radius: 8px; padding: 9px 12px; font-size: 0.85rem; font-weight: 600; color: #334155; text-align: left; cursor: pointer; }
+        .doc-menu-item i { width: 16px; text-align: center; font-size: 0.85rem; color: #64748b; }
+        .doc-menu-item:hover { background: #f1f5f9; }
+        .doc-menu-item.ai i { color: #7c3aed; }
+        .doc-menu-item.is-loading i { animation: girar 1s linear infinite; }
+        .doc-menu-item.danger { color: #dc2626; }
+        .doc-menu-item.danger i { color: #dc2626; }
+        .doc-menu-item.danger:hover { background: #fef2f2; }
+        html.admin-mode .doc-menu .doc-menu-item.admin-only-el { display: flex !important; }
+        .btn-remove.cancel { background: #f8fafc; color: #475569; border-color: #e2e8f0; }
+        .btn-remove.cancel::after { content: "Cancelar"; }
+        .btn-remove.cancel:hover { background: #475569; border-color: #475569; color: #fff; }
+        .doc-actual { font-size: 0.8rem; margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; }
+        .doc-actual a { font-weight: 700; text-decoration: none; }
+        .badge-cert::before { content: "\f559"; }
+        #diplomas-container { counter-reset: gradon; }
+        .diploma-item { counter-increment: gradon; }
+        .badge-grado::before { content: "\f19d"; }
+        .badge-grado::after { content: "Grado " counter(gradon); }
+        .minimal-doc-text .card-num { padding-right: 0; margin-bottom: 8px; min-height: 0; flex-wrap: wrap; }
+        .minimal-doc-text .badge.cert-status, .cert-status { display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 700; padding: 4px 10px; border-radius: 8px; background: #eff6ff; color: #1d4ed8; border: 0; }
+        .minimal-doc-text .badge.cert-status.ok, .cert-status.ok { background: #ecfdf5; color: #047857; }
+        .badge-cert::after { content: "Certificación " counter(certn); }
+        .cert-up-card .cert-meta { font-size: 0.82rem; color: #64748b; }
+        .cert-up-card .cert-status { display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 8px; background: #eff6ff; color: #1d4ed8; }
+        .cert-up-card .cert-status.ok { background: #ecfdf5; color: #047857; }
         .badge-exp::before { content: "\f0b1"; }
         .badge-skill::before { content: "\f005"; }
         .badge-edu::before { content: "\f19d"; }
@@ -1096,6 +1149,7 @@
                                     </button>
                                 </div>
                             </div>
+
                         </div>
 
                         <!-- PASO 3: PERFIL -->
@@ -1272,6 +1326,15 @@
                                 </button>
                             </div>
 
+                            <!-- SECCIÓN: CERTIFICACIONES -->
+                            <div class="mb-5">
+                                <div class="section-label d-flex align-items-center gap-2"><i class="fa-solid fa-award text-primary fs-5"></i> Certificaciones, Licencias y Especializaciones</div>
+                                <div id="ai-cert-container"></div>
+                                <button type="button" class="btn-add-dynamic mt-3" onclick="addCertReviewField()">
+                                    <i class="fa-solid fa-circle-plus fs-5"></i> Añadir Certificación / Licencia
+                                </button>
+                            </div>
+
                             <!-- SECCIÓN: COMPETENCIAS -->
                             <div class="mb-2 pt-3 border-top">
                                 <div class="section-label mt-4 d-flex align-items-center gap-2"><i class="fa-solid fa-star text-primary fs-5"></i> Competencias y Habilidades</div>
@@ -1289,7 +1352,7 @@
                         <div class="d-flex justify-content-between align-items-center mt-5 pt-4 border-top">
                             <span class="text-muted fw-bold" style="letter-spacing: 1px; font-size: 0.85rem;" id="step-counter">PASO 1 DE 5</span>
                             <div class="d-flex gap-3">
-                                <button type="button" class="btn-cancel" id="btnPrev" onclick="cambiarUI(-1)" style="display: none;">Volver atrás</button>
+                                <button type="button" class="btn-cancel" id="btnPrev" onclick="volverAtras()" style="display: none;">Volver atrás</button>
                                 <button type="button" class="btn-continue" id="btnNext" onclick="guardarYAvanzar()" disabled>
                                     Guardar y Continuar <i class="fa-solid fa-arrow-right ms-1"></i>
                                 </button>
@@ -1707,6 +1770,14 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     <div id="diplomas-container"></div>
                     <button type="button" class="btn-add-dynamic mt-3" onclick="addDiplomaEdit()"><i class="fa-solid fa-plus me-1"></i> Añadir Grado Adicional</button>
                 </div>
+                <div id="cert-section" class="d-none" style="margin-top: 34px;">
+                            <div class="section-label d-flex align-items-center gap-2"><i class="fa-solid fa-award text-primary fs-5"></i> Certificaciones, Licencias y Especializaciones</div>
+                            <p class="step-subtitle" style="margin-bottom: 14px;">Suba los certificados, licencias o especializaciones que desee (PDF). Se extraerá los datos del certificado; podrá revisarlos en el último paso.</p>
+                            <div id="cert-up-container"></div>
+                            <button type="button" class="btn-add-dynamic mt-3" onclick="addCertUploadCard()">
+                                <i class="fa-solid fa-circle-plus fs-5"></i> Añadir Certificación / Licencia
+                            </button>
+                        </div>
             `;
 
             if(idExpedienteUrl || userId) cargarDatosPrevios();
@@ -1941,6 +2012,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     evaluarDesbloqueoPaso6();
                     iniciarPollingProcesamiento(); // Vigila en segundo plano si hay documentos "Subido" pendientes de procesar
 
+                    pintarCertificacionesDesdeDrafts((result.drafts && result.drafts.certificaciones) || []);
+
                     // ✅ REEMPLAZAR ESTE BLOQUE EN cargarDatosPrevios():
                     if (result.drafts) {
                         const eduCont = document.getElementById('ai-education-container');
@@ -1973,6 +2046,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
                     document.getElementById('step1-upload-mode').style.display = 'block'; 
                     addDiplomaEdit();
+                    pintarCertificacionesDesdeDrafts([]);
                 }
             } catch(e) { 
                 console.error("Error en cargarDatosPrevios:", e);
@@ -2001,10 +2075,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         // --- FUNCIÓN PARA CONVERTIR URL DE DESCARGA A URL DE VISTA (Solo para la Interfaz) ---
         function getDriveViewUrl(downloadUrl) {
             if (!downloadUrl) return "#";
-            // Extrae el ID del archivo de la URL de descarga
             const match = downloadUrl.match(/id=([a-zA-Z0-9_-]+)/);
             if (match && match[1]) {
-                // Devuelve el formato de vista nativa de Drive
                 return `https://drive.google.com/file/d/${match[1]}/view`;
             }
             return downloadUrl;
@@ -2014,18 +2086,15 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             const modeParam = new URLSearchParams(window.location.search).get('mode');
             if (!diplomasBloqueadosPorEjecutiva || modeParam === 'admin') return;
 
-            // Ocultamos el botón de "Añadir Grado Adicional"
             const btnAgregar = document.querySelector('#step2-content > .btn-add-dynamic');
             if (btnAgregar) btnAgregar.style.display = 'none';
 
-            // Deshabilitamos el botón "Editar" de cada diploma ya guardado
             document.querySelectorAll('#diplomas-container .diploma-item.view-mode-dip button').forEach(btn => {
                 btn.disabled = true;
                 btn.classList.add('disabled');
                 btn.title = 'Estos datos fueron cargados por administración';
             });
 
-            // Insertamos un aviso explicativo arriba de las tarjetas
             const cont = document.getElementById('step2-content');
             if (cont && !document.getElementById('aviso-paso2-bloqueado')) {
                 const aviso = document.createElement('div');
@@ -2037,7 +2106,33 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             }
         }
 
-        function renderDiplomaReadonly(data) {
+        function docMenuHTML(items) {
+            return `<div class="doc-menu">
+                <button type="button" class="btn-icon-doc" title="Más opciones" aria-haspopup="true" onclick="toggleDocMenu(this, event)"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                <div class="doc-menu-list" role="menu">${items.join('')}</div>
+            </div>`;
+        }
+        function toggleDocMenu(btn, ev) {
+            if (ev) ev.stopPropagation();
+            const menu = btn.closest('.doc-menu');
+            const abierto = menu.classList.contains('open');
+            document.querySelectorAll('.doc-menu.open').forEach(m => m.classList.remove('open'));
+            if (!abierto) menu.classList.add('open');
+        }
+        document.addEventListener('click', (e) => {
+            document.querySelectorAll('.doc-menu.open').forEach(m => m.classList.remove('open'));
+        });
+
+        function chipEstado(estado) {
+            const e = String(estado || '');
+            const l = e.toLowerCase();
+            if (l === 'subido') return { cls: 'badge cert-status', html: '<i class="fa-solid fa-spinner fa-spin"></i> Procesando con IA...' };
+            if (!e) return { cls: 'badge cert-status', html: 'Pendiente' };
+            return { cls: 'badge cert-status ok', html: '<i class="fa-solid fa-circle-check"></i> ' + e };
+        }
+        function aplicarChip(el, estado) { if (!el) return; const c = chipEstado(estado); el.className = c.cls; el.innerHTML = c.html; }
+
+        function renderDiplomaReadonly(data, replaceEl) {
             const container = document.getElementById('diplomas-container');
             const div = document.createElement('div');
             div.className = 'diploma-item view-mode-dip minimal-doc-card mb-3';
@@ -2058,8 +2153,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 <div class="minimal-doc-info">
                     <div class="minimal-doc-icon" style="background:#f0fdf4; color:#10b981;"><i class="fa-solid fa-graduation-cap"></i></div>
                     <div class="minimal-doc-text">
+                        <div class="card-num"><span class="card-badge badge-grado"></span><span class="${chipEstado(data.estado || 'Procesado').cls}">${chipEstado(data.estado || 'Procesado').html}</span></div>
                         <h6>${data.grado}</h6>
-                        <span class="badge bg-light text-dark border">${data.estado || 'Procesado'}</span>
                         <p class="small text-muted mb-0 mt-1 doc-card-sub">
                             <b>Especialidad:</b> ${data.rama || 'Pendiente de procesar...'}<br>
                             <b>Institución:</b> ${data.instituto || 'Pendiente de procesar...'}
@@ -2069,12 +2164,14 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 <div class="minimal-doc-actions">
                     <a href="${getDriveViewUrl(data.url_diploma)}" target="_blank" class="btn-minimal"><i class="fa-regular fa-eye"></i> Diploma</a>
                     ${data.url_transcript ? `<a href="${getDriveViewUrl(data.url_transcript)}" target="_blank" class="btn-minimal"><i class="fa-regular fa-eye"></i> Transcript</a>` : ''}
-                    <button type="button" class="btn-icon-doc reanalyze admin-only-el" title="Reanalizar con IA" onclick="reanalizarConIA('diploma', this)"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
-                    <button type="button" class="btn-icon-doc" title="Editar" onclick="confirmarEdicionDiploma(this)"><i class="fa-solid fa-pen"></i></button>
-                    <button type="button" class="btn-icon-doc danger" title="Eliminar" onclick="confirmarEliminarDiploma(this)"><i class="fa-solid fa-trash"></i></button>
+                    ${docMenuHTML([
+                        `<button type="button" class="doc-menu-item ai admin-only-el" onclick="reanalizarConIA('diploma', this)"><i class="fa-solid fa-wand-magic-sparkles"></i> Volver a pasar por la IA</button>`,
+                        `<button type="button" class="doc-menu-item" onclick="confirmarEdicionDiploma(this)"><i class="fa-solid fa-pen"></i> Editar</button>`,
+                        `<button type="button" class="doc-menu-item danger" onclick="confirmarEliminarDiploma(this)"><i class="fa-solid fa-trash"></i> Eliminar</button>`
+                    ])}
                 </div>
             `;
-            container.appendChild(div);
+            if (replaceEl) replaceEl.replaceWith(div); else container.appendChild(div);
         }
 
         async function confirmarEliminarDiploma(btn) {
@@ -2084,7 +2181,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
             const result = await Swal.fire({
                 title: '¿Eliminar este registro?',
-                html: `Se eliminará por completo el registro de <b>${grado}</b>, incluyendo todo lo que la IA extrajo de él. Esta acción no se puede deshacer.<br><br><span class="text-muted small">Los archivos PDF no se borrarán de Drive, solo el registro.</span>`,
+                html: `Se eliminará por completo el registro de <b>${grado}</b>, incluyendo todo lo extraído de él. Esta acción no se puede deshacer.<br><br><span class="text-muted small">Los archivos PDF no se borrarán de Drive, solo el registro.</span>`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
@@ -2105,8 +2202,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'delete_diploma', idDiploma: idDiploma }) });
                 const json = await res.json();
                 if (json.status === 'success') {
-                    // También quitamos el registro espejo del Paso 6 (Educación), si ya se había generado;
-                    // si no lo hacíamos, el diploma eliminado seguía apareciendo ahí hasta refrescar la página.
                     const espejoPaso6 = document.querySelector(`.ai-edu-record[data-id="${idDiploma}"]`);
                     if (espejoPaso6) espejoPaso6.remove();
 
@@ -2128,7 +2223,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             }
         }
 
-        // --- MODO ADMIN: reenviar un documento ya subido a la IA de n8n para que lo vuelva a analizar ---
         async function reanalizarConIA(tipo, btn) {
             btn.classList.add('is-loading');
             btn.disabled = true;
@@ -2190,8 +2284,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                             card.dataset.inicio = eduActualizada.inicio || card.dataset.inicio;
                             card.dataset.fin = eduActualizada.fin || card.dataset.fin;
 
-                            const badge = card.querySelector('.badge');
-                            if (badge) badge.textContent = eduActualizada.estado || 'Procesado';
+                            aplicarChip(card.querySelector('.badge'), eduActualizada.estado || 'Procesado');
                             const pInfo = card.querySelector('.doc-card-sub');
                             if (pInfo) pInfo.innerHTML = `<b>Especialidad:</b> ${eduActualizada.rama || 'Pendiente de procesar...'}<br><b>Institución:</b> ${eduActualizada.instituto || 'Pendiente de procesar...'}`;
 
@@ -2203,30 +2296,60 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         }
 
         function confirmarEdicionDiploma(btn) {
-            Swal.fire({
-                title: '¿Actualizar este diploma?',
-                text: "Si subes un nuevo documento, se borrará la información extraída previamente de este grado.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#2563eb',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: 'Sí, editar',
-                cancelButtonText: 'Cancelar',
-                reverseButtons: true
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    convertirAEdicion(btn.closest('.diploma-item'));
-                }
-            });
+            // Ya no se borra nada al editar: se abre la tarjeta y cada documento se puede reemplazar por separado.
+            convertirAEdicion(btn.closest('.diploma-item'));
+        }
+
+        function validarTarjetaDiploma(item) {
+            const grado = item.querySelector('.dip-grado').value;
+            const dipFile = item.querySelector('.dip-file').files[0];
+            if (!grado) { Swal.fire({ title: 'Falta el nivel de grado', text: 'Selecciona el Nivel de Grado.', icon: 'warning', confirmButtonColor: '#2563eb' }); return false; }
+            if (!dipFile && !item.dataset.url) { Swal.fire({ title: 'Falta el diploma', text: 'Sube el archivo PDF del diploma.', icon: 'warning', confirmButtonColor: '#2563eb' }); return false; }
+            return true;
+        }
+
+        async function guardarDiplomaTarjeta(btn) {
+            const item = btn.closest('.diploma-item');
+            if (!validarTarjetaDiploma(item)) return;
+            const html = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin me-2"></i> Guardando...';
+            try {
+                const dip = await procesarDiplomaEdicion(item);
+                const payload = { action: 'save_expediente_step', step: 2, idDocente: userId, idExpediente: idExpedienteUrl, idInvitacion: selectedInvitationId, modoAdmin: (new URLSearchParams(window.location.search).get('mode') === 'admin'), diplomas: [dip] };
+                const r = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }).then(r => r.json());
+                if (r.status !== 'success') throw new Error(r.message || 'No se pudo guardar');
+                renderDiplomaReadonly(dip, item);
+                evaluarDesbloqueoPaso6();
+                iniciarPollingProcesamiento();
+                showToast(String(dip.estado).toLowerCase() === 'subido' ? 'Grado guardado, extrayendo.' : 'Grado guardado correctamente.', 'success');
+            } catch (e) {
+                console.error(e);
+                btn.disabled = false; btn.innerHTML = html;
+                showToast('No se pudo guardar. Inténtelo de nuevo.', 'warning');
+            }
+        }
+
+        function cancelarEdicionDiploma(btn) {
+            const card = btn.closest('.diploma-item');
+            renderDiplomaReadonly({
+                id_diploma: card.dataset.id, grado: card.dataset.grado, rama: card.dataset.rama,
+                instituto: card.dataset.instituto, ubicacion: card.dataset.ubicacion,
+                inicio: card.dataset.inicio, fin: card.dataset.fin,
+                url_diploma: card.dataset.url, url_transcript: card.dataset.transcript,
+                estado: card.dataset.estado
+            }, card);
         }
 
         function convertirAEdicion(card) {
-            card.classList.remove('view-mode-dip');
-            card.classList.add('edit-mode-dip');
+            card.className = 'dynamic-card diploma-item edit-mode-dip mb-3';
             const grado = card.dataset.grado || "";
-            
+            const urlDip = card.dataset.url || "";
+            const urlTr = card.dataset.transcript || "";
+
             card.innerHTML = `
-                <button type="button" class="btn-remove" title="Eliminar" onclick="this.parentElement.remove()"><i class="fa-regular fa-trash-can"></i></button>
+                <button type="button" class="btn-remove cancel" title="Cancelar edición" onclick="cancelarEdicionDiploma(this)"><i class="fa-solid fa-xmark"></i></button>
+                <div class="card-num"><span class="card-badge badge-grado"></span></div>
                 <div class="row g-3">
                     <div class="col-md-12">
                         <label class="form-label">Nivel de Grado *</label>
@@ -2237,9 +2360,19 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                             <option value="Doctorado" ${grado.toLowerCase().includes('doctorado')?'selected':''}>Doctorado</option>
                         </select>
                     </div>
-                    <div class="col-md-6"><label class="form-label">Nuevo Diploma (PDF) *</label><input type="file" class="form-control dip-file" accept=".pdf"></div>
-                    <div class="col-md-6"><label class="form-label">Nuevo Transcript (Opcional)</label><input type="file" class="form-control dip-transcript" accept=".pdf"></div>
+                    <div class="col-md-6">
+                        <label class="form-label">Diploma (PDF)${urlDip ? '' : ' *'}</label>
+                        ${urlDip ? `<div class="doc-actual"><a href="${getDriveViewUrl(urlDip)}" target="_blank"><i class="fa-regular fa-eye me-1"></i>Ver diploma actual</a><span class="text-muted">Elige un archivo solo si quieres reemplazarlo</span></div>` : ''}
+                        <input type="file" class="form-control dip-file" accept=".pdf">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Transcript (Opcional)</label>
+                        ${urlTr ? `<div class="doc-actual"><a href="${getDriveViewUrl(urlTr)}" target="_blank"><i class="fa-regular fa-eye me-1"></i>Ver transcript actual</a><span class="text-muted">Elige un archivo solo si quieres reemplazarlo</span></div>` : `<div class="doc-actual"><span class="text-muted">Aún no hay transcript cargado</span></div>`}
+                        <input type="file" class="form-control dip-transcript" accept=".pdf">
+                    </div>
                 </div>
+                ${urlDip ? `<div class="small text-muted mt-2"><i class="fa-solid fa-circle-info me-1"></i>Si reemplazas el diploma, se volverá a extraer sus datos. Si solo cambias el transcript, los datos del diploma se conservan.</div>` : ''}
+                <div class="d-flex justify-content-end mt-3"><button type="button" class="btn-continue" onclick="guardarDiplomaTarjeta(this)"><i class="fa-solid fa-floppy-disk"></i> Guardar cambios</button></div>
             `;
         }
 
@@ -2249,11 +2382,13 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             div.className = 'dynamic-card diploma-item edit-mode-dip mb-3';
             div.innerHTML = `
                 <button type="button" class="btn-remove" title="Eliminar" onclick="this.parentElement.remove()"><i class="fa-regular fa-trash-can"></i></button>
+                <div class="card-num"><span class="card-badge badge-grado"></span></div>
                 <div class="row g-3">
                     <div class="col-md-12"><label class="form-label">Nivel de Grado *</label><select class="form-select dip-grado"><option value="">Seleccionar...</option><option value="Bachelor">Bachelor</option><option value="Master">Master</option><option value="Doctorado">Doctorado</option></select></div>
                     <div class="col-md-6"><label class="form-label">Diploma (PDF) *</label><input type="file" class="form-control dip-file" accept=".pdf"></div>
                     <div class="col-md-6"><label class="form-label">Transcript (Opcional)</label><input type="file" class="form-control dip-transcript" accept=".pdf"></div>
                 </div>
+                <div class="d-flex justify-content-end mt-3"><button type="button" class="btn-continue" onclick="guardarDiplomaTarjeta(this)"><i class="fa-solid fa-floppy-disk"></i> Guardar y analizar</button></div>
             `;
             container.appendChild(div);
         }
@@ -2717,16 +2852,52 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         }
 
         // --- AUTOGUARDADO POR PASOS ---
+        // Sube lo que el docente cambió en una tarjeta de grado y devuelve el registro listo para guardar.
+        function procesarDiplomaEdicion(item) {
+        const dipFile = item.querySelector('.dip-file').files[0];
+        const transFile = item.querySelector('.dip-transcript').files[0];
+        const currentGrado = item.querySelector('.dip-grado').value;
+
+        const idDipGenerado = item.dataset.id || ("DIP-" + new Date().getTime().toString().slice(-6) + Math.floor(Math.random() * 100));
+        item.dataset.id = idDipGenerado;
+
+        // Edición de un diploma ya guardado: lo que no se reemplaza se conserva
+        const urlDipPrev = item.dataset.url || "";
+        const urlTrPrev = item.dataset.transcript || "";
+        const subirDiploma = dipFile
+            ? getBase64(dipFile).then(b64Dip =>
+                fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Dip, name: dipFile.name, type: dipFile.type, uploadTo: 'docente', idDocente: userId, idExpediente: idExpedienteUrl, tipoDocumento: 'diploma', grado: currentGrado }) }).then(r => r.json())
+              )
+            : Promise.resolve({ url: urlDipPrev });
+        const subirTranscript = transFile
+            ? getBase64(transFile).then(b64Trans => fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Trans, name: transFile.name, type: transFile.type, uploadTo: 'docente', idDocente: userId, idExpediente: idExpedienteUrl, tipoDocumento: 'transcript', grado: currentGrado }) }).then(r => r.json()))
+            : Promise.resolve({ url: urlTrPrev });
+
+        return Promise.all([subirDiploma, subirTranscript]).then(([resDip, resTrans]) => {
+            const diplomaReemplazado = !!dipFile || !urlDipPrev;
+            const estadoPrev = item.dataset.estado || "Subido";
+            if (diplomaReemplazado || estadoPrev.toLowerCase() === 'subido') {
+                fetch(N8N_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: "extract_diploma", fileUrl: resDip.url, idDocente: userId, idExpediente: idExpedienteUrl, idDiploma: idDipGenerado, grado: currentGrado }) }).catch(e => console.log(e));
+            }
+
+            if (diplomaReemplazado) {                
+                return { id_diploma: idDipGenerado, grado: currentGrado, url_diploma: resDip.url, url_transcript: resTrans.url || "", estado: "Subido" };
+            }
+            
+            return {
+                id_diploma: idDipGenerado, grado: currentGrado, rama: item.dataset.rama || "",
+                instituto: item.dataset.instituto || "", ubicacion: item.dataset.ubicacion || "",
+                inicio: item.dataset.inicio || "", fin: item.dataset.fin || "",
+                url_diploma: resDip.url, url_transcript: resTrans.url || "", estado: estadoPrev
+            };
+        });
+        }
+
         async function guardarYAvanzar() {
             const btnNext = document.getElementById('btnNext');
             const originalHTML = btnNext.innerHTML;
             btnNext.disabled = true; 
             btnNext.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin me-2"></i> Procesando...';
-
-            // NUEVO: guardamos en qué paso estábamos ANTES de empezar a subir/guardar (async).
-            // Si el usuario hace clic en otra pestaña mientras esto sigue "Procesando...", pasoActual
-            // (variable global) cambia — sin esto, al terminar se marcaría el check verde en el paso
-            // donde el usuario terminó parado, no en el paso que realmente se guardó.
             const pasoOrigen = pasoActual;
 
             let payload = { action: "save_expediente_step", step: pasoActual, idDocente: userId, idExpediente: idExpedienteUrl, idInvitacion: selectedInvitationId, modoAdmin: (new URLSearchParams(window.location.search).get('mode') === 'admin') };
@@ -2797,7 +2968,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     actualizarVistaPaso1();
 
                     cambiarUI(1, pasoOrigen); 
-                    iniciarPollingProcesamiento(); // Empezamos a vigilar en segundo plano cuándo n8n termine de procesar
+                    iniciarPollingProcesamiento();
                     return; 
                 }
                 
@@ -2808,7 +2979,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
                     // --- NUEVA LÓGICA DE VALIDACIÓN OBLIGATORIA (MAESTRÍA / DOCTORADO) ---
                     const modeParamP2 = new URLSearchParams(window.location.search).get('mode');
-                    if (modeParamP2 !== 'admin') { // 👈 Omite la validación obligatoria si es modo admin
+                    if (modeParamP2 !== 'admin') {
                         let hasMaster = false;
                         let hasDoctorate = false;
 
@@ -2841,6 +3012,11 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
                     // --- FIN NUEVA LÓGICA ---
 
+                    if (CERTIFICACIONES_OBLIGATORIAS && !document.querySelector('.cert-up-card[data-id]')) {
+                        Swal.fire({ title: 'Certificación requerida', html: 'Debe adjuntar al menos una <b>certificación, licencia o especialización</b>.', icon: 'warning', confirmButtonColor: '#2563eb' });
+                        btnNext.disabled = false; btnNext.innerHTML = originalHTML; return;
+                    }
+
                     let hayNuevosOEditados = false;  // Control para saber si usamos Google Sheets
 
                     // --- FASE 1: Validación rápida y síncrona de TODOS los items (sin red, instantánea) ---
@@ -2849,7 +3025,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                             const currentGrado = item.querySelector('.dip-grado').value;
                             const dipFile = item.querySelector('.dip-file').files[0];
                             if (!currentGrado) { alert("Selecciona el Nivel de Grado en todos los campos."); btnNext.disabled=false; btnNext.innerHTML=originalHTML; return; }
-                            if (!dipFile) { alert("Falta subir el archivo PDF del Diploma."); btnNext.disabled=false; btnNext.innerHTML=originalHTML; return; }
+                            if (!dipFile && !item.dataset.url) { alert("Falta subir el archivo PDF del Diploma."); btnNext.disabled=false; btnNext.innerHTML=originalHTML; return; }
                         }
                     }
 
@@ -2857,29 +3033,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     const tareasDiplomas = Array.from(diplomaItems).map(item => {
                         if (item.classList.contains('edit-mode-dip')) { // Archivos nuevos o en edición
                             hayNuevosOEditados = true;
-                            const dipFile = item.querySelector('.dip-file').files[0];
-                            const transFile = item.querySelector('.dip-transcript').files[0];
-                            const currentGrado = item.querySelector('.dip-grado').value;
-
-                            const idDipGenerado = item.dataset.id || ("DIP-" + new Date().getTime().toString().slice(-6) + Math.floor(Math.random() * 100));
-                            item.dataset.id = idDipGenerado;
-
-                            const subirDiploma = getBase64(dipFile).then(b64Dip =>
-                                fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Dip, name: dipFile.name, type: dipFile.type, uploadTo: 'docente', idDocente: userId, idExpediente: idExpedienteUrl, tipoDocumento: 'diploma', grado: currentGrado }) }).then(r => r.json())
-                            );
-                            const subirTranscript = transFile
-                                ? getBase64(transFile).then(b64Trans => fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64Trans, name: transFile.name, type: transFile.type, uploadTo: 'docente', idDocente: userId, idExpediente: idExpedienteUrl, tipoDocumento: 'transcript', grado: currentGrado }) }).then(r => r.json()))
-                                : Promise.resolve({ url: "" });
-
-                            return Promise.all([subirDiploma, subirTranscript]).then(([resDip, resTrans]) => {
-                                fetch(N8N_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: "extract_diploma", fileUrl: resDip.url, idDocente: userId, idExpediente: idExpedienteUrl, idDiploma: idDipGenerado, grado: currentGrado }) }).catch(e => console.log(e));
-
-                                return {
-                                    id_diploma: idDipGenerado,
-                                    grado: currentGrado, url_diploma: resDip.url, url_transcript: resTrans.url || "", estado: "Subido"
-                                };
-                            });
-
+                            return procesarDiplomaEdicion(item);
                         } else {
                             const estadoItem = item.dataset.estado || "Subido";
                             if (estadoItem.toLowerCase() === "subido") {
@@ -2922,6 +3076,13 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         });
                     }
                     
+                    for (const cardCert of Array.from(document.querySelectorAll('.cert-up-card:not([data-id])'))) {
+                        const fileCert = cardCert.querySelector('.cert-file');
+                        if (fileCert && fileCert.files && fileCert.files.length > 0) {
+                            await guardarCertificacionNueva(cardCert.querySelector('.btn-continue'));
+                        }
+                    }
+
                     cambiarUI(1, pasoOrigen);
                     iniciarPollingProcesamiento();
                     return;
@@ -3072,6 +3233,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         };
                     });
                     payload.experiencia = [...experienciasG, ...habilidadesG];
+                    payload.certificaciones = leerCertificacionesPayload();
                     // Le avisa al servidor que esta lista es la completa: lo que no venga aquí fue eliminado por el usuario
                     payload.sincronizarExperiencias = (window.expDraftsCargados === true);
 
@@ -3212,6 +3374,245 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             }
         }
 
+        // =====================================================================
+        // CERTIFICACIONES / LICENCIAS / ESPECIALIZACIONES
+        // =====================================================================
+        // Si la ejecutiva decide que debe subir al menos una, cambiar a true.
+        const CERTIFICACIONES_OBLIGATORIAS = false;
+        let pollingCertificaciones = null;
+
+        const escAttr = (v) => String(v === null || v === undefined ? '' : v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const esAdminCert = () => new URLSearchParams(window.location.search).get('mode') === 'admin';
+
+        function certEstadoHTML(estado) {
+            const c = chipEstado(estado);
+            return `<span class="${c.cls}">${c.html}</span>`;
+        }
+
+        // Tarjeta del Paso 2: mismo estilo que los grados académicos.
+        // Sin datos = tarjeta de carga (como "Añadir Grado"). Con datos = tarjeta guardada.
+        function addCertUploadCard(data) {
+            const cont = document.getElementById('cert-up-container');
+            if (!cont) return;
+            const div = document.createElement('div');
+            if (data && data.id_certificacion) {
+                div.className = 'cert-up-card minimal-doc-card mb-3';
+                div.dataset.id = data.id_certificacion;
+                div.dataset.estado = data.estado || '';
+                div.dataset.url = data.url || '';
+                div.dataset.nombre = data.nombre || '';
+                const proc = String(data.estado || '').toLowerCase() === 'subido';
+                const titulo = data.nombre ? escAttr(data.nombre) : (proc ? 'Leyendo documento...' : 'Certificado sin nombre detectado');
+                const fechas = [data.inicio && ('Inicio: ' + escAttr(data.inicio)), data.fin && ('Fin: ' + escAttr(data.fin)), data.caducidad && ('Caduca: ' + escAttr(data.caducidad))].filter(Boolean).join(' · ');
+                const detalle = proc
+                    ? 'Se está extrayendo los datos...'
+                    : `<b>Institución:</b> ${data.institucion ? escAttr(data.institucion) : 'No detectada'}${fechas ? '<br>' + fechas : ''}${data.nombre ? '' : '<br><span style="color:#b45309;">Complete el nombre en el último paso.</span>'}`;
+                div.innerHTML = `
+                    <div class="minimal-doc-info">
+                        <div class="minimal-doc-icon" style="background:#eff6ff; color:#2563eb;"><i class="fa-solid fa-award"></i></div>
+                        <div class="minimal-doc-text">
+                            <div class="card-num"><span class="card-badge badge-cert"></span>${certEstadoHTML(data.estado)}</div>
+                            <h6>${titulo}</h6>
+                            <p class="small text-muted mb-0 mt-1 doc-card-sub">${detalle}</p>
+                        </div>
+                    </div>
+                    <div class="minimal-doc-actions">
+                        <a href="${escAttr(getDriveViewUrl(data.url || ''))}" target="_blank" rel="noopener" class="btn-minimal"><i class="fa-regular fa-eye"></i> Certificado</a>
+                        ${docMenuHTML([
+                            `<button type="button" class="doc-menu-item ai admin-only-el" onclick="reanalizarCertificacion(this)"><i class="fa-solid fa-wand-magic-sparkles"></i> Volver a pasar por la IA</button>`,
+                            `<button type="button" class="doc-menu-item" onclick="irAPaso(6)"><i class="fa-solid fa-pen"></i> Editar datos</button>`,
+                            `<button type="button" class="doc-menu-item danger" onclick="eliminarCertificacion(this)"><i class="fa-solid fa-trash"></i> Eliminar</button>`
+                        ])}
+                    </div>`;
+            } else {
+                div.className = 'dynamic-card cert-up-card mb-3';
+                div.innerHTML = `
+                    <button type="button" class="btn-remove" title="Eliminar" onclick="this.closest('.cert-up-card').remove()"><i class="fa-regular fa-trash-can"></i></button>
+                    <div class="card-num"><span class="card-badge badge-cert"></span></div>
+                    <div class="row g-3">
+                        <div class="col-md-12"><label class="form-label">Certificado / Licencia / Especialización (PDF) *</label><input type="file" class="form-control cert-file" accept=".pdf,application/pdf" onchange="onCertFileSelected(this)"></div>
+                    </div>
+                    <div class="cert-feedback small mt-2"></div>
+                    <div class="d-flex justify-content-end mt-3"><button type="button" class="btn-continue" onclick="guardarCertificacionNueva(this)"><i class="fa-solid fa-floppy-disk"></i> Guardar y analizar</button></div>`;
+            }
+            cont.appendChild(div);
+            return div;
+        }
+
+        // Al elegir el archivo solo se valida; la subida y el análisis ocurren al pulsar "Guardar y analizar".
+        function onCertFileSelected(input) {
+            const file = input.files && input.files[0];
+            const fb = input.closest('.cert-up-card').querySelector('.cert-feedback');
+            if (!file) { fb.innerHTML = ''; return; }
+            if (file.type !== 'application/pdf' && !/\.pdf$/i.test(file.name)) {
+                fb.innerHTML = '<span class="text-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i> Solo se permiten archivos PDF.</span>';
+                input.value = '';
+                return;
+            }
+            if (file.size > 15 * 1024 * 1024) {
+                fb.innerHTML = '<span class="text-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i> El archivo supera los 15 MB.</span>';
+                input.value = '';
+                return;
+            }
+            fb.innerHTML = '<span class="text-muted"><i class="fa-solid fa-circle-info me-1"></i> Pulse "Guardar y analizar" para subirlo.</span>';
+        }
+
+        async function guardarCertificacionNueva(btn) {
+            const card = btn.closest('.cert-up-card');
+            const input = card.querySelector('.cert-file');
+            const fb = card.querySelector('.cert-feedback');
+            const file = input.files && input.files[0];
+            if (!file) { fb.innerHTML = '<span class="text-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i> Seleccione primero el archivo PDF.</span>'; return; }
+            const html = btn.innerHTML;
+            btn.disabled = true; input.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin me-2"></i> Subiendo...';
+            try {
+                const b64 = await getBase64(file);
+                const up = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_url', file: b64, name: file.name, type: file.type, uploadTo: 'docente', idDocente: userId, idExpediente: idExpedienteUrl, tipoDocumento: 'certificacion' }) }).then(r => r.json());
+                if (!up || !up.url) throw new Error('No se obtuvo la URL del archivo');
+                const idCert = "CERT-" + Date.now().toString().slice(-7) + Math.floor(Math.random() * 100);
+                const sv = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'save_certificacion', idDocente: userId, idCertificacion: idCert, url: up.url }) }).then(r => r.json());
+                if (!sv || sv.status !== 'success') throw new Error((sv && sv.message) || 'No se pudo registrar la certificación');
+                const realId = sv.idCertificacion || sv.id_certificacion || idCert;
+                fetch(N8N_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'extract_certificate', fileUrl: up.url, idDocente: userId, idExpediente: idExpedienteUrl, idCertificacion: realId }) }).catch(e => console.log(e));
+                const nueva = addCertUploadCard({ id_certificacion: realId, url: up.url, estado: 'Subido' });
+                card.replaceWith(nueva);
+                addCertReviewField({ id_certificacion: realId, url: up.url, estado: 'Subido' }, true);
+                showToast('Certificado guardado. Se está extrayendo sus datos.', 'success');
+                iniciarPollingCertificaciones();
+            } catch (e) {
+                console.error(e);
+                btn.disabled = false; input.disabled = false; btn.innerHTML = html;
+                fb.innerHTML = '<span class="text-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i> No se pudo subir. Inténtelo de nuevo.</span>';
+            }
+        }
+
+        async function eliminarCertificacion(btn) {
+            const card = btn.closest('[data-id]');
+            const id = card && card.dataset.id;
+            if (!id) { card.remove(); return; }
+            const conf = await Swal.fire({ title: '¿Eliminar esta certificación?', text: 'Se quitará de su expediente.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar' });
+            if (!conf.isConfirmed) return;
+            try {
+                const r = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'delete_certificacion', idCertificacion: id }) }).then(r => r.json());
+                if (r.status !== 'success' && !String(r.message || '').toLowerCase().includes('encontr')) throw new Error(r.message || 'error');
+                document.querySelectorAll(`.cert-up-card[data-id="${id}"], .cert-item[data-id="${id}"]`).forEach(el => el.remove());
+                showToast('Certificación eliminada.', 'success');
+            } catch (e) {
+                console.error(e);
+                showToast('No se pudo eliminar. Inténtelo de nuevo.', 'warning');
+            }
+        }
+
+        async function reanalizarCertificacion(btn) {
+            const card = btn.closest('.cert-up-card');
+            if (!card) return;
+            btn.disabled = true;
+            try {
+                await fetch(N8N_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'extract_certificate', fileUrl: card.dataset.url, idDocente: userId, idExpediente: idExpedienteUrl, idCertificacion: card.dataset.id }) });
+                showToast('Re-análisis enviado a la IA.', 'success');
+                iniciarPollingCertificaciones();
+            } catch (e) { console.log(e); }
+            btn.disabled = false;
+        }
+
+        // Tarjeta de revisión del Paso 6 (campos editables)
+        function addCertReviewField(data = {}, silencioso) {
+            const cont = document.getElementById('ai-cert-container');
+            if (!cont) return;
+            const div = document.createElement('div');
+            div.className = 'dynamic-card cert-item mb-3';
+            div.style.background = '#ffffff';
+            div.style.border = '1px solid #e2e8f0';
+            div.dataset.id = data.id_certificacion || ("CERT-" + Date.now().toString().slice(-7) + Math.floor(Math.random() * 100));
+            div.dataset.url = data.url || '';
+            div.dataset.persisted = data.id_certificacion ? '1' : '';
+            div.dataset.estado = data.estado || '';
+            div.innerHTML = `
+                <button type="button" class="btn-remove" title="Eliminar" onclick="eliminarCertificacionRevision(this)"><i class="fa-regular fa-trash-can"></i></button>
+                <div class="card-num"><span class="card-badge badge-cert"></span><span class="cert-state-slot">${data.estado ? certEstadoHTML(data.estado) : ''}</span></div>
+                <div class="row g-3">
+                    <div class="col-md-12"><label class="form-label small fw-bold">Nombre del Certificado / Licencia / Especialización *</label><input type="text" class="form-control cert-nombre" value="${escAttr(data.nombre)}"></div>
+                    <div class="col-md-12"><label class="form-label small fw-bold">Institución *</label><input type="text" class="form-control cert-institucion" value="${escAttr(data.institucion)}"></div>
+                    <div class="col-md-4"><label class="form-label small fw-bold">Fecha de inicio</label><input type="date" class="form-control cert-inicio" value="${formatToDateInput(data.inicio)}"></div>
+                    <div class="col-md-4"><label class="form-label small fw-bold">Fecha de culminación</label><input type="date" class="form-control cert-fin" value="${formatToDateInput(data.fin)}"></div>
+                    <div class="col-md-4"><label class="form-label small fw-bold">Fecha de caducidad <span class="text-muted fw-normal">(si aplica)</span></label><input type="date" class="form-control cert-caducidad" value="${formatToDateInput(data.caducidad)}"></div>
+                </div>`;
+            div.querySelectorAll('input').forEach(i => i.addEventListener('input', () => { div.dataset.dirty = '1'; }));
+            cont.appendChild(div);
+            return div;
+        }
+
+        async function eliminarCertificacionRevision(btn) {
+            const card = btn.closest('.cert-item');
+            if (card.dataset.persisted) return eliminarCertificacion(btn);
+            card.remove();
+        }
+
+        function pintarCertificacionesDesdeDrafts(lista) {
+            const up = document.getElementById('cert-up-container');
+            const rev = document.getElementById('ai-cert-container');
+            const sec = document.getElementById('cert-section');
+            if (sec) sec.classList.remove('d-none');
+            if (!up || !rev) return;
+            up.innerHTML = '';
+            rev.innerHTML = '';
+            (lista || []).forEach(c => { addCertUploadCard(c); const el = addCertReviewField(c); if (el) el.dataset.persisted = '1'; });
+            if (!up.children.length) addCertUploadCard();
+            if ((lista || []).some(c => c.estado === 'Subido')) iniciarPollingCertificaciones();
+        }
+
+        async function refrescarCertificaciones() {
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: userId, id_expediente: idExpedienteUrl }) }).then(r => r.json());
+                const lista = res && res.drafts && res.drafts.certificaciones;
+                if (!lista) return true;
+                lista.forEach(c => {
+                    const up = document.querySelector(`.cert-up-card[data-id="${c.id_certificacion}"]`);
+                    if (up && (up.dataset.estado !== (c.estado || '') || (up.dataset.nombre || '') !== (c.nombre || ''))) {
+                        const nueva = addCertUploadCard(c);
+                        up.replaceWith(nueva);
+                    }
+                    const rv = document.querySelector(`.cert-item[data-id="${c.id_certificacion}"]`);
+                    if (rv) {
+                        if (rv.dataset.estado !== (c.estado || '') && !rv.dataset.dirty) {
+                            rv.querySelector('.cert-nombre').value = c.nombre || '';
+                            rv.querySelector('.cert-institucion').value = c.institucion || '';
+                            rv.querySelector('.cert-inicio').value = formatToDateInput(c.inicio);
+                            rv.querySelector('.cert-fin').value = formatToDateInput(c.fin);
+                            rv.querySelector('.cert-caducidad').value = formatToDateInput(c.caducidad);
+                        }
+                        rv.dataset.estado = c.estado || '';
+                        const slot = rv.querySelector('.cert-state-slot');
+                        if (slot) slot.innerHTML = certEstadoHTML(c.estado);
+                    }
+                });
+                return !lista.some(c => c.estado === 'Subido');
+            } catch (e) { console.log('Error refrescando certificaciones', e); return false; }
+        }
+
+        function iniciarPollingCertificaciones() {
+            if (pollingCertificaciones) return;
+            let intentos = 0;
+            pollingCertificaciones = setInterval(async () => {
+                intentos++;
+                const terminado = await refrescarCertificaciones();
+                if (terminado || intentos > 60) { clearInterval(pollingCertificaciones); pollingCertificaciones = null; }
+            }, 5000);
+        }
+
+        function leerCertificacionesPayload() {
+            return Array.from(document.querySelectorAll('.cert-item')).map(i => ({
+                id_certificacion: i.dataset.id,
+                nombre: i.querySelector('.cert-nombre').value,
+                institucion: i.querySelector('.cert-institucion').value,
+                inicio: i.querySelector('.cert-inicio').value,
+                fin: i.querySelector('.cert-fin').value,
+                caducidad: i.querySelector('.cert-caducidad').value,
+                url: i.dataset.url || ''
+            })).filter(c => c.nombre.trim() || c.institucion.trim() || c.url);
+        }
+
         async function refrescarPaso6IA() {
             try {
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: userId, id_expediente: idExpedienteUrl }) });
@@ -3283,7 +3684,26 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         }
 
         // --- NUEVA NAVEGACIÓN FLEXIBLE ---
+        // Cambios pendientes en el Paso 2: archivos elegidos que todavía no se guardaron
+        function hayPendientesPaso2() {
+            return Array.from(document.querySelectorAll('.edit-mode-dip .dip-file, .edit-mode-dip .dip-transcript, .cert-up-card .cert-file')).some(i => i.files && i.files.length > 0);
+        }
+        function confirmarSalirSinGuardar(continuar) {
+            Swal.fire({
+                title: 'Tiene cambios sin guardar',
+                html: 'Elegió archivos que todavía no se han guardado. Si sale ahora se perderán.',
+                icon: 'warning', showCancelButton: true, confirmButtonColor: '#2563eb', cancelButtonColor: '#64748b',
+                confirmButtonText: 'Salir sin guardar', cancelButtonText: 'Volver y guardar', reverseButtons: true
+            }).then(r => { if (r.isConfirmed) { window.__omitirPendientes = true; try { continuar(); } finally { window.__omitirPendientes = false; } } });
+        }
+        function volverAtras() {
+            if (pasoActual === 2 && !window.__omitirPendientes && hayPendientesPaso2()) { confirmarSalirSinGuardar(() => cambiarUI(-1)); return; }
+            cambiarUI(-1);
+        }
+        window.addEventListener('beforeunload', (e) => { if (hayPendientesPaso2()) { e.preventDefault(); e.returnValue = ''; } });
+
         function irAPaso(pasoDestino) {
+            if (pasoActual === 2 && pasoDestino !== 2 && !window.__omitirPendientes && hayPendientesPaso2()) { confirmarSalirSinGuardar(() => irAPaso(pasoDestino)); return; }
             
             // 1. VALIDACIÓN LÓGICA PARA EL PASO 6
             if (pasoDestino === 6) {
@@ -3689,8 +4109,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                                 card.dataset.inicio = eduActualizada.inicio || card.dataset.inicio;
                                 card.dataset.fin = eduActualizada.fin || card.dataset.fin;
 
-                                const badge = card.querySelector('.badge');
-                                if (badge) badge.textContent = eduActualizada.estado || 'Procesado';
+                                aplicarChip(card.querySelector('.badge'), eduActualizada.estado || 'Procesado');
                                 const pInfo = card.querySelector('p.small.text-muted');
                                 if (pInfo) {
                                     pInfo.innerHTML = `<b>Especialidad:</b> ${eduActualizada.rama || 'Pendiente de procesar...'}<br><b>Institución:</b> ${eduActualizada.instituto || 'Pendiente de procesar...'}`;
