@@ -185,6 +185,101 @@
             .profile-photo-wrap, .profile-photo { width: 90px; height: 90px; }
         }
     
+        /* ===== ENCABEZADO MÓVIL v3: barra compacta fija + menú lateral (solo celular) ===== */
+        .mh-overlay, .mh-drawer { display: none; }
+        @media (max-width: 768px) {
+            body { padding-top: 56px !important; }
+            .main-wrapper .content-area { padding-top: 14px; }
+            .mobile-header {
+                position: fixed; top: 0; left: 0; right: 0; height: 56px; margin: 0; padding: 0 14px;
+                background: rgba(255,255,255,0.97); border-bottom: 1px solid var(--border-color);
+                box-shadow: 0 2px 12px rgba(15,23,42,0.06); z-index: 1000; gap: 10px;
+            }
+            .mobile-header .mh-profile { gap: 10px; min-width: 0; }
+            .mobile-header .mh-avatar { width: 34px; height: 34px; background: var(--primary); color: #fff; font-size: 0.78rem; flex-shrink: 0; }
+            .mobile-header .mh-text { min-width: 0; }
+            .mobile-header .mh-text h1 { font-size: 1rem; letter-spacing: -0.4px; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .mobile-header .mh-text p { font-size: 0.7rem; margin: 0; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .mobile-header .mh-actions { gap: 8px; flex-shrink: 0; }
+            .mobile-header .mh-menu-btn { width: 38px; height: 38px; background: var(--primary-light); border: 1px solid #dbe7ff; color: var(--primary); }
+            .mobile-header .mh-menu-btn .material-symbols-rounded { font-size: 22px; }
+
+            .mh-overlay { display: block; position: fixed; inset: 0; background: rgba(15,23,42,0.45); opacity: 0; visibility: hidden; transition: opacity 0.25s ease, visibility 0.25s; z-index: 1290; }
+            .mh-overlay.open { opacity: 1; visibility: visible; }
+            .mh-drawer {
+                display: flex; flex-direction: column; position: fixed; top: 0; right: 0; bottom: 0;
+                width: 82%; max-width: 310px; background: #fff; z-index: 1300;
+                border-radius: 22px 0 0 22px; box-shadow: -12px 0 40px rgba(15,23,42,0.2);
+                transform: translateX(105%); transition: transform 0.3s cubic-bezier(.4,0,.2,1); padding: 20px 18px 24px;
+            }
+            .mh-drawer.open { transform: translateX(0); }
+            .mh-drawer-head { display: flex; align-items: center; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); margin-bottom: 14px; }
+            .mh-drawer-head .mh-avatar { width: 46px; height: 46px; background: var(--primary); color: #fff; font-size: 1rem; flex-shrink: 0; }
+            .mh-drawer-hello { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; line-height: 1.2; }
+            .mh-drawer-name { font-size: 1.02rem; font-weight: 800; color: var(--primary-dark); line-height: 1.2; }
+            .mh-drawer-close { margin-left: auto; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border-color); background: #fff; color: var(--text-muted); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+            .mh-drawer-link { display: flex; align-items: center; gap: 12px; padding: 13px 12px; border-radius: 12px; text-decoration: none; color: var(--text-main); font-weight: 700; font-size: 0.92rem; background: transparent; border: 0; width: 100%; text-align: left; cursor: pointer; }
+            .mh-drawer-link .material-symbols-rounded { font-size: 22px; color: var(--primary); }
+            .mh-drawer-link:active { background: var(--primary-light); }
+            .mh-drawer-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; font-weight: 700; font-size: 0.92rem; color: var(--text-main); }
+            .mh-drawer-row .font-controls { height: 38px; }
+            .mh-drawer-sep { height: 1px; background: var(--border-color); margin: 10px 0; }
+            .mh-drawer-link.logout, .mh-drawer-link.logout .material-symbols-rounded { color: #ef4444; }
+            .mh-drawer-link.logout { margin-top: auto; background: #fef2f2; justify-content: center; }
+        }
+
+        /* ===== ESTILO UNIFICADO DEL SISTEMA (inputs, botones, acordeón, chips) ===== */
+        .btn-font-action.a-minus { font-size: 0.9rem; }
+        .btn-font-action.a-plus { font-size: 1.25rem; }
+
+        /* Botones: mismo azul y mismo radio que el resto del portal */
+        .btn { border-radius: 12px; font-weight: 700; transition: var(--transition); }
+        .btn-primary {
+            --bs-btn-bg: var(--primary); --bs-btn-border-color: var(--primary);
+            --bs-btn-hover-bg: var(--primary-dark); --bs-btn-hover-border-color: var(--primary-dark);
+            --bs-btn-active-bg: var(--primary-dark); --bs-btn-active-border-color: var(--primary-dark);
+            --bs-btn-focus-shadow-rgb: 30,64,175;
+            box-shadow: 0 4px 12px rgba(30,64,175,0.2);
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(30,64,175,0.25); }
+        .btn-soft { background: #f8fafc; color: #475569; border: 1px solid var(--border-color); }
+        .btn-soft:hover { background: var(--primary-light); color: var(--primary); border-color: #bfdbfe; }
+
+        /* Campos: igual que los de las demás pantallas */
+        .form-control, .form-select {
+            border-radius: 12px; border: 1px solid var(--border-color); background: #f8fafc;
+            color: var(--text-main); font-size: 0.9rem; padding: 10px 14px; transition: var(--transition);
+        }
+        .form-control-sm { padding: 8px 12px; font-size: 0.86rem; border-radius: 10px; }
+        .form-control:focus, .form-select:focus { background: #fff; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(30,64,175,0.12); }
+        .info-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; margin-bottom: 6px; }
+        .info-value { font-size: 0.95rem; color: var(--text-main); font-weight: 600; }
+
+        /* Tarjetas */
+        .form-card { padding: 24px; }
+        @media (max-width: 576px) { .form-card { padding: 18px; } }
+        .card-icon-tile { width: 46px; height: 46px; border-radius: 14px; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0; }
+
+        /* Acordeón */
+        .accordion { --bs-accordion-btn-focus-box-shadow: none; --bs-accordion-border-color: var(--border-color); }
+        .accordion-item { border: 1px solid var(--border-color); border-radius: 16px !important; margin-bottom: 12px; overflow: hidden; background: #fff; box-shadow: 0 4px 14px rgba(0,0,0,0.02); }
+        .accordion-button { padding: 14px 18px; font-weight: 800; font-size: 0.92rem; color: var(--text-main); background: #fff; gap: 2px; }
+        .accordion-button:not(.collapsed) { background: var(--primary-light); color: var(--primary-dark); box-shadow: none; }
+        .accordion-body { padding: 18px; }
+        .acc-ico { width: 34px; height: 34px; border-radius: 10px; background: var(--primary-light); color: var(--primary); display: inline-flex; align-items: center; justify-content: center; font-size: 0.9rem; margin-right: 10px; flex-shrink: 0; }
+        .accordion-button:not(.collapsed) .acc-ico { background: #fff; }
+
+        /* Tarjetas internas y estados */
+        .diploma-mini-card { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 16px; padding: 16px 18px; margin-bottom: 12px; }
+        .diploma-mini-card:last-child { margin-bottom: 0; }
+        .chip-estado { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 8px; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+        .chip-estado.ok { background: #f0fdf4; color: #16a34a; border-color: #bbf7d0; }
+        .chip-estado.pend { background: #fff7ed; color: #ea580c; border-color: #fed7aa; }
+        .chip-estado.err { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+        .empty-mini { display: flex; align-items: center; gap: 10px; background: #fef2f2; border: 1px dashed #fecaca; color: #b91c1c; border-radius: 14px; padding: 14px 16px; font-size: 0.85rem; font-weight: 600; margin: 0; }
+        .profile-photo { font-size: 1.9rem; }
+        @media (max-width: 576px) { .cv-actions { width: 100%; } .cv-actions .btn { flex: 1; } }
+
         /* --- REDISEÑO DE SWEETALERT2 (UI Corporativa) --- */
         div:where(.swal2-container) div:where(.swal2-popup) {
             border-radius: 16px !important;
@@ -286,15 +381,34 @@
                         </div>
                     </div>
                     <div class="mh-actions">
-                        <div class="font-controls">
-                            <button class="btn-font-action a-minus" onclick="changeFontSize(-1)">A-</button>
-                            <div class="font-separator"></div>
-                            <button class="btn-font-action a-plus" onclick="changeFontSize(1)">A+</button>
-                        </div>
-                        <button class="btn-circle" onclick="logout()" title="Cerrar sesión" style="color: #ef4444; border-color: #fecaca;">
-                            <span class="material-symbols-rounded">logout</span>
+                        <button class="btn-circle mh-menu-btn" onclick="abrirMenuMovil()" aria-label="Abrir menú" title="Menú">
+                            <span class="material-symbols-rounded">menu</span>
                         </button>
                     </div>
+
+                    <!-- Menú lateral (se abre con el botón de arriba) -->
+                    <div class="mh-overlay" id="mhOverlay" onclick="cerrarMenuMovil()"></div>
+                    <aside class="mh-drawer" id="mhDrawer" aria-label="Menú">
+                        <div class="mh-drawer-head">
+                            <div class="mh-avatar" id="mhDrawerInitial">DC</div>
+                            <div>
+                                <div class="mh-drawer-hello">Hola,</div>
+                                <div class="mh-drawer-name" id="mhNombre">Docente</div>
+                            </div>
+                            <button class="mh-drawer-close" onclick="cerrarMenuMovil()" aria-label="Cerrar menú"><span class="material-symbols-rounded" style="font-size:20px;">close</span></button>
+                        </div>
+                        <a href="dashboard-docente.html" class="mh-drawer-link"><span class="material-symbols-rounded">home</span> Ir al inicio</a>
+                        <div class="mh-drawer-sep"></div>
+                        <div class="mh-drawer-row">
+                            <span>Tamaño de letra</span>
+                            <div class="font-controls">
+                                <button class="btn-font-action a-minus" onclick="changeFontSize(-1)">A-</button>
+                                <div class="font-separator"></div>
+                                <button class="btn-font-action a-plus" onclick="changeFontSize(1)">A+</button>
+                            </div>
+                        </div>
+                        <button class="mh-drawer-link logout" onclick="cerrarMenuMovil(); logout();"><span class="material-symbols-rounded">logout</span> Cerrar sesión</button>
+                    </aside>
                 </div>
 
                 <div class="page-header d-none d-md-block">
@@ -322,15 +436,18 @@
                 <div class="form-card mb-4">
                     <span class="section-badge"><i class="fa-solid fa-file-pdf me-2"></i>Mi CV</span>
                     <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-                        <div>
-                            <div class="fw-bold" id="cvNombreArchivo" style="font-size:0.95rem;">Cargando...</div>
-                            <div class="text-muted" id="cvEstadoTexto" style="font-size:0.82rem;">-</div>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="card-icon-tile"><i class="fa-regular fa-file-lines"></i></div>
+                            <div>
+                                <div class="fw-bold" id="cvNombreArchivo" style="font-size:0.95rem;">Cargando...</div>
+                                <div class="text-muted" id="cvEstadoTexto" style="font-size:0.82rem;">-</div>
+                            </div>
                         </div>
-                        <div class="d-flex gap-2">
-                            <a href="#" id="cvVerLink" target="_blank" class="btn btn-sm" style="background:#f8fafc; color:#475569; border:1px solid var(--border-color); border-radius:8px; font-weight:600;">
+                        <div class="d-flex gap-2 cv-actions">
+                            <a href="#" id="cvVerLink" target="_blank" class="btn btn-sm btn-soft">
                                 <i class="fa-regular fa-eye me-1"></i>Ver
                             </a>
-                            <label class="btn btn-sm btn-primary" style="border-radius:8px; font-weight:600; cursor:pointer;">
+                            <label class="btn btn-sm btn-primary" style="cursor:pointer; margin:0;">
                                 <i class="fa-solid fa-arrow-up-from-bracket me-1"></i>Actualizar CV
                                 <input type="file" id="inputCV" accept=".pdf,.doc,.docx" style="display:none;" onchange="subirCV(this)">
                             </label>
@@ -347,7 +464,7 @@
                         <div class="accordion-item">
                             <h2 class="accordion-header">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accPersonales">
-                                    <i class="fa-solid fa-id-card me-2 text-primary"></i>&nbsp;Datos Personales
+                                    <span class="acc-ico"><i class="fa-solid fa-id-card"></i></span>Datos Personales
                                     <span class="badge rounded-pill ms-2" id="badge-personales">-</span>
                                 </button>
                             </h2>
@@ -361,7 +478,7 @@
                         <div class="accordion-item">
                             <h2 class="accordion-header">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accEducacion">
-                                    <i class="fa-solid fa-graduation-cap me-2 text-primary"></i>&nbsp;Educación (Grados Académicos)
+                                    <span class="acc-ico"><i class="fa-solid fa-graduation-cap"></i></span>Educación (Grados Académicos)
                                     <span class="badge rounded-pill ms-2" id="badge-educacion">-</span>
                                 </button>
                             </h2>
@@ -375,7 +492,7 @@
                         <div class="accordion-item">
                             <h2 class="accordion-header">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accExperiencia">
-                                    <i class="fa-solid fa-briefcase me-2 text-primary"></i>&nbsp;Experiencia Laboral
+                                    <span class="acc-ico"><i class="fa-solid fa-briefcase"></i></span>Experiencia Laboral
                                     <span class="badge rounded-pill ms-2" id="badge-experiencia">-</span>
                                 </button>
                             </h2>
@@ -389,7 +506,7 @@
                         <div class="accordion-item">
                             <h2 class="accordion-header">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accBancarios">
-                                    <i class="fa-solid fa-building-columns me-2 text-primary"></i>&nbsp;Datos Bancarios
+                                    <span class="acc-ico"><i class="fa-solid fa-building-columns"></i></span>Datos Bancarios
                                     <span class="badge rounded-pill ms-2" id="badge-bancarios">-</span>
                                 </button>
                             </h2>
@@ -403,7 +520,7 @@
                     </div>
 
                     <div class="text-center mt-4">
-                        <a href="registroexpediente.html" class="btn btn-sm" style="background:#f8fafc; color:#475569; border:1px solid var(--border-color); border-radius: 12px; font-weight:600;">
+                        <a href="registroexpediente.html" class="btn btn-sm btn-soft px-3 py-2">
                             <i class="fa-solid fa-graduation-cap me-2"></i>Editar Educación y Experiencia Laboral
                         </a>
                     </div>
@@ -425,7 +542,7 @@
             currentSizeLevel += step;
             if (currentSizeLevel < 0) currentSizeLevel = 0;
             else if (currentSizeLevel >= fontSizes.length) currentSizeLevel = fontSizes.length - 1;
-            document.documentElement.style.setProperty('--dynamic-font-size', fontSizes[currentSizeLevel]);
+            document.documentElement.style.fontSize = fontSizes[currentSizeLevel];
         }
 
         const dropdownTrigger = document.getElementById('userDropdownTrigger');
@@ -437,6 +554,15 @@
             });
             document.addEventListener('click', function () { dropdownMenu.classList.remove('show'); });
         }
+
+        function abrirMenuMovil()  { document.getElementById('mhOverlay').classList.add('open');    document.getElementById('mhDrawer').classList.add('open'); }
+        function cerrarMenuMovil() { document.getElementById('mhOverlay').classList.remove('open'); document.getElementById('mhDrawer').classList.remove('open'); }
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarMenuMovil(); });
+        document.addEventListener('DOMContentLoaded', () => {
+            const nom = (localStorage.getItem('userName') || 'Docente');
+            const mhN = document.getElementById('mhNombre');        if (mhN) mhN.innerText = nom.split(' ')[0];
+            const mhI = document.getElementById('mhDrawerInitial'); if (mhI) mhI.innerText = nom.substring(0, 2).toUpperCase();
+        });
 
         function logout() {
             Swal.fire({
@@ -512,17 +638,24 @@
             return `
             <div class="col-md-4 dato-campo">
                 <span class="info-label">${label}</span>
-                <input type="${tipo}" class="form-control form-control-sm" id="${id}" value="${String(v).replace(/"/g, '&quot;')}" style="font-size:0.85rem; border-radius:8px;">
+                <input type="${tipo}" class="form-control form-control-sm" id="${id}" value="${String(v).replace(/"/g, '&quot;')}" >
             </div>`;
         }
 
         // ==================== EDUCACIÓN (DIPLOMAS) — SOLO LECTURA ====================
+        function claseChipEstado(estado) {
+            const e = String(estado || 'Subido').toLowerCase();
+            if (/error|rechaz/.test(e)) return 'err';
+            if (/procesad|complet|aprobad|verific/.test(e)) return 'ok';
+            return 'pend';
+        }
+
         function tarjetaDiplomaSoloLectura(edu) {
             return `
             <div class="diploma-mini-card">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <b style="font-size:0.9rem;">${edu.grado || 'Grado'}</b>
-                    <span class="badge" style="background:#f1f5f9; color:#334155; font-size:0.7rem;">${edu.estado || 'Subido'}</span>
+                    <span class="chip-estado ${claseChipEstado(edu.estado)}">${edu.estado || 'Subido'}</span>
                 </div>
                 <div class="row g-2">
                     ${campoDato('Carrera / Especialidad', edu.rama)}
@@ -562,7 +695,7 @@
             `;
             document.getElementById('cont-datos-personales').innerHTML = htmlPersonales + `
                 <div class="col-12 text-end mt-2">
-                    <button class="btn btn-primary btn-sm fw-bold" style="border-radius:8px;" onclick="guardarDatosPersonales()">
+                    <button class="btn btn-primary btn-sm px-3 py-2" onclick="guardarDatosPersonales()">
                         <i class="fa-regular fa-floppy-disk me-1"></i>Guardar Datos Personales
                     </button>
                 </div>`;
@@ -582,7 +715,7 @@
             `;
             document.getElementById('cont-datos-bancarios').innerHTML = htmlBancarios + `
                 <div class="col-12 text-end mt-2">
-                    <button class="btn btn-primary btn-sm fw-bold" style="border-radius:8px;" onclick="guardarDatosBancarios()">
+                    <button class="btn btn-primary btn-sm px-3 py-2" onclick="guardarDatosBancarios()">
                         <i class="fa-regular fa-floppy-disk me-1"></i>Guardar Datos Bancarios
                     </button>
                 </div>`;
@@ -607,7 +740,7 @@
 
             const eduList = drafts.educacion || [];
             if (eduList.length === 0) {
-                document.getElementById('cont-educacion').innerHTML = '<p class="text-danger m-0" style="font-size:0.85rem;"><i class="fa-solid fa-triangle-exclamation me-1"></i>Aún no has subido ningún diploma.</p>';
+                document.getElementById('cont-educacion').innerHTML = '<p class="empty-mini"><i class="fa-solid fa-triangle-exclamation"></i>Aún no has subido ningún diploma.</p>';
             } else {
                 document.getElementById('cont-educacion').innerHTML = eduList.map(edu => tarjetaDiplomaSoloLectura(edu)).join('');
             }
@@ -616,7 +749,7 @@
 
             const expList = (drafts.experiencia || []).filter(e => !e.tipo || !e.tipo.startsWith('C'));
             if (expList.length === 0) {
-                document.getElementById('cont-experiencia').innerHTML = '<p class="text-danger m-0" style="font-size:0.85rem;"><i class="fa-solid fa-triangle-exclamation me-1"></i>Aún no has registrado experiencia laboral.</p>';
+                document.getElementById('cont-experiencia').innerHTML = '<p class="empty-mini"><i class="fa-solid fa-triangle-exclamation"></i>Aún no has registrado experiencia laboral.</p>';
             } else {
                 document.getElementById('cont-experiencia').innerHTML = expList.map(exp => `
                     <div class="diploma-mini-card">
@@ -649,6 +782,7 @@
             const grande = document.getElementById('fotoPerfilGrande');
             const nav = document.getElementById('userInitialNav');
             const mobile = document.getElementById('fotoMobile');
+            const drawer = document.getElementById('mhDrawerInitial');
             if (url) {
                 const urlImagen = convertirAUrlImagenDirecta(url);
                 // NUEVO: onerror — si por lo que sea la imagen no carga, mostramos las
@@ -657,10 +791,12 @@
                 grande.innerHTML = imgTag('fotoPerfilGrande');
                 if (nav) nav.innerHTML = imgTag('userInitialNav');
                 if (mobile) mobile.innerHTML = imgTag('fotoMobile');
+                if (drawer) drawer.innerHTML = imgTag('mhDrawerInitial');
             } else {
                 grande.innerText = iniciales;
                 if (nav) nav.innerText = iniciales;
                 if (mobile) mobile.innerText = iniciales;
+                if (drawer) drawer.innerText = iniciales;
             }
         }
 

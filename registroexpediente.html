@@ -317,20 +317,18 @@
             .step-tab.completed .step-circle::after { content: '✓'; color: white; font-size: 0.75rem; font-weight: 900; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100%; width: 100%;}
             
             /* --- WIDGET CALENDARIO: OPTIMIZACIÓN UX MÓVIL --- */
-            /* 1. Ocultamos las flechas porque en móvil se usa 'swipe' (deslizar con el dedo) */
             .carousel-nav-btn {
                 display: none !important;
             }
             .carousel-wrapper {
                 gap: 0;
             }
-            /* 2. Hacemos las píldoras de fecha más elegantes y compactas */
             .day-carousel {
                 gap: 8px;
                 padding: 5px 2px;
             }
             .day-pill {
-                width: 62px; /* Más angosto */
+                width: 62px;
                 padding: 10px 4px;
                 border-radius: 12px;
             }
@@ -344,7 +342,6 @@
             .day-pill .day-month {
                 font-size: 0.65rem;
             }
-            /* 3. Optimizamos las franjas horarias a 2 columnas exactas */
             .time-slot-grid {
                 grid-template-columns: 1fr 1fr;
                 gap: 8px;
@@ -376,8 +373,6 @@
         /* --- CONTENIDO DE PASOS --- */
         .step-content { display: none; }
 
-        /* NUEVO: Spinner de carga inicial (antes no había nada mientras se cargaban los datos —
-           se veía el título de golpe y luego, tras un rato, aparecía el formulario sin avisar) */
         .loader-inicial-wizard {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             gap: 16px; padding: 80px 20px; background: white; border-radius: var(--radius-lg, 20px);
@@ -393,11 +388,6 @@
         .step-content.active { display: block; animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* === NUEVO: pasada de diseño — mismos colores y estilo, pero más compacto y liviano ===
-           Antes: títulos/cajas/tarjetas con mucho padding y texto grande, poco ajuste en móvil.
-           Ahora: se reduce padding y tamaño de fuente de forma pareja en todo el formulario
-           (educación, experiencia, competencias usan estas mismas clases base, así que el
-           ajuste se refleja en las tres secciones sin tocarlas una por una). */
         .step-title { font-weight: 800; font-size: 1.45rem; color: var(--text-main); margin-bottom: 6px; }
         .step-subtitle { color: var(--text-muted); font-size: 0.92rem; margin-bottom: 24px; line-height: 1.5; }
         .section-divider { border-bottom: 1px dashed var(--border-color); margin: 28px 0; }
@@ -451,7 +441,9 @@
         .cert-item, .cert-up-card { counter-increment: certn; }
         /* Menú de 3 puntos en tarjetas de documentos */
         .minimal-doc-card { flex-wrap: wrap; gap: 12px; }
-        .minimal-doc-info { flex: 1 1 260px; min-width: 0; }
+        .minimal-doc-info { min-width: 0; }
+        @media (min-width: 577px) { .minimal-doc-info { flex: 1 1 260px; } }
+        @media (max-width: 576px) { .minimal-doc-card { gap: 14px; padding: 16px; } .minimal-doc-info { flex: 0 0 auto; width: 100%; } .minimal-doc-actions { width: 100%; } }
         .minimal-doc-actions { flex-wrap: wrap; align-items: center; }
         .doc-menu { position: relative; display: inline-flex; }
         .doc-menu-list { display: none; position: absolute; top: calc(100% + 6px); right: 0; min-width: 210px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 12px 30px rgba(15,23,42,0.14); padding: 6px; z-index: 50; }
@@ -588,6 +580,50 @@
         /* ==================================================
            MEDIA QUERIES PARA ADAPTACIÓN PERFECTA A PANTALLAS
            ================================================== */
+
+
+        /* ===== ENCABEZADO MÓVIL v3: barra compacta fija + menú lateral (solo celular) ===== */
+        .mh-overlay, .mh-drawer { display: none; }
+        @media (max-width: 768px) {
+            body { padding-top: 56px !important; }
+            .main-wrapper .content-area { padding-top: 14px; }
+            .mobile-header {
+                position: fixed; top: 0; left: 0; right: 0; height: 56px; margin: 0; padding: 0 14px;
+                background: rgba(255,255,255,0.97); border-bottom: 1px solid var(--border-color);
+                box-shadow: 0 2px 12px rgba(15,23,42,0.06); z-index: 1000; gap: 10px;
+            }
+            .mobile-header .mh-profile { gap: 10px; min-width: 0; }
+            .mobile-header .mh-avatar { width: 34px; height: 34px; background: var(--primary); color: #fff; font-size: 0.78rem; flex-shrink: 0; }
+            .mobile-header .mh-text { min-width: 0; }
+            .mobile-header .mh-text h1 { font-size: 1rem; letter-spacing: -0.4px; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .mobile-header .mh-text p { font-size: 0.7rem; margin: 0; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .mobile-header .mh-actions { gap: 8px; flex-shrink: 0; }
+            .mobile-header .mh-menu-btn { width: 38px; height: 38px; background: var(--primary-light); border: 1px solid #dbe7ff; color: var(--primary); }
+            .mobile-header .mh-menu-btn .material-symbols-rounded { font-size: 22px; }
+
+            .mh-overlay { display: block; position: fixed; inset: 0; background: rgba(15,23,42,0.45); opacity: 0; visibility: hidden; transition: opacity 0.25s ease, visibility 0.25s; z-index: 1290; }
+            .mh-overlay.open { opacity: 1; visibility: visible; }
+            .mh-drawer {
+                display: flex; flex-direction: column; position: fixed; top: 0; right: 0; bottom: 0;
+                width: 82%; max-width: 310px; background: #fff; z-index: 1300;
+                border-radius: 22px 0 0 22px; box-shadow: -12px 0 40px rgba(15,23,42,0.2);
+                transform: translateX(105%); transition: transform 0.3s cubic-bezier(.4,0,.2,1); padding: 20px 18px 24px;
+            }
+            .mh-drawer.open { transform: translateX(0); }
+            .mh-drawer-head { display: flex; align-items: center; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); margin-bottom: 14px; }
+            .mh-drawer-head .mh-avatar { width: 46px; height: 46px; background: var(--primary); color: #fff; font-size: 1rem; flex-shrink: 0; }
+            .mh-drawer-hello { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; line-height: 1.2; }
+            .mh-drawer-name { font-size: 1.02rem; font-weight: 800; color: var(--primary-dark); line-height: 1.2; }
+            .mh-drawer-close { margin-left: auto; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border-color); background: #fff; color: var(--text-muted); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+            .mh-drawer-link { display: flex; align-items: center; gap: 12px; padding: 13px 12px; border-radius: 12px; text-decoration: none; color: var(--text-main); font-weight: 700; font-size: 0.92rem; background: transparent; border: 0; width: 100%; text-align: left; cursor: pointer; }
+            .mh-drawer-link .material-symbols-rounded { font-size: 22px; color: var(--primary); }
+            .mh-drawer-link:active { background: var(--primary-light); }
+            .mh-drawer-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; font-weight: 700; font-size: 0.92rem; color: var(--text-main); }
+            .mh-drawer-row .font-controls { height: 38px; }
+            .mh-drawer-sep { height: 1px; background: var(--border-color); margin: 10px 0; }
+            .mh-drawer-link.logout, .mh-drawer-link.logout .material-symbols-rounded { color: #ef4444; }
+            .mh-drawer-link.logout { margin-top: auto; background: #fef2f2; justify-content: center; }
+        }
 
         /* Ajustes Responsivos */
         @media (max-width: 992px) {
@@ -946,17 +982,6 @@
                     <p>Complete y verifique la siguiente información para finalizar su registro como docente en Blackwell Global University.</p>
                 </div>
 
-                <!-- NUEVO: aviso de "revisión de perfil" — aparece cuando llega desde una nueva
-                     invitación a otro curso y está en soloDatosMode (sin exp=), para que entienda
-                     por qué está aquí revisando su perfil en vez de llenar algo nuevo. -->
-                <div id="aviso-modo-revision" class="alert-aesthetic mb-4 d-none" style="background-color:#eff6ff; border-color:#bfdbfe;">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <div>
-                        <h6>Revisa tus datos antes de continuar</h6>
-                        <p>Te invitaron a un nuevo curso. Verifica que tus datos sigan correctos antes de generar tus documentos.</p>
-                    </div>
-                </div>
-
                 <!-- HEADER MÓVIL (Estilo App) -->
                 <div class="mobile-header">
                     <a href="perfil.html" class="mh-profile" style="text-decoration:none; color:inherit;">
@@ -967,15 +992,44 @@
                         </div>
                     </a>
                     <div class="mh-actions">
-                        <!-- Controles de Accesibilidad Móvil -->
-                        <div class="font-controls">
-                            <button class="btn-font-action a-minus" onclick="changeFontSize(-1)">A-</button>
-                            <div class="font-separator"></div>
-                            <button class="btn-font-action a-plus" onclick="changeFontSize(1)">A+</button>
-                        </div>
-                        <button class="btn-circle" onclick="logout()" title="Cerrar sesión" style="color: #ef4444; border-color: #fecaca;">
-                            <span class="material-symbols-rounded">logout</span>
+                        <button class="btn-circle mh-menu-btn" onclick="abrirMenuMovil()" aria-label="Abrir menú" title="Menú">
+                            <span class="material-symbols-rounded">menu</span>
                         </button>
+                    </div>
+
+                    <!-- Menú lateral (se abre con el botón de arriba) -->
+                    <div class="mh-overlay" id="mhOverlay" onclick="cerrarMenuMovil()"></div>
+                    <aside class="mh-drawer" id="mhDrawer" aria-label="Menú">
+                        <div class="mh-drawer-head">
+                            <div class="mh-avatar" id="mhDrawerInitial">DC</div>
+                            <div>
+                                <div class="mh-drawer-hello">Hola,</div>
+                                <div class="mh-drawer-name" id="mhNombre">Docente</div>
+                            </div>
+                            <button class="mh-drawer-close" onclick="cerrarMenuMovil()" aria-label="Cerrar menú"><span class="material-symbols-rounded" style="font-size:20px;">close</span></button>
+                        </div>
+                        <a href="perfil.html" class="mh-drawer-link"><span class="material-symbols-rounded">person</span> Ver mi perfil</a>
+                        <div class="mh-drawer-sep"></div>
+                        <div class="mh-drawer-row">
+                            <span>Tamaño de letra</span>
+                            <div class="font-controls">
+                                <button class="btn-font-action a-minus" onclick="changeFontSize(-1)">A-</button>
+                                <div class="font-separator"></div>
+                                <button class="btn-font-action a-plus" onclick="changeFontSize(1)">A+</button>
+                            </div>
+                        </div>
+                        <button class="mh-drawer-link logout" onclick="cerrarMenuMovil(); logout();"><span class="material-symbols-rounded">logout</span> Cerrar sesión</button>
+                    </aside>
+                </div>
+
+                <!-- NUEVO: aviso de "revisión de perfil" — aparece cuando llega desde una nueva
+                     invitación a otro curso y está en soloDatosMode (sin exp=), para que entienda
+                     por qué está aquí revisando su perfil en vez de llenar algo nuevo. -->
+                <div id="aviso-modo-revision" class="alert-aesthetic mb-4 d-none" style="background-color:#eff6ff; border-color:#bfdbfe;">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <div>
+                        <h6>Revisa tus datos antes de continuar</h6>
+                        <p>Te invitaron a un nuevo curso. Verifica que tus datos sigan correctos antes de generar tus documentos.</p>
                     </div>
                 </div>
 
@@ -1726,6 +1780,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             if(initialEl) initialEl.innerText = initial;
 
             // Avatar móvil
+            const mhNombre = document.getElementById('mhNombre'); if (mhNombre) mhNombre.innerText = firstName;
+            const mhDrawerInitial = document.getElementById('mhDrawerInitial'); if (mhDrawerInitial) mhDrawerInitial.innerText = initial;
             const initialMobile = document.getElementById('userInitialMobile');
             if(initialMobile) initialMobile.innerText = initial;
 
@@ -2455,6 +2511,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 }
             });
         }
+
+        function abrirMenuMovil() { document.getElementById('mhOverlay').classList.add('open'); document.getElementById('mhDrawer').classList.add('open'); }
+        function cerrarMenuMovil() { document.getElementById('mhOverlay').classList.remove('open'); document.getElementById('mhDrawer').classList.remove('open'); }
 
         function logout() {
             Swal.fire({
