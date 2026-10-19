@@ -59,7 +59,6 @@
             -webkit-font-smoothing: antialiased;
         }
     </style>
-    
     <style>
         :root {
             --primary: #1e40af; 
@@ -173,7 +172,7 @@
             transition: font-variation-settings 0.25s ease;
             transform: none;
         }
-        .bottom-item span:last-child {
+        .bottom-item > span:last-child {
             font-size: 0; max-width: 0; opacity: 0; overflow: hidden; white-space: nowrap;
             font-weight: 800; margin-left: 0; line-height: 1;
             transition: font-size 0.25s ease, max-width 0.3s ease, opacity 0.25s ease, margin-left 0.25s ease;
@@ -185,7 +184,7 @@
         }
         .bottom-item.active .material-symbols-rounded,
         .bottom-item.active i { font-variation-settings: 'FILL' 1, 'wght' 500; }
-        .bottom-item.active span:last-child { font-size: 0.78rem; max-width: 120px; opacity: 1; margin-left: 7px; }
+        .bottom-item.active > span:last-child { font-size: 0.78rem; max-width: 120px; opacity: 1; margin-left: 7px; }
         .bottom-item:active { transform: scale(0.94); }
         
 
@@ -1772,7 +1771,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 </div>
                 <div id="cert-section" class="d-none" style="margin-top: 34px;">
                             <div class="section-label d-flex align-items-center gap-2"><i class="fa-solid fa-award text-primary fs-5"></i> Certificaciones, Licencias y Especializaciones</div>
-                            <p class="step-subtitle" style="margin-bottom: 14px;">Suba los certificados, licencias o especializaciones que desee (PDF). Se extraerá los datos del certificado; podrá revisarlos en el último paso.</p>
+                            <p class="step-subtitle" style="margin-bottom: 14px;">Suba los certificados, licencias o especializaciones que desee (PDF). Se extraerá el nombre, la institución y las fechas; podrá revisarlos en el último paso.</p>
                             <div id="cert-up-container"></div>
                             <button type="button" class="btn-add-dynamic mt-3" onclick="addCertUploadCard()">
                                 <i class="fa-solid fa-circle-plus fs-5"></i> Añadir Certificación / Licencia
@@ -2075,8 +2074,10 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         // --- FUNCIÓN PARA CONVERTIR URL DE DESCARGA A URL DE VISTA (Solo para la Interfaz) ---
         function getDriveViewUrl(downloadUrl) {
             if (!downloadUrl) return "#";
+            // Extrae el ID del archivo de la URL de descarga
             const match = downloadUrl.match(/id=([a-zA-Z0-9_-]+)/);
             if (match && match[1]) {
+                // Devuelve el formato de vista nativa de Drive
                 return `https://drive.google.com/file/d/${match[1]}/view`;
             }
             return downloadUrl;
@@ -2086,15 +2087,18 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             const modeParam = new URLSearchParams(window.location.search).get('mode');
             if (!diplomasBloqueadosPorEjecutiva || modeParam === 'admin') return;
 
+            // Ocultamos el botón de "Añadir Grado Adicional"
             const btnAgregar = document.querySelector('#step2-content > .btn-add-dynamic');
             if (btnAgregar) btnAgregar.style.display = 'none';
 
+            // Deshabilitamos el botón "Editar" de cada diploma ya guardado
             document.querySelectorAll('#diplomas-container .diploma-item.view-mode-dip button').forEach(btn => {
                 btn.disabled = true;
                 btn.classList.add('disabled');
                 btn.title = 'Estos datos fueron cargados por administración';
             });
 
+            // Insertamos un aviso explicativo arriba de las tarjetas
             const cont = document.getElementById('step2-content');
             if (cont && !document.getElementById('aviso-paso2-bloqueado')) {
                 const aviso = document.createElement('div');
@@ -2181,7 +2185,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
             const result = await Swal.fire({
                 title: '¿Eliminar este registro?',
-                html: `Se eliminará por completo el registro de <b>${grado}</b>, incluyendo todo lo extraído de él. Esta acción no se puede deshacer.<br><br><span class="text-muted small">Los archivos PDF no se borrarán de Drive, solo el registro.</span>`,
+                html: `Se eliminará por completo el registro de <b>${grado}</b>, incluyendo todo lo que se extrajo de él. Esta acción no se puede deshacer.<br><br><span class="text-muted small">Los archivos PDF no se borrarán de Drive, solo el registro.</span>`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
@@ -2202,6 +2206,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'delete_diploma', idDiploma: idDiploma }) });
                 const json = await res.json();
                 if (json.status === 'success') {
+                    // También quitamos el registro espejo del Paso 6 (Educación), si ya se había generado;
+                    // si no lo hacíamos, el diploma eliminado seguía apareciendo ahí hasta refrescar la página.
                     const espejoPaso6 = document.querySelector(`.ai-edu-record[data-id="${idDiploma}"]`);
                     if (espejoPaso6) espejoPaso6.remove();
 
@@ -2223,6 +2229,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             }
         }
 
+        // --- MODO ADMIN: reenviar un documento ya subido a la IA de n8n para que lo vuelva a analizar ---
         async function reanalizarConIA(tipo, btn) {
             btn.classList.add('is-loading');
             btn.disabled = true;
@@ -2322,7 +2329,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 renderDiplomaReadonly(dip, item);
                 evaluarDesbloqueoPaso6();
                 iniciarPollingProcesamiento();
-                showToast(String(dip.estado).toLowerCase() === 'subido' ? 'Grado guardado, extrayendo.' : 'Grado guardado correctamente.', 'success');
+                showToast(String(dip.estado).toLowerCase() === 'subido' ? 'Grado guardado. Se está leyendo el diploma.' : 'Grado guardado correctamente.', 'success');
             } catch (e) {
                 console.error(e);
                 btn.disabled = false; btn.innerHTML = html;
@@ -2371,7 +2378,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         <input type="file" class="form-control dip-transcript" accept=".pdf">
                     </div>
                 </div>
-                ${urlDip ? `<div class="small text-muted mt-2"><i class="fa-solid fa-circle-info me-1"></i>Si reemplazas el diploma, se volverá a extraer sus datos. Si solo cambias el transcript, los datos del diploma se conservan.</div>` : ''}
+                ${urlDip ? `<div class="small text-muted mt-2"><i class="fa-solid fa-circle-info me-1"></i>Si reemplazas el diploma, se volverá a leer sus datos. Si solo cambias el transcript, los datos del diploma se conservan.</div>` : ''}
                 <div class="d-flex justify-content-end mt-3"><button type="button" class="btn-continue" onclick="guardarDiplomaTarjeta(this)"><i class="fa-solid fa-floppy-disk"></i> Guardar cambios</button></div>
             `;
         }
@@ -2880,10 +2887,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 fetch(N8N_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: "extract_diploma", fileUrl: resDip.url, idDocente: userId, idExpediente: idExpedienteUrl, idDiploma: idDipGenerado, grado: currentGrado }) }).catch(e => console.log(e));
             }
 
-            if (diplomaReemplazado) {                
+            if (diplomaReemplazado) {
                 return { id_diploma: idDipGenerado, grado: currentGrado, url_diploma: resDip.url, url_transcript: resTrans.url || "", estado: "Subido" };
             }
-            
             return {
                 id_diploma: idDipGenerado, grado: currentGrado, rama: item.dataset.rama || "",
                 instituto: item.dataset.instituto || "", ubicacion: item.dataset.ubicacion || "",
@@ -2898,6 +2904,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             const originalHTML = btnNext.innerHTML;
             btnNext.disabled = true; 
             btnNext.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin me-2"></i> Procesando...';
+
             const pasoOrigen = pasoActual;
 
             let payload = { action: "save_expediente_step", step: pasoActual, idDocente: userId, idExpediente: idExpedienteUrl, idInvitacion: selectedInvitationId, modoAdmin: (new URLSearchParams(window.location.search).get('mode') === 'admin') };
@@ -2952,7 +2959,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         );
                     } else { payload.url_handbook = urlHbGlobal; }
 
-                    // Esperamos a que ambas subidas (si las hubo) terminen A LA VEZ, no una después de la otra
                     await Promise.all(subidasPaso1);
 
                     // 4. Guardar en Base de Datos y Actualizar UI
@@ -2968,7 +2974,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     actualizarVistaPaso1();
 
                     cambiarUI(1, pasoOrigen); 
-                    iniciarPollingProcesamiento();
+                    iniciarPollingProcesamiento(); // Empezamos a vigilar en segundo plano cuándo n8n termine de procesar
                     return; 
                 }
                 
@@ -2979,7 +2985,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
                     // --- NUEVA LÓGICA DE VALIDACIÓN OBLIGATORIA (MAESTRÍA / DOCTORADO) ---
                     const modeParamP2 = new URLSearchParams(window.location.search).get('mode');
-                    if (modeParamP2 !== 'admin') {
+                    if (modeParamP2 !== 'admin') { // 👈 Omite la validación obligatoria si es modo admin
                         let hasMaster = false;
                         let hasDoctorate = false;
 
@@ -3076,6 +3082,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         });
                     }
                     
+                    // Certificaciones con archivo elegido pero sin guardar: se suben y se mandan a la IA aquí también
                     for (const cardCert of Array.from(document.querySelectorAll('.cert-up-card:not([data-id])'))) {
                         const fileCert = cardCert.querySelector('.cert-file');
                         if (fileCert && fileCert.files && fileCert.files.length > 0) {
@@ -3374,10 +3381,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             }
         }
 
-        // =====================================================================
         // CERTIFICACIONES / LICENCIAS / ESPECIALIZACIONES
-        // =====================================================================
-        // Si la ejecutiva decide que debe subir al menos una, cambiar a true.
         const CERTIFICACIONES_OBLIGATORIAS = false;
         let pollingCertificaciones = null;
 
@@ -3389,8 +3393,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             return `<span class="${c.cls}">${c.html}</span>`;
         }
 
-        // Tarjeta del Paso 2: mismo estilo que los grados académicos.
-        // Sin datos = tarjeta de carga (como "Añadir Grado"). Con datos = tarjeta guardada.
         function addCertUploadCard(data) {
             const cont = document.getElementById('cert-up-container');
             if (!cont) return;
@@ -3478,7 +3480,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 const nueva = addCertUploadCard({ id_certificacion: realId, url: up.url, estado: 'Subido' });
                 card.replaceWith(nueva);
                 addCertReviewField({ id_certificacion: realId, url: up.url, estado: 'Subido' }, true);
-                showToast('Certificado guardado. Se está extrayendo sus datos.', 'success');
+                showToast('Certificado guardado. Se está leyendo sus datos.', 'success');
                 iniciarPollingCertificaciones();
             } catch (e) {
                 console.error(e);
@@ -3684,7 +3686,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         }
 
         // --- NUEVA NAVEGACIÓN FLEXIBLE ---
-        // Cambios pendientes en el Paso 2: archivos elegidos que todavía no se guardaron
         function hayPendientesPaso2() {
             return Array.from(document.querySelectorAll('.edit-mode-dip .dip-file, .edit-mode-dip .dip-transcript, .cert-up-card .cert-file')).some(i => i.files && i.files.length > 0);
         }
@@ -3733,13 +3734,11 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 }
 
                 if (!step1Listo || !step2Listo || !todosProcesados) {
-                    // Texto dinámico: Depende de si le faltan documentos o si solo está esperando a la IA
                     let mensajeError = 'Para acceder a la revisión, primero sube tus documentos y grados.';
                     if (step1Listo && step2Listo && !todosProcesados) {
                         mensajeError = 'Tus documentos aún están siendo analizados por la IA. Por favor, espera a que cambien a estado "Procesado".';
                     }
 
-                    // TOAST Aesthetic con SweetAlert2
                     Swal.fire({
                         toast: true,
                         position: 'top-end',
@@ -3769,12 +3768,10 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
             pasoActual = pasoDestino;
 
-            // Mostrar el nuevo paso
             document.getElementById(`step-${pasoActual}`).classList.add('active');
             const nuevoTab = document.getElementById(`tab-${pasoActual}`);
             nuevoTab.classList.add('active');
             
-            // Si el nuevo tab no está completado, ponerle En progreso
             if(!nuevoTab.classList.contains('completed')) {
                 const badgeNuevo = nuevoTab.querySelector('.step-badge');
                 if(badgeNuevo) badgeNuevo.innerText = "En progreso";
@@ -3846,7 +3843,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         if (tab5.querySelector('.step-badge')) tab5.querySelector('.step-badge').innerText = "En progreso";
                     }
                     evaluarDesbloqueoPaso6();
-                    // Solo navegamos si el usuario sigue parado en el paso que se acaba de guardar
                     if (pasoActual === pasoBase && nuevoPaso >= 1 && nuevoPaso <= totalPasos) { irAPaso(nuevoPaso); }
                     return;                
                 } 
@@ -3876,7 +3872,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
             const campos = [
                 document.getElementById('reg-correo').value.trim(),
-                valorCelular, // Usamos la variable corregida
+                valorCelular,
                 document.getElementById('reg-nombres').value.trim(),
                 document.getElementById('reg-apellidos').value.trim(),
                 document.getElementById('reg-tipo-id').value,
@@ -3921,7 +3917,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             return true;
         }
 
-        // Función experta para verificar si el paso 5 está realmente lleno
         function validarPaso5Completo() {
             const campos = [
                 document.getElementById('reg-banco').value.trim(),
@@ -3932,7 +3927,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 document.getElementById('reg-codigo-ruta').value.trim()
             ];
 
-            // Verificar si falta algún campo (ignorando el CCI que es opcional)
             const incompleto = campos.some(valor => valor === "" || valor === null || valor === undefined);
             
             return !incompleto;
@@ -3941,12 +3935,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         // Función experta para verificar si el paso 6 está totalmente lleno
         function validarPaso6Completo(mostrarErrores = false) {
             let esValido = true;
-            // Motivos legibles de por qué falló, y el primer campo inválido para poder
-            // llevar al usuario directo ahí (en vez de dejarlo adivinar qué falta).
             const motivos = [];
             let primerCampoInvalido = null;
 
-            // Helper para validar y pintar de rojo
             const checkField = (element, motivo) => {
                 if (!element) return;
                 if (!element.value.trim()) {
@@ -4022,8 +4013,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 checkField(card.querySelector('.exp-direccion'), 'Experiencia: completa Empresa, Cargo, Dirección e Inicio de cada experiencia');
                 checkField(card.querySelector('.exp-inicio'), 'Experiencia: completa Empresa, Cargo, Dirección e Inicio de cada experiencia');
 
-                // "Área de enseñanza" solo es obligatoria cuando el Tipo de Experiencia
-                // es "Academic or Education" — el propio campo dice "*Solo si enseñó".
                 const areaField = card.querySelector('.exp-area');
                 const tipoSel = card.querySelector('.exp-tipo');
                 const esExperienciaAcademica = tipoSel && tipoSel.value === 'Academic or Education';
@@ -4044,8 +4033,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 }
             });
 
-            // Guardamos el detalle para quien quiera mostrar un mensaje específico
-            // (ver uso en el armado del toast de "Guardar Avance").
             window.paso6Motivos = motivos;
             window.paso6PrimerCampoInvalido = primerCampoInvalido;
 
@@ -4159,7 +4146,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 } catch (e) {
                     console.log("Error en polling de procesamiento:", e);
                 }
-            }, 8000); // consulta cada 8 segundos
+            }, 8000);
         }
 
         // --- FUNCIÓN PARA DESBLOQUEAR VISUALMENTE EL PASO 6 ---
@@ -4182,14 +4169,14 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         // --- NUEVO: EVALUADOR DINÁMICO DEL BOTÓN FINAL ---
         function evaluarEstadoBotonFinal() {
             const btnNext = document.getElementById('btnNext');
-            if (pasoActual !== totalPasos) return; // Solo aplica si estamos en el paso 6
+            if (pasoActual !== totalPasos) return;
 
             const p1 = document.getElementById('tab-1').classList.contains('completed');
             const p2 = document.getElementById('tab-2').classList.contains('completed');
             const p3 = validarPaso3Completo();
-            const p4 = pasoAsignacionOculto ? true : validarPaso4Completo(); // El Paso 4 ya no existe en este asistente
+            const p4 = pasoAsignacionOculto ? true : validarPaso4Completo();
             const p5 = validarPaso5Completo();
-            const p6 = validarPaso6Completo(false); // false para que evalúe sin pintar de rojo
+            const p6 = validarPaso6Completo(false);
 
             if (p1 && p2 && p3 && p4 && p5 && p6) {
                 if (soloDatosMode) {
@@ -4200,13 +4187,13 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 } else {
                     // TODO ESTÁ LISTO
                     btnNext.innerHTML = 'Finalizar Registro <i class="fa-solid fa-check-double ms-2"></i>'; 
-                    btnNext.style.background = '#10b981'; // Verde
+                    btnNext.style.background = '#10b981'; 
                     btnNext.dataset.intencion = "finalizar";
                 }
             } else {
                 // ALGO FALTA
                 btnNext.innerHTML = 'Guardar Avance <i class="fa-solid fa-save ms-2"></i>'; 
-                btnNext.style.background = 'var(--primary)'; // Azul
+                btnNext.style.background = 'var(--primary)';
                 btnNext.dataset.intencion = "borrador";
             }
         }
