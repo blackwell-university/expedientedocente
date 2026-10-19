@@ -905,7 +905,7 @@
                         textoBoton = 'Continuar con mi Expediente';
                     } else if (idExpVinculado) {
                         // Ya tiene un expediente avanzado: lo invitamos a revisar su perfil, sin exp=
-                        siguienteUrl = `registroexpediente.html?origen=invitacion`;
+                        siguienteUrl = `registroexpediente.html?origen=invitacion&inv=${encodeURIComponent(invId)}`;
                         mensajeExito = 'Horario confirmado. Antes de generar tus documentos, revisemos que tu información siga correcta.';
                         textoBoton = 'Revisar mi información';
                     }

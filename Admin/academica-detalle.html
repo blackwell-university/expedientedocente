@@ -79,6 +79,13 @@
         /* NUEVO: botones de "Culminar Clase" / "Reabrir Clase" */
         .btn-culminar { background: #16a34a; color: white; border: none; font-weight: 700; font-size: 0.85rem; padding: 10px 20px; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; box-shadow: 0 4px 12px rgba(22,163,74,0.2); }
         .btn-culminar:hover { background: #15803d; transform: translateY(-1px); }
+        /* Aviso fijo al final de "Asistencias": se muestra cuando todas las sesiones están Realizadas y falta culminar la clase */
+        .banner-culminar { margin-top: 18px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; background: #f0fdf4; border: 2px solid #86efac; border-radius: 14px; padding: 16px 18px; animation: pulsoCulminar 2s ease-in-out 3; }
+        .banner-culminar .bc-ico { width: 42px; height: 42px; border-radius: 50%; background: #16a34a; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+        .banner-culminar .bc-txt { flex: 1 1 220px; min-width: 0; }
+        .banner-culminar .bc-tit { font-weight: 800; color: #166534; font-size: 0.95rem; line-height: 1.25; }
+        .banner-culminar .bc-sub { color: #15803d; font-size: 0.8rem; font-weight: 600; margin-top: 2px; }
+        @keyframes pulsoCulminar { 0%,100% { box-shadow: 0 0 0 0 rgba(22,163,74,0.35); } 50% { box-shadow: 0 0 0 8px rgba(22,163,74,0); } }
         .btn-reabrir { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; font-weight: 700; font-size: 0.78rem; padding: 7px 14px; border-radius: 10px; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; }
         .btn-reabrir:hover { background: #ffedd5; }
 
@@ -337,6 +344,7 @@
                                     
                                     <div id="contenedorSesiones">
                                     </div>
+                                    <div id="bannerCulminar"></div>
                                 </div>
 
                             </div>
@@ -738,8 +746,22 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     : '';
             } else {
                 aviso.style.display = 'none';
-                zona.innerHTML = (puedeCulminar && !esSoloLectura && todasSesionesRealizadas())
-                    ? `<button type="button" class="btn-culminar" onclick="marcarClaseCulminada()"><i class="fa-solid fa-flag-checkered"></i> Marcar Clase como Culminada</button>`
+                // El botón de culminar ahora vive solo al final de "Asistencias" (recuadro verde), para que no haya dos
+                zona.innerHTML = '';
+            }
+
+            // Aviso al final de las asistencias: recuerda el último paso (culminar la clase)
+            const banner = document.getElementById('bannerCulminar');
+            if (banner) {
+                banner.innerHTML = (!fechaCulminacion && puedeCulminar && !esSoloLectura && todasSesionesRealizadas())
+                    ? `<div class="banner-culminar">
+                           <div class="bc-ico"><i class="fa-solid fa-flag-checkered"></i></div>
+                           <div class="bc-txt">
+                               <div class="bc-tit">Todas las sesiones fueron realizadas</div>
+                               <div class="bc-sub">Último paso: marca la clase como culminada para cerrarla.</div>
+                           </div>
+                           <button type="button" class="btn-culminar" onclick="marcarClaseCulminada()"><i class="fa-solid fa-flag-checkered"></i> Marcar Clase como Culminada</button>
+                       </div>`
                     : '';
             }
 
@@ -761,21 +783,43 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 confirmButtonText: 'Sí, culminar clase',
                 cancelButtonText: 'Cancelar',
                 reverseButtons: true
-            }).then(async (result) => {
+            }).then((result) => {
                 if (!result.isConfirmed) return;
-                Swal.fire({ title: 'Guardando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-                try {
-                    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'set_clase_culminada', idInvitacion: invId, culminada: true }) });
-                    const json = await res.json();
-                    if (json.status === 'success') {
-                        Swal.fire({ icon: 'success', title: 'Clase culminada', timer: 1800, showConfirmButton: false });
-                        cargarDetalleClase();
-                    } else {
-                        Swal.fire('No se pudo culminar', json.message || 'Inténtalo nuevamente.', 'error');
-                    }
-                } catch (e) {
-                    Swal.fire('Error de conexión', 'No se pudo conectar con el servidor.', 'error');
+                ejecutarCulminacion();
+            });
+        }
+
+        async function ejecutarCulminacion() {
+            Swal.fire({ title: 'Guardando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'set_clase_culminada', idInvitacion: invId, culminada: true }) });
+                const json = await res.json();
+                if (json.status === 'success') {
+                    Swal.fire({ icon: 'success', title: 'Clase culminada', timer: 1800, showConfirmButton: false });
+                    cargarDetalleClase();
+                } else {
+                    Swal.fire('No se pudo culminar', json.message || 'Inténtalo nuevamente.', 'error');
                 }
+            } catch (e) {
+                Swal.fire('Error de conexión', 'No se pudo conectar con el servidor.', 'error');
+            }
+        }
+
+        // Aviso emergente: se muestra justo después de guardar asistencias cuando ya todas las sesiones están Realizadas
+        function avisarCulminarClase() {
+            if (fechaCulminacion || !puedeCulminar || esSoloLectura || !todasSesionesRealizadas()) return;
+            Swal.fire({
+                title: '¡Todas las sesiones fueron realizadas!',
+                html: 'Falta un último paso: <b>marcar la clase como culminada</b>.<br><span style="font-size:0.85rem;color:#64748b;">Al culminarla ya no se podrán editar los enlaces ni el estado de las sesiones. El Jefe OSE o el Administrador podrán reabrirla si te equivocas.</span>',
+                icon: 'success',
+                showCancelButton: true,
+                confirmButtonColor: '#16a34a',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, culminar clase',
+                cancelButtonText: 'Más tarde',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) ejecutarCulminacion();
             });
         }
 
@@ -1187,6 +1231,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 if (result.status === 'success') {
                     showToast(`Se han guardado los ${actionText} exitosamente.`, 'success');
                     cargarDetalleClase();
+                    if (actionText === "estados de asistencia") setTimeout(avisarCulminarClase, 600);
                 } else {
                     Swal.fire('Error', 'No se pudieron guardar los datos.', 'error');
                 }

@@ -1449,6 +1449,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         // guarda. Si además no hay exp= (ya está en soloDatosMode, ver más abajo), se muestra
         // un banner explicando por qué está revisando su perfil.
         const origenInvitacion = new URLSearchParams(window.location.search).get('origen') === 'invitacion';
+        // NUEVO: ?inv=ID — la invitación cuya revisión de datos se está confirmando (así se confirma solo esa, no todas las del docente)
+        const invRevisionId = (new URLSearchParams(window.location.search).get('inv') || '').trim();
         if (origenInvitacion && !idExpedienteUrl) {
             document.addEventListener('DOMContentLoaded', () => {
                 const aviso = document.getElementById('aviso-modo-revision');
@@ -3274,7 +3276,10 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
                         // NUEVO: en modo "solo datos" (revisión tras aceptar una invitación), guardar con
                         // todos los pasos completos confirma la revisión pendiente de sus invitaciones.
-                        if (soloDatosMode && pasosFaltantes.length === 0) payload.confirmaRevisionDatos = true;
+                        if (soloDatosMode && pasosFaltantes.length === 0) {
+                            payload.confirmaRevisionDatos = true;
+                            if (invRevisionId) payload.idInvitacionRevision = invRevisionId;
+                        }
                     }
 
                     payload.educacion = Array.from(document.querySelectorAll('.ai-edu-record')).map(r => ({ 
@@ -3322,7 +3327,21 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 if(pasoActual >= 3) {
                     const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
                     const resJson = await response.json();
-                    
+
+                    // Avisos de diagnóstico: horas/créditos de certificaciones y errores del servidor
+                    if (resJson.status !== "success") {
+                        Swal.fire('No se pudo guardar', resJson.message || 'El servidor no confirmó el guardado. Inténtalo nuevamente.', 'error');
+                        return;
+                    }
+                    if (Array.isArray(payload.certificaciones)) {
+                        const esperadosCred = payload.certificaciones.filter(c => c.creditos_horas).length;
+                        if (esperadosCred > 0 && (resJson.creditosGuardados === undefined || resJson.creditosGuardados === null)) {
+                            Swal.fire('Horas/créditos sin guardar', 'El servidor aún no tiene la última versión del script (no guardó las horas o créditos). Publica una nueva versión de la implementación de Apps Script.', 'warning');
+                        } else if (esperadosCred > 0 && resJson.creditosGuardados < esperadosCred) {
+                            console.warn('Horas/créditos: se esperaban ' + esperadosCred + ' y se guardaron ' + resJson.creditosGuardados);
+                        }
+                    }
+
                     if (resJson.status === "success") {
                         if (pasoActual === totalPasos) {
                         const esFinalizar = document.getElementById('btnNext').dataset.intencion === "finalizar";
@@ -3592,6 +3611,27 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         }
 
         // Tarjeta de revisión del Paso 6 (campos editables)
+        // Horas / créditos de una certificación: se guardan en inglés ("40 hours", "3 credits") para el documento Academic Preparation.
+        function parseCreditosHoras(v) {
+            const t = String(v == null ? '' : v).trim();
+            if (!t) return { num: '', tipo: '', extra: '' };
+            const partes = t.split('/').map(x => x.trim()).filter(Boolean);
+            const m = partes[0].match(/^([\d]+(?:[.,]\d+)?)\s*([a-záéíóú]*)/i);
+            if (!m) return { num: '', tipo: '', extra: '' };
+            const u = (m[2] || '').toLowerCase();
+            const tipo = /^(h|hr|hrs|hour|hours|hora|horas)$/.test(u) ? 'hours' : (/^(c|credit|credits|credito|créditos|credito|créditos|ceu|ects)/.test(u) ? 'credits' : (u ? '' : 'hours'));
+            return { num: m[1].replace(',', '.'), tipo, extra: partes.slice(1).join(' / ') };
+        }
+
+        function valorCreditosHoras(card) {
+            const numEl = card.querySelector('.cert-creditos-num'), tipoEl = card.querySelector('.cert-creditos-tipo');
+            const num = numEl ? parseFloat(numEl.value) : NaN;
+            const tipo = tipoEl ? tipoEl.value : '';
+            if (!(num > 0) || !tipo) return '';
+            const extra = card.dataset.creditosExtra || '';
+            return `${num} ${tipo}` + (extra ? ` / ${extra}` : '');
+        }
+
         function addCertReviewField(data = {}, silencioso) {
             const cont = document.getElementById('ai-cert-container');
             if (!cont) return;
@@ -3603,6 +3643,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             div.dataset.url = data.url || '';
             div.dataset.persisted = data.id_certificacion ? '1' : '';
             div.dataset.estado = data.estado || '';
+            const _cc = parseCreditosHoras(data.creditos_horas);
+            div.dataset.creditosExtra = _cc.extra;
             div.innerHTML = `
                 <button type="button" class="btn-remove" title="Eliminar" onclick="eliminarCertificacionRevision(this)"><i class="fa-regular fa-trash-can"></i></button>
                 <div class="card-num"><span class="card-badge badge-cert"></span><span class="cert-state-slot">${data.estado ? certEstadoHTML(data.estado) : ''}</span></div>
@@ -3612,8 +3654,11 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     <div class="col-md-4"><label class="form-label small fw-bold">Fecha de inicio</label><input type="date" class="form-control cert-inicio" value="${formatToDateInput(data.inicio)}"></div>
                     <div class="col-md-4"><label class="form-label small fw-bold">Fecha de culminación</label><input type="date" class="form-control cert-fin" value="${formatToDateInput(data.fin)}"></div>
                     <div class="col-md-4"><label class="form-label small fw-bold">Fecha de caducidad <span class="text-muted fw-normal">(si aplica)</span></label><input type="date" class="form-control cert-caducidad" value="${formatToDateInput(data.caducidad)}"></div>
+                    <div class="col-md-4"><label class="form-label small fw-bold">Horas o créditos <span class="text-muted fw-normal">(si aplica)</span></label><input type="number" min="0" step="any" inputmode="decimal" class="form-control cert-creditos-num" placeholder="Ej.: 40" value="${escAttr(_cc.num)}"></div>
+                    <div class="col-md-4"><label class="form-label small fw-bold">Tipo</label><select class="form-select cert-creditos-tipo"><option value="" ${_cc.tipo === '' ? 'selected' : ''}>Seleccione…</option><option value="hours" ${_cc.tipo === 'hours' ? 'selected' : ''}>Horas</option><option value="credits" ${_cc.tipo === 'credits' ? 'selected' : ''}>Créditos</option></select></div>
+                    <div class="col-md-4 d-flex align-items-end"><div class="form-text mb-2">Déjalo vacío si el certificado no indica horas ni créditos.</div></div>
                 </div>`;
-            div.querySelectorAll('input').forEach(i => i.addEventListener('input', () => { div.dataset.dirty = '1'; }));
+            div.querySelectorAll('input, select').forEach(i => i.addEventListener('input', () => { div.dataset.dirty = '1'; }));
             cont.appendChild(div);
             return div;
         }
@@ -3656,6 +3701,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                             rv.querySelector('.cert-inicio').value = formatToDateInput(c.inicio);
                             rv.querySelector('.cert-fin').value = formatToDateInput(c.fin);
                             rv.querySelector('.cert-caducidad').value = formatToDateInput(c.caducidad);
+                            const ccN = parseCreditosHoras(c.creditos_horas);
+                            const crN = rv.querySelector('.cert-creditos-num'), crT = rv.querySelector('.cert-creditos-tipo');
+                            if (crN) crN.value = ccN.num; if (crT) crT.value = ccN.tipo; rv.dataset.creditosExtra = ccN.extra;
                         }
                         rv.dataset.estado = c.estado || '';
                         const slot = rv.querySelector('.cert-state-slot');
@@ -3684,6 +3732,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 inicio: i.querySelector('.cert-inicio').value,
                 fin: i.querySelector('.cert-fin').value,
                 caducidad: i.querySelector('.cert-caducidad').value,
+                creditos_horas: valorCreditosHoras(i),
                 url: i.dataset.url || ''
             })).filter(c => c.nombre.trim() || c.institucion.trim() || c.url);
         }
@@ -4110,6 +4159,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             document.querySelectorAll('.cert-item').forEach(card => {
                 checkField(card.querySelector('.cert-nombre'), 'Certificaciones: completa Nombre e Institución de cada certificación (o elimina la tarjeta)');
                 checkField(card.querySelector('.cert-institucion'), 'Certificaciones: completa Nombre e Institución de cada certificación (o elimina la tarjeta)');
+                const ccNum = card.querySelector('.cert-creditos-num');
+                if (ccNum && ccNum.value.trim() !== '' && parseFloat(ccNum.value) > 0) checkField(card.querySelector('.cert-creditos-tipo'), 'Certificaciones: indica si son Horas o Créditos');
             });
 
             window.paso6Motivos = motivos;

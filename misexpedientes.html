@@ -581,7 +581,7 @@
                     // NUEVO: aceptó la invitación pero aún no confirma que sus datos estén al día
                     estadoVisual = 'Revisar mis datos';
                     badgeClass = 'status-pendiente'; icon = 'fact_check'; color = '#ea580c';
-                    actionText = 'Revisar mi información'; actionLink = 'registroexpediente.html?origen=invitacion'; accentClass = 'accent-orange';
+                    actionText = 'Revisar mi información'; actionLink = 'registroexpediente.html?origen=invitacion&inv=' + encodeURIComponent(inv.id); accentClass = 'accent-orange';
                 } else if (['respondido', 'aceptado', 'documentos generados'].includes(estadoLower) || estadoLower.includes('sábado') || estadoLower.includes('sabado')) {
                     estadoVisual = 'En Proceso Administrativo';
                     badgeClass = 'status-proceso'; icon = 'hourglass_empty'; color = '#7e22ce'; 

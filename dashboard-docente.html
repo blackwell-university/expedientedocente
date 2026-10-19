@@ -707,7 +707,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             // 2b) NUEVO: invitaciones aceptadas cuya revisión de datos sigue pendiente
             invitaciones.forEach(inv => {
                 if (inv.horarioConfirmado && inv.revisionPendiente) {
-                    agregar('rev:' + inv.id, { tipo: 'expediente', icono: 'fact_check', titulo: `Revisa tu información para "${inv.curso || 'tu curso'}"`, sub: 'Confirma que tus datos estén al día antes de generar tus documentos', href: 'registroexpediente.html?origen=invitacion', cta: 'Revisar' });
+                    agregar('rev:' + inv.id, { tipo: 'expediente', icono: 'fact_check', titulo: `Revisa tu información para "${inv.curso || 'tu curso'}"`, sub: 'Confirma que tus datos estén al día antes de generar tus documentos', href: 'registroexpediente.html?origen=invitacion&inv=' + encodeURIComponent(inv.id), cta: 'Revisar' });
                 }
             });
             // 3) Expedientes por completar (o bloqueados por una invitación sin aceptar)
