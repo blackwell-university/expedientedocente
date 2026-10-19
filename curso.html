@@ -696,6 +696,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
                 const pendientesInv = invitaciones.filter(i => {
                     if (!i.horarioConfirmado) return true;
+                    if (i.revisionPendiente) return true; // NUEVO: falta revisar sus datos
                     return i.estado.toLowerCase() === 'pendiente firma docente';
                 }).length;
 

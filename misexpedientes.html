@@ -376,7 +376,7 @@
                         <div class="mh-avatar" id="userInitialMobile">DC</div>
                         <div class="mh-text">
                             <h1>Expedientes</h1>
-                            <p>Documentos e invitaciones</p>
+                            <p>Tus pendientes legales</p>
                         </div>
                     </a>
                     <div class="mh-actions">
@@ -510,6 +510,7 @@
                 // (mismo criterio que renderInvitaciones: primero horario, luego firma)
                 const pendientesInv = invitaciones.filter(i => {
                     if (!i.horarioConfirmado) return true;
+                    if (i.revisionPendiente) return true; // NUEVO: falta revisar sus datos
                     return i.estado.toLowerCase() === 'pendiente firma docente';
                 }).length;
 
@@ -576,6 +577,11 @@
                     estadoVisual = 'Firma Requerida';
                     badgeClass = 'status-firmar'; icon = 'edit_document'; color = '#2563eb'; 
                     actionText = 'Firmar documentos'; actionLink = `contrato-detalle.html?inv=${inv.id}`; accentClass = 'accent-blue';
+                } else if (inv.revisionPendiente) {
+                    // NUEVO: aceptó la invitación pero aún no confirma que sus datos estén al día
+                    estadoVisual = 'Revisar mis datos';
+                    badgeClass = 'status-pendiente'; icon = 'fact_check'; color = '#ea580c';
+                    actionText = 'Revisar mi información'; actionLink = 'registroexpediente.html?origen=invitacion'; accentClass = 'accent-orange';
                 } else if (['respondido', 'aceptado', 'documentos generados'].includes(estadoLower) || estadoLower.includes('sábado') || estadoLower.includes('sabado')) {
                     estadoVisual = 'En Proceso Administrativo';
                     badgeClass = 'status-proceso'; icon = 'hourglass_empty'; color = '#7e22ce'; 

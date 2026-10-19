@@ -317,18 +317,20 @@
             .step-tab.completed .step-circle::after { content: '✓'; color: white; font-size: 0.75rem; font-weight: 900; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100%; width: 100%;}
             
             /* --- WIDGET CALENDARIO: OPTIMIZACIÓN UX MÓVIL --- */
+            /* 1. Ocultamos las flechas porque en móvil se usa 'swipe' (deslizar con el dedo) */
             .carousel-nav-btn {
                 display: none !important;
             }
             .carousel-wrapper {
                 gap: 0;
             }
+            /* 2. Hacemos las píldoras de fecha más elegantes y compactas */
             .day-carousel {
                 gap: 8px;
                 padding: 5px 2px;
             }
             .day-pill {
-                width: 62px;
+                width: 62px; /* Más angosto */
                 padding: 10px 4px;
                 border-radius: 12px;
             }
@@ -342,6 +344,7 @@
             .day-pill .day-month {
                 font-size: 0.65rem;
             }
+            /* 3. Optimizamos las franjas horarias a 2 columnas exactas */
             .time-slot-grid {
                 grid-template-columns: 1fr 1fr;
                 gap: 8px;
@@ -373,6 +376,8 @@
         /* --- CONTENIDO DE PASOS --- */
         .step-content { display: none; }
 
+        /* NUEVO: Spinner de carga inicial (antes no había nada mientras se cargaban los datos —
+           se veía el título de golpe y luego, tras un rato, aparecía el formulario sin avisar) */
         .loader-inicial-wizard {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             gap: 16px; padding: 80px 20px; background: white; border-radius: var(--radius-lg, 20px);
@@ -388,6 +393,11 @@
         .step-content.active { display: block; animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
+        /* === NUEVO: pasada de diseño — mismos colores y estilo, pero más compacto y liviano ===
+           Antes: títulos/cajas/tarjetas con mucho padding y texto grande, poco ajuste en móvil.
+           Ahora: se reduce padding y tamaño de fuente de forma pareja en todo el formulario
+           (educación, experiencia, competencias usan estas mismas clases base, así que el
+           ajuste se refleja en las tres secciones sin tocarlas una por una). */
         .step-title { font-weight: 800; font-size: 1.45rem; color: var(--text-main); margin-bottom: 6px; }
         .step-subtitle { color: var(--text-muted); font-size: 0.92rem; margin-bottom: 24px; line-height: 1.5; }
         .section-divider { border-bottom: 1px dashed var(--border-color); margin: 28px 0; }
@@ -3261,6 +3271,10 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         payload.mensajeFaltantes = pasosFaltantes.length > 0
                             ? `Avance guardado. Te falta revisar el Paso: ${pasosFaltantes.join(', ')}`
                             : (soloDatosMode ? "Todos los datos del docente se guardaron correctamente." : "Avance guardado correctamente.");
+
+                        // NUEVO: en modo "solo datos" (revisión tras aceptar una invitación), guardar con
+                        // todos los pasos completos confirma la revisión pendiente de sus invitaciones.
+                        if (soloDatosMode && pasosFaltantes.length === 0) payload.confirmaRevisionDatos = true;
                     }
 
                     payload.educacion = Array.from(document.querySelectorAll('.ai-edu-record')).map(r => ({ 
@@ -4090,6 +4104,12 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     card.querySelector('.exp-fin').style.border = '';
                     card.querySelector('.exp-fin').style.backgroundColor = '';
                 }
+            });
+
+            // 4. Validar Certificaciones (la sección es opcional, pero cada tarjeta que exista debe tener Nombre e Institución)
+            document.querySelectorAll('.cert-item').forEach(card => {
+                checkField(card.querySelector('.cert-nombre'), 'Certificaciones: completa Nombre e Institución de cada certificación (o elimina la tarjeta)');
+                checkField(card.querySelector('.cert-institucion'), 'Certificaciones: completa Nombre e Institución de cada certificación (o elimina la tarjeta)');
             });
 
             window.paso6Motivos = motivos;

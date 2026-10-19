@@ -704,6 +704,12 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     agregar('inv:' + inv.id, { tipo: 'invitacion', icono: 'mail', titulo: `Acepta tu invitación a "${inv.curso || 'un curso'}"`, sub: 'Confirma tu horario de dictado', href: `registroinvitacion.html?inv=${inv.id}`, cta: 'Responder' });
                 }
             });
+            // 2b) NUEVO: invitaciones aceptadas cuya revisión de datos sigue pendiente
+            invitaciones.forEach(inv => {
+                if (inv.horarioConfirmado && inv.revisionPendiente) {
+                    agregar('rev:' + inv.id, { tipo: 'expediente', icono: 'fact_check', titulo: `Revisa tu información para "${inv.curso || 'tu curso'}"`, sub: 'Confirma que tus datos estén al día antes de generar tus documentos', href: 'registroexpediente.html?origen=invitacion', cta: 'Revisar' });
+                }
+            });
             // 3) Expedientes por completar (o bloqueados por una invitación sin aceptar)
             expedientes.forEach(exp => {
                 const est = String(exp.estado || '').toLowerCase();
@@ -758,6 +764,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
                 const pendientesInv = invitaciones.filter(i => {
                     if (!i.horarioConfirmado) return true;
+                    if (i.revisionPendiente) return true; // NUEVO: falta revisar sus datos
                     return i.estado.toLowerCase() === 'pendiente firma docente';
                 }).length;
 
