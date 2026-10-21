@@ -915,6 +915,16 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             return { fecha: null, hora: c.franjas || c.horaElegida || 'Por confirmar', hayFecha: false };
         }
 
+        function avisoHorarioEnEspera() {
+            Swal.fire({
+                icon: 'info',
+                title: 'Tu horario ya fue enviado',
+                html: 'Ya elegiste tus días y horarios. La universidad los está revisando y te avisaremos cuando queden confirmados.',
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#2563eb'
+            });
+        }
+
         // NUEVO: "Hoy" / "Mañana" / "En N días" (solo si es dentro de 7 días; más lejos ya lo dice la fecha)
         function chipRelativo(fechaObj) {
             const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
@@ -986,9 +996,14 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                             else if (fFin && !isNaN(fFin) && fFin < hoyRef) chip = `<span class="card-chip fin">Finalizado</span>`;
 
                             // Confirmado -> panel del curso; sin confirmar -> aceptar la invitación (igual que Mis Clases)
-                            const href = confirmado ? `curso.html?id=${c.idInvitacion}` : `registroinvitacion.html?inv=${c.idInvitacion}`;
+                            // Si el docente YA eligió día y hora (queda "por confirmar" por la universidad, p. ej. pendiente de aprobación de sábado),
+                            // no lo mandamos de nuevo a aceptar la invitación: solo se le avisa que está en espera.
+                            const yaEligioHorario = !!(String(c.diaElegido || '').trim() && String(c.horaElegida || '').trim());
+                            const enEspera = !confirmado && yaEligioHorario;
+                            const href = confirmado ? `curso.html?id=${c.idInvitacion}` : (enEspera ? 'javascript:void(0)' : `registroinvitacion.html?inv=${c.idInvitacion}`);
+                            const onclickEspera = enEspera ? ` onclick="avisoHorarioEnEspera(); return false;"` : '';
                             return `
-                            <a href="${href}" class="app-card ${clase}">
+                            <a href="${href}"${onclickEspera} class="app-card ${clase}">
                                 <div class="card-top">
                                     <div class="card-pill">${c.programaTipo || 'Curso'}</div>
                                     ${chip}

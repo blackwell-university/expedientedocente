@@ -203,6 +203,9 @@
         .status-proceso { background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff;}
         .status-cancelado { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca;}
 
+        .nota-exp { background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; border-radius: 10px; padding: 8px 12px; margin-bottom: 14px; font-size: 0.8rem; display: flex; align-items: center; gap: 6px; }
+        .nota-exp strong { color: #1e293b; }
+
         /* Textos específicos */
         .t-type { font-size: 0.75rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
         .t-title { font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin-bottom: 4px; line-height: 1.2; }
@@ -503,8 +506,11 @@
                 expedientes = expedientes.filter(exp => !esCancelado(exp));
                 invitaciones = invitaciones.filter(inv => !esCancelado(inv) && !invLigadasACancelados.has(String(inv.id || '').trim()));
 
-                renderInvitaciones(invitaciones);
-                renderExpedientes(expedientes);
+                // Enlazamos cada invitación con su expediente (todos los expedientes nacen de una invitación)
+                const expPorInv = {}; expedientes.forEach(e => { const k = String(e.idInvitacion || '').trim(); if (k) expPorInv[k] = e; });
+                const invPorId = {};  invitaciones.forEach(i => { invPorId[String(i.id || '').trim()] = i; });
+                renderInvitaciones(invitaciones, expPorInv);
+                renderExpedientes(expedientes, invPorId);
 
                 // Calcular contador de invitaciones pendientes de acción
                 // (mismo criterio que renderInvitaciones: primero horario, luego firma)
@@ -525,8 +531,8 @@
                     const estadoLower = (exp.estado || '').toLowerCase();
                     const estaPorCompletar = ['pendiente', 'en proceso', 'enviado'].includes(estadoLower);
                     const estaPorFirmar = estadoLower === 'por firmar';
-                    const invitacionPendiente = !!exp.idInvitacion && !exp.horarioInvitacionConfirmado;
-                    return estaPorCompletar || estaPorFirmar || invitacionPendiente;
+                    // La invitación sin aceptar ya se cuenta en la pestaña Invitaciones: no se duplica aquí.
+                    return estaPorCompletar || estaPorFirmar;
                 }).length;
 
                 const countBadgeExp = document.getElementById('count-exp');
@@ -539,6 +545,9 @@
                 const navBadgeDesktop = document.getElementById('nav-count-exp-desktop');
                 navBadgeDesktop.innerText = pendientesTotal;
                 navBadgeDesktop.style.display = pendientesTotal > 0 ? 'inline-flex' : 'none';
+
+                // Si lo pendiente está solo en Expedientes, abrimos esa pestaña directamente
+                if (pendientesInv === 0 && pendientesExp > 0) switchView('expedientes');
 
                 const navBadgeMobile = document.getElementById('nav-count-exp-mobile');
                 navBadgeMobile.innerText = pendientesTotal;
@@ -553,7 +562,8 @@
         }
 
         // --- 3. RENDERIZADO DE INVITACIONES ---
-        function renderInvitaciones(data) {
+        function renderInvitaciones(data, expPorInv) {
+            expPorInv = expPorInv || {};
             const container = document.getElementById('container-invitaciones');
             if(data.length === 0) { 
                 mostrarEmptyState('container-invitaciones', 'No tienes invitaciones a cursos activas.', 'mail'); 
@@ -563,9 +573,11 @@
             let html = '';
             data.forEach(inv => {
                 let badgeClass, icon, color, actionText, actionLink, accentClass;
+                let infoInv = '';
                 let estadoVisual = inv.estado;
                 const estadoLower = inv.estado.toLowerCase();
                 const horarioOk = !!inv.horarioConfirmado;
+                const expVinc = expPorInv[String(inv.id || '').trim()] || null;
 
                 // Reglas UX para Invitaciones
                 if (!horarioOk) {
@@ -583,19 +595,27 @@
                     badgeClass = 'status-pendiente'; icon = 'fact_check'; color = '#ea580c';
                     actionText = 'Revisar mi información'; actionLink = 'registroexpediente.html?origen=invitacion&inv=' + encodeURIComponent(inv.id); accentClass = 'accent-orange';
                 } else if (['respondido', 'aceptado', 'documentos generados'].includes(estadoLower) || estadoLower.includes('sábado') || estadoLower.includes('sabado')) {
+                    // Invitación ya respondida: sigue "En Proceso Administrativo" (morado) hasta que se firme y complete.
                     estadoVisual = 'En Proceso Administrativo';
-                    badgeClass = 'status-proceso'; icon = 'hourglass_empty'; color = '#7e22ce'; 
-                    actionText = 'Ver estado'; actionLink = '#'; accentClass = 'accent-purple';
+                    badgeClass = 'status-proceso'; icon = 'hourglass_empty'; color = '#7e22ce';
+                    accentClass = 'accent-purple';
+                    if (expVinc) {
+                        // Lo que sigue se hace en el expediente: llevamos al docente a esa pestaña.
+                        actionText = 'Ir a mi expediente'; actionLink = 'javascript:void(0)'; infoInv = 'irexp';
+                    } else {
+                        actionText = 'Ver estado'; actionLink = 'javascript:void(0)'; infoInv = 'proceso';
+                    }
                 } else {
                     // Firmado, Formalizado
                     estadoVisual = 'Completado';
                     badgeClass = 'status-completado'; icon = 'check_circle'; color = '#16a34a'; 
-                    actionText = 'Ver detalles'; actionLink = '#'; accentClass = 'accent-green';
+                    actionText = 'Ver detalles'; actionLink = 'javascript:void(0)'; accentClass = 'accent-green';
+                    infoInv = 'completado';
                 }
 
                 html += `
                 <div class="col-md-6 col-xl-4">
-                    <a href="${actionLink}" class="tramite-card">
+                    <a href="${actionLink}" class="tramite-card"${infoInv ? ` onclick="mostrarInfoInvitacion('${infoInv}'); return false;"` : ''}>
                         <div class="card-accent ${accentClass}"></div>
                         <div class="card-header-flex">
                             <div class="card-icon ${!horarioOk ? 'primary' : ''}"><span class="material-symbols-rounded">menu_book</span></div>
@@ -613,11 +633,13 @@
                                 <strong>${formatDateShort(inv.fechaInicio)} - ${formatDateShort(inv.fechaFin)}</strong>
                             </div>
                             <div class="t-detail-item">
-                                <span>Remuneración</span>
-                                <strong>${inv.pago || '-'}</strong>
+                                <span>Enviada el</span>
+                                <strong>${textoFechaEnvio(inv.fecha)}</strong>
                             </div>
                         </div>
                         
+                        ${(expVinc && horarioOk) ? `<div class="nota-exp"><span class="material-symbols-rounded" style="font-size:1rem;">folder_shared</span> Expediente de este curso: <strong>${textoEstadoExpediente(expVinc)}</strong></div>` : ''}
+
                         <div class="docs-container">
                             <span class="text-muted" style="font-size: 0.8rem;">ID: ${inv.id}</span>
                             <span class="btn-text-action" style="color: ${color};">
@@ -631,7 +653,8 @@
         }
 
         // --- 4. RENDERIZADO DE EXPEDIENTES (CONTRATOS ANUALES) ---
-        function renderExpedientes(data) {
+        function renderExpedientes(data, invPorId) {
+            invPorId = invPorId || {};
             const container = document.getElementById('container-expedientes');
             if(data.length === 0) { 
                 mostrarEmptyState('container-expedientes', 'La administración aún no ha generado un expediente para tu perfil.', 'folder_off'); 
@@ -679,15 +702,18 @@
                 const vigencia = exp.fechaVencimiento ? `Vence: ${new Date(exp.fechaVencimiento).toLocaleDateString('es-ES')}` : "Periodo actual";
 
                 const invitacionPendiente = !!exp.idInvitacion && !exp.horarioInvitacionConfirmado;
+                const invVinc = invPorId[String(exp.idInvitacion || '').trim()] || null;
+                const tituloExp = invVinc ? (invVinc.curso || 'Curso') : 'Expediente de contratación';
+                const subExp = invVinc ? (invVinc.programa || '') : '';
                 const avisoInvitacion = invitacionPendiente ? `
                     <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:8px 12px; margin-bottom:10px; font-size:0.78rem; color:#92400e; display:flex; align-items:center; gap:6px;">
                         <span class="material-symbols-rounded" style="font-size:1rem;">error</span>
-                        Aún debes aceptar tu invitación de curso para terminar el llenado del Expediente de Aprobación.
+                        Primero acepta la invitación a este curso (pestaña Invitaciones). Luego podrás completar tu expediente.
                     </div>` : '';
 
                 html += `
                 <div class="col-md-6 col-xl-4">
-                    <a href="${invitacionPendiente ? 'registroinvitacion.html?inv=' + exp.idInvitacion : actionLink}" class="tramite-card" ${(!invitacionPendiente && esInfoModal) ? `onclick="mostrarModalEnRevision('${(exp.estadoReal||'').replace(/'/g, "\\'")}'); return false;"` : ''} ${(!invitacionPendiente && esCanceladoModal) ? `onclick="mostrarModalCancelado(); return false;"` : ''}>
+                    <a href="${invitacionPendiente ? 'javascript:void(0)' : actionLink}" class="tramite-card" ${invitacionPendiente ? `onclick="switchView('invitaciones'); return false;"` : ''} ${(!invitacionPendiente && esInfoModal) ? `onclick="mostrarModalEnRevision('${(exp.estadoReal||'').replace(/'/g, "\\'")}'); return false;"` : ''} ${(!invitacionPendiente && esCanceladoModal) ? `onclick="mostrarModalCancelado(); return false;"` : ''}>
                         <div class="card-accent ${accentClass}"></div>
                         <div class="card-header-flex">
                             <div class="card-icon"><span class="material-symbols-rounded">folder_shared</span></div>
@@ -702,16 +728,20 @@
                         ${avisoInvitacion}
 
                         <div class="t-details" style="grid-template-columns: 1fr;">
+                            ${invVinc ? `<div class="t-detail-item">
+                                <span>Curso</span>
+                                <strong>${tituloExp}</strong>
+                            </div>` : ''}
                             <div class="t-detail-item">
-                                <span>Fecha de Creación</span>
-                                <strong>${new Date(exp.fechaCreacion).toLocaleDateString('es-ES', {day:'2-digit', month:'long', year:'numeric'})}</strong>
+                                <span>Enviado el</span>
+                                <strong>${textoFechaEnvio(exp.fechaCreacion)}</strong>
                             </div>
                         </div>
                         
                         <div class="docs-container">
                             <span class="text-muted" style="font-size: 0.8rem;">ID: ${exp.idExpediente}</span>
                             <span class="btn-text-action" style="color: ${invitacionPendiente ? '#b45309' : color};">
-                                ${invitacionPendiente ? 'Completar invitación' : actionText} <span class="material-symbols-rounded">arrow_forward</span>
+                                ${invitacionPendiente ? 'Ir a Invitaciones' : actionText} <span class="material-symbols-rounded">arrow_forward</span>
                             </span>
                         </div>
                     </a>
@@ -729,6 +759,25 @@
                 confirmButtonText: 'Entendido',
                 confirmButtonColor: '#16a34a'
             });
+        }
+
+        // Texto corto del estado del expediente (para mostrarlo dentro de la card de la invitación)
+        function textoEstadoExpediente(exp) {
+            const e = String(exp.estado || '').toLowerCase();
+            if (['pendiente', 'en proceso', 'enviado'].includes(e)) return 'Por completar';
+            if (e === 'por firmar') return 'Por firmar';
+            if (e === 'en proceso de contratación' || e === 'recibido' || e.includes('revisión') || e.includes('evaluación')) return 'En revisión';
+            if (e === 'completado' && exp.estadoReal && exp.estadoReal !== 'Contratado') return 'En revisión';
+            return 'Completado';
+        }
+
+        function mostrarInfoInvitacion(tipo) {
+            if (tipo === 'irexp') { switchView('expedientes'); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+            if (tipo === 'completado') {
+                Swal.fire({ icon: 'success', title: 'Invitación completada', html: 'Este trámite ya fue completado. No tienes nada pendiente aquí.', confirmButtonText: 'Entendido', confirmButtonColor: '#16a34a' });
+            } else {
+                Swal.fire({ icon: 'info', title: 'Tu invitación está en proceso', html: 'Ya aceptaste la invitación y enviaste tu horario. La universidad está preparando y revisando tus documentos.<br><br>No tienes que hacer nada por ahora: te avisaremos por correo si necesitamos algo de ti.', confirmButtonText: 'Entendido', confirmButtonColor: '#7e22ce' });
+            }
         }
 
         function mostrarModalCancelado() {
@@ -759,6 +808,22 @@
                     <h3>Todo al día</h3>
                     <p class="text-muted m-0">${mensaje}</p>
                 </div>`;
+        }
+
+        // Fecha en que se envió la card al docente + hace cuánto ("20 de octubre de 2026 · hace 2 días")
+        function textoFechaEnvio(valor) {
+            if (!valor) return '-';
+            const d = new Date(valor);
+            if (isNaN(d)) return String(valor);
+            const fecha = d.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
+            const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+            const base = new Date(d); base.setHours(0, 0, 0, 0);
+            const dias = Math.round((hoy - base) / 86400000);
+            let hace = '';
+            if (dias === 0) hace = 'hoy';
+            else if (dias === 1) hace = 'ayer';
+            else if (dias > 1) hace = 'hace ' + dias + ' días';
+            return hace ? fecha + ' · ' + hace : fecha;
         }
 
         function formatDateShort(dateString) {

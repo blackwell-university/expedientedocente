@@ -888,6 +888,15 @@
             display: flex !important;
         }
 
+        /* --- TOASTS DE SWEETALERT (arriba a la derecha): compactos, sin el título gigante --- */
+        .swal2-popup.swal2-toast { width: auto !important; max-width: 400px !important; padding: 12px 16px !important; border-radius: 14px !important;
+            display: flex !important; align-items: center !important; box-shadow: 0 10px 28px rgba(15,23,42,0.16) !important; }
+        .swal2-popup.swal2-toast .swal2-title { font-size: 0.9rem !important; font-weight: 600 !important; color: #334155 !important;
+            margin: 0 0 0 12px !important; text-align: left !important; line-height: 1.4 !important; }
+        .swal2-container.swal2-top-end > .swal2-popup.swal2-toast { margin-top: 64px !important; } /* que no tape el menú superior */
+        .swal2-popup.swal2-toast .swal2-icon { width: 1.9em !important; height: 1.9em !important; min-width: 1.9em !important; margin: 0 !important; }
+        .swal2-popup.swal2-toast .swal2-icon .swal2-icon-content { font-size: 1.2em !important; }
+
         /* --- REDISEÑO DE SWEETALERT2 (UI Corporativa) --- */
         div:where(.swal2-container) div:where(.swal2-popup) {
             border-radius: 16px !important;
@@ -1040,7 +1049,18 @@
                     <div>
                         <h6>Revisa tus datos antes de continuar</h6>
                         <p>Te invitaron a un nuevo curso. Verifica que tus datos sigan correctos antes de generar tus documentos.</p>
+                        <p class="mt-1 mb-0"><strong>Al terminar, recuerda confirmar tus datos en el último paso.</strong></p>
                     </div>
+                </div>
+
+                <!-- NUEVO: aviso "falta enviar" — aparece cuando todos los pasos están completos (con exp= o desde invitación) -->
+                <div id="aviso-listo-enviar" class="alert-aesthetic mb-4 d-none" style="background-color:#ecfdf5; border-color:#a7f3d0; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <i class="fa-solid fa-circle-check" style="color:#059669;"></i>
+                    <div style="flex:1; min-width:220px;">
+                        <h6 id="aviso-listo-titulo" style="color:#065f46;">Tu información está completa</h6>
+                        <p id="aviso-listo-texto" style="color:#047857;">Falta un último paso: enviar tu formulario.</p>
+                    </div>
+                    <button type="button" class="btn-continue" id="btn-aviso-enviar" onclick="abrirResumenEnvio()" style="background:#10b981; white-space:nowrap;">Revisar y enviar <i class="fa-solid fa-paper-plane ms-2"></i></button>
                 </div>
 
                 <div id="loaderInicial" class="loader-inicial-wizard">
@@ -1578,11 +1598,12 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             const container = document.getElementById('toastContainer');
             if(!container) return;
             const toast = document.createElement('div');
-            const bgClass = tipo === 'success' ? 'text-bg-success' : 'text-bg-danger';
+            const bgClass = tipo === 'success' ? 'text-bg-success' : (tipo === 'warning' ? 'text-bg-warning' : 'text-bg-danger');
+            const icono = tipo === 'success' ? 'fa-circle-check' : (tipo === 'warning' ? 'fa-triangle-exclamation' : 'fa-circle-exclamation');
             toast.className = `toast align-items-center ${bgClass} border-0 show shadow-lg rounded-4 mb-3`;
-            toast.innerHTML = `<div class="d-flex p-1"><div class="toast-body fw-medium" style="font-size: 0.95rem;">${mensaje}</div><button type="button" class="btn-close btn-close-white me-3 m-auto" data-bs-dismiss="toast" onclick="this.parentElement.parentElement.remove()"></button></div>`;
+            toast.innerHTML = `<div class="d-flex p-1 align-items-center"><i class="fa-solid ${icono} ms-3" style="font-size:1.15rem;"></i><div class="toast-body fw-semibold" style="font-size: 0.95rem; line-height:1.35;">${mensaje}</div><button type="button" class="btn-close ${tipo === 'warning' ? '' : 'btn-close-white'} me-3 m-auto" data-bs-dismiss="toast" onclick="this.parentElement.parentElement.remove()"></button></div>`;
             container.appendChild(toast); 
-            setTimeout(() => toast.remove(), 4000);
+            setTimeout(() => toast.remove(), 4500);
         }
 
         // --- FUNCIONES PARA EL PASO 3 ---
@@ -2054,8 +2075,18 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     if(d.codigo_ruta) document.getElementById('reg-codigo-ruta').value = d.codigo_ruta;
 
                     setTimeout(() => {
-                        if(d.pais) { document.getElementById('reg-pais').value = d.pais; verificarEstadoEEUU(); }
+                        if(d.pais) {
+                            const selPais = document.getElementById('reg-pais');
+                            // Si la lista de países aún no trae ese nombre (carga desde una API), lo agregamos para no perder el valor.
+                            if (!Array.from(selPais.options).some(o => o.value === d.pais)) {
+                                const op = document.createElement('option'); op.value = d.pais; op.textContent = d.pais; selPais.appendChild(op);
+                            }
+                            selPais.value = d.pais; verificarEstadoEEUU();
+                        }
                         if(d.estado_region) document.getElementById('reg-estado-region').value = d.estado_region;
+                        // País y estado se llenan con retraso: recién ahora se puede saber si el Perfil (paso 3) está completo.
+                        if (validarPaso3Completo()) { marcarTabComoCompletada(3); }
+                        evaluarDesbloqueoPaso6();
                     }, 1000);
 
                     if(d.url_id) {
@@ -2135,7 +2166,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             if(tab) { 
                 tab.classList.add('completed');
                 const badge = tab.querySelector('.step-badge');
-                if(badge) { badge.innerText = "Completado"; }
+                // El último paso (envío) no debe decir "Completado" hasta que el formulario realmente se envíe.
+                if(badge) { badge.innerText = (paso === 6) ? "Listo para enviar" : "Completado"; }
             }
         }
 
@@ -2485,7 +2517,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             viewMode.style.display = (!isEditingCV || !isEditingHb) ? 'block' : 'none';
             
             // Actualizar Candado y Pasos
-           if (urlCVGlobal || urlHbGlobal) { marcarTabComoCompletada(1); } 
+           if (urlCVGlobal && urlHbGlobal) { marcarTabComoCompletada(1); } 
             else {
                 const tab1 = document.getElementById('tab-1');
                 tab1.classList.remove('completed');
@@ -3052,7 +3084,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 // PASO 2: DIPLOMAS
                 else if (pasoActual === 2) {
                     const diplomaItems = document.querySelectorAll('.diploma-item');
-                    if (diplomaItems.length === 0) { alert("Sube al menos un Diploma."); btnNext.disabled=false; btnNext.innerHTML=originalHTML; return; }
+                    if (diplomaItems.length === 0) { Swal.fire({ title: 'Falta un diploma', text: 'Sube al menos un diploma para continuar.', icon: 'warning', confirmButtonColor: '#2563eb' }); btnNext.disabled=false; btnNext.innerHTML=originalHTML; return; }
 
                     // --- NUEVA LÓGICA DE VALIDACIÓN OBLIGATORIA (MAESTRÍA / DOCTORADO) ---
                     const modeParamP2 = new URLSearchParams(window.location.search).get('mode');
@@ -3101,8 +3133,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         if (item.classList.contains('edit-mode-dip')) {
                             const currentGrado = item.querySelector('.dip-grado').value;
                             const dipFile = item.querySelector('.dip-file').files[0];
-                            if (!currentGrado) { alert("Selecciona el Nivel de Grado en todos los campos."); btnNext.disabled=false; btnNext.innerHTML=originalHTML; return; }
-                            if (!dipFile && !item.dataset.url) { alert("Falta subir el archivo PDF del Diploma."); btnNext.disabled=false; btnNext.innerHTML=originalHTML; return; }
+                            if (!currentGrado) { Swal.fire({ title: 'Falta el nivel de grado', text: 'Selecciona el nivel de grado en todos los diplomas.', icon: 'warning', confirmButtonColor: '#2563eb' }); btnNext.disabled=false; btnNext.innerHTML=originalHTML; return; }
+                            if (!dipFile && !item.dataset.url) { Swal.fire({ title: 'Falta el archivo del diploma', text: 'Sube el PDF de cada diploma para continuar.', icon: 'warning', confirmButtonColor: '#2563eb' }); btnNext.disabled=false; btnNext.innerHTML=originalHTML; return; }
                         }
                     }
 
@@ -3168,6 +3200,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 
                 // PASO 3: DATOS PERSONALES Y DOCUMENTO DE IDENTIDAD Y FOTO
                 else if (pasoActual === 3) {
+                    // Los datos con formato inválido (edad, correo, teléfono) NO bloquean el guardado: el avance siempre se guarda.
+                    // Al terminar de guardar, cambiarUI() avisa qué dato hay que corregir y el paso queda "En progreso".
                     if (isEditingId) {
                         const idFile = document.getElementById('idFile').files[0];
                         if (idFile) {
@@ -3359,6 +3393,15 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                                 }
                             });
                             return;
+                        } else if (soloDatosMode && payload.confirmaRevisionDatos === true && new URLSearchParams(window.location.search).get('mode') !== 'admin') {
+                            // Revisión de datos tras aceptar una invitación: mensaje claro y volvemos a Expedientes
+                            Swal.fire({
+                                title: '¡Formulario enviado!',
+                                text: 'Tus datos fueron confirmados y guardados correctamente.',
+                                icon: 'success',
+                                confirmButtonText: 'Ir a mis expedientes'
+                            }).then(() => { window.location.href = "misexpedientes.html"; });
+                            return;
                         } else {
                                 const huboFaltantes = (payload.mensajeFaltantes || "").includes("Te falta revisar");
                                 showToast(payload.mensajeFaltantes || "Por favor, revisa que todos los pasos estén completados.", huboFaltantes ? "warning" : "success");
@@ -3392,7 +3435,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
             } catch (error) { 
                 console.error(error); 
-                alert("Ocurrió un error. Revisa tu conexión e inténtalo de nuevo."); 
+                Swal.fire({ title: 'No se pudo completar', text: 'Ocurrió un error. Revisa tu conexión e inténtalo de nuevo.', icon: 'error', confirmButtonColor: '#2563eb' }); 
             } finally { 
                 btnNext.disabled = false; 
                 btnNext.innerHTML = originalHTML; 
@@ -3889,6 +3932,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             }
 
             pasoActual = pasoDestino;
+            setTimeout(() => { try { actualizarNotasFaltantes(); actualizarAvisoEnvio(); } catch (e) {} }, 80);
 
             document.getElementById(`step-${pasoActual}`).classList.add('active');
             const nuevoTab = document.getElementById(`tab-${pasoActual}`);
@@ -3947,6 +3991,20 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         const tab3 = document.getElementById('tab-3');
                         tab3.classList.remove('completed');
                         if (tab3.querySelector('.step-badge')) tab3.querySelector('.step-badge').innerText = "En progreso";
+                        avisarFaltantesPaso('Perfil', camposFaltantesPaso3());
+                    }
+                }
+                else if (pasoBase === 1) {
+                    // El paso 1 solo queda "Completado" con CV y Faculty Handbook (los dos son obligatorios)
+                    if (urlCVGlobal && urlHbGlobal) { marcarTabComoCompletada(1); }
+                    else {
+                        const tab1 = document.getElementById('tab-1');
+                        tab1.classList.remove('completed');
+                        if (tab1.querySelector('.step-badge')) tab1.querySelector('.step-badge').innerText = "En progreso";
+                        const faltan = [];
+                        if (!urlCVGlobal) faltan.push('Curriculum Vitae');
+                        if (!urlHbGlobal) faltan.push('Faculty Handbook firmado');
+                        avisarFaltantesPaso('Documentos', faltan.map(l => ({ label: l })));
                     }
                 }
                 else if (pasoBase === 4) {
@@ -3963,6 +4021,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         const tab5 = document.getElementById('tab-5');
                         tab5.classList.remove('completed');
                         if (tab5.querySelector('.step-badge')) tab5.querySelector('.step-badge').innerText = "En progreso";
+                        avisarFaltantesPaso('Facturación', camposFaltantesPaso5());
                     }
                     evaluarDesbloqueoPaso6();
                     if (pasoActual === pasoBase && nuevoPaso >= 1 && nuevoPaso <= totalPasos) { irAPaso(nuevoPaso); }
@@ -3988,8 +4047,97 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             if (pasoActual === pasoBase && nuevoPaso >= 1 && nuevoPaso <= totalPasos) { irAPaso(nuevoPaso); }
         }
 
+        // --- NUEVO: validaciones de formato del Perfil y avisos de campos faltantes (pasos 1, 3 y 5) ---
+        function marcarCampoInvalido(el) {
+            if (!el) return;
+            el.style.border = '2px solid #ef4444';
+            el.style.backgroundColor = '#fef2f2';
+            const limpiar = function() { this.style.border = ''; this.style.backgroundColor = ''; };
+            el.addEventListener('input', limpiar, { once: true });
+            el.addEventListener('change', limpiar, { once: true });
+        }
+
+        // Campos con dato escrito pero inválido (los vacíos no se consideran aquí: guardar avance incompleto sigue permitido)
+        function erroresFormatoPaso3() {
+            const errores = [];
+            const correoEl = document.getElementById('reg-correo');
+            const correo = correoEl.value.trim();
+            if (correo && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(correo)) errores.push({ el: correoEl, msg: 'El correo personal no tiene un formato válido.' });
+
+            const celEl = document.getElementById('reg-celular');
+            const celular = (itiCelular && itiCelular.getNumber()) || celEl.value.trim();
+            if (celular) {
+                const digitos = String(celular).replace(/\D/g, '');
+                if (digitos.length < 7 || digitos.length > 15) errores.push({ el: celEl, msg: 'El teléfono móvil no parece válido. Incluye el código de país y el número completo.' });
+            }
+
+            const fnEl = document.getElementById('reg-fecha-nac');
+            if (fnEl.value) {
+                const nac = new Date(fnEl.value + 'T00:00:00');
+                const hoy = new Date();
+                let edad = hoy.getFullYear() - nac.getFullYear();
+                const m = hoy.getMonth() - nac.getMonth();
+                if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+                if (isNaN(nac.getTime()) || nac.getFullYear() < 1900 || nac > hoy) errores.push({ el: fnEl, msg: 'La fecha de nacimiento no es válida.' });
+                else if (edad < 18) errores.push({ el: fnEl, msg: 'Debes ser mayor de 18 años para registrarte como docente.' });
+            }
+            return errores;
+        }
+
+        function camposFaltantesPaso3() {
+            const f = [];
+            const vacio = (id) => !document.getElementById(id).value.trim();
+            const add = (id, label) => { if (vacio(id)) f.push({ el: document.getElementById(id), label }); };
+            add('reg-correo', 'Correo personal');
+            const cel = (itiCelular && itiCelular.getNumber()) || document.getElementById('reg-celular').value.trim();
+            if (!cel) f.push({ el: document.getElementById('reg-celular'), label: 'Teléfono móvil' });
+            add('reg-nombres', 'Nombres');
+            add('reg-apellidos', 'Apellidos');
+            if (!document.getElementById('reg-tipo-id').value) f.push({ el: document.getElementById('reg-tipo-id'), label: 'Tipo de documento' });
+            add('reg-dni', 'Número de documento');
+            if (!document.getElementById('reg-fecha-nac').value) f.push({ el: document.getElementById('reg-fecha-nac'), label: 'Fecha de nacimiento' });
+            if (!document.getElementById('reg-pais').value) f.push({ el: document.getElementById('reg-pais'), label: 'País' });
+            const pais = document.getElementById('reg-pais').value.toLowerCase();
+            if ((pais.includes('estados unidos') || pais.includes('united states')) && vacio('reg-estado-region')) f.push({ el: document.getElementById('reg-estado-region'), label: 'Estado' });
+            add('reg-ciudad', 'Ciudad');
+            add('reg-direccion', 'Dirección');
+            add('reg-cp', 'Código postal');
+            const idListo = (urlIdGlobal !== "" && !isEditingId) || (document.getElementById('idFile').files.length > 0);
+            if (!idListo) f.push({ el: null, label: 'Documento de identidad (archivo)' });
+            erroresFormatoPaso3().forEach(e => f.push({ el: e.el, label: e.msg.replace(/\.$/, '') }));
+            return f;
+        }
+
+        function camposFaltantesPaso5() {
+            const f = [];
+            const chk = (id, label) => { const el = document.getElementById(id); if (!el.value || !String(el.value).trim()) f.push({ el, label }); };
+            chk('reg-banco', 'Nombre del banco');
+            chk('reg-moneda', 'Moneda de la cuenta');
+            chk('reg-tipo-cuenta', 'Tipo de cuenta');
+            chk('reg-cuenta', 'Número de cuenta');
+            chk('reg-tipo-ruta', 'Tipo de número de ruta');
+            chk('reg-codigo-ruta', 'Código de enrutamiento');
+            return f;
+        }
+
+        function avisarFaltantesPaso(nombrePaso, faltantes) {
+            if (!faltantes || faltantes.length === 0) return;
+            faltantes.forEach(x => marcarCampoInvalido(x.el));
+            const items = faltantes.map(x => `<li style="margin-bottom:6px;">${x.label}</li>`).join('');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Tu avance se guardó',
+                html: `<p style="margin:0 0 10px;">En <b>${nombrePaso}</b> todavía falta:</p>
+                       <ul style="text-align:left;display:inline-block;margin:0 0 10px;padding-left:20px;color:#334155;">${items}</ul>
+                       <p style="margin:0;font-size:0.85rem;color:#64748b;">Puedes volver a completarlo cuando quieras.</p>`,
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#2563eb'
+            });
+        }
+
         // Función experta para verificar si el paso 3 está realmente lleno
         function validarPaso3Completo() {
+            if (erroresFormatoPaso3().length > 0) return false;
             const valorCelular = itiCelular.getNumber() || document.getElementById('reg-celular').value.trim();
 
             const campos = [
@@ -4311,7 +4459,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             if (p1 && p2 && p3 && p4 && p5 && p6) {
                 if (soloDatosMode) {
 
-                    btnNext.innerHTML = 'Guardar Datos del Docente <i class="fa-solid fa-save ms-2"></i>';
+                    btnNext.innerHTML = (new URLSearchParams(window.location.search).get('mode') === 'admin')
+                        ? 'Guardar Datos del Docente <i class="fa-solid fa-save ms-2"></i>'
+                        : 'Confirmar y enviar mis datos <i class="fa-solid fa-paper-plane ms-2"></i>';
                     btnNext.style.background = 'var(--primary)';
                     btnNext.dataset.intencion = "borrador";
                 } else {
@@ -4327,6 +4477,112 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 btnNext.dataset.intencion = "borrador";
             }
         }
+
+        // --- NUEVO: AVISO "REVISAR Y ENVIAR" (mismo envío que el botón del último paso) ---
+        // Mismo criterio que usa irAPaso(6): los documentos y grados ya deben estar "Procesado" por la IA
+        function documentosProcesadosParaEnvio() {
+            const dips = document.querySelectorAll('.diploma-item.view-mode-dip');
+            if (dips.length === 0) return false;
+            for (const d of dips) { const e = (d.dataset.estado || '').toLowerCase(); if (e !== 'procesado' && e !== 'completado') return false; }
+            const cv = document.getElementById('cv-status-container');
+            if (cv) { const e = (cv.dataset.estado || '').toLowerCase(); if (e !== 'procesado' && e !== 'completado') return false; }
+            return true;
+        }
+
+        function estadoPasosEnvio() {
+            const p1 = document.getElementById('tab-1').classList.contains('completed') && documentosProcesadosParaEnvio();
+            const p2 = document.getElementById('tab-2').classList.contains('completed');
+            const p3 = validarPaso3Completo();
+            const p5 = validarPaso5Completo();
+            const p6 = validarPaso6Completo(false);
+            return { p1, p2, p3, p5, p6, todo: p1 && p2 && p3 && p5 && p6 };
+        }
+
+        function actualizarAvisoEnvio() {
+            const aviso = document.getElementById('aviso-listo-enviar');
+            if (!aviso) return;
+            const esAdmin = new URLSearchParams(window.location.search).get('mode') === 'admin';
+            const cargando = document.getElementById('loaderInicial') && document.getElementById('loaderInicial').style.display !== 'none';
+            let mostrar = false;
+            try { mostrar = !esAdmin && !cargando && pasoActual !== totalPasos && estadoPasosEnvio().todo; } catch (e) { mostrar = false; }
+            aviso.classList.toggle('d-none', !mostrar);
+            const t = document.getElementById('aviso-listo-texto');
+            const b = document.getElementById('btn-aviso-enviar');
+            if (soloDatosMode) {
+                if (t) t.innerText = 'Falta un último paso: confirmar y guardar tus datos.';
+                if (b) b.innerHTML = 'Revisar y confirmar <i class="fa-solid fa-circle-check ms-2"></i>';
+            } else {
+                if (t) t.innerText = 'Falta un último paso: enviar tu formulario.';
+                if (b) b.innerHTML = 'Revisar y enviar <i class="fa-solid fa-paper-plane ms-2"></i>';
+            }
+        }
+
+        function abrirResumenEnvio() {
+            const e = estadoPasosEnvio();
+            const fila = (ok, txt) => `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9;text-align:left;">
+                <i class="fa-solid ${ok ? 'fa-circle-check' : 'fa-circle-exclamation'}" style="color:${ok ? '#10b981' : '#f59e0b'};font-size:1.1rem;"></i><span style="font-weight:600;color:#334155;">${txt}</span></div>`;
+            const html = `<div style="margin-top:4px;">` +
+                fila(e.p1, 'Documentos (CV y Faculty Handbook)') +
+                fila(e.p2, 'Educación (grados)') +
+                fila(e.p3, 'Perfil (datos personales)') +
+                fila(e.p5, 'Facturación (datos bancarios)') +
+                fila(e.p6, 'Verificación (experiencia y competencias)') + `</div>
+                <p style="margin-top:14px;font-size:0.85rem;color:#64748b;">${soloDatosMode ? 'Al confirmar, guardaremos tus datos y quedará confirmada la revisión.' : 'Al enviar, tu expediente pasará a revisión de la universidad.'}</p>`;
+            Swal.fire({
+                title: soloDatosMode ? '¿Todo está correcto?' : '¿Enviar tu formulario?',
+                html,
+                icon: e.todo ? 'question' : 'warning',
+                showCancelButton: true,
+                confirmButtonText: soloDatosMode ? 'Confirmar y guardar' : 'Confirmar y enviar formulario',
+                cancelButtonText: 'Seguir revisando',
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#64748b',
+                reverseButtons: true
+            }).then(r => { if (r.isConfirmed) confirmarEnvioFormulario(); });
+        }
+
+        async function confirmarEnvioFormulario() {
+            // Va al último paso y ejecuta exactamente la misma acción del botón final (mismas validaciones).
+            irAPaso(totalPasos);
+            if (pasoActual !== totalPasos) return;
+            evaluarEstadoBotonFinal();
+            await guardarYAvanzar();
+        }
+
+        // --- NUEVO: nota dentro del paso (3 y 5) que dice exactamente qué falta para completarlo ---
+        function actualizarNotasFaltantes() {
+            const pasos = [
+                { id: 3, tab: 'tab-3', fn: camposFaltantesPaso3 },
+                { id: 5, tab: 'tab-5', fn: camposFaltantesPaso5 }
+            ];
+            pasos.forEach(p => {
+                const cont = document.getElementById('step-' + p.id);
+                if (!cont) return;
+                let nota = document.getElementById('nota-faltantes-' + p.id);
+                if (!nota) {
+                    nota = document.createElement('div');
+                    nota.id = 'nota-faltantes-' + p.id;
+                    nota.style.cssText = 'display:none;background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:12px;padding:10px 14px;margin-bottom:16px;font-size:0.85rem;';
+                    cont.insertBefore(nota, cont.firstChild);
+                }
+                const cargando = document.getElementById('loaderInicial') && document.getElementById('loaderInicial').style.display !== 'none';
+                let faltan = [];
+                try { faltan = p.fn(); } catch (e) { faltan = []; }
+                const mostrar = !cargando && pasoActual === p.id && faltan.length > 0;
+                nota.style.display = mostrar ? 'block' : 'none';
+                if (mostrar) nota.innerHTML = '<i class="fa-solid fa-circle-info me-2"></i><b>Para completar este paso falta:</b> ' + faltan.map(x => x.label).join(', ') + '.';
+            });
+        }
+
+        (function iniciarAvisoEnvio() {
+            let t = null;
+            const reevaluar = () => { clearTimeout(t); t = setTimeout(() => { actualizarAvisoEnvio(); actualizarNotasFaltantes(); }, 400); };
+            [1800, 3500, 6000].forEach(ms => setTimeout(actualizarNotasFaltantes, ms));
+            setInterval(actualizarNotasFaltantes, 5000);
+            ['input', 'change', 'click'].forEach(ev => document.addEventListener(ev, reevaluar, true));
+            [1800, 3500, 6000].forEach(ms => setTimeout(actualizarAvisoEnvio, ms));
+            setInterval(actualizarAvisoEnvio, 5000);
+        })();
 
         // Detectar cambios en tiempo real en el Paso 6 para cambiar el color del botón
         document.getElementById('step-6').addEventListener('input', evaluarEstadoBotonFinal);
