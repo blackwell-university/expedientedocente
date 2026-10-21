@@ -2909,8 +2909,9 @@
             // ETAPA 3/4 (Contratación - Pipeline Secuencial de Firma)
             if (['Pendiente firma directores', 'Expediente enviado', 'Firmado por Docente', 'Contratado'].includes(estadoExp)) {
                 if (estadoExp === 'Pendiente firma directores') {
-                    html += `<button class="action-btn" style="background:#0284c7; color:white; border-color:#0284c7;" onclick="enviarContratoDocente()">
-                                <i class="fa-solid fa-paper-plane"></i> Enviar para firma (Docente)
+                    // El docente ya firmó y el contrato ya fue enviado a los directores: solo queda esperar.
+                    html += `<button class="action-btn" style="background:#64748b; color:white; border-color:#64748b;" disabled>
+                                <i class="fa-solid fa-hourglass-half"></i> Esperando firma de los directores...
                              </button>`;
                 } else if (estadoExp === 'Expediente enviado') {
                     html += `<button class="action-btn" style="background:#64748b; color:white; border-color:#64748b;" disabled>
