@@ -2900,7 +2900,7 @@
             }
 
             // ETAPA 2 (Revisión y avance a Firma de Docente)
-            if (['Recibido', 'En revisión', 'Verificado'].includes(estadoExp)) {
+            if (['En proceso', 'Recibido', 'En revisión', 'Verificado'].includes(estadoExp)) {
                 html += `<button class="action-btn" style="background:#0284c7; color:white; border-color:#0284c7;" onclick="enviarContratoDocente()">
                             <i class="fa-solid fa-pen-nib"></i> Enviar para firma (Docente)
                          </button>`;
