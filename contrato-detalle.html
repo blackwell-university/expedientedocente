@@ -385,6 +385,7 @@
         let selectedDocUrl = "";
         let documentosDisponibles = []; 
         let indiceDocActual = 0;
+        let estadoTramiteActual = ""; // estado real del expediente / invitación, para el mensaje de "ya firmaste"
 
         function togglePdfFullscreen() {
             const panel = document.querySelector('.pdf-panel');
@@ -467,7 +468,8 @@
                         document.getElementById('txtDocenteNombre').innerText = `Hola, ${doc.nombres}`;
                         document.getElementById('txtExpDetails').innerText = `Invitación N°: ${inv.idInvitacion} • ${inv.curso}`;
 
-                        const estadosListoFirmaInv = ['Pendiente firma docente', 'Firmado por docente', 'Pendiente firma directores', 'Completado'];
+                        estadoTramiteActual = inv.estado || "";
+                        const estadosListoFirmaInv = ['Pendiente firma docente', 'Firmado por docente', 'Firmado por Docente', 'Pendiente firma directores', 'Completado'];
                         if (!estadosListoFirmaInv.includes(inv.estado)) {
                             mostrarNoListoParaFirma(`Esta invitación todavía está en estado "${inv.estado || 'Pendiente'}". Podrás firmar cuando la universidad te envíe los documentos.`);
                             return;
@@ -508,7 +510,14 @@
                         document.getElementById('txtDocenteNombre').innerText = `Hola, ${doc.nombres}`;
                         document.getElementById('txtExpDetails').innerText = `Expediente Anual N°: ${exp.idExpediente}`;
 
-                        const estadosListoFirmaExp = ['Expediente enviado', 'Firmado', 'Contratado'];
+                        estadoTramiteActual = exp.estado || "";
+                        // Estados en los que el docente puede ver sus documentos: para firmar (enviado) o ya firmados (el resto).
+                        const estadosListoFirmaExp = [
+                            'Expediente enviado', 'Contrato enviado',
+                            'Firmado', 'Firmado por Docente', 'Firmado por docente',
+                            'Pendiente firma directores', 'Por contratar',
+                            'Contratado', 'Completado'
+                        ];
                         if (!estadosListoFirmaExp.includes(exp.estado)) {
                             mostrarNoListoParaFirma(`Tu expediente todavía está en estado "${exp.estado || 'Pendiente'}". Podrás firmar el Expediente de aprobación de contratación cuando la universidad te lo envíe.`);
                             return;
@@ -594,11 +603,19 @@
             const pendientes = documentosDisponibles.filter(d => !d.estado || !d.estado.includes('Firmado'));
 
             if (pendientes.length === 0) {
+                const est = String(estadoTramiteActual || '').trim().toLowerCase();
+                const cerrado = (est === 'contratado' || est === 'completado');
+                const titulo = cerrado ? '¡Proceso completado!' : '¡Ya firmaste tus documentos!';
+                const detalle = cerrado
+                    ? 'Tus documentos están firmados por ti y por los directivos de la universidad.'
+                    : 'Estás en espera de la firma final de los directivos de la universidad. Te avisaremos cuando el proceso quede completado; por ahora no necesitas hacer nada más.';
+                const icono = cerrado ? 'fa-circle-check text-success' : 'fa-hourglass-half';
+                const colorIcono = cerrado ? '' : 'style="color:#f59e0b;"';
                 panel.innerHTML = `
                     <div class="all-signed-notice">
-                        <i class="fa-solid fa-circle-check fa-3x text-success mb-3"></i>
-                        <h5 class="fw-bold m-0">¡Todo firmado!</h5>
-                        <p class="small text-muted mb-0">Todos tus documentos han sido firmados correctamente.</p>
+                        <i class="fa-solid ${icono} fa-3x mb-3" ${colorIcono}></i>
+                        <h5 class="fw-bold m-0">${titulo}</h5>
+                        <p class="small text-muted mt-2 mb-0">${detalle}</p>
                     </div>`;
                 signaturePad = null; canvas = null;
                 return;
