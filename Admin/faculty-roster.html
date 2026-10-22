@@ -381,7 +381,7 @@
                                    <ul class="dropdown-menu dropdown-menu-end menu-roster">
                                        <li><a class="dropdown-item" href="${esc(urlPdf(r.url))}" target="_blank" rel="noopener"><i class="fa-regular fa-file-pdf"></i> Descargar PDF</a></li>
                                        <li><hr class="dropdown-divider"></li>
-                                       <li><button class="dropdown-item" type="button" onclick="actualizarRoster('${esc(r.id)}', this)"><i class="fa-solid fa-wand-magic-sparkles"></i> Actualizar contenido (n8n)</button></li>
+                                       <li><button class="dropdown-item" type="button" onclick="actualizarRoster('${esc(r.id)}', this)"><i class="fa-solid fa-wand-magic-sparkles"></i> Actualizar contenido</button></li>
                                        <li><hr class="dropdown-divider"></li>
                                        <li><button class="dropdown-item item-eliminar" type="button" onclick="eliminarRoster('${esc(r.id)}')"><i class="fa-regular fa-trash-can"></i> Eliminar</button></li>
                                    </ul>
@@ -437,13 +437,18 @@
         async function actualizarRoster(idRoster, btn) {
             const r = rosters.find(x => x.id === idRoster);
             if (!r) return;
-            const c = await Swal.fire({ icon: 'question', title: 'Actualizar documento', html: `Se enviará <b>${esc(r.programa)}</b> (${esc(r.anioAcademico)}) a n8n para actualizar su contenido.`, showCancelButton: true, confirmButtonColor: '#2563eb', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, actualizar', cancelButtonText: 'Cancelar', reverseButtons: true });
+            const c = await Swal.fire({ icon: 'question', title: 'Actualizar contenido', html: `Se buscarán las invitaciones <b>Completadas</b> de <b>${esc(r.programa)}</b> (${esc(r.anioAcademico)}) que todavía no estén en el documento y se agregarán a la tabla. Las filas pendientes se completarán con IA.<br><span style="font-size:.85rem;color:#64748b;">Las filas que ya están completas no se vuelven a procesar.</span>`, showCancelButton: true, confirmButtonColor: '#2563eb', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, actualizar', cancelButtonText: 'Cancelar', reverseButtons: true });
             if (!c.isConfirmed) return;
-            const html0 = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
+            const html0 = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Actualizando...';
             try {
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'update_faculty_roster', idRoster: idRoster, solicitanteId: localStorage.getItem('userId') || '' }) });
                 const j = await res.json();
-                if (j.status === 'success') Swal.fire({ icon: 'success', title: 'Solicitud enviada', text: 'n8n está actualizando el documento. En unos momentos podrás verlo actualizado.', confirmButtonColor: '#2563eb' });
+                if (j.status === 'success') {
+                    let msg = `<b>${j.agregadas || 0}</b> invitación(es) nueva(s) agregada(s). El documento tiene <b>${j.total || 0}</b> fila(s).`;
+                    if (j.reenviadas) msg += `<br>${j.reenviadas} fila(s) se volvieron a enviar a la IA.`;
+                    msg += `<br><span style="font-size:.85rem;color:#64748b;">Las columnas generadas por IA se van completando en el documento en unos minutos.</span>`;
+                    Swal.fire({ icon: 'success', title: 'Contenido actualizado', html: msg, confirmButtonColor: '#2563eb' });
+                }
                 else Swal.fire({ icon: 'error', title: 'No se pudo actualizar', text: j.message || 'Inténtalo de nuevo.', confirmButtonColor: '#2563eb' });
             } catch (e) {
                 Swal.fire({ icon: 'error', title: 'Error de conexión', text: 'No se pudo conectar con el servidor.', confirmButtonColor: '#2563eb' });
