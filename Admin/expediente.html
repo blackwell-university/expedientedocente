@@ -110,8 +110,8 @@
         }
         .chip-sabado-fecha .chip-hora { font-weight: 500; color: #92400e; opacity: 0.8; }
         .chip-sabado-btn {
-            width: 20px; height: 20px; border-radius: 5px; border: none; display: inline-flex;
-            align-items: center; justify-content: center; font-size: 0.65rem; cursor: pointer; transition: 0.2s;
+            height: 22px; padding: 0 9px; border-radius: 5px; border: none; display: inline-flex;
+            align-items: center; justify-content: center; gap: 5px; font-size: 0.68rem; font-weight: 700; cursor: pointer; transition: 0.2s;
         }
         .chip-sabado-ok { background: #dcfce7; color: #15803d; }
         .chip-sabado-ok:hover { background: #15803d; color: #fff; }
@@ -672,7 +672,7 @@
             <li><a href="gestion-expedientes.html" class="nav-link active"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
             <li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Catálogo de Cursos</span></a></li>
             <li><a href="faculty-roster.html" class="nav-link"><i class="fa-solid fa-table-list"></i> <span class="link-text">Faculty Rosters</span></a></li>
-            <!-- NUEVO: solo para Administrativo y Ejecutiva Academica -->
+            <li id="navReportesDocentes" style="display:none;"><a href="reportes-docentes.html" class="nav-link"><i class="fa-solid fa-chart-column"></i> <span class="link-text">Reportes de Docentes</span></a></li>
             <li id="navGestionClases" style="display:none;"><a href="academica-dashboard.html" class="nav-link"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Gestión de Clases</span></a></li>
             <li id="navGestionUsuarios" style="display:none;"><a href="gestion-usuarios.html" class="nav-link"><i class="fa-solid fa-user-gear"></i> <span class="link-text">Gestión de Usuarios</span></a></li>
         </ul>
@@ -832,8 +832,8 @@
                                 <div class="alert-sabado-row">
                                     <div class="alert-sabado-icon"><i class="fa-solid fa-calendar-day"></i></div>
                                     <div class="alert-sabado-text">
-                                        <div class="alert-sabado-title">Sábado(s) por coordinar</div>
-                                        <div class="alert-sabado-subtitle">Confirma con académica antes de aprobar cada fecha</div>
+                                        <div class="alert-sabado-title">Sábado(s) por aprobar</div>
+                                        <div class="alert-sabado-subtitle">Aprueba el sábado o cámbialo: coordina con el docente fuera del sistema y registra la nueva fecha aquí</div>
                                     </div>
                                     <div id="listaSabadosPendientes" class="alert-sabado-chips"></div>
                                 </div>
@@ -1631,8 +1631,8 @@
             cont.innerHTML = hayPendientes ? lista.map(s => `
                 <span class="chip-sabado-fecha">
                     <span><i class="fa-regular fa-calendar" style="font-size:0.7rem;"></i> ${s.fecha} <span class="chip-hora">· ${s.slot || '-'}</span></span>
-                    <button type="button" class="chip-sabado-btn chip-sabado-ok" title="Aprobar esta fecha" onclick="revisarSabado('${s.fecha}', 'Aprobado')"><i class="fa-solid fa-check"></i></button>
-                    <button type="button" class="chip-sabado-btn chip-sabado-x" title="Solicitar otra fecha" onclick="iniciarDecisionSabado('${s.fecha}')"><i class="fa-solid fa-xmark"></i></button>
+                    <button type="button" class="chip-sabado-btn chip-sabado-ok" title="Aprobar este sábado: el docente dictará clase ese día" onclick="revisarSabado('${s.fecha}', 'Aprobado')"><i class="fa-solid fa-check"></i> Aprobar</button>
+                    <button type="button" class="chip-sabado-btn chip-sabado-x" title="No aprobar: coordina otra fecha con el docente y regístrala aquí" onclick="iniciarDecisionSabado('${s.fecha}')"><i class="fa-solid fa-rotate"></i> Cambiar fecha</button>
                 </span>`).join('') : '<span style="font-size:0.75rem; color:#92400e;">Falta que el docente complete su horario</span>';
         }
 
@@ -1656,26 +1656,28 @@
         // reemplazo -- así queda claro el siguiente paso, en vez de dejar la
         // fecha "en el aire" o forzar siempre al mismo camino.
         async function iniciarDecisionSabado(fecha) {
+            // La fecha de reemplazo la elige siempre la ejecutiva: se coordina con el docente por fuera
+            // del sistema (correo, WhatsApp, llamada) y luego se registra aquí. El docente no recibe correo.
             const result = await Swal.fire({
-                title: '¿Quién va a elegir la fecha de reemplazo?',
-                html: `Ya se avisó (o se avisará) al docente que el <b>${fecha}</b> no se puede dictar.`,
-                icon: 'question',
-                showDenyButton: true,
+                title: 'Cambiar la fecha del sábado',
+                html: `<div style="text-align:left;">
+                        <p style="margin-bottom:10px;">El sábado <b>${fecha}</b> no se aprobará. Para continuar:</p>
+                        <ol style="padding-left:20px; margin:0; line-height:1.7;">
+                            <li>Coordina otra fecha con el docente <b>por fuera del sistema</b> (correo, WhatsApp o llamada).</li>
+                            <li>Elige aquí el <b>día y la hora</b> que acordaron.</li>
+                        </ol>
+                        <p style="margin:12px 0 0; font-size:.85rem;">El docente <b>no recibirá</b> un correo para elegir otra fecha: el cambio lo registras tú.</p>
+                       </div>`,
+                icon: 'info',
                 showCancelButton: true,
-                confirmButtonText: 'El docente la elige',
-                denyButtonText: 'La elijo yo ahora',
+                confirmButtonText: 'Elegir la fecha de reemplazo',
                 cancelButtonText: 'Cancelar',
                 confirmButtonColor: '#1e3a8a',
-                denyButtonColor: '#15803d',
                 cancelButtonColor: '#64748b',
                 reverseButtons: true
             });
 
-            if (result.isConfirmed) {
-                await enviarDecisionSabado(fecha, 'Denegado');
-            } else if (result.isDenied) {
-                abrirModalReprogramarHorario(fecha);
-            }
+            if (result.isConfirmed) abrirModalReprogramarHorario(fecha);
         }
 
         async function enviarDecisionSabado(fecha, decision) {
@@ -1971,13 +1973,13 @@
 
             const rolUpper = String(rol || "").toUpperCase();
             const esAdmin = (rolUpper === 'ADMINISTRADOR' || rolUpper === 'ADMIN');
-            // NUEVO: Ejecutiva Academica tiene los mismos permisos que Administrativo aquí
+
             const esAdministrativo = (rolUpper === 'ADMINISTRATIVO' || rolUpper === 'EJECUTIVA ACADEMICA');
             document.getElementById('moverEtapaWrapper').style.display = esAdmin ? '' : 'none';
             document.getElementById('btnAbrirCancelarExpediente').style.display = (esAdmin || esAdministrativo) ? '' : 'none';
             const navGU = document.getElementById('navGestionUsuarios');
             if (navGU) navGU.style.display = esAdmin ? '' : 'none';
-            // NUEVO: Administrativo y Ejecutiva Academica ya tienen acceso a Gestión Académica
+
             const navGC = document.getElementById('navGestionClases');
             if (navGC) navGC.style.display = esAdministrativo ? '' : 'none';
 
@@ -3267,6 +3269,14 @@
                 }
             }
         }
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var r = String(localStorage.getItem('userRole') || '').toUpperCase();
+            function mostrar(id, roles) { var n = document.getElementById(id); if (n && roles.indexOf(r) > -1) n.style.display = ''; }
+            mostrar('navFacultyRoster', ['ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA']);
+            mostrar('navReportesDocentes', ['ADMINISTRATIVO', 'ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA']);
+        });
     </script>
     <div id="tooltipGlobal" class="tooltip-datos-global"></div>
 </body>

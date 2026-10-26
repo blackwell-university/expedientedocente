@@ -286,7 +286,7 @@
             <li><a href="gestion-expedientes.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
             <li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Catálogo de Cursos</span></a></li>
             <li id="navFacultyRoster" style="display:none;"><a href="faculty-roster.html" class="nav-link"><i class="fa-solid fa-table-list"></i> <span class="link-text">Faculty Rosters</span></a></li>
-            <li><a href="reportes-docentes.html" class="nav-link"><i class="fa-solid fa-chart-column"></i> <span class="link-text">Reportes de Docentes</span></a></li>
+            <li id="navReportesDocentes" style="display:none;"><a href="reportes-docentes.html" class="nav-link"><i class="fa-solid fa-chart-column"></i> <span class="link-text">Reportes de Docentes</span></a></li>
             <li id="navGestionClases" style="display:none;"><a href="academica-dashboard.html" class="nav-link"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Gestión de Clases</span></a></li>
             <li id="navGestionUsuarios" style="display:none;"><a href="gestion-usuarios.html" class="nav-link"><i class="fa-solid fa-user-gear"></i> <span class="link-text">Gestión de Usuarios</span></a></li>
 
@@ -358,19 +358,25 @@
                 </div>
 
                 <div class="row g-4 mb-4">
-                    <div class="col-lg-6"><div class="panel-card">
-                        <h3 class="panel-title mb-3"><i class="fa-solid fa-hourglass-half text-warning"></i> Expedientes estancados
+                    <div class="col-lg-7"><div class="panel-card">
+                        <h3 class="panel-title mb-3"><i class="fa-solid fa-list-check" style="color:var(--primary);"></i> Expedientes en seguimiento
                             <select class="select-mini ms-auto" id="selDias" onchange="renderEstancados()"><option value="7">más de 7 días</option><option value="15" selected>más de 15 días</option><option value="30">más de 30 días</option></select>
                         </h3>
-                        <p class="text-muted small mb-3">Expedientes que aún no llegan a Contratado ni están Cancelados. Los días se cuentan desde su creación.</p>
+                        <p class="text-muted small mb-3">Expedientes que llevan un tiempo en proceso y aún no están Contratados ni Cancelados. Los días se cuentan desde que se creó el expediente. Haz clic en uno para abrirlo.</p>
                         <div class="scroll-panel" id="contenedorEstancados"><div class="text-center text-muted py-4"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando...</div></div>
-                        <a href="gestion-expedientes.html" class="view-all-link">Revisar todos los expedientes</a>
+                        <a href="gestion-expedientes.html" class="view-all-link">Ver todos los expedientes</a>
                     </div></div>
-                    <div class="col-lg-6"><div class="panel-card">
-                        <h3 class="panel-title mb-3"><i class="fa-solid fa-circle-exclamation text-warning"></i> Pendientes de revisión</h3>
-                        <p class="text-muted small mb-3">Expedientes en estado Recibido o En revisión: el docente ya envió sus documentos y falta revisarlos.</p>
-                        <div id="contenedorExpedientesPendientes"><div class="text-center text-muted py-4"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando expedientes...</div></div>
-                        <a href="gestion-expedientes.html" class="view-all-link">Revisar todos los expedientes</a>
+                    <div class="col-lg-5"><div class="panel-card">
+                        <h3 class="panel-title mb-3"><i class="fa-solid fa-bolt" style="color:var(--primary);"></i> Accesos Rápidos</h3>
+                        <div class="quick-actions-grid">
+                            <a href="registrodocente.html" class="quick-action-btn"><div class="quick-action-icon icon-blue"><i class="fa-solid fa-user-plus"></i></div><span>Nuevo Docente</span></a>
+                            <a href="gestion-expedientes.html" class="quick-action-btn"><div class="quick-action-icon icon-yellow"><i class="fa-solid fa-folder-open"></i></div><span>Expedientes</span></a>
+                            <a href="gestion-docentes.html" class="quick-action-btn"><div class="quick-action-icon icon-green"><i class="fa-solid fa-users"></i></div><span>Plana Docente</span></a>
+                            <a href="gestion-cursos.html" class="quick-action-btn"><div class="quick-action-icon icon-purple"><i class="fa-solid fa-book-open"></i></div><span>Catálogo de Cursos</span></a>
+                            <a href="faculty-roster.html" class="quick-action-btn" id="accFaculty" style="display:none;"><div class="quick-action-icon icon-blue"><i class="fa-solid fa-table-list"></i></div><span>Faculty Rosters</span></a>
+                            <a href="reportes-docentes.html" class="quick-action-btn" id="accReportes" style="display:none;"><div class="quick-action-icon icon-green"><i class="fa-solid fa-chart-column"></i></div><span>Reportes de Docentes</span></a>
+                            <a href="academica-dashboard.html" class="quick-action-btn" id="accClases" style="display:none;"><div class="quick-action-icon icon-yellow"><i class="fa-solid fa-chalkboard-user"></i></div><span>Gestión de Clases</span></a>
+                        </div>
                     </div></div>
                 </div>
 
@@ -393,88 +399,37 @@
                     <div class="chart-box mt-3" style="height:220px;"><canvas id="chPaisesMini"></canvas></div>
                 </div>
 
-                <div class="row g-4">
-                    <!-- NUEVO: Panel de Accesos Rápidos y Ayuda -->
-                    <div class="col-lg-6">
-                        <div class="panel-card">
-                            <h3 class="panel-title">
-                                <i class="fa-solid fa-bolt" style="color: var(--primary);"></i> Accesos Rápidos
-                            </h3>
-
-                            <div class="quick-actions-grid mb-4">
-                                <a href="registrodocente.html" class="quick-action-btn">
-                                    <div class="quick-action-icon icon-blue"><i class="fa-solid fa-user-plus"></i></div>
-                                    <span>Nuevo Docente</span>
-                                </a>
-                                <a href="gestion-expedientes.html" class="quick-action-btn">
-                                    <div class="quick-action-icon icon-yellow"><i class="fa-solid fa-folder-open"></i></div>
-                                    <span>Ver Expedientes</span>
-                                </a>
-                                <a href="gestion-docentes.html" class="quick-action-btn">
-                                    <div class="quick-action-icon icon-green"><i class="fa-solid fa-users"></i></div>
-                                    <span>Plana Docente</span>
-                                </a>
-                                <a href="gestion-cursos.html" class="quick-action-btn">
-                                    <div class="quick-action-icon icon-purple"><i class="fa-solid fa-book-open"></i></div>
-                                    <span>Catálogo de Cursos</span>
-                                </a>
-                            </div>
-
-                            <h3 class="panel-title" style="font-size: 1rem; margin-bottom: 14px;">
-                                <i class="fa-regular fa-circle-question" style="color: var(--primary);"></i> Guía Rápida
-                            </h3>
-
-                            <div class="accordion" id="accordionAyuda">
+                <div class="panel-card auto-h">
+                    <h3 class="panel-title" style="font-size: 1.05rem; margin-bottom: 14px;"><i class="fa-regular fa-circle-question" style="color: var(--primary);"></i> Guía Rápida</h3>
+                    <div class="accordion" id="accordionAyuda">
                                 <div class="accordion-item help-item">
-                                    <h2 class="accordion-header">
-                                        <button class="accordion-button collapsed help-btn" type="button" data-bs-toggle="collapse" data-bs-target="#ayuda1">
-                                            ¿Qué significa cada estado de un expediente?
-                                        </button>
-                                    </h2>
-                                    <div id="ayuda1" class="accordion-collapse collapse" data-bs-parent="#accordionAyuda">
-                                        <div class="accordion-body help-body">
-                                            El expediente avanza por etapas: <b>Recibido/Verificado</b> (el docente subió sus documentos), <b>Por contratar</b> (ya se generaron los documentos del expediente), <b>Expediente enviado</b> (esperando que el docente firme), <b>Firmado</b> (el docente ya firmó todo) y <b>Contratado</b> (los directores también firmaron — proceso terminado).
-                                        </div>
-                                    </div>
+                                    <h2 class="accordion-header"><button class="accordion-button collapsed help-btn" type="button" data-bs-toggle="collapse" data-bs-target="#ayuda1">¿Qué significa cada estado de un expediente?</button></h2>
+                                    <div id="ayuda1" class="accordion-collapse collapse" data-bs-parent="#accordionAyuda"><div class="accordion-body help-body">El expediente avanza por estas etapas: <b>Por enviar</b> (aún no se envía al docente), <b>Enviado</b> y <b>En proceso</b> (el docente lo está completando), <b>Recibido</b> y <b>En revisión</b> (el docente ya envió sus documentos y se revisan), <b>Por contratar</b> (pendientes de firma de los directores), <b>Expediente enviado</b> (esperando que el docente firme), <b>Firmado (Docente)</b> y <b>Contratado</b> (los directores también firmaron: proceso terminado). <b>Cancelado</b> es un expediente dado de baja.</div></div>
                                 </div>
                                 <div class="accordion-item help-item">
-                                    <h2 class="accordion-header">
-                                        <button class="accordion-button collapsed help-btn" type="button" data-bs-toggle="collapse" data-bs-target="#ayuda2">
-                                            ¿Cómo genero los documentos de un docente?
-                                        </button>
-                                    </h2>
-                                    <div id="ayuda2" class="accordion-collapse collapse" data-bs-parent="#accordionAyuda">
-                                        <div class="accordion-body help-body">
-                                            Entra al expediente del docente desde <b>Expedientes</b>, ve a la pestaña "Datos del Expediente", selecciona los documentos que necesites en el modal de generación y presiona "Generar Documentos". Se crean automáticamente en Google Docs con los datos del docente.
-                                        </div>
-                                    </div>
+                                    <h2 class="accordion-header"><button class="accordion-button collapsed help-btn" type="button" data-bs-toggle="collapse" data-bs-target="#ayuda2">¿Cómo llega una invitación a "Completado"?</button></h2>
+                                    <div id="ayuda2" class="accordion-collapse collapse" data-bs-parent="#accordionAyuda"><div class="accordion-body help-body">La invitación pasa por <b>Enviado, Aceptado, Documentos generados, Pendiente firma docente, Firmado por docente y Pendiente firma directores</b>. Pasa a <b>Completado</b> automáticamente cuando los directores terminan de firmar y el expediente queda en Contratado. También se puede cambiar a mano desde el menú de estado de la invitación.</div></div>
                                 </div>
                                 <div class="accordion-item help-item">
-                                    <h2 class="accordion-header">
-                                        <button class="accordion-button collapsed help-btn" type="button" data-bs-toggle="collapse" data-bs-target="#ayuda3">
-                                            El docente no puede iniciar sesión, ¿qué hago?
-                                        </button>
-                                    </h2>
-                                    <div id="ayuda3" class="accordion-collapse collapse" data-bs-parent="#accordionAyuda">
-                                        <div class="accordion-body help-body">
-                                            Entra a su expediente y usa el botón <b>"Enviar Credenciales"</b> en Acciones Administrativas — le vuelve a mandar su usuario y contraseña temporal al correo institucional registrado.
-                                        </div>
-                                    </div>
+                                    <h2 class="accordion-header"><button class="accordion-button collapsed help-btn" type="button" data-bs-toggle="collapse" data-bs-target="#ayuda3">¿Cómo genero los documentos de un docente?</button></h2>
+                                    <div id="ayuda3" class="accordion-collapse collapse" data-bs-parent="#accordionAyuda"><div class="accordion-body help-body">Entra al expediente del docente desde <b>Expedientes</b>, ve a la pestaña "Datos del Expediente", selecciona los documentos que necesites en el modal de generación y presiona "Generar Documentos". Se crean automáticamente en Google Docs con los datos del docente.</div></div>
                                 </div>
                                 <div class="accordion-item help-item">
-                                    <h2 class="accordion-header">
-                                        <button class="accordion-button collapsed help-btn" type="button" data-bs-toggle="collapse" data-bs-target="#ayuda4">
-                                            ¿Puedo editar o eliminar un docente ya registrado?
-                                        </button>
-                                    </h2>
-                                    <div id="ayuda4" class="accordion-collapse collapse" data-bs-parent="#accordionAyuda">
-                                        <div class="accordion-body help-body">
-                                            Sí, desde <b>Gestión de Docentes</b> — el ícono de lápiz edita sus datos básicos, y el de basura lo elimina (bloqueado automáticamente si ya tiene expedientes registrados, para evitar perder información).
-                                        </div>
-                                    </div>
+                                    <h2 class="accordion-header"><button class="accordion-button collapsed help-btn" type="button" data-bs-toggle="collapse" data-bs-target="#ayuda4">¿Cómo funcionan los Faculty Rosters?</button></h2>
+                                    <div id="ayuda4" class="accordion-collapse collapse" data-bs-parent="#accordionAyuda"><div class="accordion-body help-body">Hay un documento por programa y por <b>año académico</b> (de septiembre a agosto). Cuando una invitación pasa a <b>Completado</b>, el docente se agrega solo a la tabla del roster de su programa y año, según la fecha de inicio de la invitación; si la invitación sale de Completado o se elimina, la fila se quita. En <b>Faculty Rosters</b> también puedes crear los documentos del año, descargarlos en PDF, usar <b>Actualizar contenido</b> para agregar lo que falte o eliminarlos. Disponible para Ejecutiva Académica y Administrador.</div></div>
                                 </div>
-                            </div>
-                        </div>
+                                <div class="accordion-item help-item">
+                                    <h2 class="accordion-header"><button class="accordion-button collapsed help-btn" type="button" data-bs-toggle="collapse" data-bs-target="#ayuda5">¿Qué muestran los Reportes de Docentes?</button></h2>
+                                    <div id="ayuda5" class="accordion-collapse collapse" data-bs-parent="#accordionAyuda"><div class="accordion-body help-body"><b>Docentes Top</b> son los que hablan 2 o más idiomas y tienen un grado obtenido en Europa o Estados Unidos; <b>Docentes Globales</b> los agrupa por país. En ambos puedes filtrar por idioma, tipo de grado, estado, país o fecha de inicio de invitación, hacer clic en una gráfica para filtrar y exportar el resultado a CSV.</div></div>
+                                </div>
+                                <div class="accordion-item help-item">
+                                    <h2 class="accordion-header"><button class="accordion-button collapsed help-btn" type="button" data-bs-toggle="collapse" data-bs-target="#ayuda6">El docente no puede iniciar sesión, ¿qué hago?</button></h2>
+                                    <div id="ayuda6" class="accordion-collapse collapse" data-bs-parent="#accordionAyuda"><div class="accordion-body help-body">Entra a su expediente y usa el botón <b>"Enviar Credenciales"</b> en Acciones Administrativas: le vuelve a mandar su usuario y contraseña temporal al correo institucional registrado.</div></div>
+                                </div>
+                                <div class="accordion-item help-item">
+                                    <h2 class="accordion-header"><button class="accordion-button collapsed help-btn" type="button" data-bs-toggle="collapse" data-bs-target="#ayuda7">¿Puedo editar o eliminar un docente ya registrado?</button></h2>
+                                    <div id="ayuda7" class="accordion-collapse collapse" data-bs-parent="#accordionAyuda"><div class="accordion-body help-body">Sí, desde <b>Gestión de Docentes</b>: el ícono de lápiz edita sus datos básicos y el de basura lo elimina (bloqueado automáticamente si ya tiene expedientes registrados, para evitar perder información).</div></div>
+                                </div>
                     </div>
                 </div>
 
@@ -527,12 +482,11 @@
                 pintarValor('statExpedientesAprobados', contratados);
                 pintarValor('statPendientesRevision', pendientes.length);
                 pintarValor('statAlertas', expedientes.filter(e => e.vencido || e.porVencer).length);
-                renderExpedientesPendientes(pendientes);
                 renderEstancados();
                 graficarEmbudo();
             }).catch(e => {
                 console.error(e);
-                ['contenedorExpedientesPendientes', 'contenedorEstancados'].forEach(id => document.getElementById(id).innerHTML = '<p class="text-danger text-center py-3 m-0">No se pudieron cargar los expedientes.</p>');
+                document.getElementById('contenedorEstancados').innerHTML = '<p class="text-danger text-center py-3 m-0">No se pudieron cargar los expedientes.</p>';
             });
             post({ action: 'get_resumen_admin' }).then(r => {
                 if (r.status !== 'success') throw new Error(r.message);
@@ -610,22 +564,11 @@
             const lista = expedientes.map(e => ({ e, d: calcularDiasDesde(e.fechaCreacion) }))
                 .filter(x => !ESTADOS_FINALES.includes(x.e.estado) && x.d !== null && x.d >= min)
                 .sort((a, b) => b.d - a.d);
-            if (!lista.length) { cont.innerHTML = '<p class="text-muted text-center py-3 m-0"><i class="fa-regular fa-circle-check me-2 text-success"></i>No hay expedientes estancados.</p>'; return; }
+            if (!lista.length) { cont.innerHTML = '<p class="text-muted text-center py-3 m-0"><i class="fa-regular fa-circle-check me-2 text-success"></i>Todo al día: no hay expedientes con ese tiempo en proceso.</p>'; return; }
             cont.innerHTML = '<table class="mini-table"><thead><tr><th>Docente</th><th>Estado</th><th>Días</th></tr></thead><tbody>' + lista.slice(0, 30).map(x => {
                 const alerta = x.e.vencido ? '<span class="badge-soft badge-red ms-1">Vencido</span>' : (x.e.porVencer ? '<span class="badge-soft badge-orange ms-1">Por vencer</span>' : '');
                 return `<tr onclick="location.href='expediente.html?expId=${encodeURIComponent(x.e.idExpediente)}'" style="cursor:pointer;"><td><b>${esc(x.e.nombreDocente)}</b>${alerta}</td><td><span class="badge-soft">${esc(etiqueta(x.e.estado))}</span></td><td>${textoDias(x.d)}</td></tr>`;
             }).join('') + '</tbody></table>';
-        }
-
-        function renderExpedientesPendientes(lista) {
-            const cont = document.getElementById('contenedorExpedientesPendientes'); if (!cont) return;
-            if (!lista.length) { cont.innerHTML = '<p class="text-muted text-center py-3 m-0" style="font-size:0.9rem;"><i class="fa-regular fa-circle-check me-2 text-success"></i>No hay expedientes pendientes de revisión.</p>'; return; }
-            const ord = [...lista].sort((a, b) => (calcularDiasDesde(b.fechaCreacion) || 0) - (calcularDiasDesde(a.fechaCreacion) || 0));
-            cont.innerHTML = ord.slice(0, 5).map(exp => {
-                const dias = calcularDiasDesde(exp.fechaCreacion);
-                const urg = dias !== null && dias >= 3;
-                return `<a href="expediente.html?expId=${encodeURIComponent(exp.idExpediente)}" class="list-block" style="text-decoration:none;"><div class="list-info"><b>${esc(exp.nombreDocente)}</b><span>Exp: ${esc(exp.idExpediente)}</span></div><div class="time-badge" style="${urg ? 'background:#fef2f2; color:#ef4444;' : ''}">${textoDias(dias)}</div></a>`;
-            }).join('');
         }
 
         // 4. Invitaciones
@@ -686,13 +629,15 @@
         }
     </script>
     <script>
-        // Faculty Rosters: solo visible para Ejecutiva Academica y Administrador
+        // Faculty Rosters: solo Ejecutiva Academica y Administrador. Reportes de Docentes: personal administrativo.
         document.addEventListener('DOMContentLoaded', function () {
             var r = String(localStorage.getItem('userRole') || '').toUpperCase();
-            if (['ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA'].indexOf(r) > -1) {
-                var n = document.getElementById('navFacultyRoster');
-                if (n) n.style.display = '';
-            }
+            function mostrar(id, roles) { var n = document.getElementById(id); if (n && roles.indexOf(r) > -1) n.style.display = ''; }
+            mostrar('navFacultyRoster', ['ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA']);
+            mostrar('navReportesDocentes', ['ADMINISTRATIVO', 'ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA']);
+            mostrar('accFaculty', ['ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA']);
+            mostrar('accReportes', ['ADMINISTRATIVO', 'ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA']);
+            mostrar('accClases', ['ADMINISTRATIVO', 'ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA']);
         });
     </script>
 </body>

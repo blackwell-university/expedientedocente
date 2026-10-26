@@ -151,6 +151,24 @@
         .bar-wrap { background:#f1f5f9; border-radius:8px; height:10px; width:100%; min-width:120px; } .bar-fill { background:var(--primary); height:10px; border-radius:8px; }
         .avatar-sm { width:34px; height:34px; border-radius:50%; background:#eff6ff; color:var(--primary); display:inline-flex; align-items:center; justify-content:center; margin-right:10px; }
         @media (max-width: 768px) { .sidebar { position:fixed; left:-300px; height:100%; } .sidebar.show-mobile { left:0; } .sidebar-overlay.active { display:block; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:999; } .content-area{padding:20px 14px;} header{padding:14px 18px;} }
+
+        .criterio { background:#eff6ff; color:#1e3a8a; border-radius:12px; padding:12px 16px; font-size:13px; margin-bottom:16px; display:flex; gap:10px; align-items:flex-start; }
+        .criterio i { margin-top:2px; }
+        .filtros-activos { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:-6px 0 16px; }
+        .chip-filtro { background:#fff; border:1px solid #bfdbfe; color:var(--primary); border-radius:50px; padding:4px 6px 4px 12px; font-size:12px; font-weight:600; display:inline-flex; align-items:center; gap:6px; }
+        .chip-filtro button { border:0; background:#eff6ff; color:var(--primary); width:20px; height:20px; border-radius:50%; font-size:10px; line-height:1; cursor:pointer; }
+        .btn-link-soft { border:0; background:transparent; color:var(--text-muted); font-size:12px; font-weight:600; cursor:pointer; }
+        .btn-link-soft:hover { color:#ef4444; }
+        .tabla-head { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; padding:16px 18px; border-bottom:1px solid #e2e8f0; }
+        .tabla-head h6 { margin:0; font-weight:800; color:var(--primary-dark); }
+        .pag-bar { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; padding:14px 18px; border-top:1px solid #e2e8f0; font-size:12.5px; color:var(--text-muted); }
+        .pag-btns { display:flex; gap:6px; flex-wrap:wrap; }
+        .pag-btn { border:1px solid #e2e8f0; background:#fff; border-radius:8px; min-width:34px; height:34px; padding:0 10px; font-weight:600; font-size:12.5px; color:var(--text-main); cursor:pointer; }
+        .pag-btn.active { background:var(--primary); border-color:var(--primary); color:#fff; }
+        .pag-btn:disabled { opacity:.4; cursor:not-allowed; }
+        .select-mini { border:1px solid #e2e8f0; border-radius:8px; font-size:12.5px; padding:6px 8px; background:#fff; }
+        .nota-grafica { font-size:11.5px; color:#94a3b8; margin:10px 0 0; }
+        .seccion-titulo { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); margin:0 0 10px; }
 </style>
 </head>
 <body>
@@ -198,7 +216,7 @@
             <div class="centered-container">
                 <div class="page-header">
                     <h1>Reportes de Docentes</h1>
-                    <p>Docentes destacados por idiomas y estudios, y distribución de docentes por país.</p>
+                    <p>Elige un reporte, ajusta los filtros y revisa los docentes en la tabla. Haz clic en una gráfica para filtrar.</p>
                 </div>
 
                 <div class="tabs-rep">
@@ -206,69 +224,85 @@
                     <button class="tab-rep" id="tabGlobal" onclick="verTab('global')"><i class="fa-solid fa-earth-americas me-2"></i>Docentes Globales</button>
                 </div>
 
+                <div class="criterio"><i class="fa-solid fa-circle-info"></i><div id="criterioTxt">Cargando...</div></div>
+
                 <div class="stats-bar">
-                    <div class="stat-pill"><div class="stat-icon" style="background:#eff6ff;color:#2563eb;"><i class="fa-solid fa-users"></i></div><div><div class="stat-num" id="stA">—</div><div class="stat-label" id="stALbl">Docentes</div></div></div>
+                    <div class="stat-pill"><div class="stat-icon" style="background:#eff6ff;color:#2563eb;"><i class="fa-solid fa-users"></i></div><div><div class="stat-num" id="stA">—</div><div class="stat-label" id="stALbl">Docentes registrados</div></div></div>
                     <div class="stat-pill"><div class="stat-icon" style="background:#f0fdf4;color:#15803d;"><i class="fa-solid fa-circle-check"></i></div><div><div class="stat-num" id="stB">—</div><div class="stat-label" id="stBLbl">Resultado</div></div></div>
                 </div>
 
                 <div class="filter-section">
+                    <p class="seccion-titulo">Filtros</p>
                     <div class="row g-3 align-items-end">
                         <div class="col-md-3 filtro-top">
                             <label class="form-label-sm">Mínimo de idiomas</label>
-                            <select class="form-select input-filter" id="selMinIdiomas" onchange="renderTop()"><option value="2" selected>2 o más</option><option value="3">3 o más</option><option value="4">4 o más</option></select>
+                            <select class="form-select input-filter" id="selMinIdiomas" onchange="cambioFiltro()"><option value="1">1 o más</option><option value="2" selected>2 o más</option><option value="3">3 o más</option><option value="4">4 o más</option></select>
+                        </div>
+                        <div class="col-md-3 filtro-top">
+                            <label class="form-label-sm">Idioma</label>
+                            <select class="form-select input-filter" id="selIdioma" onchange="cambioFiltro()"><option value="">Todos</option></select>
                         </div>
                         <div class="col-md-3 filtro-top">
                             <label class="form-label-sm">Grado obtenido en</label>
-                            <select class="form-select input-filter" id="selRegion" onchange="renderTop()"><option value="ambos" selected>Europa o Estados Unidos</option><option value="Europa">Solo Europa</option><option value="Estados Unidos">Solo Estados Unidos</option></select>
+                            <select class="form-select input-filter" id="selRegion" onchange="cambioFiltro()"><option value="ambos" selected>Europa o Estados Unidos</option><option value="Europa">Solo Europa</option><option value="Estados Unidos">Solo Estados Unidos</option><option value="Otra">Otros países (fuera de Europa y EE.UU.)</option><option value="cualquiera">Cualquier país</option></select>
+                        </div>
+                        <div class="col-md-3 filtro-top">
+                            <label class="form-label-sm">Tipo de grado</label>
+                            <select class="form-select input-filter" id="selTipoGrado" onchange="cambioFiltro()"><option value="">Todos</option></select>
+                        </div>
+                        <div class="col-md-3 filtro-global">
+                            <label class="form-label-sm">País del docente</label>
+                            <select class="form-select input-filter" id="selPais" onchange="cambioFiltro()"><option value="">Todos</option></select>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label-sm">Docentes</label>
-                            <select class="form-select input-filter" id="selContrat" onchange="render()"><option value="todos" selected>Todos</option><option value="si">Solo contratados</option></select>
+                            <label class="form-label-sm">Estado</label>
+                            <select class="form-select input-filter" id="selContrat" onchange="cambioFiltro()"><option value="todos" selected>Todos</option><option value="si">Solo contratados</option><option value="no">Solo registrados</option></select>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label-sm">Buscar</label>
-                            <div class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input type="text" class="form-control input-filter" id="txtBuscar" placeholder="Nombre o país..." oninput="render()"></div>
+                            <label class="form-label-sm">Inicio de invitación desde</label>
+                            <input type="date" class="form-control input-filter" id="fechaDesde" onchange="cambioFiltro()">
                         </div>
-                        <div class="col-12 d-flex justify-content-end"><button class="btn-outline-soft" onclick="exportarCSV()"><i class="fa-solid fa-file-csv me-2 text-success"></i>Exportar CSV</button></div>
+                        <div class="col-md-3">
+                            <label class="form-label-sm">Inicio de invitación hasta</label>
+                            <input type="date" class="form-control input-filter" id="fechaHasta" onchange="cambioFiltro()">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label-sm">Buscar docente</label>
+                            <div class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input type="text" class="form-control input-filter" id="txtBuscar" placeholder="Nombre o país..." oninput="cambioFiltro()"></div>
+                        </div>
                     </div>
                 </div>
+                <div class="filtros-activos" id="filtrosActivos"></div>
 
+                <!-- Docentes Top: gráficas -->
                 <div class="row g-3 mb-3" id="chartsTop">
-                    <div class="col-lg-7"><div class="chart-card"><h6>Idiomas entre los Docentes Top <small class="text-muted fw-normal">· clic para ver quiénes</small></h6><div class="chart-box"><canvas id="chIdiomas"></canvas></div></div></div>
-                    <div class="col-lg-5"><div class="chart-card"><h6>Grados por región de estudio</h6><div class="chart-box"><canvas id="chRegion"></canvas></div></div></div>
+                    <div class="col-lg-7"><div class="chart-card"><h6>Idiomas más frecuentes</h6><div class="chart-box"><canvas id="chIdiomas"></canvas></div><p class="nota-grafica" id="notaIdiomas"></p></div></div>
+                    <div class="col-lg-5"><div class="chart-card"><h6>Docentes según dónde estudiaron</h6><div class="chart-box"><canvas id="chRegion"></canvas></div></div></div>
                 </div>
-                <div class="card-modern d-none mb-3" id="detalleTop">
-                    <div class="d-flex justify-content-between align-items-center px-3 pt-3"><h6 class="fw-bold m-0" style="color:var(--primary-dark)" id="detalleTituloTop"></h6><button class="btn-outline-soft" onclick="cerrarDetalle()"><i class="fa-solid fa-xmark me-1"></i>Cerrar</button></div>
-                    <div class="table-responsive"><table class="table-corporate"><thead><tr><th>Docente</th><th>País</th><th>Detalle</th></tr></thead><tbody id="detalleBodyTop"></tbody></table></div>
+                <!-- Docentes Globales: gráficas -->
+                <div class="row g-3 mb-3 d-none" id="chartsGlobal">
+                    <div class="col-lg-7"><div class="chart-card"><h6>Docentes por país</h6><div class="chart-box"><canvas id="chPaises"></canvas></div><p class="nota-grafica" id="notaPaises"></p></div></div>
+                    <div class="col-lg-5"><div class="chart-card"><h6>Contratados y registrados</h6><div class="chart-box"><canvas id="chEstado"></canvas></div></div></div>
                 </div>
-                <div class="card-modern" id="cardTop">
-                    <div class="table-responsive"><table class="table-corporate">
-                        <thead><tr><th>Docente</th><th>Idiomas</th><th>Grados en Europa / EE.UU.</th><th>País</th></tr></thead>
+
+                <div class="card-modern" id="cardResultados">
+                    <div class="tabla-head">
+                        <h6 id="tituloTabla">Resultados</h6>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <label class="small text-muted m-0">Mostrar</label>
+                            <select class="select-mini" id="selTam" onchange="cambioTam()"><option value="10" selected>10</option><option value="25">25</option><option value="50">50</option></select>
+                            <button class="btn-outline-soft" onclick="exportarCSV()"><i class="fa-solid fa-file-csv me-2 text-success"></i>Exportar CSV</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive" id="wrapTop"><table class="table-corporate">
+                        <thead><tr><th>Docente</th><th>Idiomas</th><th>Grados</th><th>País</th></tr></thead>
                         <tbody id="tbTop"><tr><td colspan="4" class="empty-state"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando...</td></tr></tbody>
                     </table></div>
-                </div>
-
-                <div class="d-none" id="cardGlobal">
-                    <div class="row g-3 mb-3">
-                        <div class="col-lg-7"><div class="chart-card"><h6>Docentes por país (Top 10) <small class="text-muted fw-normal">· clic para ver quiénes</small></h6><div class="chart-box"><canvas id="chPaises"></canvas></div></div></div>
-                        <div class="col-lg-5"><div class="chart-card"><h6>Contratados vs registrados</h6><div class="chart-box"><canvas id="chEstado"></canvas></div></div></div>
-                    </div>
-                    <div class="card-modern d-none mb-3" id="detalleGlobal">
-                    <div class="d-flex justify-content-between align-items-center px-3 pt-3"><h6 class="fw-bold m-0" style="color:var(--primary-dark)" id="detalleTituloGlobal"></h6><button class="btn-outline-soft" onclick="cerrarDetalle()"><i class="fa-solid fa-xmark me-1"></i>Cerrar</button></div>
-                    <div class="table-responsive"><table class="table-corporate"><thead><tr><th>Docente</th><th>País</th><th>Detalle</th></tr></thead><tbody id="detalleBodyGlobal"></tbody></table></div>
-                </div>
-                    <div class="card-modern mb-3">
-                        <div class="table-responsive"><table class="table-corporate">
-                            <thead><tr><th>País</th><th style="width:90px">Docentes</th><th style="width:35%">Proporción</th></tr></thead>
-                            <tbody id="tbPaises"></tbody>
-                        </table></div>
-                    </div>
-                    <div class="card-modern">
-                        <div class="table-responsive"><table class="table-corporate">
-                            <thead><tr><th>Docente</th><th>País</th><th>Estado</th></tr></thead>
-                            <tbody id="tbDocentes"></tbody>
-                        </table></div>
-                    </div>
+                    <div class="table-responsive d-none" id="wrapGlobal"><table class="table-corporate">
+                        <thead><tr><th>Docente</th><th>País</th><th>Idiomas</th><th>Estado</th></tr></thead>
+                        <tbody id="tbGlobal"></tbody>
+                    </table></div>
+                    <div class="pag-bar" id="pagBar"></div>
                 </div>
             </div>
         </div>
@@ -276,9 +310,16 @@
 
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
-        let docentes = [];
-        let tab = 'top';
+        const MAX_BARRAS = 8;        // las gráficas muestran los 8 principales y agrupan el resto en "Otros"
+        const MAX_CHIPS = 3;         // en la tabla se muestran hasta 3 etiquetas por celda
+        let docentes = [], tab = 'top', tam = 10;
+        const pag = { top: 1, global: 1 };
+        const charts = {};
         const esc = t => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        const norm = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+        const val = id => document.getElementById(id).value;
+        const PALETA = ['#2563eb', '#10b981', '#f59e0b', '#a855f7', '#ef4444', '#06b6d4', '#84cc16', '#ec4899', '#64748b', '#f97316'];
+
         function logout() {
             Swal.fire({ title: '¿Cerrar sesión?', text: 'Vas a salir del portal administrativo.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#2563eb', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, cerrar sesión', cancelButtonText: 'Cancelar', reverseButtons: true })
                 .then(r => { if (r.isConfirmed) { sessionStorage.clear(); localStorage.clear(); window.location.href = "../index.html"; } });
@@ -292,24 +333,17 @@
             document.getElementById('sidebar').classList.toggle('show-mobile');
             document.getElementById('sidebarOverlay').classList.toggle('active');
         }
-
         document.addEventListener('DOMContentLoaded', () => {
             const name = localStorage.getItem('userName') || "Admin";
             document.getElementById('userName').innerText = name;
             document.getElementById('userRoleLabel').innerText = localStorage.getItem('userRole') || "Administrador";
             document.getElementById('userInitial').innerText = name.trim().substring(0, 2).toUpperCase();
             const rolUpperNav = String(localStorage.getItem('userRole') || '').toUpperCase();
-            if (rolUpperNav === 'ADMINISTRADOR' || rolUpperNav === 'ADMIN') {
-                const navGU = document.getElementById('navGestionUsuarios');
-                if (navGU) navGU.style.display = '';
-            }
-            if (rolUpperNav === 'ADMINISTRATIVO' || rolUpperNav === 'EJECUTIVA ACADEMICA') {
-                const navGC = document.getElementById('navGestionClases');
-                if (navGC) navGC.style.display = '';
-            }
+            if (rolUpperNav === 'ADMINISTRADOR' || rolUpperNav === 'ADMIN') { const n = document.getElementById('navGestionUsuarios'); if (n) n.style.display = ''; }
+            if (rolUpperNav === 'ADMINISTRATIVO' || rolUpperNav === 'EJECUTIVA ACADEMICA') { const n = document.getElementById('navGestionClases'); if (n) n.style.display = ''; }
+            verTab('top', true);
             cargarReporte();
         });
-
 
         async function cargarReporte() {
             try {
@@ -317,113 +351,227 @@
                 const r = await res.json();
                 if (r.status !== 'success') throw new Error(r.message || 'Error');
                 docentes = r.docentes || [];
+                llenarOpciones();
                 render();
             } catch (e) {
                 document.getElementById('tbTop').innerHTML = '<tr><td colspan="4" class="empty-state text-danger">No se pudo cargar el reporte. ' + esc(e.message) + '</td></tr>';
                 Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo cargar el reporte.' });
             }
         }
-        function verTab(t) {
+
+        // Llena los filtros con TODOS los idiomas, países y tipos de grado que existan en el sistema
+        function llenarOpciones() {
+            const idi = {}, paises = {}, tipos = {};
+            docentes.forEach(d => {
+                d.idiomas.forEach(i => { idi[i.idioma] = (idi[i.idioma] || 0) + 1; });
+                if (d.pais) paises[d.pais] = (paises[d.pais] || 0) + 1;
+                const vistos = {};
+                d.grados.forEach(g => { const k = norm(g.grado); if (k && !vistos[k]) { vistos[k] = 1; tipos[k] = tipos[k] || { label: g.grado, n: 0 }; tipos[k].n++; } });
+            });
+            const opt = (v, t) => `<option value="${esc(v)}">${esc(t)}</option>`;
+            document.getElementById('selIdioma').innerHTML = '<option value="">Todos</option>' + Object.keys(idi).sort((a, b) => idi[b] - idi[a] || a.localeCompare(b)).map(k => opt(k, `${k} (${idi[k]})`)).join('');
+            document.getElementById('selPais').innerHTML = '<option value="">Todos</option>' + Object.keys(paises).sort((a, b) => paises[b] - paises[a] || a.localeCompare(b)).map(k => opt(k, `${k} (${paises[k]})`)).join('');
+            document.getElementById('selTipoGrado').innerHTML = '<option value="">Todos</option>' + Object.keys(tipos).sort((a, b) => tipos[b].n - tipos[a].n).map(k => opt(k, `${tipos[k].label} (${tipos[k].n})`)).join('');
+        }
+
+        function verTab(t, sinRender) {
             tab = t;
             document.getElementById('tabTop').classList.toggle('active', t === 'top');
             document.getElementById('tabGlobal').classList.toggle('active', t === 'global');
-            document.getElementById('cardTop').classList.toggle('d-none', t !== 'top');
-            document.getElementById('cardGlobal').classList.toggle('d-none', t !== 'global');
+            document.getElementById('chartsTop').classList.toggle('d-none', t !== 'top');
+            document.getElementById('chartsGlobal').classList.toggle('d-none', t !== 'global');
+            document.getElementById('wrapTop').classList.toggle('d-none', t !== 'top');
+            document.getElementById('wrapGlobal').classList.toggle('d-none', t !== 'global');
             document.querySelectorAll('.filtro-top').forEach(el => el.style.display = t === 'top' ? '' : 'none');
-            render();
+            document.querySelectorAll('.filtro-global').forEach(el => el.style.display = t === 'global' ? '' : 'none');
+            if (!sinRender) render();
         }
-        function filtrados() {
-            const q = document.getElementById('txtBuscar').value.trim().toLowerCase();
-            const soloC = document.getElementById('selContrat').value === 'si';
-            return docentes.filter(d => (!soloC || d.contratado) && (!q || (d.nombre + ' ' + d.pais).toLowerCase().includes(q)));
-        }
-        function listaTop() {
-            const min = parseInt(document.getElementById('selMinIdiomas').value, 10);
-            const reg = document.getElementById('selRegion').value;
-            return filtrados().map(d => {
-                const gr = d.grados.filter(g => reg === 'ambos' ? (g.region === 'Europa' || g.region === 'Estados Unidos') : g.region === reg);
-                return { d, gr };
-            }).filter(x => x.d.idiomas.length >= min && x.gr.length > 0)
-              .sort((a, b) => b.d.idiomas.length - a.d.idiomas.length || a.d.nombre.localeCompare(b.d.nombre));
+        function cambioFiltro() { pag.top = 1; pag.global = 1; render(); }
+        function cambioTam() { tam = parseInt(val('selTam'), 10); pag.top = 1; pag.global = 1; render(); }
+        function setFiltro(id, valor) { document.getElementById(id).value = valor; cambioFiltro(); document.getElementById('cardResultados').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+        function limpiarFiltros() {
+            ['selIdioma', 'selTipoGrado', 'selPais', 'txtBuscar', 'fechaDesde', 'fechaHasta'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('selRegion').value = 'ambos'; document.getElementById('selContrat').value = 'todos'; document.getElementById('selMinIdiomas').value = '2';
+            cambioFiltro();
         }
 
-        const PALETA = ['#2563eb','#10b981','#f59e0b','#a855f7','#ef4444','#06b6d4','#84cc16','#ec4899','#64748b','#f97316'];
-        const charts = {};
-        function dibujar(id, tipo, labels, valores, opts, detalles, titulo) {
+        // ---------- Filtrado ----------
+        function baseFiltrados() {
+            const q = norm(val('txtBuscar')), c = val('selContrat'), desde = val('fechaDesde'), hasta = val('fechaHasta');
+            // Con fechas elegidas, el docente debe tener al menos una invitación cuyo inicio caiga en el rango
+            const enRango = d => !desde && !hasta ? true : (d.invitaciones || []).some(v => (!desde || v.inicio >= desde) && (!hasta || v.inicio <= hasta));
+            return docentes.filter(d => (c === 'todos' || (c === 'si' ? d.contratado : !d.contratado)) && (!q || norm(d.nombre + ' ' + d.pais).includes(q)) && enRango(d));
+        }
+        function pasaGrado(g, region, tipo) {
+            const okReg = region === 'cualquiera' ? true : (region === 'ambos' ? (g.region === 'Europa' || g.region === 'Estados Unidos') : g.region === region);
+            return okReg && (!tipo || norm(g.grado) === tipo);
+        }
+        // skip: 'idioma' o 'region' para que cada gráfica ignore su propio filtro y siga mostrando todas sus opciones
+        function listaTop(skip) {
+            const min = parseInt(val('selMinIdiomas'), 10), idi = skip === 'idioma' ? '' : val('selIdioma'), reg = skip === 'region' ? 'cualquiera' : val('selRegion'), tipo = val('selTipoGrado');
+            return baseFiltrados().map(d => ({ d, gr: d.grados.filter(g => pasaGrado(g, reg, tipo)) }))
+                .filter(x => x.d.idiomas.length >= min && x.gr.length > 0 && (!idi || x.d.idiomas.some(i => i.idioma === idi)))
+                .sort((a, b) => b.d.idiomas.length - a.d.idiomas.length || a.d.nombre.localeCompare(b.d.nombre));
+        }
+        function listaGlobal(skip) {
+            const p = skip === 'pais' ? '' : val('selPais');
+            return baseFiltrados().filter(d => !p || d.pais === p).sort((a, b) => (a.pais || 'zzz').localeCompare(b.pais || 'zzz') || a.nombre.localeCompare(b.nombre));
+        }
+
+        // ---------- Gráficas ----------
+        function dibujar(id, tipo, pares, activo, onSelect, horizontal) {
             if (typeof Chart === 'undefined') return;
             if (charts[id]) charts[id].destroy();
-            const horiz = opts && opts.horizontal;
+            let items = pares.slice(0, MAX_BARRAS);
+            const resto = pares.slice(MAX_BARRAS);
+            if (resto.length) items.push(['Otros (' + resto.length + ')', resto.reduce((a, b) => a + b[1], 0)]);
+            const labels = items.map(x => x[0]), valores = items.map(x => x[1]);
+            const colores = tipo === 'bar'
+                ? labels.map(l => (!activo || l === activo) ? '#2563eb' : '#bfdbfe')
+                : labels.map((l, i) => (!activo || l === activo) ? PALETA[i % PALETA.length] : '#e2e8f0');
             charts[id] = new Chart(document.getElementById(id), {
                 type: tipo,
-                data: { labels, datasets: [{ data: valores, backgroundColor: tipo === 'bar' ? '#2563eb' : PALETA, borderRadius: tipo === 'bar' ? 6 : 0, borderWidth: tipo === 'bar' ? 0 : 2, borderColor: '#fff' }] },
+                data: { labels, datasets: [{ data: valores, backgroundColor: colores, borderRadius: tipo === 'bar' ? 6 : 0, borderWidth: tipo === 'bar' ? 0 : 2, borderColor: '#fff' }] },
                 options: {
-                    maintainAspectRatio: false, indexAxis: horiz ? 'y' : 'x',
-                    onClick: (ev, els) => { if (els.length && detalles) mostrarDetalle(titulo + ': ' + labels[els[0].index], detalles[labels[els[0].index]] || []); },
+                    maintainAspectRatio: false, indexAxis: horizontal ? 'y' : 'x',
+                    onClick: (ev, els) => { if (!els.length) return; const l = labels[els[0].index]; if (l.indexOf('Otros (') === 0) return; onSelect(l === activo ? '' : l); },
                     onHover: (ev, els) => { ev.native.target.style.cursor = els.length ? 'pointer' : 'default'; },
-                    plugins: { legend: { display: tipo !== 'bar', position: 'bottom' } },
-                    scales: tipo === 'bar' ? { x: { grid: { display: false }, ticks: { precision: 0 } }, y: { grid: { display: !horiz }, ticks: { precision: 0 } } } : {}
+                    plugins: { legend: { display: tipo !== 'bar', position: 'bottom' }, tooltip: { callbacks: { label: c => ' ' + c.parsed + (tipo === 'bar' ? '' : '') } } },
+                    scales: tipo === 'bar' ? { x: { grid: { display: horizontal }, ticks: { precision: 0 } }, y: { grid: { display: !horizontal }, ticks: { precision: 0 } } } : {}
                 }
             });
+            return resto.length;
+        }
+        const ordenar = o => Object.keys(o).map(k => [k, o[k]]).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+
+        function graficarTop() {
+            const base = listaTop('idioma'), idi = {};
+            base.forEach(x => x.d.idiomas.forEach(i => { idi[i.idioma] = (idi[i.idioma] || 0) + 1; }));
+            const par = ordenar(idi);
+            dibujar('chIdiomas', 'bar', par, val('selIdioma'), v => setFiltro('selIdioma', v));
+            document.getElementById('notaIdiomas').innerText = par.length > MAX_BARRAS ? `Se muestran los ${MAX_BARRAS} idiomas más frecuentes de ${par.length}. Usa el filtro "Idioma" para ver cualquiera de los demás.` : '';
+            const reg = {};
+            listaTop('region').forEach(x => { new Set(x.gr.map(g => g.region || 'Sin dato')).forEach(r => { reg[r] = (reg[r] || 0) + 1; }); });
+            const regAct = ['ambos', 'cualquiera'].indexOf(val('selRegion')) > -1 ? '' : val('selRegion');
+            dibujar('chRegion', 'doughnut', ordenar(reg), regAct, v => { if (v !== 'Sin dato') setFiltro('selRegion', v || 'ambos'); });
+        }
+        function graficarGlobal() {
+            const cuenta = {};
+            listaGlobal('pais').forEach(d => { const p = d.pais || 'Sin país'; cuenta[p] = (cuenta[p] || 0) + 1; });
+            const par = ordenar(cuenta);
+            dibujar('chPaises', 'bar', par, val('selPais'), v => setFiltro('selPais', v === 'Sin país' ? '' : v), true);
+            document.getElementById('notaPaises').innerText = par.length > MAX_BARRAS ? `Se muestran los ${MAX_BARRAS} países con más docentes de ${par.length}. Usa el filtro "País del docente" para ver cualquiera de los demás.` : '';
+            const base = docentes.filter(d => { const q = norm(val('txtBuscar')); return (!val('selPais') || d.pais === val('selPais')) && (!q || norm(d.nombre + ' ' + d.pais).includes(q)); });
+            const c = base.filter(d => d.contratado).length;
+            const act = val('selContrat') === 'si' ? 'Contratados' : (val('selContrat') === 'no' ? 'Registrados' : '');
+            dibujar('chEstado', 'doughnut', [['Contratados', c], ['Registrados', base.length - c]], act, v => setFiltro('selContrat', v === 'Contratados' ? 'si' : (v === 'Registrados' ? 'no' : 'todos')));
         }
 
-        function mostrarDetalle(titulo, filas) {
-            const suf = tab === 'top' ? 'Top' : 'Global';
-            document.getElementById('detalleTitulo' + suf).innerText = titulo + ' (' + filas.length + ')';
-            document.getElementById('detalleBody' + suf).innerHTML = filas.length ? filas.map(f => `<tr><td><b>${esc(f.nombre)}</b></td><td>${esc(f.pais || '—')}</td><td>${esc(f.info || '')}</td></tr>`).join('') : '<tr><td colspan="3" class="empty-state">Sin docentes.</td></tr>';
-            const card = document.getElementById('detalle' + suf);
-            card.classList.remove('d-none');
-            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        // ---------- Tabla + paginación ----------
+        function chips(arr, clase, max) {
+            const mostrar = arr.slice(0, max).map(t => `<span class="chip ${clase}">${esc(t)}</span>`).join('');
+            return mostrar + (arr.length > max ? `<span class="chip" title="${esc(arr.slice(max).join(', '))}">+${arr.length - max}</span>` : '') || '<span class="text-muted">—</span>';
         }
-        function cerrarDetalle() { ['Top', 'Global'].forEach(x => document.getElementById('detalle' + x).classList.add('d-none')); }
-        function agrupar(items, claves) { const o = {}; items.forEach(it => claves(it).forEach(([k, f]) => { (o[k] = o[k] || []).push(f); })); return o; }
-        function contar(arr) { const o = {}; arr.forEach(k => { o[k] = (o[k] || 0) + 1; }); return o; }
-        function graficarTop(lista) {
-            const dIdi = agrupar(lista, x => x.d.idiomas.map(i => [i.idioma, { nombre: x.d.nombre, pais: x.d.pais, info: x.d.idiomas.map(j => j.idioma).join(', ') }]));
-            const k = Object.keys(dIdi).sort((a, b) => dIdi[b].length - dIdi[a].length);
-            dibujar('chIdiomas', 'bar', k, k.map(x => dIdi[x].length), null, dIdi, 'Idioma');
-            const dReg = agrupar(lista, x => x.gr.map(g => [g.region, { nombre: x.d.nombre, pais: x.d.pais, info: (g.grado || 'Grado') + ' · ' + (g.institucion || '') + ' (' + g.pais + ')' }]));
-            const r = Object.keys(dReg);
-            dibujar('chRegion', 'doughnut', r, r.map(x => dReg[x].length), null, dReg, 'Grados en');
+        function paginar(lista, key) {
+            const pages = Math.max(1, Math.ceil(lista.length / tam));
+            if (pag[key] > pages) pag[key] = pages;
+            const ini = (pag[key] - 1) * tam;
+            return { items: lista.slice(ini, ini + tam), pages, ini };
         }
-        function graficarGlobal(lista, cuenta, filas) {
-            const top = filas.slice(0, 10);
-            const dP = agrupar(lista, d => [[d.pais || 'Sin país', { nombre: d.nombre, pais: d.pais, info: d.contratado ? 'Contratado' : 'Registrado' }]]);
-            dibujar('chPaises', 'bar', top, top.map(p => cuenta[p]), { horizontal: true }, dP, 'País');
-            const dE = agrupar(lista, d => [[d.contratado ? 'Contratados' : 'Registrados', { nombre: d.nombre, pais: d.pais, info: '' }]]);
-            const ks = ['Contratados', 'Registrados'];
-            dibujar('chEstado', 'doughnut', ks, ks.map(x => (dE[x] || []).length), null, dE, 'Docentes');
+        function irPag(key, n) { pag[key] = n; render(true); document.getElementById('cardResultados').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+        function renderPag(key, total, pages, ini, n) {
+            const bar = document.getElementById('pagBar');
+            if (!total) { bar.innerHTML = ''; return; }
+            const cur = pag[key];
+            const nums = [];
+            for (let p = 1; p <= pages; p++) if (p === 1 || p === pages || Math.abs(p - cur) <= 1) nums.push(p);
+            let btns = `<button class="pag-btn" ${cur === 1 ? 'disabled' : ''} onclick="irPag('${key}',${cur - 1})"><i class="fa-solid fa-chevron-left"></i></button>`;
+            let prev = 0;
+            nums.forEach(p => { if (p - prev > 1) btns += '<span class="px-1 align-self-center">…</span>'; btns += `<button class="pag-btn ${p === cur ? 'active' : ''}" onclick="irPag('${key}',${p})">${p}</button>`; prev = p; });
+            btns += `<button class="pag-btn" ${cur === pages ? 'disabled' : ''} onclick="irPag('${key}',${cur + 1})"><i class="fa-solid fa-chevron-right"></i></button>`;
+            bar.innerHTML = `<span>Mostrando ${ini + 1}–${ini + n} de ${total}</span><div class="pag-btns">${btns}</div>`;
         }
-        function render() { cerrarDetalle(); tab === 'top' ? renderTop() : renderGlobal(); }
-        function renderTop() {
-            const lista = listaTop();
-            graficarTop(lista);
-            document.getElementById('stA').innerText = docentes.length; document.getElementById('stALbl').innerText = 'Docentes registrados';
-            document.getElementById('stB').innerText = lista.length; document.getElementById('stBLbl').innerText = 'Docentes Top';
-            document.getElementById('tbTop').innerHTML = lista.length ? lista.map(x => `<tr>
-                <td><span class="avatar-sm"><i class="fa-solid fa-user"></i></span><b>${esc(x.d.nombre)}</b>${x.d.contratado ? ' <span class="chip green">Contratado</span>' : ''}</td>
-                <td>${x.d.idiomas.map(i => `<span class="chip blue">${esc(i.idioma)}${i.nivel ? ' · ' + esc(i.nivel) : ''}</span>`).join('')}</td>
-                <td>${x.gr.map(g => `<span class="chip">${esc(g.grado || 'Grado')} · ${esc(g.institucion || '')} (${esc(g.pais)})</span>`).join('')}</td>
-                <td>${esc(x.d.pais || '—')}</td></tr>`).join('')
-                : '<tr><td colspan="4" class="empty-state">Ningún docente cumple los criterios.</td></tr>';
+
+        function fmtFecha(iso) { const p = iso.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
+        function textoRegion(r) {
+            return { ambos: 'Europa o Estados Unidos', cualquiera: 'cualquier país', Otra: 'otros países (fuera de Europa y EE.UU.)' }[r] || r;
         }
-        function renderGlobal() {
-            const lista = filtrados();
-            const cuenta = {};
-            lista.forEach(d => { const p = d.pais || 'Sin país'; cuenta[p] = (cuenta[p] || 0) + 1; });
-            const filas = Object.keys(cuenta).sort((a, b) => cuenta[b] - cuenta[a] || a.localeCompare(b));
-            const max = filas.length ? cuenta[filas[0]] : 1;
-            graficarGlobal(lista, cuenta, filas);
-            document.getElementById('stA').innerText = lista.length; document.getElementById('stALbl').innerText = 'Docentes';
-            document.getElementById('stB').innerText = filas.filter(p => p !== 'Sin país').length; document.getElementById('stBLbl').innerText = 'Países representados';
-            document.getElementById('tbPaises').innerHTML = filas.length ? filas.map(p => `<tr><td><b>${esc(p)}</b></td><td>${cuenta[p]}</td><td><div class="bar-wrap"><div class="bar-fill" style="width:${Math.round(cuenta[p] / max * 100)}%"></div></div></td></tr>`).join('') : '<tr><td colspan="3" class="empty-state">Sin datos.</td></tr>';
-            document.getElementById('tbDocentes').innerHTML = lista.length ? lista.slice().sort((a, b) => (a.pais || 'zzz').localeCompare(b.pais || 'zzz') || a.nombre.localeCompare(b.nombre)).map(d => `<tr><td>${esc(d.nombre)}</td><td>${esc(d.pais || 'Sin país')}</td><td>${d.contratado ? '<span class="chip green">Contratado</span>' : '<span class="chip">Registrado</span>'}</td></tr>`).join('') : '<tr><td colspan="3" class="empty-state">Sin datos.</td></tr>';
+        function criterioTop() {
+            const min = val('selMinIdiomas'), idi = val('selIdioma'), reg = val('selRegion'), tipo = val('selTipoGrado');
+            const tipoTxt = tipo ? document.getElementById('selTipoGrado').selectedOptions[0].text.replace(/ \(\d+\)$/, '') : '';
+            let t = `Docentes que hablan <b>${min} idioma${min === '1' ? '' : 's'} o más</b>`;
+            if (idi) t += `, entre ellos <b>${esc(idi)}</b>,`;
+            t += ` y tienen ${tipoTxt ? `un grado de <b>${esc(tipoTxt)}</b>` : 'un grado'} obtenido en <b>${textoRegion(reg)}</b>.`;
+            return t + textoFechas();
         }
+        function textoFechas() {
+            const d = val('fechaDesde'), h = val('fechaHasta');
+            if (!d && !h) return '';
+            return ' Con una invitación que empieza ' + (d ? 'desde el <b>' + fmtFecha(d) + '</b>' : '') + (d && h ? ' ' : '') + (h ? 'hasta el <b>' + fmtFecha(h) + '</b>' : '') + '.';
+        }
+        function chipsActivos() {
+            const l = [], add = (txt, fn) => l.push(`<span class="chip-filtro">${esc(txt)}<button onclick="${fn}" title="Quitar"><i class="fa-solid fa-xmark"></i></button></span>`);
+            if (tab === 'top') {
+                if (val('selIdioma')) add('Idioma: ' + val('selIdioma'), "setFiltro('selIdioma','')");
+                if (val('selRegion') !== 'ambos') add('Grado en: ' + textoRegion(val('selRegion')), "setFiltro('selRegion','ambos')");
+                if (val('selTipoGrado')) add('Grado: ' + document.getElementById('selTipoGrado').selectedOptions[0].text.replace(/ \(\d+\)$/, ''), "setFiltro('selTipoGrado','')");
+            } else if (val('selPais')) add('País: ' + val('selPais'), "setFiltro('selPais','')");
+            if (val('selContrat') !== 'todos') add(val('selContrat') === 'si' ? 'Solo contratados' : 'Solo registrados', "setFiltro('selContrat','todos')");
+            if (val('fechaDesde') || val('fechaHasta')) add('Inicio de invitación: ' + (val('fechaDesde') ? 'desde ' + fmtFecha(val('fechaDesde')) : '') + (val('fechaDesde') && val('fechaHasta') ? ' ' : '') + (val('fechaHasta') ? 'hasta ' + fmtFecha(val('fechaHasta')) : ''), "document.getElementById('fechaDesde').value='';document.getElementById('fechaHasta').value='';cambioFiltro()");
+            if (val('txtBuscar').trim()) add('Búsqueda: ' + val('txtBuscar').trim(), "setFiltro('txtBuscar','')");
+            document.getElementById('filtrosActivos').innerHTML = l.length ? l.join('') + '<button class="btn-link-soft" onclick="limpiarFiltros()"><i class="fa-solid fa-filter-circle-xmark me-1"></i>Limpiar filtros</button>' : '';
+        }
+
+        // Explica por qué no hay resultados, para que no parezca que el filtro falló
+        function explicarVacio() {
+            const min = parseInt(val('selMinIdiomas'), 10), idi = val('selIdioma'), reg = val('selRegion'), tipo = val('selTipoGrado');
+            const regTxt = textoRegion(reg);
+            const base = baseFiltrados().filter(d => !idi || d.idiomas.some(i => i.idioma === idi));
+            const nMin = base.filter(d => d.idiomas.length >= min).length;
+            const nGrado = base.filter(d => d.grados.some(g => pasaGrado(g, reg, tipo))).length;
+            let t = idi ? `Hay <b>${base.length}</b> docente(s) con <b>${esc(idi)}</b>` : `Hay <b>${base.length}</b> docente(s) con los filtros de estado y búsqueda`;
+            t += `: <b>${nMin}</b> con ${min} idioma(s) o más y <b>${nGrado}</b> con ${tipo ? 'ese tipo de grado' : 'un grado'} obtenido en ${regTxt}. Ninguno cumple todo a la vez.`;
+            return t + '<br><span class="small">Prueba bajar el mínimo de idiomas o cambiar "Grado obtenido en" / "Tipo de grado".</span>';
+        }
+        function render(soloTabla) {
+            chipsActivos();
+            document.getElementById('stA').innerText = docentes.length;
+            if (tab === 'top') {
+                const lista = listaTop();
+                document.getElementById('criterioTxt').innerHTML = criterioTop();
+                document.getElementById('stB').innerText = lista.length; document.getElementById('stBLbl').innerText = 'Docentes Top con estos filtros';
+                document.getElementById('tituloTabla').innerText = `Docentes Top (${lista.length})`;
+                if (!soloTabla) graficarTop();
+                const p = paginar(lista, 'top');
+                document.getElementById('tbTop').innerHTML = p.items.length ? p.items.map(x => `<tr>
+                    <td><span class="avatar-sm"><i class="fa-solid fa-user"></i></span><b>${esc(x.d.nombre)}</b>${x.d.contratado ? ' <span class="chip green">Contratado</span>' : ''}</td>
+                    <td>${chips(x.d.idiomas.map(i => i.idioma + (i.nivel ? ' · ' + i.nivel : '')), 'blue', MAX_CHIPS)}</td>
+                    <td>${chips(x.gr.map(g => (g.grado || 'Grado') + ' · ' + (g.institucion || '') + ' (' + g.pais + ')'), '', 2)}</td>
+                    <td>${esc(x.d.pais || '—')}</td></tr>`).join('') : `<tr><td colspan="4" class="empty-state">${explicarVacio()}</td></tr>`;
+                renderPag('top', lista.length, p.pages, p.ini, p.items.length);
+            } else {
+                const lista = listaGlobal();
+                const paises = new Set(lista.map(d => d.pais).filter(Boolean));
+                document.getElementById('criterioTxt').innerHTML = `Todos los docentes registrados, agrupados por su <b>país</b>${val('selPais') ? ' (' + esc(val('selPais')) + ')' : ''}. Hoy usa el dato País del docente; más adelante se podrá usar la nacionalidad.${textoFechas()}`;
+                document.getElementById('stB').innerText = paises.size; document.getElementById('stBLbl').innerText = 'Países representados';
+                document.getElementById('tituloTabla').innerText = `Docentes (${lista.length})`;
+                if (!soloTabla) graficarGlobal();
+                const p = paginar(lista, 'global');
+                document.getElementById('tbGlobal').innerHTML = p.items.length ? p.items.map(d => `<tr>
+                    <td><span class="avatar-sm"><i class="fa-solid fa-user"></i></span><b>${esc(d.nombre)}</b></td>
+                    <td>${esc(d.pais || 'Sin país')}</td>
+                    <td>${chips(d.idiomas.map(i => i.idioma), 'blue', MAX_CHIPS)}</td>
+                    <td>${d.contratado ? '<span class="chip green">Contratado</span>' : '<span class="chip">Registrado</span>'}</td></tr>`).join('') : '<tr><td colspan="4" class="empty-state">Sin docentes con estos filtros.</td></tr>';
+                renderPag('global', lista.length, p.pages, p.ini, p.items.length);
+            }
+        }
+
         function exportarCSV() {
             let filas;
             if (tab === 'top') {
-                filas = [['Docente', 'País', 'Idiomas', 'Grados en Europa/EE.UU.']].concat(listaTop().map(x => [x.d.nombre, x.d.pais, x.d.idiomas.map(i => i.idioma).join(' / '), x.gr.map(g => (g.grado + ' - ' + g.institucion + ' (' + g.pais + ')')).join(' / ')]));
+                filas = [['Docente', 'País', 'Idiomas', 'Grados']].concat(listaTop().map(x => [x.d.nombre, x.d.pais, x.d.idiomas.map(i => i.idioma).join(' / '), x.gr.map(g => g.grado + ' - ' + g.institucion + ' (' + g.pais + ')').join(' / ')]));
             } else {
-                filas = [['Docente', 'País', 'Estado']].concat(filtrados().map(d => [d.nombre, d.pais || 'Sin país', d.contratado ? 'Contratado' : 'Registrado']));
+                filas = [['Docente', 'País', 'Idiomas', 'Estado']].concat(listaGlobal().map(d => [d.nombre, d.pais || 'Sin país', d.idiomas.map(i => i.idioma).join(' / '), d.contratado ? 'Contratado' : 'Registrado']));
             }
             const csv = '\ufeff' + filas.map(f => f.map(c => '"' + String(c == null ? '' : c).replace(/"/g, '""') + '"').join(',')).join('\n');
             const a = document.createElement('a');
@@ -433,13 +581,12 @@
         }
     </script>
     <script>
-        // Faculty Rosters: solo visible para Ejecutiva Academica y Administrador
+        // Faculty Rosters: solo Ejecutiva Academica y Administrador. Reportes de Docentes: personal administrativo.
         document.addEventListener('DOMContentLoaded', function () {
             var r = String(localStorage.getItem('userRole') || '').toUpperCase();
-            if (['ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA'].indexOf(r) > -1) {
-                var n = document.getElementById('navFacultyRoster');
-                if (n) n.style.display = '';
-            }
+            function mostrar(id, roles) { var n = document.getElementById(id); if (n && roles.indexOf(r) > -1) n.style.display = ''; }
+            mostrar('navFacultyRoster', ['ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA']);
+            mostrar('navReportesDocentes', ['ADMINISTRATIVO', 'ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA']);
         });
     </script>
 </body>
