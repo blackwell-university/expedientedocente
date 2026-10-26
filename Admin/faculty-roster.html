@@ -379,9 +379,8 @@
                                <div class="dropdown d-inline-block align-middle">
                                    <button class="btn-dots" type="button" data-bs-toggle="dropdown" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false" title="Opciones"><i class="fa-solid fa-ellipsis-vertical"></i></button>
                                    <ul class="dropdown-menu dropdown-menu-end menu-roster">
-                                       <li><a class="dropdown-item" href="${esc(urlPdf(r.url))}" target="_blank" rel="noopener"><i class="fa-regular fa-file-pdf"></i> Descargar PDF</a></li>
-                                       <li><hr class="dropdown-divider"></li>
                                        <li><button class="dropdown-item" type="button" onclick="actualizarRoster('${esc(r.id)}', this)"><i class="fa-solid fa-wand-magic-sparkles"></i> Actualizar contenido</button></li>
+                                       <li><a class="dropdown-item" href="${esc(urlPdf(r.url))}" target="_blank" rel="noopener"><i class="fa-regular fa-file-pdf"></i> Descargar PDF</a></li>
                                        <li><hr class="dropdown-divider"></li>
                                        <li><button class="dropdown-item item-eliminar" type="button" onclick="eliminarRoster('${esc(r.id)}')"><i class="fa-regular fa-trash-can"></i> Eliminar</button></li>
                                    </ul>
