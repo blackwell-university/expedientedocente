@@ -2903,7 +2903,7 @@
             }
 
             // ETAPA 2 (Revisión y avance a Firma de Docente)
-            if (['En proceso', 'Recibido', 'En revisión', 'Verificado'].includes(estadoExp) && tieneDocsGenerados) {
+            if ((['En proceso', 'Recibido', 'En revisión', 'Verificado'].includes(estadoExp) && tieneDocsGenerados) || estadoExp === 'Enviado') {
                 html += `<button class="action-btn" style="background:#0284c7; color:white; border-color:#0284c7;" onclick="enviarContratoDocente()">
                             <i class="fa-solid fa-pen-nib"></i> Enviar para firma (Docente)
                          </button>`;
@@ -3205,9 +3205,10 @@
         }
 
         async function enviarContratoDocente() {
+            const sinDocs = !documentTrace.some(d => d.url && d.url.trim() !== "");
             const confirm = await Swal.fire({
                 title: '¿Enviar Contrato al Docente?',
-                text: "Se notificará automáticamente al docente por correo electrónico con acceso directo para que revise y estampe su firma digital.",
+                text: (sinDocs ? "Aún no hay documentos generados en este expediente. " : "") + "Se notificará automáticamente al docente por correo electrónico con acceso directo para que revise y estampe su firma digital.",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#2563eb',

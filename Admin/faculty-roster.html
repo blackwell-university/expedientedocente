@@ -87,6 +87,8 @@
         .badge-estado { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; padding: 6px 14px 6px 10px; border-radius: 50px; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
         .badge-creado { background: #f0fdf4; color: #15803d; }
         .badge-pendiente { background: #fffbeb; color: #b45309; }
+        .badge-procesando { background: #eff6ff; color: #1d4ed8; }
+        .badge-error { background: #fef2f2; color: #b91c1c; }
         .link-doc { font-weight: 600; font-size: 0.85rem; text-decoration: none; color: var(--primary); display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 8px; }
         .link-doc:hover { background: #eff6ff; }
         .prog-avatar { width: 44px; height: 44px; border-radius: 50%; background: #eff6ff; color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
@@ -221,10 +223,10 @@
                     <div class="table-responsive">
                         <table class="table-corporate">
                             <thead>
-                                <tr><th>Programa</th><th>Estado</th><th>Creado el</th><th class="text-end">Opciones</th></tr>
+                                <tr><th>Programa</th><th>Estado</th><th>Creado el</th><th>Última actualización</th><th class="text-end">Opciones</th></tr>
                             </thead>
                             <tbody id="tbodyRosters">
-                                <tr><td colspan="4" class="empty-state"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando...</td></tr>
+                                <tr><td colspan="5" class="empty-state"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -241,6 +243,8 @@
         let aniosConDatos = [];
         let urlCarpetaAnio = "";
         let cargando = false;
+        const actualizando = new Set(); // documentos que se están actualizando ahora mismo
+        let pollTimer = null;
 
         const esc = t => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
@@ -301,7 +305,7 @@
             document.getElementById('boxBuscar').classList.remove('d-none');
             document.getElementById('cardTabla').classList.remove('d-none');
             document.getElementById('selAnio').disabled = true;
-            document.getElementById('tbodyRosters').innerHTML = `<tr><td colspan="4" class="text-center py-5"><i class="fa-solid fa-circle-notch fa-spin fs-2" style="color: var(--primary);"></i><p class="mt-3 mb-0 text-muted fw-medium">Cargando Faculty Rosters ${esc(anio)}...</p></td></tr>`;
+            document.getElementById('tbodyRosters').innerHTML = `<tr><td colspan="5" class="text-center py-5"><i class="fa-solid fa-circle-notch fa-spin fs-2" style="color: var(--primary);"></i><p class="mt-3 mb-0 text-muted fw-medium">Cargando Faculty Rosters ${esc(anio)}...</p></td></tr>`;
             try {
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_faculty_rosters', anioAcademico: anio }) });
                 const r = await res.json();
@@ -314,9 +318,10 @@
                 cargando = false;
                 document.getElementById('selAnio').disabled = false;
                 renderTabla();
+                programarRefresco();
             } catch (e) {
                 console.error(e);
-                document.getElementById('tbodyRosters').innerHTML = `<tr><td colspan="4" class="empty-state"><i class="fa-solid fa-triangle-exclamation me-2 text-warning"></i>No se pudieron cargar los datos. ${esc(e.message || '')}</td></tr>`;
+                document.getElementById('tbodyRosters').innerHTML = `<tr><td colspan="5" class="empty-state"><i class="fa-solid fa-triangle-exclamation me-2 text-warning"></i>No se pudieron cargar los datos. ${esc(e.message || '')}</td></tr>`;
             } finally {
                 cargando = false;
                 document.getElementById('selAnio').disabled = false;
@@ -324,7 +329,39 @@
         }
 
         function cambiarAnio() {
+            clearTimeout(pollTimer);
             cargarDatos(document.getElementById('selAnio').value);
+        }
+
+        // Mientras la IA analiza los CV, la lista se refresca sola cada 15 segundos (sin recargar la pantalla ni cerrar menús).
+        function programarRefresco() {
+            clearTimeout(pollTimer);
+            const hayProceso = Object.values(rostersDelAnio()).some(r => (r.pendientesIA || 0) > 0);
+            if (hayProceso) pollTimer = setTimeout(() => refrescarSilencioso(false), 15000);
+        }
+
+        async function refrescarSilencioso(forzar) {
+            const anio = document.getElementById('selAnio').value;
+            const menuAbierto = document.querySelector('.menu-roster.show');
+            if (!forzar && (cargando || document.hidden || menuAbierto || Swal.isVisible())) { programarRefresco(); return; }
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_faculty_rosters', anioAcademico: anio }) });
+                const r = await res.json();
+                if (r.status === 'success' && anio === document.getElementById('selAnio').value) {
+                    rosters = r.rosters || [];
+                    aniosConDatos = r.anios || [];
+                    if (!document.querySelector('.menu-roster.show')) renderTabla();
+                }
+            } catch (e) { /* si falla un refresco, se intenta en el siguiente */ }
+            programarRefresco();
+        }
+
+        // Estado del documento: actualizando / la IA está procesando / filas por revisar / creado
+        function badgeRoster(r) {
+            if (actualizando.has(r.id)) return `<span class="badge-estado badge-procesando"><i class="fa-solid fa-spinner fa-spin"></i> Actualizando...</span>`;
+            if ((r.pendientesIA || 0) > 0) return `<span class="badge-estado badge-procesando" title="La IA está analizando los CV. Se completa sola en unos minutos."><i class="fa-solid fa-spinner fa-spin"></i> Procesando IA (${r.pendientesIA})</span>`;
+            if ((r.conError || 0) > 0) return `<span class="badge-estado badge-error" title="Algunas filas no recibieron respuesta de la IA. Usa Actualizar contenido para reintentar."><i class="fa-solid fa-triangle-exclamation"></i> ${r.conError} por revisar</span>`;
+            return `<span class="badge-estado badge-creado"><i class="fa-solid fa-check"></i> Creado</span>`;
         }
 
         function rostersDelAnio() {
@@ -362,25 +399,26 @@
             const tbody = document.getElementById('tbodyRosters');
 
             if (total === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="empty-state">No hay programas en el catálogo de cursos.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="empty-state">No hay programas en el catálogo de cursos.</td></tr>`;
                 return;
             }
             if (lista.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="empty-state">Ningún programa coincide con la búsqueda.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="empty-state">Ningún programa coincide con la búsqueda.</td></tr>`;
                 return;
             }
             tbody.innerHTML = lista.map(p => {
                 const r = mapa[p];
                 return r
                     ? `<tr><td>${celdaPrograma(p)}</td>
-                           <td><span class="badge-estado badge-creado"><i class="fa-solid fa-check"></i> Creado</span></td>
+                           <td>${badgeRoster(r)}</td>
                            <td>${esc(r.fecha || '—')}</td>
+                           <td>${esc(r.actualizado || r.fecha || '—')}</td>
                            <td class="text-end text-nowrap">
                                <a class="btn-ver" href="${esc(r.url)}" target="_blank" rel="noopener" title="Ver documento"><i class="fa-regular fa-eye"></i></a>
                                <div class="dropdown d-inline-block align-middle">
                                    <button class="btn-dots" type="button" data-bs-toggle="dropdown" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false" title="Opciones"><i class="fa-solid fa-ellipsis-vertical"></i></button>
                                    <ul class="dropdown-menu dropdown-menu-end menu-roster">
-                                       <li><button class="dropdown-item" type="button" onclick="actualizarRoster('${esc(r.id)}', this)"><i class="fa-solid fa-wand-magic-sparkles"></i> Actualizar contenido</button></li>
+                                       <li><button class="dropdown-item" type="button" ${actualizando.has(r.id) ? 'disabled' : ''} onclick="actualizarRoster('${esc(r.id)}')"><i class="fa-solid fa-wand-magic-sparkles"></i> Actualizar contenido</button></li>
                                        <li><a class="dropdown-item" href="${esc(urlPdf(r.url))}" target="_blank" rel="noopener"><i class="fa-regular fa-file-pdf"></i> Descargar PDF</a></li>
                                        <li><hr class="dropdown-divider"></li>
                                        <li><button class="dropdown-item item-eliminar" type="button" onclick="eliminarRoster('${esc(r.id)}')"><i class="fa-regular fa-trash-can"></i> Eliminar</button></li>
@@ -389,7 +427,7 @@
                            </td></tr>`
                     : `<tr><td>${celdaPrograma(p)}</td>
                            <td><span class="badge-estado badge-pendiente"><i class="fa-solid fa-hourglass-half"></i> Pendiente</span></td>
-                           <td class="text-muted">—</td><td class="text-end text-muted">—</td></tr>`;
+                           <td class="text-muted">—</td><td class="text-muted">—</td><td class="text-end text-muted">—</td></tr>`;
             }).join('');
         }
 
@@ -434,26 +472,32 @@
             }
         }
 
-        async function actualizarRoster(idRoster, btn) {
+        async function actualizarRoster(idRoster) {
             const r = rosters.find(x => x.id === idRoster);
-            if (!r) return;
-            const c = await Swal.fire({ icon: 'question', title: 'Actualizar contenido', html: `Se buscarán las invitaciones <b>Completadas</b> de <b>${esc(r.programa)}</b> (${esc(r.anioAcademico)}) que todavía no estén en el documento y se agregarán a la tabla. Las filas pendientes se completarán con IA.<br><span style="font-size:.85rem;color:#64748b;">Las filas que ya están completas no se vuelven a procesar.</span>`, showCancelButton: true, confirmButtonColor: '#2563eb', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, actualizar', cancelButtonText: 'Cancelar', reverseButtons: true });
+            if (!r || actualizando.has(idRoster)) return;
+            const c = await Swal.fire({ icon: 'question', title: 'Actualizar contenido', html: `Se buscarán las invitaciones <b>Completadas</b> de <b>${esc(r.programa)}</b> (${esc(r.anioAcademico)}) que todavía no estén en el documento y se agregarán a la tabla.<br><span style="font-size:.85rem;color:#64748b;">Si el docente ya fue analizado en este año académico, se reutilizan sus datos y no se vuelve a analizar su CV. En un año académico nuevo sí se analiza otra vez. Las filas que ya están completas no se vuelven a procesar.</span>`, showCancelButton: true, confirmButtonColor: '#2563eb', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, actualizar', cancelButtonText: 'Cancelar', reverseButtons: true });
             if (!c.isConfirmed) return;
-            const html0 = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Actualizando...';
+            actualizando.add(idRoster); renderTabla(); // el estado de esa fila pasa a "Actualizando..." con spinner
+            let resultado = null, errorMsg = '', sinConexion = false;
             try {
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'update_faculty_roster', idRoster: idRoster, solicitanteId: localStorage.getItem('userId') || '' }) });
                 const j = await res.json();
-                if (j.status === 'success') {
-                    let msg = `<b>${j.agregadas || 0}</b> invitación(es) nueva(s) agregada(s). El documento tiene <b>${j.total || 0}</b> fila(s).`;
-                    if (j.reenviadas) msg += `<br>${j.reenviadas} fila(s) se volvieron a enviar a la IA.`;
-                    msg += `<br><span style="font-size:.85rem;color:#64748b;">Las columnas generadas por IA se van completando en el documento en unos minutos.</span>`;
-                    Swal.fire({ icon: 'success', title: 'Contenido actualizado', html: msg, confirmButtonColor: '#2563eb' });
-                }
-                else Swal.fire({ icon: 'error', title: 'No se pudo actualizar', text: j.message || 'Inténtalo de nuevo.', confirmButtonColor: '#2563eb' });
-            } catch (e) {
+                if (j.status === 'success') resultado = j; else errorMsg = j.message || 'Inténtalo de nuevo.';
+            } catch (e) { sinConexion = true; }
+            actualizando.delete(idRoster);
+            await refrescarSilencioso(true); // trae la fecha de última actualización y el estado de la IA
+            if (resultado) {
+                const j = resultado;
+                let msg = `<b>${j.agregadas || 0}</b> invitación(es) nueva(s) agregada(s). El documento tiene <b>${j.total || 0}</b> fila(s).`;
+                if (j.reutilizadas) msg += `<br><b>${j.reutilizadas}</b> fila(s) usaron el análisis que el docente ya tenía en este año académico.`;
+                if (j.reenviadas) msg += `<br>${j.reenviadas} fila(s) se volvieron a enviar a la IA.`;
+                if ((j.agregadas || 0) > (j.reutilizadas || 0) || j.reenviadas) msg += `<br><span style="font-size:.85rem;color:#64748b;">Las columnas generadas por IA se van completando en el documento en unos minutos; el estado se actualiza solo.</span>`;
+                Swal.fire({ icon: 'success', title: 'Contenido actualizado', html: msg, confirmButtonColor: '#2563eb' });
+            } else if (sinConexion) {
                 Swal.fire({ icon: 'error', title: 'Error de conexión', text: 'No se pudo conectar con el servidor.', confirmButtonColor: '#2563eb' });
+            } else {
+                Swal.fire({ icon: 'error', title: 'No se pudo actualizar', text: errorMsg, confirmButtonColor: '#2563eb' });
             }
-            btn.disabled = false; btn.innerHTML = html0;
         }
 
         async function crearRosters() {
