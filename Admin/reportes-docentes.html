@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script>
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        const userRole = localStorage.getItem('userRole');
+
+        const rolesPermitidos = ['Administrativo', 'Administrador', 'Ejecutiva Academica', 'ADMIN'];
+
+        if (isLoggedIn !== 'true' || !rolesPermitidos.some(rol => userRole && userRole.toLowerCase() === rol.toLowerCase())) {
+            window.location.href = "../index.html";
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes de Docentes | Blackwell University</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <style>
+        html { font-size: 14px; }
+        :root {
+            --primary: #2563eb; --primary-dark: #1e3a8a; --bg-body: #f8fafc;
+            --sidebar-bg: #ffffff; --text-main: #1e293b; --text-muted: #64748b;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --sidebar-width: 260px;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; letter-spacing: -0.01em; }
+
+        /* --- SIDEBAR --- */
+        .sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid rgba(0,0,0,0.05); display: flex; flex-direction: column; transition: var(--transition); position: relative; padding: 24px 16px; flex-shrink: 0; z-index: 1000; }
+        .sidebar.collapsed { width: 88px; }
+        .brand-section { display: flex; align-items: center; gap: 12px; padding: 0 12px 32px; text-decoration: none; overflow: hidden; }
+        .logo-box { min-width: 42px; height: 42px; background: var(--primary-dark); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
+        .brand-text { font-weight: 800; font-size: 1.2rem; color: var(--primary-dark); }
+        .sidebar.collapsed .brand-text { opacity: 0; pointer-events: none; }
+        .user-preview { display: flex; align-items: center; gap: 12px; padding: 12px; background: #f1f5f9; border-radius: 16px; margin-bottom: 24px; overflow: hidden; }
+        .avatar { min-width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 13px; }
+        .user-meta { display: flex; flex-direction: column; line-height: 1.2; }
+        .user-meta b { font-size: 13px; white-space: nowrap; }
+        .user-meta span { font-size: 11px; color: var(--text-muted); }
+        .sidebar.collapsed .user-meta { display: none; }
+        .nav-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+        .nav-link { display: flex; align-items: center; gap: 16px; padding: 12px 14px; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 6px; transition: var(--transition); white-space: nowrap; }
+        .nav-link i { font-size: 14px; width: 20px; text-align: center; }
+        .nav-link:hover, .nav-link.active { background: #eff6ff; color: var(--primary); } .nav-link.active { font-weight: 600; }
+        .sidebar.collapsed .link-text { display: none; }
+        .collapse-btn { position: absolute; right: -12px; top: 48px; width: 24px; height: 24px; background: white; border: 1px solid #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; font-size: 10px; color: var(--text-muted); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+        /* --- LAYOUT --- */
+        .main-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; background: var(--bg-body); }
+        header { padding: 20px 48px; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 5; }
+        .content-area { padding: 40px; display: flex; flex-direction: column; align-items: center; width: 100%; }
+        .centered-container { width: 100%; max-width: 1200px; }
+        .page-header h1 { font-weight: 800; font-size: 1.6rem; margin-bottom: 8px; letter-spacing: -0.03em; color: var(--primary-dark); }
+        .page-header p { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 30px; }
+
+        .stats-bar { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+        .stat-pill { background: white; border: 1px solid rgba(0,0,0,0.04); border-radius: 16px; padding: 14px 22px; display: flex; align-items: center; gap: 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.02); flex: 1; min-width: 180px; }
+        .stat-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+        .stat-num { font-weight: 800; font-size: 1.4rem; color: var(--primary-dark); line-height: 1.1; }
+        .stat-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
+
+        .filter-section { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); margin-bottom: 24px; border: 1px solid rgba(0,0,0,0.04); }
+        .form-label-sm { font-size: 0.8rem; font-weight: 600; color: #64748b; margin-bottom: 8px; display: block; }
+        .input-filter { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 16px; font-size: 0.95rem; color: var(--text-main); transition: var(--transition); }
+        .input-filter:focus { background-color: white; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); outline: none; }
+        .search-box { position: relative; }
+        .search-box i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+        .search-box input { padding-left: 42px; }
+        .btn-primary-soft { background: var(--primary-dark); color: #fff; border: none; border-radius: 12px; padding: 12px 20px; font-weight: 700; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 8px; transition: var(--transition); }
+        .btn-primary-soft:hover:not(:disabled) { background: var(--primary); color: #fff; transform: translateY(-1px); }
+        .btn-primary-soft:disabled { opacity: .55; cursor: not-allowed; }
+        .btn-outline-soft { background: #fff; color: var(--text-main); border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 18px; font-weight: 600; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; transition: var(--transition); }
+        .btn-outline-soft:hover { background: #f1f5f9; color: var(--text-main); }
+
+        .card-modern { background: white; border-radius: 20px; border: 1px solid rgba(0,0,0,0.04); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.02); }
+        .table-corporate { margin-bottom: 0; width: 100%; border-collapse: collapse; }
+        .table-corporate thead th { background-color: #f8fafc; color: #94a3b8; font-weight: 700; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.06em; padding: 16px 24px; border-bottom: 1px solid #eef1f5; border-top: none; white-space: nowrap; }
+        .table-corporate tbody td { padding: 14px 24px; color: var(--text-main); border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+        .table-corporate tbody tr:last-child td { border-bottom: none; }
+        .table-corporate tbody tr:hover { background-color: #f9fafb; }
+        .badge-estado { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; padding: 6px 14px 6px 10px; border-radius: 50px; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+        .badge-creado { background: #f0fdf4; color: #15803d; }
+        .badge-pendiente { background: #fffbeb; color: #b45309; }
+        .link-doc { font-weight: 600; font-size: 0.85rem; text-decoration: none; color: var(--primary); display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 8px; }
+        .link-doc:hover { background: #eff6ff; }
+        .prog-avatar { width: 44px; height: 44px; border-radius: 50%; background: #eff6ff; color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+        .btn-ver { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 10px; background: #eff6ff; color: var(--primary); text-decoration: none; transition: var(--transition); margin-right: 4px; vertical-align: middle; }
+        .btn-ver:hover { background: var(--primary); color: #fff; }
+        .menu-roster .item-eliminar, .menu-roster .item-eliminar i { color: #dc2626; }
+        .menu-roster .item-eliminar:hover { background: #fef2f2; color: #b91c1c; }
+        .menu-roster .item-eliminar:hover i { color: #b91c1c; }
+        .btn-dots { width: 34px; height: 34px; border: none; border-radius: 10px; background: transparent; color: #64748b; transition: var(--transition); }
+        .btn-dots:hover, .btn-dots.show { background: #eff6ff; color: var(--primary); }
+        .menu-roster { border: 1px solid rgba(0,0,0,0.06); border-radius: 12px; box-shadow: 0 12px 30px rgba(0,0,0,0.1); padding: 6px; min-width: 240px; font-size: 0.88rem; }
+        .menu-roster .dropdown-item { border-radius: 8px; padding: 9px 12px; font-weight: 500; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+        .menu-roster .dropdown-item i { width: 18px; text-align: center; color: var(--text-muted); }
+        .menu-roster .dropdown-item:hover { background: #eff6ff; color: var(--primary); }
+        .menu-roster .dropdown-item:hover i { color: var(--primary); }
+        .menu-roster .dropdown-item:disabled { opacity: .6; }
+        .empty-state { text-align: center; padding: 48px 16px; color: #94a3b8; }
+
+        .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.4); z-index: 999; opacity: 0; transition: opacity .3s; }
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; left: -280px; top: 0; bottom: 0; width: 260px; }
+            .sidebar.show-mobile { left: 0; }
+            .sidebar.collapsed { width: 260px !important; }
+            .collapse-btn { display: none; }
+            .sidebar-overlay.active { display: block; opacity: 1; }
+            header { padding: 16px 20px; }
+            .content-area { padding: 24px 16px; }
+            .page-header h1 { font-size: 1.5rem; }
+        }
+
+        /* --- REDISEÑO DE SWEETALERT2 (UI Corporativa, igual que el resto del sistema) --- */
+        div:where(.swal2-container) div:where(.swal2-popup) { border-radius: 16px !important; padding: 24px !important; box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important; font-family: 'Inter', sans-serif !important; border: 1px solid rgba(0,0,0,0.05) !important; }
+        div:where(.swal2-container) h2:where(.swal2-title) { font-size: 1.35rem !important; color: var(--primary-dark) !important; font-weight: 700 !important; padding: 0 !important; }
+        div:where(.swal2-container) div:where(.swal2-html-container) { font-size: 0.95rem !important; color: var(--text-muted) !important; margin: 16px 0 0 0 !important; line-height: 1.5 !important; }
+        div:where(.swal2-container) .swal2-actions { margin-top: 24px !important; gap: 12px !important; }
+        div:where(.swal2-container) button:where(.swal2-styled) { border-radius: 8px !important; font-weight: 600 !important; padding: 10px 24px !important; font-size: 0.9rem !important; transition: all 0.2s ease !important; box-shadow: none !important; }
+        div:where(.swal2-container) button:where(.swal2-styled):hover { transform: translateY(-2px) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important; }
+    
+        .filter-section { background:#fff; border:1px solid #e2e8f0; border-radius:16px; padding:20px; margin-bottom:20px; }
+        .form-label-sm { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted); margin-bottom:6px; display:block; }
+        .input-filter { border-radius:10px; border:1px solid #e2e8f0; font-size:13px; padding:9px 12px; }
+        .search-box { position:relative; } .search-box i { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:12px; } .search-box input { padding-left:34px; }
+        .card-modern { background:#fff; border:1px solid #e2e8f0; border-radius:16px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.03); }
+        .table-corporate { width:100%; border-collapse:collapse; }
+        .table-corporate th { background:#f8fafc; font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); padding:14px 18px; border-bottom:1px solid #e2e8f0; text-align:left; }
+        .table-corporate td { padding:14px 18px; border-bottom:1px solid #f1f5f9; font-size:13px; vertical-align:middle; }
+        .table-corporate tr:last-child td { border-bottom:0; }
+        .empty-state { text-align:center; color:var(--text-muted); padding:36px !important; }
+        .stats-bar { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:20px; }
+        .stat-pill { display:flex; align-items:center; gap:12px; background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:12px 18px; min-width:190px; }
+        .stat-icon { width:38px; height:38px; border-radius:11px; display:flex; align-items:center; justify-content:center; }
+        .stat-num { font-weight:800; font-size:1.25rem; line-height:1; } .stat-label { font-size:11px; color:var(--text-muted); margin-top:3px; }
+        .tabs-rep { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+        .tab-rep { border:1px solid #e2e8f0; background:#fff; border-radius:12px; padding:10px 18px; font-weight:600; font-size:13px; color:var(--text-muted); cursor:pointer; transition:var(--transition); }
+        .tab-rep.active { background:#eff6ff; color:var(--primary); border-color:#bfdbfe; }
+        .btn-outline-soft { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:9px 16px; font-size:13px; font-weight:600; color:var(--text-main); cursor:pointer; }
+        .btn-outline-soft:hover { background:#f8fafc; }
+        .chart-card { background:#fff; border:1px solid #e2e8f0; border-radius:16px; padding:20px; height:100%; } .chart-card h6 { font-weight:800; color:var(--primary-dark); font-size:.95rem; margin-bottom:14px; } .chart-box { position:relative; height:260px; }
+        .chip { display:inline-block; background:#f1f5f9; border-radius:8px; padding:3px 9px; font-size:11.5px; font-weight:600; margin:2px 4px 2px 0; color:#334155; }
+        .chip.green { background:#f0fdf4; color:#15803d; } .chip.blue { background:#eff6ff; color:#1d4ed8; }
+        .bar-wrap { background:#f1f5f9; border-radius:8px; height:10px; width:100%; min-width:120px; } .bar-fill { background:var(--primary); height:10px; border-radius:8px; }
+        .avatar-sm { width:34px; height:34px; border-radius:50%; background:#eff6ff; color:var(--primary); display:inline-flex; align-items:center; justify-content:center; margin-right:10px; }
+        @media (max-width: 768px) { .sidebar { position:fixed; left:-300px; height:100%; } .sidebar.show-mobile { left:0; } .sidebar-overlay.active { display:block; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:999; } .content-area{padding:20px 14px;} header{padding:14px 18px;} }
+</style>
+</head>
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="collapse-btn" onclick="toggleSidebar()"><i class="fa-solid fa-chevron-left" id="toggleIcon"></i></div>
+        <a href="#" class="brand-section">
+            <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div>
+            <span class="brand-text">Blackwell</span>
+        </a>
+        <div class="user-preview">
+            <div class="avatar" id="userInitial">AD</div>
+            <div class="user-meta">
+                <b id="userName">Admin User</b>
+                <span id="userRoleLabel">Administrador</span>
+            </div>
+        </div>
+        <ul class="nav-list">
+            <li><a href="administrativo.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
+            <li><a href="gestion-docentes.html" class="nav-link"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
+            <li><a href="gestion-expedientes.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
+            <li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Catálogo de Cursos</span></a></li>
+            <li><a href="faculty-roster.html" class="nav-link"><i class="fa-solid fa-table-list"></i> <span class="link-text">Faculty Rosters</span></a></li>
+            <li><a href="reportes-docentes.html" class="nav-link active"><i class="fa-solid fa-chart-column"></i> <span class="link-text">Reportes de Docentes</span></a></li>
+            <li id="navGestionClases" style="display:none;"><a href="academica-dashboard.html" class="nav-link"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Gestión de Clases</span></a></li>
+            <li id="navGestionUsuarios" style="display:none;"><a href="gestion-usuarios.html" class="nav-link"><i class="fa-solid fa-user-gear"></i> <span class="link-text">Gestión de Usuarios</span></a></li>
+        </ul>
+        <a href="#" onclick="logout()" class="nav-link" style="color:#f43f5e; margin-top:auto;">
+            <i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span>
+        </a>
+    </aside>
+
+    <div class="main-wrapper">
+        <header>
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn border-0 p-0 d-md-none text-dark fs-4" onclick="toggleMobileSidebar()"><i class="fa-solid fa-bars"></i></button>
+                <div>
+                    <h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Reportes de Docentes</h5>
+                    <p class="text-muted small m-0 d-none d-sm-block">Portal Administrativo</p>
+                </div>
+            </div>
+        </header>
+        <div class="content-area">
+            <div class="centered-container">
+                <div class="page-header">
+                    <h1>Reportes de Docentes</h1>
+                    <p>Docentes destacados por idiomas y estudios, y distribución de docentes por país.</p>
+                </div>
+
+                <div class="tabs-rep">
+                    <button class="tab-rep active" id="tabTop" onclick="verTab('top')"><i class="fa-solid fa-star me-2"></i>Docentes Top</button>
+                    <button class="tab-rep" id="tabGlobal" onclick="verTab('global')"><i class="fa-solid fa-earth-americas me-2"></i>Docentes Globales</button>
+                </div>
+
+                <div class="stats-bar">
+                    <div class="stat-pill"><div class="stat-icon" style="background:#eff6ff;color:#2563eb;"><i class="fa-solid fa-users"></i></div><div><div class="stat-num" id="stA">—</div><div class="stat-label" id="stALbl">Docentes</div></div></div>
+                    <div class="stat-pill"><div class="stat-icon" style="background:#f0fdf4;color:#15803d;"><i class="fa-solid fa-circle-check"></i></div><div><div class="stat-num" id="stB">—</div><div class="stat-label" id="stBLbl">Resultado</div></div></div>
+                </div>
+
+                <div class="filter-section">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-3 filtro-top">
+                            <label class="form-label-sm">Mínimo de idiomas</label>
+                            <select class="form-select input-filter" id="selMinIdiomas" onchange="renderTop()"><option value="2" selected>2 o más</option><option value="3">3 o más</option><option value="4">4 o más</option></select>
+                        </div>
+                        <div class="col-md-3 filtro-top">
+                            <label class="form-label-sm">Grado obtenido en</label>
+                            <select class="form-select input-filter" id="selRegion" onchange="renderTop()"><option value="ambos" selected>Europa o Estados Unidos</option><option value="Europa">Solo Europa</option><option value="Estados Unidos">Solo Estados Unidos</option></select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label-sm">Docentes</label>
+                            <select class="form-select input-filter" id="selContrat" onchange="render()"><option value="todos" selected>Todos</option><option value="si">Solo contratados</option></select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label-sm">Buscar</label>
+                            <div class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input type="text" class="form-control input-filter" id="txtBuscar" placeholder="Nombre o país..." oninput="render()"></div>
+                        </div>
+                        <div class="col-12 d-flex justify-content-end"><button class="btn-outline-soft" onclick="exportarCSV()"><i class="fa-solid fa-file-csv me-2 text-success"></i>Exportar CSV</button></div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3" id="chartsTop">
+                    <div class="col-lg-7"><div class="chart-card"><h6>Idiomas entre los Docentes Top <small class="text-muted fw-normal">· clic para ver quiénes</small></h6><div class="chart-box"><canvas id="chIdiomas"></canvas></div></div></div>
+                    <div class="col-lg-5"><div class="chart-card"><h6>Grados por región de estudio</h6><div class="chart-box"><canvas id="chRegion"></canvas></div></div></div>
+                </div>
+                <div class="card-modern d-none mb-3" id="detalleTop">
+                    <div class="d-flex justify-content-between align-items-center px-3 pt-3"><h6 class="fw-bold m-0" style="color:var(--primary-dark)" id="detalleTituloTop"></h6><button class="btn-outline-soft" onclick="cerrarDetalle()"><i class="fa-solid fa-xmark me-1"></i>Cerrar</button></div>
+                    <div class="table-responsive"><table class="table-corporate"><thead><tr><th>Docente</th><th>País</th><th>Detalle</th></tr></thead><tbody id="detalleBodyTop"></tbody></table></div>
+                </div>
+                <div class="card-modern" id="cardTop">
+                    <div class="table-responsive"><table class="table-corporate">
+                        <thead><tr><th>Docente</th><th>Idiomas</th><th>Grados en Europa / EE.UU.</th><th>País</th></tr></thead>
+                        <tbody id="tbTop"><tr><td colspan="4" class="empty-state"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando...</td></tr></tbody>
+                    </table></div>
+                </div>
+
+                <div class="d-none" id="cardGlobal">
+                    <div class="row g-3 mb-3">
+                        <div class="col-lg-7"><div class="chart-card"><h6>Docentes por país (Top 10) <small class="text-muted fw-normal">· clic para ver quiénes</small></h6><div class="chart-box"><canvas id="chPaises"></canvas></div></div></div>
+                        <div class="col-lg-5"><div class="chart-card"><h6>Contratados vs registrados</h6><div class="chart-box"><canvas id="chEstado"></canvas></div></div></div>
+                    </div>
+                    <div class="card-modern d-none mb-3" id="detalleGlobal">
+                    <div class="d-flex justify-content-between align-items-center px-3 pt-3"><h6 class="fw-bold m-0" style="color:var(--primary-dark)" id="detalleTituloGlobal"></h6><button class="btn-outline-soft" onclick="cerrarDetalle()"><i class="fa-solid fa-xmark me-1"></i>Cerrar</button></div>
+                    <div class="table-responsive"><table class="table-corporate"><thead><tr><th>Docente</th><th>País</th><th>Detalle</th></tr></thead><tbody id="detalleBodyGlobal"></tbody></table></div>
+                </div>
+                    <div class="card-modern mb-3">
+                        <div class="table-responsive"><table class="table-corporate">
+                            <thead><tr><th>País</th><th style="width:90px">Docentes</th><th style="width:35%">Proporción</th></tr></thead>
+                            <tbody id="tbPaises"></tbody>
+                        </table></div>
+                    </div>
+                    <div class="card-modern">
+                        <div class="table-responsive"><table class="table-corporate">
+                            <thead><tr><th>Docente</th><th>País</th><th>Estado</th></tr></thead>
+                            <tbody id="tbDocentes"></tbody>
+                        </table></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
+        let docentes = [];
+        let tab = 'top';
+        const esc = t => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        function logout() {
+            Swal.fire({ title: '¿Cerrar sesión?', text: 'Vas a salir del portal administrativo.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#2563eb', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, cerrar sesión', cancelButtonText: 'Cancelar', reverseButtons: true })
+                .then(r => { if (r.isConfirmed) { sessionStorage.clear(); localStorage.clear(); window.location.href = "../index.html"; } });
+        }
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+            const icon = document.getElementById('toggleIcon');
+            icon.classList.toggle('fa-chevron-left'); icon.classList.toggle('fa-chevron-right');
+        }
+        function toggleMobileSidebar() {
+            document.getElementById('sidebar').classList.toggle('show-mobile');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const name = localStorage.getItem('userName') || "Admin";
+            document.getElementById('userName').innerText = name;
+            document.getElementById('userRoleLabel').innerText = localStorage.getItem('userRole') || "Administrador";
+            document.getElementById('userInitial').innerText = name.trim().substring(0, 2).toUpperCase();
+            const rolUpperNav = String(localStorage.getItem('userRole') || '').toUpperCase();
+            if (rolUpperNav === 'ADMINISTRADOR' || rolUpperNav === 'ADMIN') {
+                const navGU = document.getElementById('navGestionUsuarios');
+                if (navGU) navGU.style.display = '';
+            }
+            if (rolUpperNav === 'ADMINISTRATIVO' || rolUpperNav === 'EJECUTIVA ACADEMICA') {
+                const navGC = document.getElementById('navGestionClases');
+                if (navGC) navGC.style.display = '';
+            }
+            cargarReporte();
+        });
+
+
+        async function cargarReporte() {
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_reporte_docentes', solicitanteId: localStorage.getItem('userId') || '' }) });
+                const r = await res.json();
+                if (r.status !== 'success') throw new Error(r.message || 'Error');
+                docentes = r.docentes || [];
+                render();
+            } catch (e) {
+                document.getElementById('tbTop').innerHTML = '<tr><td colspan="4" class="empty-state text-danger">No se pudo cargar el reporte. ' + esc(e.message) + '</td></tr>';
+                Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo cargar el reporte.' });
+            }
+        }
+        function verTab(t) {
+            tab = t;
+            document.getElementById('tabTop').classList.toggle('active', t === 'top');
+            document.getElementById('tabGlobal').classList.toggle('active', t === 'global');
+            document.getElementById('cardTop').classList.toggle('d-none', t !== 'top');
+            document.getElementById('cardGlobal').classList.toggle('d-none', t !== 'global');
+            document.querySelectorAll('.filtro-top').forEach(el => el.style.display = t === 'top' ? '' : 'none');
+            render();
+        }
+        function filtrados() {
+            const q = document.getElementById('txtBuscar').value.trim().toLowerCase();
+            const soloC = document.getElementById('selContrat').value === 'si';
+            return docentes.filter(d => (!soloC || d.contratado) && (!q || (d.nombre + ' ' + d.pais).toLowerCase().includes(q)));
+        }
+        function listaTop() {
+            const min = parseInt(document.getElementById('selMinIdiomas').value, 10);
+            const reg = document.getElementById('selRegion').value;
+            return filtrados().map(d => {
+                const gr = d.grados.filter(g => reg === 'ambos' ? (g.region === 'Europa' || g.region === 'Estados Unidos') : g.region === reg);
+                return { d, gr };
+            }).filter(x => x.d.idiomas.length >= min && x.gr.length > 0)
+              .sort((a, b) => b.d.idiomas.length - a.d.idiomas.length || a.d.nombre.localeCompare(b.d.nombre));
+        }
+
+        const PALETA = ['#2563eb','#10b981','#f59e0b','#a855f7','#ef4444','#06b6d4','#84cc16','#ec4899','#64748b','#f97316'];
+        const charts = {};
+        function dibujar(id, tipo, labels, valores, opts, detalles, titulo) {
+            if (typeof Chart === 'undefined') return;
+            if (charts[id]) charts[id].destroy();
+            const horiz = opts && opts.horizontal;
+            charts[id] = new Chart(document.getElementById(id), {
+                type: tipo,
+                data: { labels, datasets: [{ data: valores, backgroundColor: tipo === 'bar' ? '#2563eb' : PALETA, borderRadius: tipo === 'bar' ? 6 : 0, borderWidth: tipo === 'bar' ? 0 : 2, borderColor: '#fff' }] },
+                options: {
+                    maintainAspectRatio: false, indexAxis: horiz ? 'y' : 'x',
+                    onClick: (ev, els) => { if (els.length && detalles) mostrarDetalle(titulo + ': ' + labels[els[0].index], detalles[labels[els[0].index]] || []); },
+                    onHover: (ev, els) => { ev.native.target.style.cursor = els.length ? 'pointer' : 'default'; },
+                    plugins: { legend: { display: tipo !== 'bar', position: 'bottom' } },
+                    scales: tipo === 'bar' ? { x: { grid: { display: false }, ticks: { precision: 0 } }, y: { grid: { display: !horiz }, ticks: { precision: 0 } } } : {}
+                }
+            });
+        }
+
+        function mostrarDetalle(titulo, filas) {
+            const suf = tab === 'top' ? 'Top' : 'Global';
+            document.getElementById('detalleTitulo' + suf).innerText = titulo + ' (' + filas.length + ')';
+            document.getElementById('detalleBody' + suf).innerHTML = filas.length ? filas.map(f => `<tr><td><b>${esc(f.nombre)}</b></td><td>${esc(f.pais || '—')}</td><td>${esc(f.info || '')}</td></tr>`).join('') : '<tr><td colspan="3" class="empty-state">Sin docentes.</td></tr>';
+            const card = document.getElementById('detalle' + suf);
+            card.classList.remove('d-none');
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        function cerrarDetalle() { ['Top', 'Global'].forEach(x => document.getElementById('detalle' + x).classList.add('d-none')); }
+        function agrupar(items, claves) { const o = {}; items.forEach(it => claves(it).forEach(([k, f]) => { (o[k] = o[k] || []).push(f); })); return o; }
+        function contar(arr) { const o = {}; arr.forEach(k => { o[k] = (o[k] || 0) + 1; }); return o; }
+        function graficarTop(lista) {
+            const dIdi = agrupar(lista, x => x.d.idiomas.map(i => [i.idioma, { nombre: x.d.nombre, pais: x.d.pais, info: x.d.idiomas.map(j => j.idioma).join(', ') }]));
+            const k = Object.keys(dIdi).sort((a, b) => dIdi[b].length - dIdi[a].length);
+            dibujar('chIdiomas', 'bar', k, k.map(x => dIdi[x].length), null, dIdi, 'Idioma');
+            const dReg = agrupar(lista, x => x.gr.map(g => [g.region, { nombre: x.d.nombre, pais: x.d.pais, info: (g.grado || 'Grado') + ' · ' + (g.institucion || '') + ' (' + g.pais + ')' }]));
+            const r = Object.keys(dReg);
+            dibujar('chRegion', 'doughnut', r, r.map(x => dReg[x].length), null, dReg, 'Grados en');
+        }
+        function graficarGlobal(lista, cuenta, filas) {
+            const top = filas.slice(0, 10);
+            const dP = agrupar(lista, d => [[d.pais || 'Sin país', { nombre: d.nombre, pais: d.pais, info: d.contratado ? 'Contratado' : 'Registrado' }]]);
+            dibujar('chPaises', 'bar', top, top.map(p => cuenta[p]), { horizontal: true }, dP, 'País');
+            const dE = agrupar(lista, d => [[d.contratado ? 'Contratados' : 'Registrados', { nombre: d.nombre, pais: d.pais, info: '' }]]);
+            const ks = ['Contratados', 'Registrados'];
+            dibujar('chEstado', 'doughnut', ks, ks.map(x => (dE[x] || []).length), null, dE, 'Docentes');
+        }
+        function render() { cerrarDetalle(); tab === 'top' ? renderTop() : renderGlobal(); }
+        function renderTop() {
+            const lista = listaTop();
+            graficarTop(lista);
+            document.getElementById('stA').innerText = docentes.length; document.getElementById('stALbl').innerText = 'Docentes registrados';
+            document.getElementById('stB').innerText = lista.length; document.getElementById('stBLbl').innerText = 'Docentes Top';
+            document.getElementById('tbTop').innerHTML = lista.length ? lista.map(x => `<tr>
+                <td><span class="avatar-sm"><i class="fa-solid fa-user"></i></span><b>${esc(x.d.nombre)}</b>${x.d.contratado ? ' <span class="chip green">Contratado</span>' : ''}</td>
+                <td>${x.d.idiomas.map(i => `<span class="chip blue">${esc(i.idioma)}${i.nivel ? ' · ' + esc(i.nivel) : ''}</span>`).join('')}</td>
+                <td>${x.gr.map(g => `<span class="chip">${esc(g.grado || 'Grado')} · ${esc(g.institucion || '')} (${esc(g.pais)})</span>`).join('')}</td>
+                <td>${esc(x.d.pais || '—')}</td></tr>`).join('')
+                : '<tr><td colspan="4" class="empty-state">Ningún docente cumple los criterios.</td></tr>';
+        }
+        function renderGlobal() {
+            const lista = filtrados();
+            const cuenta = {};
+            lista.forEach(d => { const p = d.pais || 'Sin país'; cuenta[p] = (cuenta[p] || 0) + 1; });
+            const filas = Object.keys(cuenta).sort((a, b) => cuenta[b] - cuenta[a] || a.localeCompare(b));
+            const max = filas.length ? cuenta[filas[0]] : 1;
+            graficarGlobal(lista, cuenta, filas);
+            document.getElementById('stA').innerText = lista.length; document.getElementById('stALbl').innerText = 'Docentes';
+            document.getElementById('stB').innerText = filas.filter(p => p !== 'Sin país').length; document.getElementById('stBLbl').innerText = 'Países representados';
+            document.getElementById('tbPaises').innerHTML = filas.length ? filas.map(p => `<tr><td><b>${esc(p)}</b></td><td>${cuenta[p]}</td><td><div class="bar-wrap"><div class="bar-fill" style="width:${Math.round(cuenta[p] / max * 100)}%"></div></div></td></tr>`).join('') : '<tr><td colspan="3" class="empty-state">Sin datos.</td></tr>';
+            document.getElementById('tbDocentes').innerHTML = lista.length ? lista.slice().sort((a, b) => (a.pais || 'zzz').localeCompare(b.pais || 'zzz') || a.nombre.localeCompare(b.nombre)).map(d => `<tr><td>${esc(d.nombre)}</td><td>${esc(d.pais || 'Sin país')}</td><td>${d.contratado ? '<span class="chip green">Contratado</span>' : '<span class="chip">Registrado</span>'}</td></tr>`).join('') : '<tr><td colspan="3" class="empty-state">Sin datos.</td></tr>';
+        }
+        function exportarCSV() {
+            let filas;
+            if (tab === 'top') {
+                filas = [['Docente', 'País', 'Idiomas', 'Grados en Europa/EE.UU.']].concat(listaTop().map(x => [x.d.nombre, x.d.pais, x.d.idiomas.map(i => i.idioma).join(' / '), x.gr.map(g => (g.grado + ' - ' + g.institucion + ' (' + g.pais + ')')).join(' / ')]));
+            } else {
+                filas = [['Docente', 'País', 'Estado']].concat(filtrados().map(d => [d.nombre, d.pais || 'Sin país', d.contratado ? 'Contratado' : 'Registrado']));
+            }
+            const csv = '\ufeff' + filas.map(f => f.map(c => '"' + String(c == null ? '' : c).replace(/"/g, '""') + '"').join(',')).join('\n');
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+            a.download = (tab === 'top' ? 'docentes-top' : 'docentes-globales') + '.csv';
+            a.click();
+        }
+    </script>
+</body>
+</html>

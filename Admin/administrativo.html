@@ -23,6 +23,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
     <style>
         html { font-size: 14px; } /* NUEVO: antes 15px — texto general un poco más chico por defecto */
@@ -197,6 +198,26 @@
             .quick-actions-grid { grid-template-columns: 1fr; }
         }
 
+
+        /* --- DASHBOARD FUNCIONAL --- */
+        .panel-card.auto-h { height:auto; }
+        .chart-box { position:relative; overflow:hidden; height:250px; }
+        .chart-hint { font-size:.75rem; color:#94a3b8; font-weight:600; }
+        .search-global { position:relative; width:340px; max-width:100%; }
+        .search-global i { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:.85rem; }
+        .search-global input { width:100%; border:1px solid #e2e8f0; border-radius:50px; padding:9px 14px 9px 38px; font-size:.85rem; background:#fff; outline:none; }
+        .search-global input:focus { border-color:var(--primary); box-shadow:0 0 0 3px #eff6ff; }
+        .search-results { position:absolute; top:calc(100% + 8px); left:0; right:0; background:#fff; border:1px solid #e2e8f0; border-radius:14px; box-shadow:0 12px 30px rgba(0,0,0,.08); z-index:50; max-height:340px; overflow-y:auto; display:none; }
+        .search-results a { display:block; padding:10px 16px; text-decoration:none; color:var(--text-main); font-size:.85rem; border-bottom:1px solid #f1f5f9; }
+        .search-results a:hover { background:#f8fafc; } .search-results small { color:var(--text-muted); display:block; }
+        .mini-table { width:100%; border-collapse:collapse; } .mini-table th { font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); padding:8px 10px; border-bottom:1px solid #e2e8f0; text-align:left; } .mini-table td { padding:10px; border-bottom:1px solid #f1f5f9; font-size:.85rem; } .mini-table tr:last-child td { border-bottom:0; }
+        .badge-soft { display:inline-block; padding:4px 10px; border-radius:50px; font-size:.72rem; font-weight:700; background:#f1f5f9; color:#334155; }
+        .badge-red { background:#fef2f2; color:#ef4444; } .badge-orange { background:#ffedd5; color:#ea580c; } .badge-green { background:#f0fdf4; color:#15803d; } .badge-blue { background:#eff6ff; color:#1d4ed8; }
+        .select-mini { border:1px solid #e2e8f0; border-radius:10px; font-size:.8rem; padding:6px 10px; background:#fff; }
+        .kpi-mini { background:#f8fafc; border-radius:14px; padding:14px 16px; } .kpi-mini b { font-size:1.35rem; font-weight:800; display:block; line-height:1.1; } .kpi-mini span { font-size:.75rem; color:var(--text-muted); font-weight:600; }
+        .scroll-panel { max-height:340px; overflow-y:auto; }
+        @media (max-width: 768px) { .search-global { display:none; } }
+
         /* --- REDISEÑO DE SWEETALERT2 (UI Corporativa) --- */
         div:where(.swal2-container) div:where(.swal2-popup) {
             border-radius: 16px !important;
@@ -265,6 +286,7 @@
             <li><a href="gestion-expedientes.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
             <li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Catálogo de Cursos</span></a></li>
             <li><a href="faculty-roster.html" class="nav-link"><i class="fa-solid fa-table-list"></i> <span class="link-text">Faculty Rosters</span></a></li>
+            <li><a href="reportes-docentes.html" class="nav-link"><i class="fa-solid fa-chart-column"></i> <span class="link-text">Reportes de Docentes</span></a></li>
             <li id="navGestionClases" style="display:none;"><a href="academica-dashboard.html" class="nav-link"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Gestión de Clases</span></a></li>
             <li id="navGestionUsuarios" style="display:none;"><a href="gestion-usuarios.html" class="nav-link"><i class="fa-solid fa-user-gear"></i> <span class="link-text">Gestión de Usuarios</span></a></li>
 
@@ -288,6 +310,11 @@
             </div>
             
             <div class="d-flex align-items-center gap-3">
+                <div class="search-global">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="buscadorGlobal" placeholder="Buscar docente o expediente..." autocomplete="off" oninput="buscarGlobal()" onfocus="buscarGlobal()">
+                    <div class="search-results" id="resultadosBusqueda"></div>
+                </div>
                 <div class="bg-white px-3 py-2 rounded-pill shadow-sm d-flex gap-2 align-items-center">
                     <button onclick="changeFontSize(-1)" class="btn btn-sm btn-link p-0 text-dark text-decoration-none fw-bold">A-</button>
                     <span id="fontSizeLabel" class="small fw-bold px-1" style="min-width: 50px; text-align: center;">Normal</span>
@@ -304,67 +331,69 @@
                     <p>Resumen general del sistema de gestión académica y administrativa.</p>
                 </div>
 
-                <!-- Fila de Estadísticas -->
+                <!-- Estadísticas -->
                 <div class="row g-4 mb-4">
-                    <!-- Stat 1 -->
-                    <div class="col-md-6 col-xl-4">
-                        <div class="stat-card">
-                            <div class="stat-header">
-                                <div class="stat-icon icon-blue">
-                                    <i class="fa-solid fa-user-group"></i>
-                                </div>
-                            </div>
-                            <div>
-                                <div class="stat-title">Total Docentes</div>
-                                <div class="stat-value skeleton-text" id="statTotalDocentes">&nbsp;</div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Stat 2 -->
-                    <div class="col-md-6 col-xl-4">
-                        <div class="stat-card">
-                            <div class="stat-header">
-                                <div class="stat-icon icon-green">
-                                    <i class="fa-regular fa-circle-check"></i>
-                                </div>
-                            </div>
-                            <div>
-                                <div class="stat-title">Expedientes Aprobados</div>
-                                <div class="stat-value skeleton-text" id="statExpedientesAprobados">&nbsp;</div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Stat 3 -->
-                    <div class="col-md-6 col-xl-4">
-                        <div class="stat-card">
-                            <div class="stat-header">
-                                <div class="stat-icon icon-yellow">
-                                    <i class="fa-regular fa-clock"></i>
-                                </div>
-                            </div>
-                            <div>
-                                <div class="stat-title">Pendientes de Revisión</div>
-                                <div class="stat-value skeleton-text" id="statPendientesRevision">&nbsp;</div>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="col-md-6 col-xl-3"><div class="stat-card"><div class="stat-header"><div class="stat-icon icon-blue"><i class="fa-solid fa-user-group"></i></div></div><div><div class="stat-title">Total Docentes</div><div class="stat-value skeleton-text" id="statTotalDocentes">&nbsp;</div></div></div></div>
+                    <div class="col-md-6 col-xl-3"><div class="stat-card"><div class="stat-header"><div class="stat-icon icon-green"><i class="fa-regular fa-circle-check"></i></div></div><div><div class="stat-title">Expedientes Contratados</div><div class="stat-value skeleton-text" id="statExpedientesAprobados">&nbsp;</div></div></div></div>
+                    <div class="col-md-6 col-xl-3"><div class="stat-card"><div class="stat-header"><div class="stat-icon icon-yellow"><i class="fa-regular fa-clock"></i></div></div><div><div class="stat-title">Pendientes de Revisión</div><div class="stat-value skeleton-text" id="statPendientesRevision">&nbsp;</div></div></div></div>
+                    <div class="col-md-6 col-xl-3"><div class="stat-card"><div class="stat-header"><div class="stat-icon icon-purple"><i class="fa-solid fa-triangle-exclamation"></i></div></div><div><div class="stat-title">Expedientes con alerta</div><div class="stat-value skeleton-text" id="statAlertas">&nbsp;</div></div></div></div>
                 </div>
 
-                <!-- Fila de Paneles Detallados -->
-                <div class="row g-4">
-                    <!-- Panel: Expedientes Pendientes de Revisión (datos reales) -->
-                    <div class="col-lg-6">
-                        <div class="panel-card">
-                            <h3 class="panel-title">
-                                <i class="fa-solid fa-circle-exclamation text-warning"></i> Expedientes Pendientes de Revisión
-                            </h3>
-                            <div id="contenedorExpedientesPendientes">
-                                <div class="text-center text-muted py-4"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando expedientes...</div>
-                            </div>
-                            <a href="gestion-expedientes.html" class="view-all-link">Revisar todos los expedientes</a>
-                        </div>
-                    </div>
+                <!-- Gráficas -->
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-7"><div class="panel-card">
+                        <h3 class="panel-title mb-3"><i class="fa-solid fa-filter" style="color:var(--primary);"></i> Embudo de expedientes <span class="chart-hint ms-auto">clic en una barra para ver quiénes</span></h3>
+                        <div class="chart-box"><canvas id="chEmbudo"></canvas></div>
+                    </div></div>
+                    <div class="col-lg-5"><div class="panel-card">
+                        <h3 class="panel-title mb-3"><i class="fa-solid fa-envelope-open-text" style="color:var(--primary);"></i> Invitaciones por estado</h3>
+                        <div class="chart-box"><canvas id="chInvitaciones"></canvas></div>
+                    </div></div>
+                </div>
 
+                <!-- Detalle del clic en el embudo -->
+                <div class="panel-card auto-h mb-4 d-none" id="panelDetalle">
+                    <h3 class="panel-title mb-3"><span id="detalleTitulo"></span> <button class="btn btn-sm btn-light ms-auto" onclick="document.getElementById('panelDetalle').classList.add('d-none')"><i class="fa-solid fa-xmark"></i></button></h3>
+                    <div class="scroll-panel"><table class="mini-table"><thead><tr><th>Docente</th><th>Expediente</th><th>Días</th><th></th></tr></thead><tbody id="detalleBody"></tbody></table></div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-6"><div class="panel-card">
+                        <h3 class="panel-title mb-3"><i class="fa-solid fa-hourglass-half text-warning"></i> Expedientes estancados
+                            <select class="select-mini ms-auto" id="selDias" onchange="renderEstancados()"><option value="7">más de 7 días</option><option value="15" selected>más de 15 días</option><option value="30">más de 30 días</option></select>
+                        </h3>
+                        <p class="text-muted small mb-3">Expedientes que aún no llegan a Contratado ni están Cancelados. Los días se cuentan desde su creación.</p>
+                        <div class="scroll-panel" id="contenedorEstancados"><div class="text-center text-muted py-4"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando...</div></div>
+                        <a href="gestion-expedientes.html" class="view-all-link">Revisar todos los expedientes</a>
+                    </div></div>
+                    <div class="col-lg-6"><div class="panel-card">
+                        <h3 class="panel-title mb-3"><i class="fa-solid fa-circle-exclamation text-warning"></i> Pendientes de revisión</h3>
+                        <p class="text-muted small mb-3">Expedientes en estado Recibido o En revisión: el docente ya envió sus documentos y falta revisarlos.</p>
+                        <div id="contenedorExpedientesPendientes"><div class="text-center text-muted py-4"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando expedientes...</div></div>
+                        <a href="gestion-expedientes.html" class="view-all-link">Revisar todos los expedientes</a>
+                    </div></div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-12"><div class="panel-card auto-h">
+                        <h3 class="panel-title mb-3"><i class="fa-solid fa-user-plus" style="color:var(--primary);"></i> Docentes registrados por mes</h3>
+                        <div class="chart-box"><canvas id="chRegistros"></canvas></div>
+                    </div></div>
+                </div>
+
+                <!-- Mini-reportes -->
+                <div class="panel-card auto-h mb-4">
+                    <h3 class="panel-title mb-3"><i class="fa-solid fa-chart-column" style="color:var(--primary);"></i> Resumen de reportes de docentes <a href="reportes-docentes.html" class="ms-auto small fw-bold text-decoration-none">Ver reportes completos</a></h3>
+                    <div class="row g-3">
+                        <div class="col-6 col-lg-3"><div class="kpi-mini"><b id="kpiTop">—</b><span>Docentes Top</span></div></div>
+                        <div class="col-6 col-lg-3"><div class="kpi-mini"><b id="kpiPaises">—</b><span>Países representados</span></div></div>
+                        <div class="col-6 col-lg-3"><div class="kpi-mini"><b id="kpiContratados">—</b><span>Docentes contratados</span></div></div>
+                        <div class="col-6 col-lg-3"><div class="kpi-mini"><b id="kpiIdiomas">—</b><span>Con 2 o más idiomas</span></div></div>
+                    </div>
+                    <div class="chart-box mt-3" style="height:220px;"><canvas id="chPaisesMini"></canvas></div>
+                </div>
+
+                <div class="row g-4">
                     <!-- NUEVO: Panel de Accesos Rápidos y Ayuda -->
                     <div class="col-lg-6">
                         <div class="panel-card">
@@ -456,152 +485,204 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
+        const ESTADOS_FINALES = ['Contratado', 'Cancelado'];
+        const ESTADOS_REVISION = ['Recibido', 'En revisión']; // el docente ya envió sus documentos y falta revisarlos
+        const ORDEN_EMBUDO = ['', 'Por enviar', 'Enviado', 'En proceso', 'Recibido', 'En revisión', 'Verificado', 'Pendiente firma directores', 'Expediente enviado', 'Firmado por Docente', 'Contratado', 'Cancelado'];
+        const ETIQUETA_ESTADO = { '': 'Por enviar', 'Pendiente firma directores': 'Por contratar', 'Firmado por Docente': 'Firmado (Docente)' };
+        const etiqueta = e => ETIQUETA_ESTADO[e] !== undefined ? ETIQUETA_ESTADO[e] : (e || 'Sin estado');
+        const PALETA = ['#2563eb', '#10b981', '#f59e0b', '#a855f7', '#ef4444', '#06b6d4', '#84cc16', '#ec4899', '#64748b', '#f97316'];
+        let expedientes = [], docentes = [];
+        const charts = {};
+        const esc = t => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
         function logout() {
-            Swal.fire({
-                title: '¿Cerrar sesión?',
-                text: 'Vas a salir del portal administrativo.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#2563eb',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: 'Sí, cerrar sesión',
-                cancelButtonText: 'Cancelar',
-                reverseButtons: true
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    localStorage.clear();
-                    window.location.href = "../index.html";
-                }
-            });
+            Swal.fire({ title: '¿Cerrar sesión?', text: 'Vas a salir del portal administrativo.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#2563eb', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, cerrar sesión', cancelButtonText: 'Cancelar', reverseButtons: true })
+                .then((result) => { if (result.isConfirmed) { localStorage.clear(); window.location.href = "../index.html"; } });
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             const name = localStorage.getItem('userName') || "Usuario";
             const role = localStorage.getItem('userRole') || "Personal Blackwell";
-            
             document.getElementById('userName').innerText = name;
-            document.getElementById('userInitial').innerText = name.substring(0,2).toUpperCase();
-            
+            document.getElementById('userInitial').innerText = name.substring(0, 2).toUpperCase();
             const roleSpan = document.querySelector('.user-meta span');
-            if(roleSpan) roleSpan.innerText = role;
-
+            if (roleSpan) roleSpan.innerText = role;
             const roleUpperNav = String(role || '').toUpperCase();
-            if (roleUpperNav === 'ADMINISTRADOR' || roleUpperNav === 'ADMIN') {
-                const navGU = document.getElementById('navGestionUsuarios');
-                if (navGU) navGU.style.display = '';
-            }
-            // NUEVO: Administrativo y Ejecutiva Academica ya tienen acceso a Gestión Académica,
-            // pero no tenían forma de llegar ahí desde este menú — ahora sí
-            if (roleUpperNav === 'ADMINISTRATIVO' || roleUpperNav === 'EJECUTIVA ACADEMICA') {
-                const navGC = document.getElementById('navGestionClases');
-                if (navGC) navGC.style.display = '';
-            }
-
-            cargarEstadisticasReales();
+            if (roleUpperNav === 'ADMINISTRADOR' || roleUpperNav === 'ADMIN') { const n = document.getElementById('navGestionUsuarios'); if (n) n.style.display = ''; }
+            if (roleUpperNav === 'ADMINISTRATIVO' || roleUpperNav === 'EJECUTIVA ACADEMICA') { const n = document.getElementById('navGestionClases'); if (n) n.style.display = ''; }
+            document.addEventListener('click', e => { if (!e.target.closest('.search-global')) document.getElementById('resultadosBusqueda').style.display = 'none'; });
+            cargarTodo();
         });
 
-        async function cargarEstadisticasReales() {
-            try {
-                const [resDocentes, resExpedientes] = await Promise.all([
-                    fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_all_teachers' }) }).then(r => r.json()),
-                    fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_all_expedientes_global' }) }).then(r => r.json())
-                ]);
+        const post = body => fetch(GAS_URL, { method: 'POST', body: JSON.stringify(body) }).then(r => r.json());
 
-                if (resDocentes.status === 'success') {
-                    pintarValor('statTotalDocentes', resDocentes.data.length);
-                }
-
-                if (resExpedientes.status === 'success') {
-                    const expedientes = resExpedientes.data || [];
-                    const aprobados = expedientes.filter(e => e.estado === 'Aprobado').length;
-                    const pendientes = expedientes.filter(e => e.estado === 'Completado');
-
-                    pintarValor('statExpedientesAprobados', aprobados);
-                    pintarValor('statPendientesRevision', pendientes.length);
-
-                    renderExpedientesPendientes(pendientes);
-                } else {
-                    document.getElementById('contenedorExpedientesPendientes').innerHTML = '<p class="text-danger text-center py-3 m-0">No se pudieron cargar los expedientes.</p>';
-                }
-            } catch (e) {
-                console.error('Error cargando estadísticas del dashboard:', e);
-                document.getElementById('contenedorExpedientesPendientes').innerHTML = '<p class="text-danger text-center py-3 m-0">Error de conexión.</p>';
-            }
+        function cargarTodo() {
+            // Cada bloque carga por separado: si uno falla, los demás siguen funcionando.
+            post({ action: 'get_all_teachers' }).then(r => { if (r.status === 'success') { docentes = r.data || []; pintarValor('statTotalDocentes', docentes.length); } }).catch(console.error);
+            post({ action: 'get_all_expedientes_global' }).then(r => {
+                if (r.status !== 'success') throw new Error('exp');
+                expedientes = r.data || [];
+                const contratados = expedientes.filter(e => e.estado === 'Contratado').length;
+                const pendientes = expedientes.filter(e => ESTADOS_REVISION.includes(e.estado));
+                pintarValor('statExpedientesAprobados', contratados);
+                pintarValor('statPendientesRevision', pendientes.length);
+                pintarValor('statAlertas', expedientes.filter(e => e.vencido || e.porVencer).length);
+                renderExpedientesPendientes(pendientes);
+                renderEstancados();
+                graficarEmbudo();
+            }).catch(e => {
+                console.error(e);
+                ['contenedorExpedientesPendientes', 'contenedorEstancados'].forEach(id => document.getElementById(id).innerHTML = '<p class="text-danger text-center py-3 m-0">No se pudieron cargar los expedientes.</p>');
+            });
+            post({ action: 'get_resumen_admin' }).then(r => {
+                if (r.status !== 'success') throw new Error(r.message);
+                const res = r.resumen;
+                graficarInvitaciones(res.invitacionesPorEstado);
+                graficarRegistros(res.registrosPorMes);
+            }).catch(e => {
+                console.error(e);
+            });
+            post({ action: 'get_reporte_docentes' }).then(r => {
+                if (r.status !== 'success') throw new Error(r.message);
+                miniReportes(r.docentes || []);
+            }).catch(console.error);
         }
 
-        function pintarValor(idElemento, valor) {
-            const el = document.getElementById(idElemento);
-            if (!el) return;
-            el.classList.remove('skeleton-text');
-            el.style.width = 'auto'; el.style.height = 'auto';
-            el.innerText = valor;
+        function pintarValor(id, valor) {
+            const el = document.getElementById(id); if (!el) return;
+            el.classList.remove('skeleton-text'); el.style.width = 'auto'; el.style.height = 'auto'; el.innerText = valor;
         }
 
         function calcularDiasDesde(fechaStr) {
             if (!fechaStr) return null;
             let fecha;
-            const partesSlash = String(fechaStr).split('/');
-            if (partesSlash.length === 3) {
-                fecha = new Date(partesSlash[2], partesSlash[1] - 1, partesSlash[0]);
-            } else {
-                fecha = new Date(fechaStr);
-            }
+            const partes = String(fechaStr).split('/');
+            if (partes.length === 3) fecha = new Date(partes[2].slice(0, 4), partes[1] - 1, partes[0]);
+            else fecha = new Date(fechaStr);
             if (isNaN(fecha.getTime())) return null;
-            const hoy = new Date(); hoy.setHours(0,0,0,0); fecha.setHours(0,0,0,0);
-            return Math.round((hoy - fecha) / (1000 * 60 * 60 * 24));
+            const hoy = new Date(); hoy.setHours(0, 0, 0, 0); fecha.setHours(0, 0, 0, 0);
+            return Math.round((hoy - fecha) / 86400000);
+        }
+        const textoDias = d => d === null ? '—' : (d === 0 ? 'Hoy' : `${d} día${d === 1 ? '' : 's'}`);
+
+        function dibujar(id, tipo, labels, valores, opts) {
+            if (typeof Chart === 'undefined') return;
+            opts = opts || {};
+            if (charts[id]) charts[id].destroy();
+            const esBarra = tipo === 'bar', esLinea = tipo === 'line';
+            charts[id] = new Chart(document.getElementById(id), {
+                type: tipo,
+                data: { labels, datasets: [{ data: valores, backgroundColor: esBarra ? '#2563eb' : (esLinea ? 'rgba(37,99,235,.12)' : PALETA), borderColor: esLinea ? '#2563eb' : '#fff', borderWidth: esLinea ? 2 : (esBarra ? 0 : 2), borderRadius: esBarra ? 6 : 0, fill: esLinea, tension: .3, pointRadius: esLinea ? 3 : 0 }] },
+                options: {
+                    maintainAspectRatio: false, indexAxis: opts.horizontal ? 'y' : 'x',
+                    onClick: (ev, els) => { if (els.length && opts.onClick) opts.onClick(labels[els[0].index]); },
+                    onHover: (ev, els) => { ev.native.target.style.cursor = els.length && opts.onClick ? 'pointer' : 'default'; },
+                    plugins: { legend: { display: !esBarra && !esLinea, position: 'bottom' } },
+                    scales: (esBarra || esLinea) ? { x: { grid: { display: false }, ticks: { precision: 0 } }, y: { beginAtZero: true, ticks: { precision: 0 } } } : {}
+                }
+            });
+        }
+
+        // 1. Embudo
+        function graficarEmbudo() {
+            const cuenta = {};
+            expedientes.forEach(e => { const k = e.estado || ''; cuenta[k] = (cuenta[k] || 0) + 1; });
+            const claves = Object.keys(cuenta).sort((a, b) => {
+                const ia = ORDEN_EMBUDO.indexOf(a), ib = ORDEN_EMBUDO.indexOf(b);
+                return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+            });
+            dibujar('chEmbudo', 'bar', claves.map(etiqueta), claves.map(k => cuenta[k]), { onClick: lbl => verEstado(claves.find(k => etiqueta(k) === lbl)) });
+        }
+        function verEstado(estado) {
+            const lista = expedientes.filter(e => (e.estado || '') === estado);
+            document.getElementById('detalleTitulo').innerText = `Estado: ${etiqueta(estado)} (${lista.length})`;
+            document.getElementById('detalleBody').innerHTML = lista.map(e => {
+                const d = calcularDiasDesde(e.fechaCreacion);
+                return `<tr><td><b>${esc(e.nombreDocente)}</b></td><td>${esc(e.idExpediente)}</td><td>${textoDias(d)}</td><td><a class="badge-soft badge-blue text-decoration-none" href="expediente.html?expId=${encodeURIComponent(e.idExpediente)}">Abrir</a></td></tr>`;
+            }).join('') || '<tr><td colspan="4" class="text-center text-muted py-3">Sin expedientes.</td></tr>';
+            const p = document.getElementById('panelDetalle'); p.classList.remove('d-none'); p.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // 2. Estancados
+        function renderEstancados() {
+            const cont = document.getElementById('contenedorEstancados'); if (!cont) return;
+            const min = parseInt(document.getElementById('selDias').value, 10);
+            const lista = expedientes.map(e => ({ e, d: calcularDiasDesde(e.fechaCreacion) }))
+                .filter(x => !ESTADOS_FINALES.includes(x.e.estado) && x.d !== null && x.d >= min)
+                .sort((a, b) => b.d - a.d);
+            if (!lista.length) { cont.innerHTML = '<p class="text-muted text-center py-3 m-0"><i class="fa-regular fa-circle-check me-2 text-success"></i>No hay expedientes estancados.</p>'; return; }
+            cont.innerHTML = '<table class="mini-table"><thead><tr><th>Docente</th><th>Estado</th><th>Días</th></tr></thead><tbody>' + lista.slice(0, 30).map(x => {
+                const alerta = x.e.vencido ? '<span class="badge-soft badge-red ms-1">Vencido</span>' : (x.e.porVencer ? '<span class="badge-soft badge-orange ms-1">Por vencer</span>' : '');
+                return `<tr onclick="location.href='expediente.html?expId=${encodeURIComponent(x.e.idExpediente)}'" style="cursor:pointer;"><td><b>${esc(x.e.nombreDocente)}</b>${alerta}</td><td><span class="badge-soft">${esc(etiqueta(x.e.estado))}</span></td><td>${textoDias(x.d)}</td></tr>`;
+            }).join('') + '</tbody></table>';
         }
 
         function renderExpedientesPendientes(lista) {
-            const cont = document.getElementById('contenedorExpedientesPendientes');
-            if (!cont) return;
-
-            if (lista.length === 0) {
-                cont.innerHTML = '<p class="text-muted text-center py-3 m-0" style="font-size:0.9rem;"><i class="fa-regular fa-circle-check me-2 text-success"></i>No hay expedientes pendientes de revisión.</p>';
-                return;
-            }
-
-            const ordenados = [...lista].sort((a, b) => (calcularDiasDesde(b.fechaCreacion) || 0) - (calcularDiasDesde(a.fechaCreacion) || 0));
-
-            cont.innerHTML = ordenados.slice(0, 5).map(exp => {
+            const cont = document.getElementById('contenedorExpedientesPendientes'); if (!cont) return;
+            if (!lista.length) { cont.innerHTML = '<p class="text-muted text-center py-3 m-0" style="font-size:0.9rem;"><i class="fa-regular fa-circle-check me-2 text-success"></i>No hay expedientes pendientes de revisión.</p>'; return; }
+            const ord = [...lista].sort((a, b) => (calcularDiasDesde(b.fechaCreacion) || 0) - (calcularDiasDesde(a.fechaCreacion) || 0));
+            cont.innerHTML = ord.slice(0, 5).map(exp => {
                 const dias = calcularDiasDesde(exp.fechaCreacion);
-                const diasTexto = dias === null ? '—' : (dias === 0 ? 'Hoy' : `${dias} día${dias === 1 ? '' : 's'}`);
-                const esUrgente = dias !== null && dias >= 3;
-                return `
-                <a href="expediente.html?expId=${exp.idExpediente}" class="list-block" style="text-decoration:none;">
-                    <div class="list-info">
-                        <b>${exp.nombreDocente}</b>
-                        <span>Exp: ${exp.idExpediente}</span>
-                    </div>
-                    <div class="time-badge" style="${esUrgente ? 'background:#fef2f2; color:#ef4444;' : ''}">${diasTexto}</div>
-                </a>`;
+                const urg = dias !== null && dias >= 3;
+                return `<a href="expediente.html?expId=${encodeURIComponent(exp.idExpediente)}" class="list-block" style="text-decoration:none;"><div class="list-info"><b>${esc(exp.nombreDocente)}</b><span>Exp: ${esc(exp.idExpediente)}</span></div><div class="time-badge" style="${urg ? 'background:#fef2f2; color:#ef4444;' : ''}">${textoDias(dias)}</div></a>`;
             }).join('');
         }
 
-        function toggleSidebar() {
-            const sb = document.getElementById('sidebar');
-            const icon = document.getElementById('toggleIcon');
-            sb.classList.toggle('collapsed');
-            icon.classList.toggle('fa-chevron-left');
-            icon.classList.toggle('fa-chevron-right');
+        // 4. Invitaciones
+        function graficarInvitaciones(porEstado) {
+            const k = Object.keys(porEstado || {});
+            if (!k.length) return;
+            dibujar('chInvitaciones', 'doughnut', k, k.map(x => porEstado[x]));
+        }
+        // 5. Registros por mes
+        function graficarRegistros(meses) {
+            const k = Object.keys(meses || {});
+            const nombres = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+            dibujar('chRegistros', 'line', k.map(x => nombres[parseInt(x.slice(5), 10) - 1] + ' ' + x.slice(2, 4)), k.map(x => meses[x]));
         }
 
-        let currentSize = 1; 
-        const sizes =["0.9rem", "1rem", "1.15rem"];
-        const labels =["Pequeño", "Normal", "Grande"];
+        // 6. Mini-reportes
+        function miniReportes(lista) {
+            const top = lista.filter(d => d.idiomas.length >= 2 && d.grados.some(g => g.region === 'Europa' || g.region === 'Estados Unidos'));
+            const cuenta = {};
+            lista.forEach(d => { if (d.pais) cuenta[d.pais] = (cuenta[d.pais] || 0) + 1; });
+            const paises = Object.keys(cuenta).sort((a, b) => cuenta[b] - cuenta[a]);
+            document.getElementById('kpiTop').innerText = top.length;
+            document.getElementById('kpiPaises').innerText = paises.length;
+            document.getElementById('kpiContratados').innerText = lista.filter(d => d.contratado).length;
+            document.getElementById('kpiIdiomas').innerText = lista.filter(d => d.idiomas.length >= 2).length;
+            const t = paises.slice(0, 8);
+            dibujar('chPaisesMini', 'bar', t, t.map(p => cuenta[p]));
+        }
+
+        // 7. Buscador global
+        function buscarGlobal() {
+            const q = document.getElementById('buscadorGlobal').value.trim().toLowerCase();
+            const box = document.getElementById('resultadosBusqueda');
+            if (q.length < 2) { box.style.display = 'none'; return; }
+            const ds = docentes.filter(d => (d.nombres + ' ' + d.apellidos + ' ' + (d.correo || '')).toLowerCase().includes(q)).slice(0, 6);
+            const es = expedientes.filter(e => (e.nombreDocente + ' ' + e.idExpediente).toLowerCase().includes(q)).slice(0, 6);
+            let h = '';
+            ds.forEach(d => { h += `<a href="detallesdocente.html?id=${encodeURIComponent(d.id)}"><i class="fa-solid fa-user me-2 text-primary"></i><b>${esc(d.nombres + ' ' + d.apellidos)}</b><small>Docente · ${esc(d.correo || '')}</small></a>`; });
+            es.forEach(e => { h += `<a href="expediente.html?expId=${encodeURIComponent(e.idExpediente)}"><i class="fa-solid fa-folder-open me-2 text-warning"></i><b>${esc(e.nombreDocente)}</b><small>Expediente ${esc(e.idExpediente)} · ${esc(etiqueta(e.estado))}</small></a>`; });
+            box.innerHTML = h || '<a style="pointer-events:none;color:#94a3b8;">Sin resultados</a>';
+            box.style.display = 'block';
+        }
+
+        function toggleSidebar() {
+            const sb = document.getElementById('sidebar'), icon = document.getElementById('toggleIcon');
+            sb.classList.toggle('collapsed'); icon.classList.toggle('fa-chevron-left'); icon.classList.toggle('fa-chevron-right');
+        }
+        let currentSize = 1;
+        const sizes = ["0.9rem", "1rem", "1.15rem"], labels = ["Pequeño", "Normal", "Grande"];
         function changeFontSize(dir) {
-            currentSize += dir;
-            if (currentSize < 0) currentSize = 0;
-            if (currentSize > 2) currentSize = 2;
+            currentSize = Math.max(0, Math.min(2, currentSize + dir));
             document.getElementById('fontSizeLabel').innerText = labels[currentSize];
             document.documentElement.style.setProperty('--dynamic-font-size', sizes[currentSize]);
         }
-
         function toggleMobileSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            sidebar.classList.toggle('show-mobile');
-            overlay.classList.toggle('active');
+            document.getElementById('sidebar').classList.toggle('show-mobile');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
         }
     </script>
 </body>
