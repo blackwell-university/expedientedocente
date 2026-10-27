@@ -63,6 +63,7 @@
         .badge-firmado { background: #ecfdf5; color: #047857; }
         .badge-completado { background: #dcfce7; color: #166534; }
         .badge-default { background: #f1f5f9; color: #475569; }
+        .badge-sabado { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 30px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; background: #fffbeb; color: #b45309; margin-left: 6px; }
         .badge-culminada { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 30px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; background: #dcfce7; color: #166534; margin-left: 6px; }
 
         /* paginación */
@@ -156,6 +157,7 @@
                                 <option value="">Todas</option>
                                 <option value="culminadas">Culminadas</option>
                                 <option value="en_curso">En curso</option>
+                                <option value="sabado">Con sábado por confirmar</option>
                             </select>
                         </div>
                     </div>
@@ -259,6 +261,7 @@
         }
 
         function badgeEstado(estadoRaw) {
+            if (String(estadoRaw || '').trim().toLowerCase() === 'pendiente aprobación sábado') estadoRaw = 'Aceptado'; // estado ya sin uso
             const e = (estadoRaw || '').toLowerCase().trim();
             let clase = 'badge-default';
             if (e === 'enviado') clase = 'badge-enviado';
@@ -307,6 +310,7 @@
                 {},
                 (data, isLoading) => {
                     if (isLoading || !data) return;
+                    data.forEach(inv => { if (String(inv.estado || '').trim().toLowerCase() === 'pendiente aprobación sábado') inv.estado = 'Aceptado'; });
                     clasesGlobal = data.filter(inv => {
                         const est = (inv.estado || '').toLowerCase();
                         return est !== 'guardado' && est !== 'cancelado';
@@ -368,7 +372,8 @@
                 // fechaCulminacion viene del backend; vacío = en curso, con fecha = culminada
                 const matchDictado = !dictado
                     || (dictado === 'culminadas' && !!inv.fechaCulminacion)
-                    || (dictado === 'en_curso' && !inv.fechaCulminacion);
+                    || (dictado === 'en_curso' && !inv.fechaCulminacion)
+                    || (dictado === 'sabado' && !!inv.sabadoPorConfirmar);
 
                 // NUEVO: si hay rango elegido, la fecha de inicio de la clase debe caer dentro
                 let matchFecha = true;
@@ -481,7 +486,7 @@
                     </td>
                     <td><div class="fw-bold text-primary-dark">${inv.curso}</div><div class="small text-muted">${inv.programa}</div></td>
                     <td>${periodoHtml}</td>
-                    <td>${badgeEstado(inv.estado)}${inv.fechaCulminacion ? `<span class="badge-culminada" title="Culminada el ${formatFechaCorta(inv.fechaCulminacion) || inv.fechaCulminacion}"><i class="fa-solid fa-flag-checkered"></i> Culminada</span>` : ''}</td>
+                    <td>${badgeEstado(inv.estado)}${inv.sabadoPorConfirmar ? `<span class="badge-sabado" title="El docente eligió sábado y falta confirmarlo. Ábrelo en Gestionar Clase."><i class="fa-solid fa-calendar-day"></i> Sábado por confirmar</span>` : ''}${inv.fechaCulminacion ? `<span class="badge-culminada" title="Culminada el ${formatFechaCorta(inv.fechaCulminacion) || inv.fechaCulminacion}"><i class="fa-solid fa-flag-checkered"></i> Culminada</span>` : ''}</td>
                     <td><a href="academica-detalle.html?invId=${inv.id}" class="btn-gestionar"><i class="${iconoBoton}"></i> ${textoBoton}</a></td>
                 </tr>`;
             });

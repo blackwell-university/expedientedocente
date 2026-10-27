@@ -191,7 +191,15 @@
             .material-item { flex-wrap: wrap; }
             .material-info { flex-basis: 100%; order: 1; }
             .material-item > .d-flex { order: 2; margin-left: 52px; }
-        }</style>
+        }
+        .banner-sabado { margin: 0 0 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 12px 14px; }
+        .banner-sabado .bs-ico { width: 34px; height: 34px; border-radius: 9px; background: #fef3c7; color: #b45309; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .banner-sabado .bs-txt { flex: 1 1 220px; min-width: 0; }
+        .banner-sabado .bs-tit { font-size: 0.85rem; font-weight: 700; color: #92400e; }
+        .banner-sabado .bs-sub { font-size: 0.75rem; color: #b45309; }
+        .btn-confirmar-sab { background: #15803d; color: #fff; border: none; border-radius: 8px; padding: 8px 14px; font-weight: 700; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-confirmar-sab:hover { background: #166534; }
+    </style>
 </head>
 <body>
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
@@ -343,6 +351,7 @@
                                         </button>
                                     </div>
                                     <p class="text-muted small mb-4">Actualice el dictado de cada sesión o configure una fecha y horario alternativo si se solicita una reprogramación.</p>
+                                    <div id="bannerSabados"></div>
                                     
                                     <div id="contenedorSesiones">
                                     </div>
@@ -594,6 +603,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     const doc = datos.docente;
 
                     fechaCulminacion = inv.fechaCulminacion || "";
+                    renderBannerSabados(inv.sabadosPorConfirmar || []);
 
                     document.getElementById('txtCursoNombre').innerText = inv.cursoNombre;
                     document.getElementById('txtPrograma').innerText = inv.programa;
@@ -721,6 +731,33 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             } catch (error) {
                 console.error("Error renderizando detalle de clase:", error);
             }
+        }
+
+        // Aviso: el docente eligió sábado y nadie lo ha confirmado. Se quita al confirmar o al reprogramar esa sesión.
+        function renderBannerSabados(lista) {
+            const cont = document.getElementById('bannerSabados');
+            if (!cont) return;
+            if (!lista || !lista.length || edicionBloqueada()) { cont.innerHTML = ''; return; }
+            const fechas = lista.map(s => `${s.fecha}${s.slot ? ' · ' + s.slot : ''}`).join('  |  ');
+            cont.innerHTML = `<div class="banner-sabado">
+                <div class="bs-ico"><i class="fa-solid fa-calendar-day"></i></div>
+                <div class="bs-txt">
+                    <div class="bs-tit">Sábado por confirmar: ${fechas}</div>
+                    <div class="bs-sub">El docente eligió sábado. Coordina con él y confirma, o reprograma la sesión si no se puede.</div>
+                </div>
+                <button type="button" class="btn-confirmar-sab" onclick="confirmarSabados()"><i class="fa-solid fa-check"></i> Confirmar sábado(s)</button>
+            </div>`;
+        }
+
+        async function confirmarSabados() {
+            const c = await Swal.fire({ title: '¿Confirmar sábado(s)?', html: 'Confirmas que ya coordinaste con el docente y que dictará clase esos sábados. Queda registrado con tu nombre.', icon: 'question', showCancelButton: true, confirmButtonColor: '#15803d', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, confirmar', cancelButtonText: 'Cancelar', reverseButtons: true });
+            if (!c.isConfirmed) return;
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'confirmar_sabados_invitacion', idInvitacion: invId, usuarioNombre: localStorage.getItem('userName') || '' }) });
+                const j = await res.json();
+                if (j.status === 'success') { showToast('Sábado(s) confirmado(s).', 'success'); cargarDetalleClase(); }
+                else Swal.fire('No se pudo confirmar', j.message || 'Inténtalo de nuevo.', 'error');
+            } catch (e) { Swal.fire('Error de conexión', 'No se pudo conectar con el servidor.', 'error'); }
         }
 
         function todasSesionesRealizadas() {
@@ -1142,7 +1179,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
                 Swal.fire({ title: 'Guardando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                 try {
-                    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'save_asesora_course_data', idInvitacion: invId, enlaces: arrayEnlaces, sesiones: arraySesiones }) });
+                    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'save_asesora_course_data', idInvitacion: invId, enlaces: arrayEnlaces, sesiones: arraySesiones, usuarioNombre: localStorage.getItem('userName') || '' }) });
                     const json = await res.json();
                     if (json.status === 'success') {
                         Swal.fire({ icon: 'success', title: 'Sesión reprogramada', timer: 1800, showConfirmButton: false });
@@ -1224,7 +1261,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     action: "save_asesora_course_data",
                     idInvitacion: invId,
                     enlaces: arrayEnlaces,
-                    sesiones: arraySesiones
+                    sesiones: arraySesiones,
+                    usuarioNombre: localStorage.getItem('userName') || ''
                 };
 
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });

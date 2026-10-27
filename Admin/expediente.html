@@ -649,6 +649,16 @@
             transform: translateY(-2px) !important;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
         }
+    
+        /* Sábados por confirmar + historial de cambios de fecha */
+        .chip-estado-sabado { font-size: 0.62rem; font-weight: 700; background: #fef3c7; color: #b45309; border-radius: 20px; padding: 2px 8px; white-space: nowrap; }
+        .cambios-fecha { margin-top: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px; }
+        .cambios-fecha-title { font-size: 0.78rem; font-weight: 700; color: #334155; margin-bottom: 4px; }
+        .cambio-fecha-item { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: 0.74rem; color: #334155; padding: 6px 0; border-top: 1px dashed #e2e8f0; }
+        .cambio-fecha-item:first-child { border-top: none; }
+        .cambio-fecha-nueva { font-weight: 700; color: #1e3a8a; }
+        .cambio-fecha-antes { text-decoration: line-through; color: #94a3b8; margin-left: 4px; }
+        .cambio-fecha-quien { margin-left: auto; color: #64748b; font-size: 0.68rem; }
     </style>
 </head>
 <body>
@@ -832,12 +842,16 @@
                                 <div class="alert-sabado-row">
                                     <div class="alert-sabado-icon"><i class="fa-solid fa-calendar-day"></i></div>
                                     <div class="alert-sabado-text">
-                                        <div class="alert-sabado-title">Sábado(s) por aprobar</div>
-                                        <div class="alert-sabado-subtitle">Aprueba el sábado o cámbialo: coordina con el docente fuera del sistema y registra la nueva fecha aquí</div>
+                                        <div class="alert-sabado-title">Sábado(s) por confirmar</div>
+                                        <div class="alert-sabado-subtitle">Coordinación académica los confirma o los cambia en Gestión de Clases. No frena documentos ni firmas.</div>
                                     </div>
                                     <div id="listaSabadosPendientes" class="alert-sabado-chips"></div>
                                 </div>
                             </div>
+                <div id="wrapperCambiosFecha" class="cambios-fecha d-none">
+                    <div class="cambios-fecha-title"><i class="fa-solid fa-clock-rotate-left me-1"></i> Cambios de fecha</div>
+                    <div id="listaCambiosFecha"></div>
+                </div>
 
                             <div id="aviso-invitacion-pendiente-admin"></div>
                         </div>
@@ -1620,31 +1634,48 @@
             const cont = document.getElementById('listaSabadosPendientes');
             const hayPendientes = lista && lista.length > 0;
 
-            const mostrarWidget = hayPendientes || estadoInvitacionActual === 'Enviado';
-            if (!mostrarWidget) {
+            // El estado de la invitación ya no depende de los sábados: este cuadro es solo un aviso.
+            if (!hayPendientes) {
                 wrapper.classList.add('d-none');
                 cont.innerHTML = '';
                 return;
             }
 
             wrapper.classList.remove('d-none');
-            cont.innerHTML = hayPendientes ? lista.map(s => `
+            cont.innerHTML = lista.map(s => `
                 <span class="chip-sabado-fecha">
                     <span><i class="fa-regular fa-calendar" style="font-size:0.7rem;"></i> ${s.fecha} <span class="chip-hora">· ${s.slot || '-'}</span></span>
-                    <button type="button" class="chip-sabado-btn chip-sabado-ok" title="Aprobar este sábado: el docente dictará clase ese día" onclick="revisarSabado('${s.fecha}', 'Aprobado')"><i class="fa-solid fa-check"></i> Aprobar</button>
-                    <button type="button" class="chip-sabado-btn chip-sabado-x" title="No aprobar: coordina otra fecha con el docente y regístrala aquí" onclick="iniciarDecisionSabado('${s.fecha}')"><i class="fa-solid fa-rotate"></i> Cambiar fecha</button>
-                </span>`).join('') : '<span style="font-size:0.75rem; color:#92400e;">Falta que el docente complete su horario</span>';
+                    <span class="chip-estado-sabado">Por confirmar</span>
+                    <button type="button" class="chip-sabado-btn chip-sabado-ok" title="Confirmar este sábado: el docente dictará clase ese día" onclick="revisarSabado('${s.fecha}', 'Aprobado')"><i class="fa-solid fa-check"></i> Confirmar</button>
+                    <button type="button" class="chip-sabado-btn chip-sabado-x" title="Cambiar la fecha: coordina con el docente y regístrala aquí" onclick="iniciarDecisionSabado('${s.fecha}')"><i class="fa-solid fa-rotate"></i> Cambiar fecha</button>
+                </span>`).join('');
+        }
+
+        // Historial de cambios de fecha y confirmaciones de sábado (quién y cuándo), hechos aquí o en Gestión de Clases.
+        function renderCambiosFecha(hist) {
+            const w = document.getElementById('wrapperCambiosFecha');
+            const l = document.getElementById('listaCambiosFecha');
+            if (!w || !l) return;
+            if (!hist || !hist.length) { w.classList.add('d-none'); l.innerHTML = ''; return; }
+            const escH = t => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            w.classList.remove('d-none');
+            l.innerHTML = hist.slice().reverse().map(h => {
+                if (h.tipo === 'cambio') {
+                    return `<div class="cambio-fecha-item"><span><i class="fa-solid fa-rotate" style="color:#b45309;"></i> ${h.sesion ? 'Sesión ' + escH(h.sesion) + ': ' : ''}<span class="cambio-fecha-nueva">${escH(h.fechaNueva)}${h.slotNueva ? ' · ' + escH(h.slotNueva) : ''}</span><span class="cambio-fecha-antes">${escH(h.fechaAntes)}${h.slotAntes ? ' · ' + escH(h.slotAntes) : ''}</span></span><span class="cambio-fecha-quien">${escH(h.por)} · ${escH(h.cuando)}${h.origen ? ' · ' + escH(h.origen) : ''}</span></div>`;
+                }
+                return `<div class="cambio-fecha-item"><span><i class="fa-solid fa-circle-check" style="color:#15803d;"></i> Sábado confirmado: <span class="cambio-fecha-nueva">${escH((h.fechas || []).join(', '))}</span></span><span class="cambio-fecha-quien">${escH(h.por)} · ${escH(h.cuando)}</span></div>`;
+            }).join('');
         }
 
         async function revisarSabado(fecha, decision) {
             const confirmacion = await Swal.fire({
-                title: '¿Aprobar esta fecha?',
-                html: `Se confirma que el <b>${fecha}</b> queda aprobado para dictar clase.`,
+                title: '¿Confirmar este sábado?',
+                html: `Se confirma que el <b>${fecha}</b> queda confirmado para dictar clase. Quedará registrado con tu nombre.`,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#15803d',
                 cancelButtonColor: '#64748b',
-                confirmButtonText: 'Sí, aprobar',
+                confirmButtonText: 'Sí, confirmar',
                 cancelButtonText: 'Cancelar',
                 reverseButtons: true
             });
@@ -1661,12 +1692,12 @@
             const result = await Swal.fire({
                 title: 'Cambiar la fecha del sábado',
                 html: `<div style="text-align:left;">
-                        <p style="margin-bottom:10px;">El sábado <b>${fecha}</b> no se aprobará. Para continuar:</p>
+                        <p style="margin-bottom:10px;">Vas a reemplazar el sábado <b>${fecha}</b>. Para continuar:</p>
                         <ol style="padding-left:20px; margin:0; line-height:1.7;">
                             <li>Coordina otra fecha con el docente <b>por fuera del sistema</b> (correo, WhatsApp o llamada).</li>
                             <li>Elige aquí el <b>día y la hora</b> que acordaron.</li>
                         </ol>
-                        <p style="margin:12px 0 0; font-size:.85rem;">El docente <b>no recibirá</b> un correo para elegir otra fecha: el cambio lo registras tú.</p>
+                        <p style="margin:12px 0 0; font-size:.85rem;">El docente <b>no recibirá</b> un correo. El cambio queda registrado con tu nombre y se verá también en Gestión de Clases.</p>
                        </div>`,
                 icon: 'info',
                 showCancelButton: true,
@@ -1684,11 +1715,11 @@
             try {
                 const res = await fetch(GAS_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'revisar_sabado_invitacion', idInvitacion: idInvitacionActual, fecha: fecha, decision: decision })
+                    body: JSON.stringify({ action: 'confirmar_sabados_invitacion', idInvitacion: idInvitacionActual, fechas: [fecha], usuarioNombre: localStorage.getItem('userName') || '' })
                 });
                 const data = await res.json();
                 if (data.status === 'success') {
-                    showToast(decision === 'Denegado' ? 'Se avisó al docente por correo para que elija una nueva fecha.' : 'Fecha aprobada.', 'success');
+                    showToast('Sábado confirmado.', 'success');
                     cargarExpediente();
                 } else {
                     showToast(data.message || 'No se pudo procesar la decisión.', 'danger');
@@ -1770,9 +1801,10 @@
             adminBookedSessions = [];
 
             // Cargar las sesiones confirmadas excluyendo la que se va a reemplazar
-            if (inv.dias && inv.horario) {
-                const daysArr = inv.dias.split(',').map(d => d.trim()).filter(Boolean);
-                const hoursArr = inv.horario.split('|').map(h => h.trim()).filter(Boolean);
+            const diasModal = inv.diasVigentes || inv.dias; const horarioModal = inv.horarioVigente || inv.horario;
+            if (diasModal && horarioModal) {
+                const daysArr = diasModal.split(',').map(d => d.trim()).filter(Boolean);
+                const hoursArr = horarioModal.split('|').map(h => h.trim()).filter(Boolean);
                 daysArr.forEach((dateStr, idx) => {
                     if (dateStr && dateStr !== fechaExcluir) {
                         const matchHora = hoursArr.find(h => h.includes(dateStr));
@@ -1935,7 +1967,8 @@
                         action: 'actualizar_horario_invitacion_admin',
                         idInvitacion: idInvitacionActual,
                         dia: diasArr.join(', '),
-                        hora: horasArr.join(' | ')
+                        hora: horasArr.join(' | '),
+                        usuarioNombre: localStorage.getItem('userName') || ''
                     })
                 });
                 const data = await res.json();
@@ -2030,7 +2063,8 @@
                     const exp = response.expediente;
                     const d = response.docente;
                     const inv = response.invitacion;
-                    ultimaInvitacionCargada = inv;
+                    if (String(inv.estado || '').trim().toLowerCase() === 'pendiente aprobación sábado') inv.estado = 'Aceptado'; // estado ya sin uso
+                ultimaInvitacionCargada = inv;
                     docId = d.id;
                     urlCarpetaExpediente = exp.urlCarpeta || "";
 
@@ -2137,6 +2171,7 @@
                     // NUEVO: widget de aprobación de sábado
                     estadoInvitacionActual = inv.estado || "";
                     renderSabadosPendientes(inv.sabadosDetectados || []);
+                renderCambiosFecha(inv.historialFechas || []);
 
                     const avisoInvAdmin = document.getElementById('aviso-invitacion-pendiente-admin');
                     const sinHorarioElegido = !inv.horario || inv.horario.trim() === '' || inv.horario.trim() === '-';
