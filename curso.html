@@ -858,6 +858,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
                 if (res.status === 'success') {
                     const data = res.data;
+                    mostrarSoloAsesoraDelCurso(data.asesora);
 
                     document.getElementById('ui-titulo').innerText = data.nombreCurso;
                     document.getElementById('ui-programa').innerText = data.programa;
@@ -1063,13 +1064,13 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         // Configuración del Widget de Soporte Académico
         const SOPORTE_CONTACTOS = [
             {
-                clave: 'sara', nombre: 'Sara Morales', cargo: 'Doctorado y Bachelor Upgrade',
+                clave: 'sara', username: 'saram.blackwell', nombre: 'Sara Morales', cargo: 'Doctorado y Bachelor Upgrade',
                 iniciales: 'SM', whatsapp: '51988475755',
                 mensaje: 'Docente requiere soporte con el dictado del curso.',
                 mensajeWa: 'Hola Sara, requiero soporte con el dictado de mi curso.'
             },
             {
-                clave: 'claudia', nombre: 'Claudia Quispe', cargo: 'Maestrías y Bachelor',
+                clave: 'claudia', username: 'claudiaq.blackwell', nombre: 'Claudia Quispe', cargo: 'Maestrías y Bachelor',
                 iniciales: 'CQ', whatsapp: '51921392960',
                 mensaje: 'Docente requiere soporte con el dictado del curso.',
                 mensajeWa: 'Hola Claudia, requiero soporte con el dictado de mi curso.'
@@ -1222,6 +1223,18 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
         document.addEventListener('DOMContentLoaded', () => renderContactosSoporte(SOPORTE_CONTACTOS));
 
+        // En el detalle de un curso solo se muestra el contacto de la asesora a cargo de ESE curso.
+        // Si el curso aún no tiene asesora asignada (o no se reconoce), se mantienen ambos contactos.
+        function mostrarSoloAsesoraDelCurso(asesora) {
+            if (!asesora) return;
+            const norm = (t) => String(t || '').trim().toLowerCase();
+            const c = SOPORTE_CONTACTOS.find(x => norm(x.username) === norm(asesora.username) || norm(x.nombre) === norm(asesora.nombre));
+            if (!c) return;
+            renderContactosSoporte([c]);
+            const sub = document.querySelector('.fab-panel-sub');
+            if (sub) sub.textContent = 'Tu asesora académica de este curso';
+        }
+
         document.addEventListener('click', (e) => {
             const fab = document.getElementById('fabSoporte');
             if (fab && fab.classList.contains('is-open') && !fab.contains(e.target)) toggleSoporte();
@@ -1230,5 +1243,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
 <script src="i18n-en.js"></script>
 <script src="i18n.js"></script>
+<script src="docente-menu.js"></script>
 </body>
 </html>

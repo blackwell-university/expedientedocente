@@ -947,7 +947,7 @@
         </a>
         <div class="nav-links-desktop">
             <a href="dashboard-docente.html" class="nav-item"><span class="material-symbols-rounded">home</span> Dashboard</a>
-            <a href="misexpedientes.html" class="nav-item active"><span class="material-symbols-rounded">folder_open</span>Expedientes</a>
+            <a href="misexpedientes.html" class="nav-item active"><span class="material-symbols-rounded">folder_open</span> Expedientes</a>
             <a href="miscursos.html" class="nav-item"><span class="material-symbols-rounded">co_present</span> Mis Clases</a>
         </div>
         <a href="#" class="nav-item admin-back-link" onclick="history.back(); return false;">
@@ -1331,18 +1331,18 @@
                             <div class="section-label mt-2">Ubicación Residencial</div>
                             <div class="row g-4">
                                 <div class="col-md-4">
+                                    <label class="form-label">País Residencia *</label>
+                                    <select class="form-select" id="reg-pais" onchange="verificarEstadoEEUU()">
+                                        <option value="">Cargando países...</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
                                     <label class="form-label">País (Nacionalidad) *</label>
                                     <select class="form-select" id="reg-pais-nac">
                                         <option value="">Cargando países...</option>
                                     </select>
                                 </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">País Residencia *</label>
-                                    <select class="form-select" id="reg-pais" onchange="verificarEstadoEEUU()">
-                                        <option value="">Cargando países...</option>
-                                    </select>
-                                </div>                                
-                                <div class="col-md-4"><label class="form-label">Estado / Provincia (Residencia)</label><input type="text" class="form-control" id="reg-estado-region" placeholder="Especifique estado"></div>
+                                <div class="col-md-4"><label class="form-label">Estado / Provincia</label><input type="text" class="form-control" id="reg-estado-region" placeholder="Especifique estado"></div>
                                 <div class="col-md-4"><label class="form-label">Ciudad *</label><input type="text" class="form-control" id="reg-ciudad"></div>
                                 <div class="col-md-8"><label class="form-label">Dirección Completa *</label><input type="text" class="form-control" id="reg-direccion" placeholder="Calle, número, urbanización..."></div>
                                 <div class="col-md-4"><label class="form-label">Código Postal *</label><input type="text" class="form-control" id="reg-cp"></div>
@@ -4723,5 +4723,6 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
 
 <script src="i18n-en.js"></script>
 <script src="i18n.js"></script>
+<script src="docente-menu.js"></script>
 </body>
 </html>

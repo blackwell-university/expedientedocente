@@ -692,7 +692,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="label-aesthetic">Cantidad Sesiones</label>
-                                <input type="text" id="invCantClases" class="form-control input-aesthetic" value="cuatro">
+                                <input type="number" id="invCantClases" class="form-control input-aesthetic" value="4" min="1" max="30" step="1" inputmode="numeric" placeholder="Ej: 4">
                             </div>
 
                             <div class="col-md-12">
@@ -1368,6 +1368,22 @@
             }
         }
 
+
+        // Cantidad de sesiones: siempre número entero. Convierte valores antiguos escritos en letras ("cuatro" -> 4).
+        function clasesANumero(v) {
+            if (typeof v === 'number' && isFinite(v) && v > 0) return Math.round(v);
+            const s = String(v == null ? '' : v).trim().toLowerCase();
+            if (!s) return 4;
+            const n = parseInt(s, 10);
+            if (!isNaN(n) && n > 0) return n;
+            const m = { 'una':1,'uno':1,'un':1,'dos':2,'tres':3,'cuatro':4,'cinco':5,'seis':6,'siete':7,'ocho':8,'nueve':9,'diez':10,'once':11,'doce':12 };
+            return m[s] || 4;
+        }
+        function leerCantidadClases(inputId) {
+            const n = parseInt(document.getElementById(inputId).value, 10);
+            return (isNaN(n) || n < 1 || n > 30) ? null : n;
+        }
+
         function filtrarCursos() {
             const selP = document.getElementById('selPrograma');
             const selC = document.getElementById('selCurso');
@@ -1381,6 +1397,7 @@
         }
 
         async function guardarInvitacion() {
+            if (leerCantidadClases('invCantClases') === null) { showToast("La cantidad de sesiones debe ser un número entero (ej: 4)", "danger"); return; }
             const selP = document.getElementById('selPrograma'), selC = document.getElementById('selCurso');
             if(!selP.value || !selC.value || !document.getElementById('invFechaInicio').value) { 
                 showToast("Complete Programa, Curso y Fecha Inicial", "danger"); return; 
@@ -1406,7 +1423,7 @@
                 fechaFin: document.getElementById('invFechaFin').value,
                 rangoFechas: `${document.getElementById('invFechaInicio').value} al ${document.getElementById('invFechaFin').value}`,
                 horario: document.getElementById('invHorario').value, 
-                cantidadClases: document.getElementById('invCantClases').value,
+                cantidadClases: leerCantidadClases('invCantClases') || 4,
                 monedaSimbolo: document.getElementById('invMoneda').value, 
                 costo: document.getElementById('invCosto').value,
                 documentos: modoAccionActual === 'expediente' ? Array.from(document.querySelectorAll('.doc-checkbox:checked')).map(cb => cb.value).join(',') : ""
@@ -1464,7 +1481,7 @@
                 curso: selC.options[selC.selectedIndex].text,
                 rangoFechas: `${document.getElementById('invFechaInicio').value} al ${document.getElementById('invFechaFin').value}`,
                 horario: document.getElementById('invHorario').value, 
-                cantidadClases: document.getElementById('invCantClases').value,
+                cantidadClases: leerCantidadClases('invCantClases') || 4,
                 monedaSimbolo: document.getElementById('invMoneda').value, 
                 costo: document.getElementById('invCosto').value,
                 documentos: modoAccionActual === 'expediente' ? Array.from(document.querySelectorAll('.doc-checkbox:checked')).map(cb => cb.value).join(',') : ""
@@ -1731,7 +1748,7 @@
                             curso: d.curso,
                             rangoFechas: `${new Date(d.fechaInicio).toLocaleDateString('es-ES')} al ${new Date(d.fechaFin).toLocaleDateString('es-ES')}`,
                             horario: d.franjas, 
-                            cantidadClases: d.clases,
+                            cantidadClases: clasesANumero(d.clases),
                             monedaSimbolo: d.moneda, 
                             costo: d.costo,
                             documentos: expData.documentos

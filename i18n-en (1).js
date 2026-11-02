@@ -1879,5 +1879,10 @@ window.I18N_EN = {
  "Usuario actualizado correctamente.": "User updated successfully.",
  "Usuario creado correctamente.": "User created successfully.",
  "Usuarios del Sistema": "System Users",
- "Visualiza y gestiona los expedientes y estados de la plana docente.": "View and manage the files and statuses of the teaching staff."
+ "Visualiza y gestiona los expedientes y estados de la plana docente.": "View and manage the files and statuses of the teaching staff.",
+ "General": "General",
+ "Docentes": "Faculty",
+ "Académico": "Academic",
+ "Administración": "Administration",
+ "Documentos de Contratación": "Hiring Documents"
 };

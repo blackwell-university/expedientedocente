@@ -245,6 +245,37 @@
             .pdf-panel { height: 300px; }
             #signature-pad-canvas { height: 170px; }
         }
+
+        /* ===== AJUSTES MÓVIL: tolerancia al tamaño de letra del celular + A−/A+ ===== */
+        html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+        .font-ctrl-row { display: flex; justify-content: flex-end; margin-bottom: .5rem; }
+        .font-ctrl { display: inline-flex; align-items: center; gap: 2px; background: #f1f5f9; border: 1px solid var(--border-color); border-radius: 999px; padding: 3px; flex-shrink: 0; }
+        .font-ctrl button { border: none; background: #fff; color: var(--primary-dark); font-weight: 800; border-radius: 999px; min-width: 40px; height: 36px; padding: 0 10px; font-size: 14px; line-height: 1; cursor: pointer; box-shadow: 0 1px 2px rgba(15,23,42,.08); }
+        .font-ctrl button:active { transform: scale(.95); }
+        .font-ctrl button:disabled { opacity: .35; cursor: default; }
+        .font-ctrl .font-pct { min-width: 46px; text-align: center; font-size: 12px; font-weight: 700; color: var(--text-muted); }
+        .doc-current-card .doc-name { overflow-wrap: anywhere; }
+        @media (max-width: 992px) {
+            .pdf-panel, .form-panel { flex-shrink: 0; }
+            .split-wrapper { overflow-y: auto; overflow-x: hidden; padding-bottom: 0 !important; }
+            .pdf-panel { height: clamp(280px, 48dvh, 480px); }
+            /* el panel crece con su contenido y reserva el espacio real de la barra inferior */
+            .form-panel { height: auto !important; min-height: 0; padding-bottom: calc(var(--nav-h, 110px) + 48px) !important; }
+            .doc-current-card { flex-wrap: wrap; }
+            .doc-current-card .doc-name { white-space: normal; }
+            .form-header h1 { font-size: clamp(1.25rem, 5.2vw, 1.8rem); overflow-wrap: anywhere; }
+            .btn-sign { margin-bottom: 24px !important; min-height: 52px; flex-wrap: wrap; text-align: center; }
+            .firma-modo-btn { flex-wrap: wrap; min-height: 44px; }
+            .bottom-nav { height: auto; min-height: 64px; padding-top: 6px; padding-bottom: calc(6px + env(safe-area-inset-bottom)); transition: transform .25s ease, opacity .2s ease; }
+            .bottom-item { height: auto; min-height: 44px; }
+            .bottom-item.active > span:last-child { font-size: 12px; }
+            body.is-signing .bottom-nav { transform: translateY(140%); opacity: 0; pointer-events: none; }
+        }
+        @media (max-width: 480px) {
+            .form-panel { padding-left: 1rem; padding-right: 1rem; }
+            .doc-nav-arrow { width: 36px; height: 36px; }
+            #signature-pad-canvas { height: clamp(150px, 26dvh, 190px); }
+        }
     </style>
 </head>
 <body>
@@ -287,6 +318,13 @@
 
         <!-- PANEL DERECHO: FORMULARIO Y FIRMA -->
         <div class="form-panel">
+            <div class="font-ctrl-row">
+                <div class="font-ctrl" role="group" aria-label="Tamaño de letra">
+                    <button type="button" id="btnFontMenos" onclick="cambiarTamanoLetra(-1)" aria-label="Reducir letra">A−</button>
+                    <span class="font-pct" id="fontPct">100%</span>
+                    <button type="button" id="btnFontMas" onclick="cambiarTamanoLetra(1)" aria-label="Aumentar letra" style="font-size:17px;">A+</button>
+                </div>
+            </div>
             <div class="form-header" style="margin-top: 0.5rem;">
                 <h1 id="txtDocenteNombre">Firma de Documentos</h1>
                 <p id="txtExpDetails">Expediente: —</p>
@@ -325,6 +363,33 @@
         let documentosDisponibles = [];
         let indiceDocActual = 0;
 
+        // ---- Tamaño de letra (A− / A+) ----
+        const PASOS_LETRA = [70, 80, 90, 100, 115, 130, 150, 170];
+        let idxLetra = 3;
+        function aplicarTamanoLetra() {
+            document.documentElement.style.fontSize = (16 * PASOS_LETRA[idxLetra] / 100) + 'px';
+            const pct = document.getElementById('fontPct'); if (pct) pct.textContent = PASOS_LETRA[idxLetra] + '%';
+            const m = document.getElementById('btnFontMenos'), M = document.getElementById('btnFontMas');
+            if (m) m.disabled = idxLetra === 0;
+            if (M) M.disabled = idxLetra === PASOS_LETRA.length - 1;
+            medirBarraInferior();
+            setTimeout(() => { try { resizeCanvas(); } catch (e) {} }, 60);
+        }
+        function cambiarTamanoLetra(d) {
+            idxLetra = Math.min(PASOS_LETRA.length - 1, Math.max(0, idxLetra + d));
+            try { localStorage.setItem('firmaFontIdx', String(idxLetra)); } catch (e) {}
+            aplicarTamanoLetra();
+        }
+        // Mide la barra inferior real para que nunca tape el botón de firma
+        function medirBarraInferior() {
+            const nav = document.querySelector('.bottom-nav');
+            if (!nav) return;
+            const h = getComputedStyle(nav).display === 'none' ? 0 : nav.getBoundingClientRect().height;
+            document.documentElement.style.setProperty('--nav-h', Math.ceil(h + 14) + 'px');
+        }
+        window.addEventListener('resize', medirBarraInferior);
+        window.addEventListener('load', medirBarraInferior);
+
         function togglePdfFullscreen() {
             const panel = document.querySelector('.pdf-panel');
             const btn = document.getElementById('btnExpandPdf');
@@ -358,6 +423,8 @@
                 return;
             }
 
+            try { const g = parseInt(localStorage.getItem('firmaFontIdx'), 10); if (!isNaN(g) && g >= 0 && g < PASOS_LETRA.length) idxLetra = g; } catch (e) {}
+            aplicarTamanoLetra();
             inicializarSignaturePad();
             window.addEventListener('resize', resizeCanvas);
 
@@ -370,6 +437,10 @@
             signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' });
             const clearBtn = document.getElementById('clearSignatureBtn');
             if (clearBtn) clearBtn.addEventListener('click', () => signaturePad.clear());
+            const salir = () => setTimeout(() => document.body.classList.remove('is-signing'), 900);
+            canvas.addEventListener('pointerdown', () => document.body.classList.add('is-signing'));
+            canvas.addEventListener('pointerup', salir);
+            canvas.addEventListener('pointercancel', salir);
             setTimeout(resizeCanvas, 50);
         }
 

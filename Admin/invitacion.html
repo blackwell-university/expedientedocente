@@ -1604,7 +1604,7 @@
                         docenteNombre: docenteNombreActual,
                         programa: programaActual,
                         curso: cursoActual,
-                        cantidadClases: clasesActual,
+                        cantidadClases: (function(v){const n=parseInt(v,10);if(!isNaN(n)&&n>0)return n;const m={'una':1,'uno':1,'dos':2,'tres':3,'cuatro':4,'cinco':5,'seis':6,'siete':7,'ocho':8,'nueve':9,'diez':10};return m[String(v||'').trim().toLowerCase()]||4;})(clasesActual),
                         horario: franjasActual,
                         monedaSimbolo: monedaVal,
                         costo: costoVal

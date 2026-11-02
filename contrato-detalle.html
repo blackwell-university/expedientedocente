@@ -160,7 +160,12 @@
             overflow-y: auto; display: flex; flex-direction: column; box-shadow: -10px 0 30px rgba(0,0,0,0.05); z-index: 10; 
         }
 
-        .breadcrumb-nav { margin-bottom: 1.5rem; font-size: 13px; }
+        .breadcrumb-nav { margin-bottom: 1.5rem; font-size: 13px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+        .font-ctrl { display: inline-flex; align-items: center; gap: 2px; background: #f1f5f9; border: 1px solid var(--border-color); border-radius: 999px; padding: 3px; flex-shrink: 0; }
+        .font-ctrl button { border: none; background: #fff; color: var(--primary-dark); font-weight: 800; border-radius: 999px; min-width: 40px; height: 36px; padding: 0 10px; font-size: 14px; line-height: 1; cursor: pointer; box-shadow: 0 1px 2px rgba(15,23,42,.08); }
+        .font-ctrl button:active { transform: scale(.95); }
+        .font-ctrl button:disabled { opacity: .35; cursor: default; }
+        .font-ctrl .font-pct { min-width: 46px; text-align: center; font-size: 12px; font-weight: 700; color: var(--text-muted); }
         .back-link { text-decoration: none; color: var(--text-muted); display: flex; align-items: center; gap: 6px; font-weight: 600; transition: 0.2s;}
         .back-link:hover { color: var(--primary); }
 
@@ -244,8 +249,39 @@
                 height: 170px; 
             }
         }
-    
-    
+
+        /* ===== AJUSTES MÓVIL: tolerancia al tamaño de letra del celular ===== */
+        html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+        #i18nSwitch { display: none !important; }
+        .lang-ctrl button { min-width: 36px; } .lang-ctrl button.on { background: var(--primary-dark); color: #fff; }
+        .doc-current-card .doc-name { overflow-wrap: anywhere; }
+        @media (max-width: 992px) {
+            /* Los paneles nunca se encogen: si el texto crece, la página hace scroll en vez de montarse */
+            .pdf-panel, .form-panel { flex-shrink: 0; }
+            .split-wrapper { overflow-y: auto; overflow-x: hidden; }
+            .pdf-panel { height: clamp(300px, 52dvh, 480px); }
+            .form-panel { height: auto !important; min-height: 0; }
+            .doc-current-card { flex-wrap: wrap; }
+            .doc-current-card .doc-name { white-space: normal; }
+            .form-header h1 { font-size: clamp(1.25rem, 5.2vw, 1.8rem); overflow-wrap: anywhere; }
+            /* Espacio generoso al final: la barra inferior flotante nunca tapa el botón de firma */
+            .split-wrapper { padding-bottom: 0 !important; }
+            .form-panel { padding-bottom: calc(var(--nav-h, 110px) + 48px) !important; }
+            .btn-sign { margin-bottom: 24px !important; min-height: 52px; flex-wrap: wrap; text-align: center; }
+            .bottom-nav { height: auto; min-height: 64px; padding-top: 6px; padding-bottom: calc(6px + env(safe-area-inset-bottom)); transition: transform .25s ease, opacity .2s ease; }
+            .bottom-item { height: auto; min-height: 44px; }
+            .bottom-item.active > span:last-child { font-size: 12px; }
+            /* Mientras el docente dibuja su firma, la barra se oculta para no estorbar */
+            body.is-signing .bottom-nav { transform: translateY(140%); opacity: 0; pointer-events: none; }
+            .signature-wrapper { scroll-margin-bottom: 120px; }
+        }
+        @media (max-width: 480px) {
+            .pdf-panel { height: clamp(280px, 46dvh, 450px); }
+            .form-panel { padding: 1.5rem 1rem; }
+            .doc-nav-arrow { width: 36px; height: 36px; }
+            #signature-pad-canvas { height: clamp(150px, 26dvh, 190px); }
+        }
+
         /* --- REDISEÑO DE SWEETALERT2 (UI Corporativa) --- */
         div:where(.swal2-container) div:where(.swal2-popup) {
             border-radius: 16px !important;
@@ -341,6 +377,17 @@
         <div class="form-panel">
             <div class="breadcrumb-nav">
                 <a href="misexpedientes.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Volver a mis expedientes</a>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <div class="font-ctrl lang-ctrl" role="group" aria-label="Idioma" translate="no">
+                    <button type="button" data-l="es" onclick="cambiarIdioma('es')">ES</button>
+                    <button type="button" data-l="en" onclick="cambiarIdioma('en')">EN</button>
+                </div>
+                <div class="font-ctrl" role="group" aria-label="Tamaño de letra">
+                    <button type="button" id="btnFontMenos" onclick="cambiarTamanoLetra(-1)" aria-label="Reducir letra">A−</button>
+                    <span class="font-pct" id="fontPct">100%</span>
+                    <button type="button" id="btnFontMas" onclick="cambiarTamanoLetra(1)" aria-label="Aumentar letra" style="font-size:17px;">A+</button>
+                </div>
+                </div>
             </div>
 
             <div class="form-header">
@@ -387,6 +434,39 @@
         let indiceDocActual = 0;
         let estadoTramiteActual = ""; // estado real del expediente / invitación, para el mensaje de "ya firmaste"
 
+        // ---- Tamaño de letra (A− / A+): escala todo lo basado en rem; se recuerda en el dispositivo ----
+        const PASOS_LETRA = [70, 80, 90, 100, 115, 130, 150, 170];
+        let idxLetra = 3;
+        function aplicarTamanoLetra() {
+            document.documentElement.style.fontSize = (16 * PASOS_LETRA[idxLetra] / 100) + 'px';
+            const pct = document.getElementById('fontPct'); if (pct) pct.textContent = PASOS_LETRA[idxLetra] + '%';
+            const m = document.getElementById('btnFontMenos'), M = document.getElementById('btnFontMas');
+            if (m) m.disabled = idxLetra === 0; if (M) M.disabled = idxLetra === PASOS_LETRA.length - 1;
+            medirBarraInferior();
+            setTimeout(() => { try { resizeCanvas(); } catch (e) {} }, 60);
+        }
+        function cambiarIdioma(l) { if (window.i18n) window.i18n.setLang(l); pintarIdioma(); }
+        function pintarIdioma() {
+            const l = (window.i18n && window.i18n.getLang && window.i18n.getLang()) || 'es';
+            document.querySelectorAll('.lang-ctrl button').forEach(b => b.classList.toggle('on', b.getAttribute('data-l') === l));
+        }
+        window.addEventListener('load', pintarIdioma);
+        window.addEventListener('languagechange-bgu', pintarIdioma);
+        function cambiarTamanoLetra(d) {
+            idxLetra = Math.min(PASOS_LETRA.length - 1, Math.max(0, idxLetra + d));
+            try { localStorage.setItem('contratoFontIdx', String(idxLetra)); } catch (e) {}
+            aplicarTamanoLetra();
+        }
+        // Mide la altura real de la barra inferior para reservar ese espacio y que nunca tape el botón de firma
+        function medirBarraInferior() {
+            const nav = document.querySelector('.bottom-nav');
+            if (!nav) return;
+            const h = nav.offsetParent === null && getComputedStyle(nav).display === 'none' ? 0 : nav.getBoundingClientRect().height;
+            document.documentElement.style.setProperty('--nav-h', Math.ceil(h + 14) + 'px');
+        }
+        window.addEventListener('resize', medirBarraInferior);
+        window.addEventListener('load', medirBarraInferior);
+
         function togglePdfFullscreen() {
             const panel = document.querySelector('.pdf-panel');
             const btn = document.getElementById('btnExpandPdf');
@@ -419,6 +499,8 @@
                 return;
             }
 
+            try { const g = parseInt(localStorage.getItem('contratoFontIdx'), 10); if (!isNaN(g) && g >= 0 && g < PASOS_LETRA.length) idxLetra = g; } catch (e) {}
+            aplicarTamanoLetra();
             inicializarSignaturePad();
             window.addEventListener('resize', resizeCanvas);
 
@@ -447,6 +529,11 @@
             signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' });
             const clearBtn = document.getElementById('clearSignatureBtn');
             if (clearBtn) clearBtn.addEventListener('click', () => signaturePad.clear());
+            // Oculta la barra inferior mientras se dibuja la firma (evita superposición con la firma y el botón)
+            const salir = () => setTimeout(() => document.body.classList.remove('is-signing'), 900);
+            canvas.addEventListener('pointerdown', () => document.body.classList.add('is-signing'));
+            canvas.addEventListener('pointerup', salir);
+            canvas.addEventListener('pointercancel', salir);
             setTimeout(resizeCanvas, 50);
         }
 
@@ -740,5 +827,7 @@
             });
         }
     </script>
+<script src="i18n-en.js"></script>
+<script src="i18n.js"></script>
 </body>
 </html>
