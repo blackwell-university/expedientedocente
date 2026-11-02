@@ -344,6 +344,7 @@
         .cambio-fecha-antes { text-decoration: line-through; color: #94a3b8; margin-left: 4px; }
         .cambio-fecha-quien { margin-left: auto; color: #64748b; font-size: 0.68rem; }
     </style>
+<link rel="stylesheet" href="bgu-sidebar.css">
 </head>
 <body>
 
@@ -374,6 +375,7 @@
             <i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span>
         </a>
     </aside>
+    <script src="bgu-sidebar.js"></script>
 
     <main class="main-wrapper">
         <!-- HEADER -->
@@ -839,7 +841,7 @@
             w.classList.remove('d-none');
             l.innerHTML = hist.slice().reverse().map(h => {
                 if (h.tipo === 'cambio') {
-                    return `<div class="cambio-fecha-item"><span><i class="fa-solid fa-rotate" style="color:#b45309;"></i> ${h.sesion ? 'Sesión ' + escH(h.sesion) + ': ' : ''}<span class="cambio-fecha-nueva">${escH(h.fechaNueva)}${h.slotNueva ? ' · ' + escH(h.slotNueva) : ''}</span><span class="cambio-fecha-antes">${escH(h.fechaAntes)}${h.slotAntes ? ' · ' + escH(h.slotAntes) : ''}</span></span><span class="cambio-fecha-quien">${escH(h.por)} · ${escH(h.cuando)}${h.origen ? ' · ' + escH(h.origen) : ''}</span></div>`;
+                    return `<div class="cambio-fecha-item"><span><i class="fa-solid fa-rotate" style="color:#b45309;"></i> ${h.sesion ? 'Sesión ' + escH(h.sesion) + ': ' : ''}<span class="cambio-fecha-nueva">${escH(h.fechaNueva)}${h.slotNueva ? ' · ' + escH(h.slotNueva) : ''}</span><span class="cambio-fecha-antes">${escH(h.fechaAntes)}${h.slotAntes ? ' · ' + escH(h.slotAntes) : ''}</span></span><span class="cambio-fecha-quien">${[h.por || 'Coordinación académica', h.cuando, h.origen].filter(Boolean).map(escH).join(' · ')}</span></div>`;
                 }
                 return `<div class="cambio-fecha-item"><span><i class="fa-solid fa-circle-check" style="color:#15803d;"></i> Sábado confirmado: <span class="cambio-fecha-nueva">${escH((h.fechas || []).join(', '))}</span></span><span class="cambio-fecha-quien">${escH(h.por)} · ${escH(h.cuando)}</span></div>`;
             }).join('');
@@ -1978,10 +1980,12 @@
         document.addEventListener('DOMContentLoaded', function () {
             var r = String(localStorage.getItem('userRole') || '').toUpperCase();
             function mostrar(id, roles) { var n = document.getElementById(id); if (n && roles.indexOf(r) > -1) n.style.display = ''; }
-            mostrar('navFacultyRoster', ['ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA']);
+            mostrar('navFacultyRoster', ['ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA', 'ADMINISTRATIVO', 'ASESORA ACADEMICA', 'JEFE OSE BGU', 'E-LEARNING', 'DIRECTOR_ZAMUDIO', 'DIRECTOR_ERNESTO']);
             mostrar('navReportesDocentes', ['ADMINISTRATIVO', 'ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA']);
         });
     </script>
     <div id="tooltipGlobal" class="tooltip-datos-global"></div>
+<script src="i18n-en.js"></script>
+<script src="i18n.js"></script>
 </body>
 </html>

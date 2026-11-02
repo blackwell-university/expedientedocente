@@ -130,7 +130,7 @@
         .pagination-bar .btn-page.active { background: var(--primary); color: white; border-color: var(--primary); }
         .pagination-bar .pag-dots { color: var(--text-muted); padding: 0 4px; align-self: center; }
 
-        @media (max-width: 768px) { .sidebar { display: none; } header, .content-area { padding: 20px; } }
+        @media (max-width: 768px) { header, .content-area { padding: 20px; } }
     
         /* --- REDISEÑO DE SWEETALERT2 (UI Corporativa) --- */
         div:where(.swal2-container) div:where(.swal2-popup) {
@@ -169,6 +169,7 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
         }
     </style>
+<link rel="stylesheet" href="bgu-sidebar.css">
 </head>
 <body>
 
@@ -196,6 +197,7 @@
             <i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span>
         </a>
     </aside>
+    <script src="bgu-sidebar.js"></script>
 
     <main class="main-wrapper">
          <header>
@@ -807,9 +809,11 @@
         document.addEventListener('DOMContentLoaded', function () {
             var r = String(localStorage.getItem('userRole') || '').toUpperCase();
             function mostrar(id, roles) { var n = document.getElementById(id); if (n && roles.indexOf(r) > -1) n.style.display = ''; }
-            mostrar('navFacultyRoster', ['ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA']);
+            mostrar('navFacultyRoster', ['ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA', 'ADMINISTRATIVO', 'ASESORA ACADEMICA', 'JEFE OSE BGU', 'E-LEARNING', 'DIRECTOR_ZAMUDIO', 'DIRECTOR_ERNESTO']);
             mostrar('navReportesDocentes', ['ADMINISTRATIVO', 'ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA']);
         });
     </script>
+<script src="i18n-en.js"></script>
+<script src="i18n.js"></script>
 </body>
 </html>

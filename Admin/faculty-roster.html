@@ -5,9 +5,11 @@
         const isLoggedIn = localStorage.getItem('isLoggedIn');
         const userRole = localStorage.getItem('userRole');
 
-        const rolesPermitidos = ['Administrador', 'Ejecutiva Academica', 'ADMIN']; // Faculty Rosters: solo Ejecutiva Academica y Administrador
+        // Faculty Rosters: todos los roles del panel pueden VER; solo Administrador y Ejecutiva Academica pueden editar. Docentes no entran.
+        const rolUp = String(userRole || '').toUpperCase().trim();
+        const PUEDE_EDITAR = ['ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA'].includes(rolUp);
 
-        if (isLoggedIn !== 'true' || !rolesPermitidos.some(rol => userRole && userRole.toLowerCase() === rol.toLowerCase())) {
+        if (isLoggedIn !== 'true' || !rolUp || rolUp === 'DOCENTE') {
             window.location.href = "../index.html";
         }
     </script>
@@ -127,6 +129,7 @@
         div:where(.swal2-container) button:where(.swal2-styled) { border-radius: 8px !important; font-weight: 600 !important; padding: 10px 24px !important; font-size: 0.9rem !important; transition: all 0.2s ease !important; box-shadow: none !important; }
         div:where(.swal2-container) button:where(.swal2-styled):hover { transform: translateY(-2px) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important; }
     </style>
+<link rel="stylesheet" href="bgu-sidebar.css">
 </head>
 <body>
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
@@ -145,19 +148,21 @@
             </div>
         </div>
         <ul class="nav-list">
-            <li><a href="administrativo.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
-            <li><a href="gestion-docentes.html" class="nav-link"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
-            <li><a href="gestion-expedientes.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
-            <li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Catálogo de Cursos</span></a></li>
+            <li id="navDashboardAdmin" style="display:none;"><a href="administrativo.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
+            <li id="navGestionDocentes" style="display:none;"><a href="gestion-docentes.html" class="nav-link"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
+            <li id="navExpedientesAdmin" style="display:none;"><a href="gestion-expedientes.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
+            <li id="navGestionCursosAdmin" style="display:none;"><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Catálogo de Cursos</span></a></li>
             <li><a href="faculty-roster.html" class="nav-link active"><i class="fa-solid fa-table-list"></i> <span class="link-text">Faculty Rosters</span></a></li>
             <li id="navReportesDocentes" style="display:none;"><a href="reportes-docentes.html" class="nav-link"><i class="fa-solid fa-chart-column"></i> <span class="link-text">Reportes de Docentes</span></a></li>
             <li id="navGestionClases" style="display:none;"><a href="academica-dashboard.html" class="nav-link"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Gestión de Clases</span></a></li>
+            <li id="navGestionAsesoras" style="display:none;"><a href="gestion-asesoras.html" class="nav-link"><i class="fa-solid fa-people-arrows"></i> <span class="link-text">Gestionar Asesoras</span></a></li>
             <li id="navGestionUsuarios" style="display:none;"><a href="gestion-usuarios.html" class="nav-link"><i class="fa-solid fa-user-gear"></i> <span class="link-text">Gestión de Usuarios</span></a></li>
         </ul>
         <a href="#" onclick="logout()" class="nav-link" style="color:#f43f5e; margin-top:auto;">
             <i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span>
         </a>
     </aside>
+    <script src="bgu-sidebar.js"></script>
 
     <div class="main-wrapper">
         <header>
@@ -174,7 +179,7 @@
             <div class="centered-container">
                 <div class="page-header">
                     <h1>Faculty Rosters por año académico</h1>
-                    <p>Crea el Faculty Roster de cada programa. El año académico va de septiembre a agosto.</p>
+                    <p id="subtituloRoster">Crea el Faculty Roster de cada programa. El año académico va de septiembre a agosto.</p>
                 </div>
 
                 <div class="stats-bar">
@@ -216,7 +221,7 @@
                 <div class="card-modern d-none text-center py-5 px-3" id="emptyYear">
                     <div class="mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:64px;height:64px;border-radius:18px;background:#eff6ff;color:var(--primary);font-size:1.6rem;"><i class="fa-regular fa-folder-open"></i></div>
                     <h5 class="fw-bold" style="color: var(--primary-dark)">Aún no hay Faculty Rosters en <span id="emptyYearLbl"></span></h5>
-                    <p class="text-muted mb-0">Pulsa <b>Crear Faculty Rosters</b> para generar un documento por cada programa.</p>
+                    <p class="text-muted mb-0" id="txtEmptyYear">Pulsa <b>Crear Faculty Rosters</b> para generar un documento por cada programa.</p>
                 </div>
 
                 <div class="card-modern" id="cardTabla">
@@ -279,9 +284,28 @@
                 const navGU = document.getElementById('navGestionUsuarios');
                 if (navGU) navGU.style.display = '';
             }
-            if (rolUpperNav === 'ADMINISTRATIVO' || rolUpperNav === 'EJECUTIVA ACADEMICA') {
+            if (['ADMINISTRATIVO', 'ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA'].includes(rolUpperNav)) {
+                ['navDashboardAdmin', 'navGestionDocentes', 'navExpedientesAdmin', 'navGestionCursosAdmin'].forEach(id => {
+                    const n = document.getElementById(id); if (n) n.style.display = '';
+                });
+            }
+            if (['ADMINISTRADOR', 'ADMIN', 'JEFE OSE BGU'].includes(rolUpperNav)) {
+                const navGA = document.getElementById('navGestionAsesoras'); if (navGA) navGA.style.display = '';
+            }
+            if (['ADMINISTRATIVO', 'ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA', 'ASESORA ACADEMICA', 'JEFE OSE BGU', 'E-LEARNING'].includes(rolUpperNav)) {
                 const navGC = document.getElementById('navGestionClases');
                 if (navGC) navGC.style.display = '';
+            }
+            if (!PUEDE_EDITAR) {
+                const bc = document.getElementById('btnCrear'); if (bc) bc.style.display = 'none';
+                document.getElementById('txtEmptyYear').innerText = 'Todavía no se han creado los documentos de este año académico.';
+                document.getElementById('subtituloRoster').innerText = 'Consulta y descarga el Faculty Roster de cada programa. El año académico va de septiembre a agosto.';
+                const aviso = document.createElement('div');
+                aviso.id = 'avisoSoloLectura';
+                aviso.style.cssText = 'display:flex;align-items:center;gap:8px;background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;border-radius:12px;padding:10px 14px;font-size:.85rem;font-weight:500;margin-bottom:14px;';
+                aviso.innerHTML = '<i class="fa-regular fa-eye"></i> Modo solo lectura: puedes ver y descargar los Faculty Rosters, pero no modificarlos.';
+                const t = document.getElementById('btnCarpeta'); const card = t && (t.closest('.card') || t.closest('.toolbar') || t.parentElement);
+                if (card && card.parentElement) card.parentElement.insertBefore(aviso, card);
             }
             cargarDatos(anioAcademicoActual());
         });
@@ -386,7 +410,7 @@
             document.getElementById('btnCrearTxt').innerText = creados === 0 ? 'Crear Faculty Rosters' : (pendientes > 0 ? `Crear los ${pendientes} faltantes` : 'Todos creados');
 
             const carpeta = document.getElementById('btnCarpeta');
-            if (urlCarpetaAnio) { carpeta.href = urlCarpetaAnio; carpeta.style.display = ''; } else { carpeta.style.display = 'none'; }
+            if (urlCarpetaAnio && PUEDE_EDITAR) { carpeta.href = urlCarpetaAnio; carpeta.style.display = ''; } else { carpeta.style.display = 'none'; }
 
             const sinCreados = creados === 0;
             document.getElementById('emptyYear').classList.toggle('d-none', !(sinCreados && total > 0));
@@ -418,10 +442,10 @@
                                <div class="dropdown d-inline-block align-middle">
                                    <button class="btn-dots" type="button" data-bs-toggle="dropdown" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false" title="Opciones"><i class="fa-solid fa-ellipsis-vertical"></i></button>
                                    <ul class="dropdown-menu dropdown-menu-end menu-roster">
-                                       <li><button class="dropdown-item" type="button" ${actualizando.has(r.id) ? 'disabled' : ''} onclick="actualizarRoster('${esc(r.id)}')"><i class="fa-solid fa-wand-magic-sparkles"></i> Actualizar contenido</button></li>
+                                       ${PUEDE_EDITAR ? `<li><button class="dropdown-item" type="button" ${actualizando.has(r.id) ? 'disabled' : ''} onclick="actualizarRoster('${esc(r.id)}')"><i class="fa-solid fa-wand-magic-sparkles"></i> Actualizar contenido</button></li>` : ''}
                                        <li><a class="dropdown-item" href="${esc(urlPdf(r.url))}" target="_blank" rel="noopener"><i class="fa-regular fa-file-pdf"></i> Descargar PDF</a></li>
-                                       <li><hr class="dropdown-divider"></li>
-                                       <li><button class="dropdown-item item-eliminar" type="button" onclick="eliminarRoster('${esc(r.id)}')"><i class="fa-regular fa-trash-can"></i> Eliminar</button></li>
+                                       ${PUEDE_EDITAR ? `<li><hr class="dropdown-divider"></li>
+                                       <li><button class="dropdown-item item-eliminar" type="button" onclick="eliminarRoster('${esc(r.id)}')"><i class="fa-regular fa-trash-can"></i> Eliminar</button></li>` : ''}
                                    </ul>
                                </div>
                            </td></tr>`
@@ -450,6 +474,7 @@
         }
 
         async function eliminarRoster(idRoster) {
+            if (!PUEDE_EDITAR) return;
             const r = rosters.find(x => x.id === idRoster);
             if (!r) return;
             const c = await Swal.fire({ icon: 'warning', title: '¿Eliminar este documento?', html: `Vas a eliminar el Faculty Roster de <b>${esc(r.programa)}</b> (${esc(r.anioAcademico)}). El documento irá a la papelera de Drive y el programa volverá a quedar como "Pendiente".`, showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#64748b', confirmButtonText: '<i class="fa-regular fa-trash-can me-1"></i> Sí, eliminar', cancelButtonText: 'Cancelar', reverseButtons: true });
@@ -473,6 +498,7 @@
         }
 
         async function actualizarRoster(idRoster) {
+            if (!PUEDE_EDITAR) return;
             const r = rosters.find(x => x.id === idRoster);
             if (!r || actualizando.has(idRoster)) return;
             const c = await Swal.fire({ icon: 'question', title: 'Actualizar contenido', html: `Se buscarán las invitaciones <b>Completadas</b> de <b>${esc(r.programa)}</b> (${esc(r.anioAcademico)}) que todavía no estén en el documento y se agregarán a la tabla.<br><span style="font-size:.85rem;color:#64748b;">Si el docente ya fue analizado en este año académico, se reutilizan sus datos y no se vuelve a analizar su CV. En un año académico nuevo sí se analiza otra vez. Las filas que ya están completas no se vuelven a procesar.</span>`, showCancelButton: true, confirmButtonColor: '#2563eb', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, actualizar', cancelButtonText: 'Cancelar', reverseButtons: true });
@@ -501,6 +527,7 @@
         }
 
         async function crearRosters() {
+            if (!PUEDE_EDITAR) return;
             const anio = document.getElementById('selAnio').value;
             const mapa = rostersDelAnio();
             const pendientes = programas.filter(p => !mapa[p]).length;
@@ -546,9 +573,11 @@
         document.addEventListener('DOMContentLoaded', function () {
             var r = String(localStorage.getItem('userRole') || '').toUpperCase();
             function mostrar(id, roles) { var n = document.getElementById(id); if (n && roles.indexOf(r) > -1) n.style.display = ''; }
-            mostrar('navFacultyRoster', ['ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA']);
+            mostrar('navFacultyRoster', ['ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA', 'ADMINISTRATIVO', 'ASESORA ACADEMICA', 'JEFE OSE BGU', 'E-LEARNING', 'DIRECTOR_ZAMUDIO', 'DIRECTOR_ERNESTO']);
             mostrar('navReportesDocentes', ['ADMINISTRATIVO', 'ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA']);
         });
     </script>
+<script src="i18n-en.js"></script>
+<script src="i18n.js"></script>
 </body>
 </html>

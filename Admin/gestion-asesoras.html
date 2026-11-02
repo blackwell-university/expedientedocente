@@ -151,6 +151,7 @@
         div:where(.swal2-container) button:where(.swal2-styled) { border-radius: 8px !important; font-weight: 600 !important; padding: 10px 24px !important; font-size: 0.9rem !important; transition: all 0.2s ease !important; box-shadow: none !important; }
         div:where(.swal2-container) button:where(.swal2-styled):hover { transform: translateY(-2px) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important; }
     </style>
+<link rel="stylesheet" href="bgu-sidebar.css">
 </head>
 <body>
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
@@ -160,14 +161,22 @@
             <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div><span class="brand-text">Blackwell</span>
         </a>
         <div class="user-preview">
-            <div class="avatar" id="userInitial">JO</div><div class="user-meta"><b id="userName">Jefe OSE BGU</b><span>Gestión de Asesoras</span></div>
+            <div class="avatar" id="userInitial">JO</div><div class="user-meta"><b id="userName">Jefe OSE BGU</b><span id="userRoleLabel">Jefe OSE BGU</span></div>
         </div>
         <ul class="nav-list">
+            <li id="navDashboardAdmin" style="display:none;"><a href="administrativo.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
+            <li id="navGestionDocentes" style="display:none;"><a href="gestion-docentes.html" class="nav-link"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
+            <li id="navExpedientesAdmin" style="display:none;"><a href="gestion-expedientes.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
+            <li id="navGestionCursosAdmin" style="display:none;"><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Catálogo de Cursos</span></a></li>
+            <li id="navFacultyRoster" style="display:none;"><a href="faculty-roster.html" class="nav-link"><i class="fa-solid fa-table-list"></i> <span class="link-text">Faculty Rosters</span></a></li>
+            <li id="navReportesDocentes" style="display:none;"><a href="reportes-docentes.html" class="nav-link"><i class="fa-solid fa-chart-column"></i> <span class="link-text">Reportes de Docentes</span></a></li>
             <li><a href="academica-dashboard.html" class="nav-link"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Gestión de Clases</span></a></li>
             <li><a href="gestion-asesoras.html" class="nav-link active"><i class="fa-solid fa-people-arrows"></i> <span class="link-text">Gestionar Asesoras</span></a></li>
+            <li id="navGestionUsuarios" style="display:none;"><a href="gestion-usuarios.html" class="nav-link"><i class="fa-solid fa-user-gear"></i> <span class="link-text">Gestión de Usuarios</span></a></li>
         </ul>
         <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;"><i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span></a>
     </aside>
+    <script src="bgu-sidebar.js"></script>
 
     <main class="main-wrapper">
         <header>
@@ -260,6 +269,17 @@
             const name = localStorage.getItem('userName') || "Jefe OSE BGU";
             document.getElementById('userName').innerText = name;
             document.getElementById('userInitial').innerText = name.trim().substring(0, 2).toUpperCase();
+            const rolActual = localStorage.getItem('userRole') || 'Jefe OSE BGU';
+            document.getElementById('userRoleLabel').innerText = rolActual;
+            const rolUp = rolActual.toUpperCase();
+            const mostrar = (id, roles) => { const n = document.getElementById(id); if (n && roles.includes(rolUp)) n.style.display = ''; };
+            mostrar('navDashboardAdmin', ['ADMINISTRADOR', 'ADMIN']);
+            mostrar('navGestionDocentes', ['ADMINISTRADOR', 'ADMIN']);
+            mostrar('navExpedientesAdmin', ['ADMINISTRADOR', 'ADMIN']);
+            mostrar('navGestionCursosAdmin', ['ADMINISTRADOR', 'ADMIN']);
+            mostrar('navFacultyRoster', ['ADMINISTRADOR', 'ADMIN', 'JEFE OSE BGU']);
+            mostrar('navReportesDocentes', ['ADMINISTRADOR', 'ADMIN']);
+            mostrar('navGestionUsuarios', ['ADMINISTRADOR', 'ADMIN']);
             cargarDatos();
         });
 

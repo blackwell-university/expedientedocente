@@ -289,6 +289,7 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
         }
     </style>
+<link rel="stylesheet" href="bgu-sidebar.css">
 </head>
 <body>
 
@@ -319,13 +320,16 @@
             <li><a href="gestion-expedientes.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
             <li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Catálogo de Cursos</span></a></li>
             <li><a href="faculty-roster.html" class="nav-link"><i class="fa-solid fa-table-list"></i> <span class="link-text">Faculty Rosters</span></a></li>
+            <li id="navReportesDocentes" style="display:none;"><a href="reportes-docentes.html" class="nav-link"><i class="fa-solid fa-chart-column"></i> <span class="link-text">Reportes de Docentes</span></a></li>
             <li id="navGestionClases" style="display:none;"><a href="academica-dashboard.html" class="nav-link"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Gestión de Clases</span></a></li>
+            <li id="navGestionUsuarios" style="display:none;"><a href="gestion-usuarios.html" class="nav-link"><i class="fa-solid fa-user-gear"></i> <span class="link-text">Gestión de Usuarios</span></a></li>
         </ul>
 
         <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;">
             <i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span>
         </a>
     </aside>
+    <script src="bgu-sidebar.js"></script>
 
     <div class="main-wrapper">
         <header>
@@ -491,6 +495,15 @@
 
             // NUEVO: Administrativo y Ejecutiva Academica ya tienen acceso a Gestión Académica
             const rolUpperNav = String(userRole || '').toUpperCase();
+            // Reportes de Docentes: personal administrativo. Gestión de Usuarios: solo administrador.
+            if (['ADMINISTRATIVO', 'ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA'].indexOf(rolUpperNav) > -1) {
+                const navRD = document.getElementById('navReportesDocentes');
+                if (navRD) navRD.style.display = '';
+            }
+            if (rolUpperNav === 'ADMINISTRADOR' || rolUpperNav === 'ADMIN') {
+                const navGU = document.getElementById('navGestionUsuarios');
+                if (navGU) navGU.style.display = '';
+            }
             if (rolUpperNav === 'ADMINISTRATIVO' || rolUpperNav === 'EJECUTIVA ACADEMICA') {
                 const navGC = document.getElementById('navGestionClases');
                 if (navGC) navGC.style.display = '';
@@ -515,5 +528,7 @@
         }
         
     </script>
+<script src="i18n-en.js"></script>
+<script src="i18n.js"></script>
 </body>
 </html>

@@ -660,6 +660,7 @@
         .cambio-fecha-antes { text-decoration: line-through; color: #94a3b8; margin-left: 4px; }
         .cambio-fecha-quien { margin-left: auto; color: #64748b; font-size: 0.68rem; }
     </style>
+<link rel="stylesheet" href="bgu-sidebar.css">
 </head>
 <body>
 
@@ -690,6 +691,7 @@
             <i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span>
         </a>
     </aside>
+    <script src="bgu-sidebar.js"></script>
 
     <main class="main-wrapper">
         <header>
@@ -3310,10 +3312,12 @@
         document.addEventListener('DOMContentLoaded', function () {
             var r = String(localStorage.getItem('userRole') || '').toUpperCase();
             function mostrar(id, roles) { var n = document.getElementById(id); if (n && roles.indexOf(r) > -1) n.style.display = ''; }
-            mostrar('navFacultyRoster', ['ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA']);
+            mostrar('navFacultyRoster', ['ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA', 'ADMINISTRATIVO', 'ASESORA ACADEMICA', 'JEFE OSE BGU', 'E-LEARNING', 'DIRECTOR_ZAMUDIO', 'DIRECTOR_ERNESTO']);
             mostrar('navReportesDocentes', ['ADMINISTRATIVO', 'ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA']);
         });
     </script>
     <div id="tooltipGlobal" class="tooltip-datos-global"></div>
+<script src="i18n-en.js"></script>
+<script src="i18n.js"></script>
 </body>
 </html>

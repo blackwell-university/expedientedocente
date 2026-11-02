@@ -1,0 +1,81 @@
+/* bgu-sidebar.css — Menú lateral azul marino (panel administrativo).
+   Se carga DESPUÉS del <style> de cada página. Requiere bgu-sidebar.js. */
+aside.sidebar.bgu-sb{
+  --sb-text:rgba(255,255,255,.78);--sb-strong:#fff;--sb-section:rgba(255,255,255,.42);--sb-hover:rgba(255,255,255,.07);
+  --sb-line:rgba(255,255,255,.12);--sb-accent:#7db4ff;
+  background:linear-gradient(180deg,#1d3c94 0%,#152d72 55%,#0f2150 100%) !important;
+  border-right:0 !important;color:var(--sb-text);
+  padding:18px 12px 12px !important;box-shadow:6px 0 24px rgba(30,58,138,.18);overflow:visible;
+}
+aside.sidebar.bgu-sb::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(320px 220px at 0% 0%,rgba(96,165,250,.28),transparent 70%),radial-gradient(260px 200px at 100% 100%,rgba(59,130,246,.18),transparent 70%)}
+aside.sidebar.bgu-sb>*{position:relative}
+@media (min-width:769px){
+  aside.sidebar.bgu-sb{width:248px;box-sizing:border-box;flex-shrink:0;position:relative}
+  aside.sidebar.bgu-sb.collapsed{width:76px;box-sizing:border-box;flex-shrink:0}
+}
+
+/* Encabezado: logo + nombre + botón contraer en una fila */
+.bgu-sb .bgu-top{display:flex;align-items:center;gap:10px;padding:0 4px 14px}
+.bgu-sb .brand-section{padding:0 !important;gap:10px !important;flex:1;min-width:0;overflow:hidden}
+.bgu-sb .logo-box{min-width:34px !important;width:34px;height:34px !important;border-radius:10px !important;background:linear-gradient(135deg,#ffffff,#dbe7ff) !important;color:#1d4ed8 !important;font-size:16px !important;box-shadow:0 4px 10px rgba(0,0,0,.18)}
+.bgu-sb .brand-text{font-size:calc(1rem + 1px) !important;color:#fff !important;letter-spacing:-.02em}
+aside.sidebar.bgu-sb>.collapse-btn{position:absolute !important;right:-13px !important;left:auto !important;top:30px !important;width:26px !important;height:26px !important;border-radius:50% !important;
+  background:#fff !important;border:1px solid #dbe4f3 !important;color:#1e3a8a !important;box-shadow:0 4px 12px rgba(15,35,90,.22) !important;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:10px !important;z-index:30;transition:.2s}
+aside.sidebar.bgu-sb>.collapse-btn:hover{background:#eff6ff !important;transform:scale(1.08)}
+
+/* Usuario: una línea fina */
+.bgu-sb .user-preview{background:transparent !important;border-radius:0 !important;padding:0 6px 12px !important;margin-bottom:4px !important;
+  border-bottom:1px solid var(--sb-line);gap:9px !important}
+.bgu-sb .avatar{min-width:28px !important;height:28px !important;border-radius:50% !important;background:linear-gradient(135deg,#4f8bff,#2f62e0) !important;font-size:.64rem !important}
+.bgu-sb .user-meta b{color:#fff !important;font-size:calc(.76rem + 1px) !important}
+.bgu-sb .user-meta span{color:rgba(255,255,255,.6) !important;font-size:calc(.64rem + 1px) !important;white-space:nowrap}
+
+/* Navegación */
+.bgu-sb .nav-list{flex-grow:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
+.bgu-sb .nav-list::-webkit-scrollbar{display:none}
+.bgu-sb .bgu-sec{font-size:calc(.6rem + 1px);font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--sb-section);padding:12px 12px 5px;white-space:nowrap;list-style:none}
+.bgu-sb .nav-link{gap:11px !important;padding:8px 10px !important;margin-bottom:2px !important;border-radius:11px !important;
+  color:var(--sb-text) !important;font-size:calc(.84rem + 1px);font-weight:500 !important;position:relative}
+.bgu-sb .nav-link i{font-size:14px !important;width:20px !important}
+.bgu-sb .nav-link:hover{background:var(--sb-hover) !important;color:#fff !important}
+.bgu-sb .nav-link.active{background:rgba(255,255,255,.13) !important;color:#fff !important;font-weight:500 !important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18),0 6px 18px rgba(4,12,40,.25)}
+.bgu-sb .nav-link.active::before{content:"";position:absolute;left:-12px;top:50%;width:4px;height:20px;transform:translateY(-50%);border-radius:0 4px 4px 0;background:var(--sb-accent)}
+
+/* Cerrar sesión: fila pequeña al pie */
+.bgu-sb .bgu-logout{margin-top:6px !important;border-top:1px solid var(--sb-line);border-radius:0 0 10px 10px !important;
+  padding:12px 10px 8px !important;font-size:calc(.78rem + 1px) !important;font-weight:600 !important;color:#fda4af !important}
+.bgu-sb .bgu-logout:hover{background:rgba(244,63,94,.16) !important;color:#fecdd3 !important}
+
+/* Contraído (solo escritorio) */
+@media (min-width:769px){
+  .bgu-sb.collapsed .bgu-top{justify-content:center;padding-bottom:12px}
+  .bgu-sb.collapsed .brand-text{display:none}
+  .bgu-sb.collapsed .user-preview{justify-content:center;padding:0 0 12px !important}
+  .bgu-sb.collapsed .user-meta{display:none}
+  .bgu-sb.collapsed .bgu-sec{font-size:0;padding:6px 0 3px}
+  .bgu-sb.collapsed .bgu-sec::after{content:"";display:block;width:20px;height:1px;background:var(--sb-line);margin:0 auto}
+  .bgu-sb.collapsed .nav-link{justify-content:center;padding:8px 0 !important}
+  .bgu-sb.collapsed .nav-link.active::before{left:-12px}
+  .bgu-sb.collapsed .link-text{display:none}
+}
+/* Móvil: el menú sigue siendo el panel deslizable de cada página */
+@media (max-width:768px){
+  .bgu-sb .collapse-btn{display:none !important}
+  .bgu-sb.collapsed .link-text{display:inline !important}
+}
+
+/* Íconos de trazo fino */
+.bgu-sb .bgu-ic{width:17px;height:17px;flex-shrink:0;margin:0 1.5px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.bgu-sb .logo-box .bgu-ic{width:18px;height:18px;margin:0;stroke-width:2}
+.bgu-sb .bgu-logout .bgu-ic{width:15px;height:15px;stroke-width:1.9}
+
+/* Responsive: menú deslizable en celular (refuerza lo que ya trae cada página) */
+.sidebar-overlay{display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(15,23,42,.4);z-index:999;backdrop-filter:blur(3px);opacity:0;transition:opacity .3s ease}
+.sidebar-overlay.active{display:block;opacity:1}
+@media (max-width:768px){
+  aside.sidebar.bgu-sb{box-sizing:border-box;display:flex !important;position:fixed !important;top:0;bottom:0;left:-290px;height:100vh !important;height:100dvh !important;max-height:100dvh;width:260px !important;z-index:1000;
+    transition:left .3s ease;box-shadow:10px 0 30px rgba(0,0,0,.25)}
+  aside.sidebar.bgu-sb.show-mobile{left:0}
+}

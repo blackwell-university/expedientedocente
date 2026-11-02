@@ -162,6 +162,7 @@
         div:where(.swal2-container) button:where(.swal2-styled) { border-radius: 8px !important; font-weight: 600 !important; padding: 10px 24px !important; font-size: 0.9rem !important; transition: all 0.2s ease !important; box-shadow: none !important; }
         div:where(.swal2-container) button:where(.swal2-styled):hover { transform: translateY(-2px) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important; }
     </style>
+<link rel="stylesheet" href="bgu-sidebar.css">
 </head>
 <body>
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
@@ -197,6 +198,7 @@
             <i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span>
         </a>
     </aside>
+    <script src="bgu-sidebar.js"></script>
 
     <div class="main-wrapper">
         <header>
@@ -632,5 +634,7 @@
             cargarUsuarios();
         });
     </script>
+<script src="i18n-en.js"></script>
+<script src="i18n.js"></script>
 </body>
 </html>

@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        html { font-size: 15px; }
+        html { font-size: 14px; } /* estandarizado con el resto del portal */
         :root {
             --primary: #2563eb;
             --primary-light: #eff6ff;
@@ -51,24 +51,42 @@
         .content-area { padding: 40px; display: flex; flex-direction: column; align-items: center; width: 100%; }
         .centered-container { width: 100%; max-width: 1200px; text-align: left; }
 
-        .page-header h1 { font-weight: 800; font-size: 1.9rem; color: var(--primary-dark); letter-spacing: -0.03em; margin-bottom: 8px; }
+        .page-header h1 { font-weight: 800; font-size: 1.6rem; color: var(--primary-dark); letter-spacing: -0.03em; margin-bottom: 8px; }
         .page-header p { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 32px; }
 
         /* --- FILTROS --- */
         .filter-card { background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--gray-border); margin-bottom: 24px; }
         .form-control, .form-select { border-radius: 10px; padding: 10px 14px; border: 1px solid #cbd5e1; font-size: 0.9rem; }
 
-        /* --- TABLA --- */
-        .table-wrapper { background: white; border-radius: 16px; border: 1px solid var(--gray-border); overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.01); }
-        .custom-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
-        .custom-table th { padding: 16px 24px; background: #f8fafc; font-weight: 600; text-align: left; border-bottom: 1px solid var(--gray-border); }
-        .custom-table td { padding: 18px 24px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-        .custom-table tr:hover { background: #f8fafc; }
+        /* --- TABLA (mismo diseño que Gestión de Clases / Expedientes) --- */
+        .table-wrapper { background: white; border-radius: 16px; border: 1px solid var(--gray-border); overflow-x: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.01); }
+        .custom-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-width: 760px; }
+        .custom-table th { padding: 14px 20px; background: #f8fafc; font-weight: 700; text-align: left; border-bottom: 1px solid var(--gray-border); font-size: 0.72rem; letter-spacing: 0.4px; color: #64748b; white-space: nowrap; }
+        .custom-table td { padding: 16px 20px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+        .custom-table tbody tr { transition: background-color 0.12s; }
+        .custom-table tbody tr:hover { background-color: #f8fafc; }
+        .custom-table tbody tr:last-child td { border-bottom: none; }
 
-        .periodo-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; font-weight: 500; font-size: 0.8rem; }
+        .docente-cell { display: flex; align-items: center; gap: 12px; min-width: 230px; }
+        .docente-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--primary-light); color: var(--primary-dark); font-weight: 800; font-size: 0.78rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .docente-nombre { font-weight: 700; color: #0f172a; line-height: 1.25; }
+        .docente-ids { font-size: 0.74rem; color: var(--text-muted); margin-top: 2px; }
+        .docente-ids .font-monospace { margin-left: 4px; }
+
+        .periodo-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.8rem; white-space: nowrap; }
+        .fecha-cell { color: var(--text-main); font-weight: 600; font-size: 0.83rem; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+        .fecha-cell i { color: #94a3b8; }
+
+        /* --- PAGINACIÓN --- */
+        .pagination-bar { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-top: 1px solid var(--gray-border); flex-wrap: wrap; gap: 12px; }
+        .pagination-bar .btn-page { background: white; border: 1px solid var(--gray-border); color: var(--text-main); font-weight: 600; font-size: 0.82rem; padding: 6px 14px; border-radius: 8px; transition: 0.15s; }
+        .pagination-bar .btn-page:hover:not(:disabled):not(.active) { background: #f1f5f9; }
+        .pagination-bar .btn-page:disabled { opacity: 0.4; cursor: not-allowed; }
+        .pagination-bar .btn-page.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .pagination-bar .pag-dots { color: var(--text-muted); padding: 0 4px; align-self: center; }
 
         /* --- ESTADOS --- */
-        .badge-status { display: inline-block; padding: 6px 12px; border-radius: 30px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; }
+        .badge-status { display: inline-block; padding: 5px 12px; border-radius: 30px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; white-space: nowrap; }
         .status-por-contratar { background: #ffeedd; color: #ea580c; }
         .status-contratado { background: #d1fae5; color: #059669; }
 
@@ -93,10 +111,10 @@
             .content-area { padding: 20px 15px; }
             .page-header h1 { font-size: 1.6rem; }
             .filter-card { padding: 16px; }
-            .table-wrapper { overflow-x: auto; }
-            .custom-table { min-width: 560px; }
+            .pagination-bar { padding: 14px 16px; justify-content: center; }
         }
     </style>
+<link rel="stylesheet" href="bgu-sidebar.css">
 </head>
 <body>
 
@@ -112,12 +130,13 @@
             <div class="user-meta"><b id="txtNombre">Director</b><span>Director Blackwell</span></div>
         </div>
         <ul class="nav-list">
-            <li><a href="#" class="nav-link active"><i class="fa-solid fa-file-signature"></i> <span class="link-text">Expedientes por Firmar</span></a></li>
+            <li><a href="director-dashboard.html" class="nav-link active"><i class="fa-solid fa-file-signature"></i> <span class="link-text">Expedientes por Firmar</span></a></li>
         </ul>
         <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;">
             <i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span>
         </a>
     </aside>
+    <script src="bgu-sidebar.js"></script>
 
     <main class="main-wrapper">
         <header>
@@ -175,6 +194,7 @@
                             </tr>
                         </tbody>
                     </table>
+                    <div class="pagination-bar" id="paginationBar"></div>
                 </div>
             </div>
         </div>
@@ -183,6 +203,9 @@
     <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
         let expedientesGlobal = [];
+        let expedientesFiltrados = [];
+        let paginaActual = 1;
+        const FILAS_POR_PAGINA = 10;
 
         document.addEventListener('DOMContentLoaded', () => {
             const role = localStorage.getItem('userRole');
@@ -208,7 +231,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     expedientesGlobal = response.data.filter(exp => 
                         estadosPermitidos.includes(exp.estado.toLowerCase())
                     );
-                    renderTabla(expedientesGlobal);
+                    filtrarTabla();
                 } else {
                     mostrarMensajeVacio("Ocurrió un error al cargar los datos.");
                 }
@@ -228,26 +251,58 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             return { label: estadoReal, filtro: e.toUpperCase(), clase: 'status-por-contratar' };
         }
 
-        function renderTabla(lista) {
+        function obtenerIniciales(nombreCompleto) {
+            const partes = (nombreCompleto || '').trim().split(/\s+/);
+            if (partes.length === 0 || !partes[0]) return '--';
+            if (partes.length === 1) return partes[0].substring(0, 2).toUpperCase();
+            return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
+        }
+
+        // Filtra por búsqueda y estado, y vuelve a la página 1
+        function filtrarTabla() {
+            const busqueda = document.getElementById('searchInput').value.toLowerCase().trim();
+            const estado = document.getElementById('statusFilter').value;
+
+            expedientesFiltrados = expedientesGlobal.filter(exp => {
+                const texto = `${exp.nombreDocente || ''} ${exp.idExpediente || ''}`.toLowerCase();
+                const info = traducirEstadoDirector(exp.estado);
+                return texto.includes(busqueda) && (estado === 'TODOS' || info.filtro === estado);
+            });
+            paginaActual = 1;
+            renderTabla();
+        }
+
+        function renderTabla() {
             const tbody = document.getElementById('tablaExpedientesBody');
-            if (lista.length === 0) {
-                mostrarMensajeVacio("No hay expedientes pendientes de firma asignados.");
+            const bar = document.getElementById('paginationBar');
+
+            if (expedientesFiltrados.length === 0) {
+                mostrarMensajeVacio(expedientesGlobal.length === 0 ? "No hay expedientes pendientes de firma asignados." : "No hay expedientes que coincidan con estos filtros.");
                 return;
             }
 
+            const totalPaginas = Math.ceil(expedientesFiltrados.length / FILAS_POR_PAGINA);
+            if (paginaActual > totalPaginas) paginaActual = totalPaginas;
+            const inicio = (paginaActual - 1) * FILAS_POR_PAGINA;
+            const pageItems = expedientesFiltrados.slice(inicio, inicio + FILAS_POR_PAGINA);
+
             let html = "";
-            lista.forEach(exp => {
+            pageItems.forEach(exp => {
                 const info = traducirEstadoDirector(exp.estado);
 
                 const fInicio = exp.fechaInicio ? formatearFecha(exp.fechaInicio) : "Por definir";
                 const fFin = exp.fechaFin ? formatearFecha(exp.fechaFin) : "Por definir";
                 const fActualizacion = exp.fechaCreacion ? formatearFecha(exp.fechaCreacion) : "—";
 
-                html += `<tr class="exp-row" data-search="${exp.nombreDocente.toLowerCase()} ${exp.idExpediente.toLowerCase()}" data-estado="${info.filtro}">
+                html += `<tr class="exp-row">
                     <td>
-                        <div class="fw-bold text-dark">${exp.nombreDocente}</div>
-                        <div class="text-muted small">ID: ${exp.docenteId}</div>
-                        <div class="text-muted small font-monospace">${exp.idExpediente}</div>
+                        <div class="docente-cell">
+                            <div class="docente-avatar">${obtenerIniciales(exp.nombreDocente)}</div>
+                            <div>
+                                <div class="docente-nombre">${exp.nombreDocente}</div>
+                                <div class="docente-ids">ID: ${exp.docenteId} · <span class="font-monospace">${exp.idExpediente}</span></div>
+                            </div>
+                        </div>
                     </td>
                     <td>
                         <div class="periodo-box">
@@ -255,7 +310,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         </div>
                     </td>
                     <td>
-                        <div class="text-secondary fw-medium"><i class="fa-regular fa-calendar me-1"></i> ${fActualizacion}</div>
+                        <div class="fecha-cell"><i class="fa-regular fa-calendar"></i> ${fActualizacion}</div>
                     </td>
                     <td>
                         <span class="badge-status ${info.clase}">${info.label}</span>
@@ -268,20 +323,36 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 </tr>`;
             });
             tbody.innerHTML = html;
+            renderPaginacion(totalPaginas, inicio, pageItems.length);
         }
 
-        function filtrarTabla() {
-            const busqueda = document.getElementById('searchInput').value.toLowerCase();
-            const estado = document.getElementById('statusFilter').value;
-            const rows = document.querySelectorAll('.exp-row');
+        function renderPaginacion(totalPaginas, inicio, cantidadPagina) {
+            const bar = document.getElementById('paginationBar');
+            const total = expedientesFiltrados.length;
+            if (totalPaginas <= 1) { bar.innerHTML = `<span class="text-muted small">Mostrando ${total} de ${total} registros</span>`; return; }
 
-            rows.forEach(row => {
-                const cumpleBusqueda = row.getAttribute('data-search').includes(busqueda);
-                const cumpleEstado = (estado === 'TODOS') || row.getAttribute('data-estado') === estado;
+            // Ventana de páginas con puntos suspensivos: 1 … 4 5 6 … 20
+            const paginas = [];
+            for (let i = 1; i <= totalPaginas; i++) {
+                if (i === 1 || i === totalPaginas || Math.abs(i - paginaActual) <= 1) paginas.push(i);
+                else if (paginas[paginas.length - 1] !== '…') paginas.push('…');
+            }
 
-                if (cumpleBusqueda && cumpleEstado) row.style.display = '';
-                else row.style.display = 'none';
+            let botones = `<button class="btn-page" ${paginaActual === 1 ? 'disabled' : ''} onclick="irAPagina(${paginaActual - 1})"><i class="fa-solid fa-chevron-left"></i></button>`;
+            paginas.forEach(p => {
+                botones += p === '…'
+                    ? `<span class="pag-dots">…</span>`
+                    : `<button class="btn-page ${p === paginaActual ? 'active' : ''}" onclick="irAPagina(${p})">${p}</button>`;
             });
+            botones += `<button class="btn-page" ${paginaActual === totalPaginas ? 'disabled' : ''} onclick="irAPagina(${paginaActual + 1})"><i class="fa-solid fa-chevron-right"></i></button>`;
+
+            bar.innerHTML = `<span class="text-muted small">Mostrando ${inicio + 1}–${inicio + cantidadPagina} de ${total} registros</span><div class="d-flex gap-2 align-items-center">${botones}</div>`;
+        }
+
+        function irAPagina(n) {
+            paginaActual = n;
+            renderTabla();
+            document.querySelector('.main-wrapper').scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function formatearFecha(fechaStr) {
@@ -299,6 +370,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         <i class="fa-regular fa-folder-open fa-2x mb-3 text-secondary"></i><br>${msg}
                     </td>
                 </tr>`;
+            document.getElementById('paginationBar').innerHTML = '';
         }
 
         function logout() {

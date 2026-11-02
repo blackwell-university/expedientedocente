@@ -376,6 +376,7 @@
         .diploma-mini-card { background: #f8fafc; border: 1px solid var(--gray-border); border-radius: 12px; padding: 16px 18px; margin-bottom: 12px; }
 
     </style>
+<link rel="stylesheet" href="bgu-sidebar.css">
 </head>
 <body>
 
@@ -400,11 +401,13 @@
             <li><a href="faculty-roster.html" class="nav-link"><i class="fa-solid fa-table-list"></i> <span class="link-text">Faculty Rosters</span></a></li>
             <li id="navReportesDocentes" style="display:none;"><a href="reportes-docentes.html" class="nav-link"><i class="fa-solid fa-chart-column"></i> <span class="link-text">Reportes de Docentes</span></a></li>
             <li id="navGestionClases" style="display:none;"><a href="academica-dashboard.html" class="nav-link"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Gestión de Clases</span></a></li>
+            <li id="navGestionUsuarios" style="display:none;"><a href="gestion-usuarios.html" class="nav-link"><i class="fa-solid fa-user-gear"></i> <span class="link-text">Gestión de Usuarios</span></a></li>
         </ul>
         <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;">
             <i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span>
         </a>
     </aside>
+    <script src="bgu-sidebar.js"></script>
 
     <main class="main-wrapper">
         <header>
@@ -476,7 +479,8 @@
                                         <!-- Oculto: correo al que el sistema le escribe al docente (institucional si existe, si no el personal). Lo leen los envíos de correo de esta página. -->
                                         <span id="det-correo" class="d-none">-</span>
                                         <div class="col-md-4"><span class="info-label">Teléfono</span><div class="info-value" id="det-telefono">-</div></div>
-                                        <div class="col-md-4"><span class="info-label">País</span><div class="info-value" id="det-pais">-</div></div>
+                                        <div class="col-md-4"><span class="info-label">País Residencia</span><div class="info-value" id="det-pais">-</div></div>
+                                        <div class="col-md-4"><span class="info-label">País (Nacionalidad)</span><div class="info-value" id="det-pais-nac">-</div></div>
                                         <div class="col-12"><span class="info-label">Dirección Completa</span><div class="info-value" id="det-direccion">-</div></div>
                                     </div>
                                     <span class="section-badge"><i class="fa-solid fa-building-columns me-2"></i>Datos Financieros</span>
@@ -996,6 +1000,7 @@
 
                     if (document.getElementById('det-telefono')) document.getElementById('det-telefono').innerText = d.celular || "-";
                     if (document.getElementById('det-pais')) document.getElementById('det-pais').innerText = d.pais || "-";
+                    if (document.getElementById('det-pais-nac')) document.getElementById('det-pais-nac').innerText = d.pais_nacionalidad || "-";
                     if (document.getElementById('det-direccion')) document.getElementById('det-direccion').innerText = d.direccion || "-";
 
                     // NUEVO: badge de Activo/Inactivo junto al nombre (columna F de la hoja Usuarios)
@@ -1172,7 +1177,7 @@
             const camposPersonales = [
                 ['DNI / Pasaporte', d.dni], ['Tipo de Documento', d.tipo_id], ['Nombres', d.nombres], ['Apellidos', d.apellidos],
                 ['Correo personal', d.correo], ['Celular', d.celular], ['Fecha de Nacimiento', formatFechaCompleta(d.fecha_nacimiento)], ['Código Postal', d.cp],
-                ['País', d.pais], ['Ciudad', d.ciudad], ['Dirección', d.direccion]
+                ['País Residencia', d.pais], ['País (Nacionalidad)', d.pais_nacionalidad], ['Ciudad', d.ciudad], ['Dirección', d.direccion]
             ];
             let htmlPersonales = camposPersonales.map(([l, v]) => campoDato(l, v)).join('');
             let llenosPersonales = camposPersonales.filter(([, v]) => v && String(v).trim() !== '').length;
@@ -1753,9 +1758,12 @@
         document.addEventListener('DOMContentLoaded', function () {
             var r = String(localStorage.getItem('userRole') || '').toUpperCase();
             function mostrar(id, roles) { var n = document.getElementById(id); if (n && roles.indexOf(r) > -1) n.style.display = ''; }
-            mostrar('navFacultyRoster', ['ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA']);
+            mostrar('navFacultyRoster', ['ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA', 'ADMINISTRATIVO', 'ASESORA ACADEMICA', 'JEFE OSE BGU', 'E-LEARNING', 'DIRECTOR_ZAMUDIO', 'DIRECTOR_ERNESTO']);
             mostrar('navReportesDocentes', ['ADMINISTRATIVO', 'ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA']);
+            mostrar('navGestionUsuarios', ['ADMINISTRADOR', 'ADMIN']);
         });
     </script>
+<script src="i18n-en.js"></script>
+<script src="i18n.js"></script>
 </body>
 </html>
