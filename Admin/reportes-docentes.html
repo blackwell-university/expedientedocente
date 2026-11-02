@@ -251,6 +251,10 @@
                             <select class="form-select input-filter" id="selTipoGrado" onchange="cambioFiltro()"><option value="">Todos</option></select>
                         </div>
                         <div class="col-md-3 filtro-global">
+                            <label class="form-label-sm">Tipo de país</label>
+                            <select class="form-select input-filter" id="selVistaPais" onchange="cambioVistaPais()"><option value="res" selected>País Residencia</option><option value="nac">País (Nacionalidad)</option></select>
+                        </div>
+                        <div class="col-md-3 filtro-global">
                             <label class="form-label-sm">País del docente</label>
                             <select class="form-select input-filter" id="selPais" onchange="cambioFiltro()"><option value="">Todos</option></select>
                         </div>
@@ -351,6 +355,8 @@
                 const r = await res.json();
                 if (r.status !== 'success') throw new Error(r.message || 'Error');
                 docentes = r.docentes || [];
+                docentes.forEach(d => { d.paisRes = d.pais || ''; d.paisNac = d.paisNac || ''; });
+                aplicarVistaPais();
                 llenarOpciones();
                 render();
             } catch (e) {
@@ -385,6 +391,17 @@
             document.querySelectorAll('.filtro-top').forEach(el => el.style.display = t === 'top' ? '' : 'none');
             document.querySelectorAll('.filtro-global').forEach(el => el.style.display = t === 'global' ? '' : 'none');
             if (!sinRender) render();
+        }
+        // Residencia o Nacionalidad: todo el reporte usa d.pais, así que solo cambiamos de dónde sale
+        function aplicarVistaPais() {
+            const nac = document.getElementById('selVistaPais') && val('selVistaPais') === 'nac';
+            docentes.forEach(d => { d.pais = nac ? d.paisNac : d.paisRes; });
+        }
+        function cambioVistaPais() {
+            aplicarVistaPais();
+            document.getElementById('selPais').value = '';
+            llenarOpciones();
+            cambioFiltro();
         }
         function cambioFiltro() { pag.top = 1; pag.global = 1; render(); }
         function cambioTam() { tam = parseInt(val('selTam'), 10); pag.top = 1; pag.global = 1; render(); }

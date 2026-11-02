@@ -34,6 +34,7 @@
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="paises.js"></script>
 
     <style>
         :root {
@@ -642,6 +643,21 @@
             </div>`;
         }
 
+        // Select de países (lista compartida paises.js)
+        function campoSelectPais(label, id, valor) {
+            const v = (valor === undefined || valor === null) ? '' : String(valor).trim();
+            return `
+            <div class="col-md-4 dato-campo">
+                <span class="info-label">${label}</span>
+                <select class="form-select form-select-sm" id="${id}" data-valor="${v.replace(/"/g, '&quot;')}"></select>
+            </div>`;
+        }
+        function poblarSelectsPais() {
+            document.querySelectorAll('select[data-valor]').forEach(sel => {
+                if (typeof llenarSelectPaises === 'function') llenarSelectPaises(sel, sel.getAttribute('data-valor'), 'Seleccionar país...');
+            });
+        }
+
         // ==================== EDUCACIÓN (DIPLOMAS) — SOLO LECTURA ====================
         function claseChipEstado(estado) {
             const e = String(estado || 'Subido').toLowerCase();
@@ -688,7 +704,8 @@
                 ${campoInput('Celular', 'inp-celular', d.celular)}
                 ${campoInput('Fecha de Nacimiento', 'inp-fecha_nacimiento', d.fecha_nacimiento ? String(d.fecha_nacimiento).split('T')[0] : '', 'date')}
                 ${campoInput('Código Postal', 'inp-cp', d.cp)}
-                ${campoInput('País', 'inp-pais', d.pais)}
+                ${campoSelectPais('País Residencia', 'inp-pais', d.pais)}
+                ${campoSelectPais('País (Nacionalidad)', 'inp-pais_nacionalidad', d.pais_nacionalidad)}
                 ${campoInput('Ciudad', 'inp-ciudad', d.ciudad)}
                 ${campoInput('Dirección', 'inp-direccion', d.direccion)}
                 ${campoInput('Estado/Región (solo EE. UU.)', 'inp-estado_region', d.estado_region)}
@@ -700,7 +717,9 @@
                     </button>
                 </div>`;
 
-            const camposPersonalesConteo = [d.dni, d.tipo_id, d.nombres, d.apellidos, d.celular, d.fecha_nacimiento, d.cp, d.pais, d.ciudad, d.direccion];
+            poblarSelectsPais();
+
+            const camposPersonalesConteo = [d.dni, d.tipo_id, d.nombres, d.apellidos, d.celular, d.fecha_nacimiento, d.cp, d.pais, d.pais_nacionalidad, d.ciudad, d.direccion];
             actualizarBadgeSeccion('badge-personales', camposPersonalesConteo.filter(v => v && String(v).trim() !== '').length, camposPersonalesConteo.length);
 
             // --- DATOS BANCARIOS (editable) ---
@@ -807,6 +826,10 @@
         }
 
         async function guardarDatosPersonales() {
+            if (!valorInput('inp-pais') || !valorInput('inp-pais_nacionalidad')) {
+                Swal.fire('Faltan datos', 'Selecciona tu País Residencia y tu País (Nacionalidad).', 'warning');
+                return;
+            }
             const payload = {
                 action: 'update_docente_perfil_directo',
                 docenteId: docenteIdGlobal,
@@ -819,6 +842,7 @@
                     fecha_nacimiento: valorInput('inp-fecha_nacimiento'),
                     cp: valorInput('inp-cp'),
                     pais: valorInput('inp-pais'),
+                    pais_nacionalidad: valorInput('inp-pais_nacionalidad'),
                     ciudad: valorInput('inp-ciudad'),
                     direccion: valorInput('inp-direccion'),
                     estado_region: valorInput('inp-estado_region')
