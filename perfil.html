@@ -281,6 +281,22 @@
         .profile-photo { font-size: 1.9rem; }
         @media (max-width: 576px) { .cv-actions { width: 100%; } .cv-actions .btn { flex: 1; } }
 
+        /* --- DATOS DE PAGO --- */
+        .pago-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px 18px; }
+        .pago-item .info-label { margin-bottom: 3px; }
+        .pago-item .pago-valor { font-size: 0.92rem; font-weight: 600; color: var(--text-main); word-break: break-word; }
+        .pago-item .pago-valor.falta { color: #b91c1c; font-style: italic; font-weight: 500; font-size: 0.84rem; }
+        .aviso-box { display: flex; gap: 12px; align-items: flex-start; border-radius: 14px; padding: 14px 16px; font-size: 0.86rem; line-height: 1.5; margin-bottom: 18px; }
+        .aviso-box .material-symbols-rounded { font-size: 22px; flex-shrink: 0; margin-top: 1px; }
+        .aviso-box.warn { background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; }
+        .aviso-box.danger { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+        .aviso-box.info { background: var(--primary-light); border: 1px solid #bfdbfe; color: var(--primary-dark); }
+        .aviso-box b { font-weight: 800; }
+        .aviso-box .btn { white-space: nowrap; }
+        .confirma-pago { display: flex; gap: 10px; align-items: flex-start; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 14px; font-size: 0.86rem; font-weight: 600; cursor: pointer; }
+        .confirma-pago input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--primary); flex-shrink: 0; }
+        @media (max-width: 576px) { .aviso-box { flex-wrap: wrap; } .aviso-box .btn { width: 100%; } }
+
         /* --- REDISEÑO DE SWEETALERT2 (UI Corporativa) --- */
         div:where(.swal2-container) div:where(.swal2-popup) {
             border-radius: 16px !important;
@@ -417,6 +433,13 @@
                     <p>Aquí puedes ver un resumen de todos tus datos registrados y cambiar tu foto de perfil.</p>
                 </div>
 
+                <!-- RECORDATORIO: datos de pago incompletos -->
+                <div class="aviso-box danger d-none" id="bannerPagoPerfil" role="alert">
+                    <span class="material-symbols-rounded">payments</span>
+                    <div class="flex-grow-1"><b>Completa tus datos de pago.</b> Sin ellos no podremos depositarte cuando termines un curso.</div>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="abrirEdicionPago(true)">Completar ahora</button>
+                </div>
+
                 <!-- TARJETA DE FOTO + RESUMEN -->
                 <div class="form-card mb-4 d-flex align-items-center gap-4 flex-wrap">
                     <div class="profile-photo-wrap">
@@ -456,10 +479,46 @@
                     </div>
                 </div>
 
+                <!-- DATOS DE PAGO (aparte, con aviso al actualizar) -->
+                <div class="form-card mb-4" id="cardPago">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                        <span class="section-badge"><i class="fa-solid fa-building-columns me-2"></i>Datos de pago</span>
+                        <span class="badge rounded-pill" id="badgePago">-</span>
+                    </div>
+                    <p class="text-muted" style="font-size:0.85rem; margin-top:-8px;">Aquí es donde se depositarán tus pagos por los cursos dictados. Todos los datos son necesarios.</p>
+
+                    <div id="pagoVista">
+                        <div class="pago-grid" id="pagoGrid"><p class="text-muted m-0"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando...</p></div>
+                        <div class="text-end mt-3">
+                            <button type="button" class="btn btn-sm btn-soft px-3 py-2" id="btnEditarPago" onclick="abrirEdicionPago(false)">
+                                <i class="fa-solid fa-pen me-2"></i>Actualizar datos de pago
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="pagoEdicion" class="d-none">
+                        <div class="aviso-box warn" id="avisoCambioCuenta">
+                            <span class="material-symbols-rounded">notifications_active</span>
+                            <div><b>Importante:</b> al guardar, esta será la <b>nueva cuenta en la que se depositarán tus pagos</b>. Se notificará al equipo encargado de los pagos para que lo tengan en cuenta.</div>
+                        </div>
+                        <div class="row g-3" id="pagoCampos"></div>
+                        <label class="confirma-pago mt-3">
+                            <input type="checkbox" id="chkConfirmaPago">
+                            <span>Confirmo que mis datos de pago son correctos y que los pagos se realizarán a esta cuenta.</span>
+                        </label>
+                        <div class="d-flex justify-content-end gap-2 mt-3 flex-wrap">
+                            <button type="button" class="btn btn-sm btn-soft px-3 py-2" onclick="cerrarEdicionPago()">Cancelar</button>
+                            <button type="button" class="btn btn-sm btn-primary px-3 py-2" id="btnGuardarPago" onclick="guardarDatosPago()">
+                                <i class="fa-regular fa-floppy-disk me-1"></i>Guardar datos de pago
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- ACORDEÓN CON TODOS LOS DATOS -->
                 <div class="form-card">
                     <span class="section-badge"><i class="fa-solid fa-list-check me-2"></i>Todos mis Datos</span>
-                    <p class="text-muted" style="font-size: 0.85rem; margin-top: -12px;">Despliega cada sección para ver, a simple vista, qué campos ya llenaste y cuáles te faltan. Datos Personales y Datos Bancarios los puedes editar aquí mismo.</p>
+                    <p class="text-muted" style="font-size: 0.85rem; margin-top: -12px;">Despliega cada sección para ver, a simple vista, qué campos ya llenaste y cuáles te faltan. Tus Datos Personales los puedes editar aquí mismo; los datos de pago están en su propia tarjeta de arriba.</p>
                     <div class="accordion" id="accordionDatosDocente">
 
                         <div class="accordion-item">
@@ -504,19 +563,6 @@
                             </div>
                         </div>
 
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accBancarios">
-                                    <span class="acc-ico"><i class="fa-solid fa-building-columns"></i></span>Datos Bancarios
-                                    <span class="badge rounded-pill ms-2" id="badge-bancarios">-</span>
-                                </button>
-                            </h2>
-                            <div id="accBancarios" class="accordion-collapse collapse" data-bs-parent="#accordionDatosDocente">
-                                <div class="accordion-body row g-3" id="cont-datos-bancarios">
-                                    <p class="text-muted m-0"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando...</p>
-                                </div>
-                            </div>
-                        </div>
 
                     </div>
 
@@ -722,25 +768,8 @@
             const camposPersonalesConteo = [d.dni, d.tipo_id, d.nombres, d.apellidos, d.celular, d.fecha_nacimiento, d.cp, d.pais, d.pais_nacionalidad, d.ciudad, d.direccion];
             actualizarBadgeSeccion('badge-personales', camposPersonalesConteo.filter(v => v && String(v).trim() !== '').length, camposPersonalesConteo.length);
 
-            // --- DATOS BANCARIOS (editable) ---
-            const htmlBancarios = `
-                ${campoInput('Banco', 'inp-banco', d.banco)}
-                ${campoInput('Moneda', 'inp-moneda', d.moneda)}
-                ${campoInput('Tipo de Cuenta', 'inp-tipo_cuenta', d.tipo_cuenta)}
-                ${campoInput('Cuenta Bancaria', 'inp-cuenta', d.cuenta)}
-                ${campoInput('CCI / Interbancaria', 'inp-cci', d.cci)}
-                ${campoInput('Tipo de Ruta (ACH)', 'inp-tipo_ruta', d.tipo_ruta)}
-                ${campoInput('Código de Ruta', 'inp-codigo_ruta', d.codigo_ruta)}
-            `;
-            document.getElementById('cont-datos-bancarios').innerHTML = htmlBancarios + `
-                <div class="col-12 text-end mt-2">
-                    <button class="btn btn-primary btn-sm px-3 py-2" onclick="guardarDatosBancarios()">
-                        <i class="fa-regular fa-floppy-disk me-1"></i>Guardar Datos Bancarios
-                    </button>
-                </div>`;
-
-            const camposBancariosConteo = [d.banco, d.moneda, d.tipo_cuenta, d.cuenta, d.cci, d.tipo_ruta, d.codigo_ruta];
-            actualizarBadgeSeccion('badge-bancarios', camposBancariosConteo.filter(v => v && String(v).trim() !== '').length, camposBancariosConteo.length);
+            // --- DATOS DE PAGO (tarjeta aparte) ---
+            pintarDatosPago(d);
 
             // --- MI CV ---
             const cvNombre = document.getElementById('cvNombreArchivo');
@@ -861,30 +890,113 @@
             }
         }
 
-        async function guardarDatosBancarios() {
-            const payload = {
-                action: 'update_docente_perfil_directo',
-                docenteId: docenteIdGlobal,
-                bancarios: {
-                    banco: valorInput('inp-banco'),
-                    moneda: valorInput('inp-moneda'),
-                    tipo_cuenta: valorInput('inp-tipo_cuenta'),
-                    cuenta: valorInput('inp-cuenta'),
-                    cci: valorInput('inp-cci'),
-                    tipo_ruta: valorInput('inp-tipo_ruta'),
-                    codigo_ruta: valorInput('inp-codigo_ruta')
-                }
-            };
+        // ==================== DATOS DE PAGO ====================
+        const CAMPOS_PAGO = [
+            { key: 'banco',       label: 'Banco',                 sensible: false },
+            { key: 'moneda',      label: 'Moneda',                sensible: false },
+            { key: 'tipo_cuenta', label: 'Tipo de cuenta',        sensible: false },
+            { key: 'cuenta',      label: 'Cuenta bancaria',       sensible: true  },
+            { key: 'cci',         label: 'CCI / Interbancaria',   sensible: true  },
+            { key: 'tipo_ruta',   label: 'Tipo de ruta (ACH)',    sensible: false },
+            { key: 'codigo_ruta', label: 'Código de ruta',        sensible: true  }
+        ];
+        let datosPagoActuales = {};
+
+        function enmascarar(v) {
+            const t = String(v || '').replace(/\s+/g, '');
+            return t ? '•••• ' + t.slice(-4) : '';
+        }
+        function escAttr(t) { return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+        function pagoIncompleto() { return CAMPOS_PAGO.some(c => !String(datosPagoActuales[c.key] || '').trim()); }
+
+        function pintarDatosPago(d) {
+            CAMPOS_PAGO.forEach(c => { datosPagoActuales[c.key] = (d && d[c.key] != null) ? String(d[c.key]).trim() : ''; });
+            const faltan = CAMPOS_PAGO.filter(c => !datosPagoActuales[c.key]);
+
+            document.getElementById('pagoGrid').innerHTML = CAMPOS_PAGO.map(c => {
+                const v = datosPagoActuales[c.key];
+                const texto = v ? (c.sensible ? enmascarar(v) : escAttr(v)) : 'Sin llenar';
+                return `<div class="pago-item"><span class="info-label">${c.label}</span><div class="pago-valor ${v ? '' : 'falta'}">${texto}</div></div>`;
+            }).join('');
+
+            const badge = document.getElementById('badgePago');
+            badge.textContent = faltan.length === 0 ? 'Completo' : `Faltan ${faltan.length}`;
+            badge.className = 'badge rounded-pill ' + (faltan.length === 0 ? 'badge-campo-ok' : 'badge-campo-falta');
+
+            const banner = document.getElementById('bannerPagoPerfil');
+            if (banner) banner.classList.toggle('d-none', faltan.length === 0);
+            document.getElementById('btnEditarPago').innerHTML = faltan.length === CAMPOS_PAGO.length
+                ? '<i class="fa-solid fa-plus me-2"></i>Registrar datos de pago'
+                : '<i class="fa-solid fa-pen me-2"></i>Actualizar datos de pago';
+            if (window.DocentePago) window.DocentePago.set(faltan.length > 0);
+        }
+
+        function abrirEdicionPago(scroll) {
+            document.getElementById('pagoCampos').innerHTML = CAMPOS_PAGO.map(c => `
+                <div class="col-md-4 dato-campo">
+                    <span class="info-label">${c.label}</span>
+                    <input type="text" class="form-control form-control-sm" id="pago-${c.key}" value="${escAttr(datosPagoActuales[c.key])}" autocomplete="off">
+                </div>`).join('');
+            document.getElementById('chkConfirmaPago').checked = false;
+            const hayDatos = CAMPOS_PAGO.some(c => datosPagoActuales[c.key]);
+            document.getElementById('avisoCambioCuenta').querySelector('div').innerHTML = hayDatos
+                ? '<b>Importante:</b> al guardar, esta será la <b>nueva cuenta en la que se depositarán tus pagos</b>. Se notificará al equipo encargado de los pagos (Marisol Orellana, con copia a coordinación académica) para que lo tengan en cuenta.'
+                : '<b>Importante:</b> esta será la <b>cuenta en la que se depositarán tus pagos</b>. Se notificará al equipo encargado de los pagos para que la tengan registrada.';
+            document.getElementById('pagoVista').classList.add('d-none');
+            document.getElementById('pagoEdicion').classList.remove('d-none');
+            if (scroll) document.getElementById('cardPago').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        function cerrarEdicionPago() {
+            document.getElementById('pagoEdicion').classList.add('d-none');
+            document.getElementById('pagoVista').classList.remove('d-none');
+        }
+
+        async function guardarDatosPago() {
+            const nuevos = {};
+            CAMPOS_PAGO.forEach(c => { nuevos[c.key] = valorInput('pago-' + c.key); });
+            const vacios = CAMPOS_PAGO.filter(c => !nuevos[c.key]);
+            if (vacios.length) {
+                Swal.fire('Faltan datos', 'Todos los datos de pago son necesarios. Falta: ' + vacios.map(c => c.label).join(', ') + '.', 'warning');
+                return;
+            }
+            if (!document.getElementById('chkConfirmaPago').checked) {
+                Swal.fire('Confirmación requerida', 'Marca la casilla para confirmar que tus datos de pago son correctos.', 'warning');
+                return;
+            }
+            const cambio = CAMPOS_PAGO.some(c => nuevos[c.key] !== datosPagoActuales[c.key]);
+            if (!cambio) { cerrarEdicionPago(); return; }
+
+            const ok = await Swal.fire({
+                icon: 'question',
+                title: '¿Guardar esta cuenta?',
+                html: `Tus pagos se depositarán en:<br><br><b>${escAttr(nuevos.banco)}</b> · ${escAttr(nuevos.moneda)} · ${escAttr(nuevos.tipo_cuenta)}<br>Cuenta terminada en <b>${escAttr(enmascarar(nuevos.cuenta))}</b><br><br><span style="font-size:.85rem;">Se notificará al equipo encargado de los pagos.</span>`,
+                showCancelButton: true, confirmButtonColor: '#2563eb', cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, guardar', cancelButtonText: 'Revisar', reverseButtons: true
+            });
+            if (!ok.isConfirmed) return;
+
+            const btn = document.getElementById('btnGuardarPago');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>Guardando...';
             try {
-                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }).then(r => r.json());
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({
+                    action: 'update_docente_perfil_directo',
+                    docenteId: docenteIdGlobal,
+                    bancarios: nuevos,
+                    confirmaCambioCuenta: true
+                }) }).then(r => r.json());
                 if (res.status === 'success') {
-                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Datos bancarios guardados', showConfirmButton: false, timer: 2500 });
+                    pintarDatosPago(nuevos);
+                    cerrarEdicionPago();
+                    Swal.fire({ icon: 'success', title: 'Datos de pago guardados', text: 'Esta es ahora tu cuenta para recibir pagos. Ya avisamos al equipo encargado.', confirmButtonColor: '#2563eb' });
                 } else {
                     Swal.fire('Error', res.message || 'No se pudo guardar.', 'error');
                 }
             } catch (e) {
                 Swal.fire('Error de conexión', 'No se pudo guardar. Intenta de nuevo.', 'error');
             }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-regular fa-floppy-disk me-1"></i>Guardar datos de pago';
         }
 
         // ==================== ACTUALIZAR CV (sin pasar por n8n) ====================

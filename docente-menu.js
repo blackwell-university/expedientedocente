@@ -1,3 +1,8 @@
+/* docente-menu.js — Portal del docente
+   Mueve el idioma (ES/EN) y el tamaño de letra (A−/A+) al menú del usuario:
+   · Escritorio: dentro del desplegable del nombre.
+   · Celular: dentro del menú lateral (botón ☰).
+   Quita el selector ES/EN flotante y la píldora A−/A+ de la barra superior. Recuerda el tamaño de letra. */
 (function () {
   var KEY_FONT = 'docenteFontLevel';
   var st = document.createElement('style');
@@ -106,5 +111,48 @@
     sincronizar();
     window.addEventListener('languagechange-bgu', sincronizar);
   }
+
+  // ===== Recordatorio de datos de pago incompletos =====
+  var KEY_PAGO = 'docentePagoIncompleto';
+  var CAMPOS = ['banco','moneda','tipo_cuenta','cuenta','cci','tipo_ruta','codigo_ruta'];
+  function pagoPintar(inc) {
+    try {
+      document.querySelectorAll('a[href="perfil.html"]').forEach(function (a) {
+        var ya = a.querySelector('.dp-dot');
+        if (inc && !ya && !/perfil\.html/.test(location.pathname)) {
+          var d = document.createElement('span'); d.className = 'dp-dot';
+          d.style.cssText = 'display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;margin-left:6px;vertical-align:middle;';
+          d.title = 'Faltan tus datos de pago'; a.appendChild(d);
+        } else if (!inc && ya) ya.remove();
+      });
+      var wrap = document.getElementById('atencionWrap');
+      var b = document.getElementById('dpBanner');
+      if (inc && wrap && !b && !/perfil\.html/.test(location.pathname)) {
+        b = document.createElement('a'); b.id = 'dpBanner'; b.href = 'perfil.html';
+        b.style.cssText = 'display:flex;gap:10px;align-items:center;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:14px;padding:12px 16px;margin-bottom:16px;text-decoration:none;font-size:.88rem;font-weight:600;';
+        b.innerHTML = '<span class="material-symbols-rounded" style="font-size:22px;">payments</span><span style="flex:1;">Aún faltan tus datos de pago. Complétalos en tu perfil para que podamos depositarte al terminar tus cursos.</span><span style="white-space:nowrap;">Completar →</span>';
+        wrap.parentNode.insertBefore(b, wrap);
+      } else if (!inc && b) b.remove();
+    } catch (e) {}
+  }
+  window.DocentePago = {
+    set: function (inc) { try { sessionStorage.setItem(KEY_PAGO, inc ? '1' : '0'); } catch (e) {} pagoPintar(!!inc); }
+  };
+  function pagoInit() {
+    var cache = null; try { cache = sessionStorage.getItem(KEY_PAGO); } catch (e) {}
+    if (cache !== null) { pagoPintar(cache === '1'); return; }
+    var id = null, url = null;
+    try { id = localStorage.getItem('userId'); } catch (e) {}
+    url = window.GAS_URL || (typeof GAS_URL !== 'undefined' ? GAS_URL : null);
+    if (!id || !url || /perfil\.html/.test(location.pathname)) return;
+    fetch(url, { method: 'POST', body: JSON.stringify({ action: 'get_profile', id: id }) })
+      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        var d = (r && r.data) || {};
+        var inc = CAMPOS.some(function (k) { return !String(d[k] == null ? '' : d[k]).trim(); });
+        if (r && (r.status === 'success' || r.status === 'partial')) window.DocentePago.set(inc);
+      }).catch(function () {});
+  }
+  setTimeout(pagoInit, 400);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
