@@ -121,18 +121,17 @@
         var ya = a.querySelector('.dp-dot');
         if (inc && !ya && !/perfil\.html/.test(location.pathname)) {
           var d = document.createElement('span'); d.className = 'dp-dot';
-          d.style.cssText = 'display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;margin-left:6px;vertical-align:middle;';
-          d.title = 'Faltan tus datos de pago'; a.appendChild(d);
+          var enBarra = a.classList.contains('bottom-item');
+          var iw = enBarra ? a.querySelector('.icon-wrap') : null;
+          // En la barra inferior el punto va sobre el icono (no al final del enlace: eso hacía aparecer el texto "Perfil")
+          d.style.cssText = iw
+            ? 'position:absolute;top:-3px;right:-6px;width:9px;height:9px;border-radius:50%;background:#ef4444;border:1.5px solid #fff;'
+            : 'display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;margin-left:6px;vertical-align:middle;';
+          d.title = 'Faltan tus datos de pago'; (iw || a).appendChild(d);
         } else if (!inc && ya) ya.remove();
       });
-      var wrap = document.getElementById('atencionWrap');
-      var b = document.getElementById('dpBanner');
-      if (inc && wrap && !b && !/perfil\.html/.test(location.pathname)) {
-        b = document.createElement('a'); b.id = 'dpBanner'; b.href = 'perfil.html';
-        b.style.cssText = 'display:flex;gap:10px;align-items:center;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:14px;padding:12px 16px;margin-bottom:16px;text-decoration:none;font-size:.88rem;font-weight:600;';
-        b.innerHTML = '<span class="material-symbols-rounded" style="font-size:22px;">payments</span><span style="flex:1;">Aún faltan tus datos de pago. Complétalos en tu perfil para que podamos depositarte al terminar tus cursos.</span><span style="white-space:nowrap;">Completar →</span>';
-        wrap.parentNode.insertBefore(b, wrap);
-      } else if (!inc && b) b.remove();
+      // El aviso grande del dashboard ya no se muestra: el recordatorio queda solo como punto rojo en el menú/perfil
+      var b = document.getElementById('dpBanner'); if (b) b.remove();
     } catch (e) {}
   }
   window.DocentePago = {

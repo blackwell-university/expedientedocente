@@ -12,11 +12,15 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="bgu-shell.css">
     <style>
+        html { font-size: 14px; } /* igual que Gestionar Asesoras y el resto del portal */
+        /* Campos de filtros: mismo estilo que Gestionar Asesoras */
+        .form-control, .form-select { border-radius: 10px; border-color: #cbd5e1; font-size: 0.9rem; }
+        .form-control:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
         .main-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; }
         .centered-container { width: 100%; max-width: 1200px; text-align: left; }
         .page-header h1 { font-weight: 800; font-size: 1.6rem; color: var(--primary-dark); letter-spacing: -0.03em; margin-bottom: 8px; } /* NUEVO: antes 1.9rem */
         .page-header p { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 32px; }
-        .kpi-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+        .kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
         .kpi-card { background: white; border: 1px solid var(--gray-border); border-radius: 16px; padding: 18px 20px; display: flex; align-items: center; gap: 14px; }
         .kpi-card .kpi-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0; }
         .kpi-card .kpi-number { font-size: 1.5rem; font-weight: 800; color: var(--text-main); line-height: 1; }
@@ -24,6 +28,57 @@
         .kpi-curso .kpi-icon { background: #eff6ff; color: #2563eb; }
         .kpi-iniciar .kpi-icon { background: #f3e8ff; color: #7e22ce; }
         .kpi-culminada .kpi-icon { background: #f0fdf4; color: #16a34a; }
+        .kpi-conformar .kpi-icon { background: #fffbeb; color: #d97706; }
+        .avance-cell { min-width: 120px; }
+        .avance-num { font-weight: 800; font-size: 0.95rem; color: var(--text-main); line-height: 1.1; }
+        .avance-num small { font-weight: 600; color: var(--text-muted); font-size: 0.72rem; }
+        .avance-bar { height: 6px; border-radius: 6px; background: #e2e8f0; margin-top: 6px; overflow: hidden; }
+        .avance-bar > span { display: block; height: 100%; background: #2563eb; border-radius: 6px; }
+        .avance-bar.completo > span { background: #1fa463; }
+        .badge-conforme { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 30px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; background: #dbeafe; color: #1e40af; margin-left: 6px; cursor: help; }
+        .badge-porconformar { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 30px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; background: #fffbeb; color: #b45309; margin-left: 6px; }
+        .btn-conforme { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-weight: 700; font-size: 0.8rem; padding: 7px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; transition: .2s; white-space: nowrap; }
+        .btn-conforme:hover { background: #d1fae5; border-color: #6ee7b7; color: #065f46; }
+        .bj-eye{width:38px;height:38px;border-radius:10px;border:1px solid var(--gray-border);background:#fff;color:var(--text-muted);display:inline-flex;align-items:center;justify-content:center;text-decoration:none;flex-shrink:0;transition:.2s}
+        .bj-eye:hover{background:#eff6ff;color:var(--primary);border-color:#bfdbfe}
+        .bj-periodo{font-size:.72rem;color:#94a3b8;display:block;margin-top:2px}
+        .vista-switch{display:inline-flex;background:#eef2f8;border-radius:12px;padding:4px;gap:2px}
+        .vista-switch button{border:0;background:transparent;color:var(--text-muted);font-weight:600;font-size:.82rem;padding:8px 16px;border-radius:9px;display:inline-flex;align-items:center;gap:8px;transition:.2s}
+        .vista-switch button.on{background:#fff;color:var(--primary);box-shadow:0 1px 4px rgba(15,23,42,.12)}
+        .bj-hero{background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;border-radius:18px;padding:20px 24px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:18px}
+        .bj-hero .big{font-size:2.6rem;font-weight:800;line-height:1}.bj-hero .tx{flex:1;min-width:200px}.bj-hero b{font-size:1.05rem}.bj-hero p{margin:4px 0 0;opacity:.85;font-size:.85rem}
+        .bj-chip{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);border-radius:30px;padding:6px 14px;font-size:.78rem;font-weight:600;margin-left:6px;display:inline-block}
+        .bj-tabs{display:flex;gap:6px;border-bottom:2px solid var(--gray-border);margin-bottom:14px;overflow-x:auto}
+        .bj-tab{padding:10px 16px;font-weight:700;font-size:.85rem;color:var(--text-muted);cursor:pointer;border:0;background:none;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap}
+        .bj-tab.on{color:var(--primary);border-color:var(--primary)}.bj-tab i{font-style:normal;background:#e2e8f0;border-radius:20px;padding:1px 8px;font-size:.72rem;margin-left:6px}
+        .bj-tab.on i{background:var(--primary);color:#fff}.bj-tab.warn.on i{background:#d97706}
+        .bj-row{background:#fff;border:1px solid var(--gray-border);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:16px;margin-bottom:10px}
+        .bj-row:hover{border-color:#bfdbfe;box-shadow:0 4px 14px rgba(37,99,235,.08)}
+        .bj-who{flex:1;min-width:0}.bj-who b{display:block;font-size:.92rem}.bj-who span{font-size:.78rem;color:var(--text-muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .bj-ring{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative}
+        .bj-ring::after{content:"";position:absolute;inset:5px;background:#fff;border-radius:50%}.bj-ring span{position:relative;z-index:1;font-size:.72rem;font-weight:800}
+        .bj-fecha{font-size:.78rem;color:var(--text-muted);width:110px;flex-shrink:0}.bj-fecha b{display:block;color:var(--text-main);font-size:.82rem}
+        .bj-obs{font-size:.74rem;color:var(--text-muted);font-style:italic}
+        .bj-link{font-size:.82rem;font-weight:600;color:var(--primary);cursor:pointer;background:none;border:0;text-decoration:underline;padding:0}
+        .bj-pager{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:14px}
+        .bj-pager .pg{display:flex;gap:6px;flex-wrap:wrap}
+        .bj-pager button{background:#fff;border:1px solid var(--gray-border);color:var(--text-main);font-weight:600;font-size:.82rem;min-width:36px;padding:6px 10px;border-radius:8px}
+        .bj-pager button.act{background:var(--primary);border-color:var(--primary);color:#fff}
+        .bj-pager button:disabled{opacity:.4;cursor:not-allowed}
+        .bj-pager .dots{padding:6px 4px;color:var(--text-muted)}
+        @media(max-width:800px){
+            .bj-fecha{display:none}
+            .bj-tabs{overflow:visible;gap:2px}
+            .bj-tab{flex:1;padding:10px 4px;font-size:.74rem;text-align:center;line-height:1.25}
+            .bj-tab i{display:block;margin:4px auto 0;width:fit-content}
+            .bj-row{flex-wrap:wrap;gap:10px 12px;padding:14px}
+            .bj-who{flex:1 1 calc(100% - 60px)}
+            .bj-who span{white-space:normal}
+            .bj-row .btn-conforme,.bj-row .badge-conforme{margin-left:auto}
+            .bj-hero .big{font-size:2.2rem}
+            .bj-pager{justify-content:center}
+        }
+        .acciones-cell { display: flex; gap: 8px; flex-wrap: wrap; }
         @media (max-width: 900px) { .kpi-strip { grid-template-columns: repeat(2, 1fr); } }
 
         .filter-card { background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--gray-border); margin-bottom: 24px; }
@@ -48,13 +103,17 @@
         .docente-cell { display: flex; align-items: center; gap: 12px; }
         .docente-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--primary-light); color: var(--primary-dark); font-weight: 800; font-size: 0.78rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
-        .periodo-cell { display: flex; align-items: center; gap: 8px; color: var(--text-main); font-weight: 600; font-size: 0.83rem; white-space: nowrap; }
-        .periodo-cell i { color: #94a3b8; font-size: 0.85rem; }
+        .periodo-cell { display: flex; align-items: center; gap: 6px; color: #64748b; font-weight: 500; font-size: 0.74rem; margin-top: 4px; white-space: nowrap; }
+        .periodo-cell i { color: #94a3b8; font-size: 0.78rem; }
         .periodo-cell.sin-fecha { color: #94a3b8; font-weight: 500; font-style: italic; }
 
         .btn-gestionar { background: #eff6ff; color: var(--primary); font-weight: 700; font-size: 0.8rem; border: none; padding: 8px 16px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: 0.2s; }
         .btn-gestionar:hover { background: var(--primary); color: white; }
 
+        .badge-pendiente-main { background:#f1f5f9; color:#475569; }
+        .badge-cancelado-main { background:#fef2f2; color:#b91c1c; }
+        .badge-culminada-main { background:#ecfdf5; color:#047857; }
+        .badge-conforme-main { background:#eff6ff; color:#1d4ed8; }
         .badge-estado { display: inline-block; padding: 5px 12px; border-radius: 30px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
         .badge-enviado { background: #eff6ff; color: #1d4ed8; }
         .badge-aceptado { background: #f0fdf4; color: #15803d; }
@@ -64,7 +123,7 @@
         .badge-completado { background: #dcfce7; color: #166534; }
         .badge-default { background: #f1f5f9; color: #475569; }
         .badge-sabado { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 30px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; background: #fffbeb; color: #b45309; margin-left: 6px; }
-        .badge-culminada { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 30px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; background: #dcfce7; color: #166534; margin-left: 6px; }
+        .badge-culminada { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 30px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; background: #ecfdf5; color: #047857; margin-left: 6px; }
 
         /* paginación */
         .pagination-bar { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-top: 1px solid var(--gray-border); flex-wrap: wrap; gap: 12px; }
@@ -120,6 +179,57 @@
                     <p>Monitorea los horarios, proporciona los enlaces de acceso y registra la asistencia de las sesiones.</p>
                 </div>
 
+                <div id="barraVista" style="display:none; margin-bottom:16px;">
+                    <div class="vista-switch">
+                        <button type="button" id="vsBandeja" onclick="cambiarVista(true)"><i class="fa-solid fa-clipboard-check"></i> Conformidad</button>
+                        <button type="button" id="vsTabla" onclick="cambiarVista(false)"><i class="fa-solid fa-table-list"></i> Todas las clases</button>
+                    </div>
+                </div>
+
+                <div id="vistaBandeja" style="display:none">
+                    <div class="bj-hero">
+                        <div class="big" id="bjPend">0</div>
+                        <div class="tx"><b>cursos esperan tu conformidad</b><p>Al darla, el docente recibe el aviso de pago.</p></div>
+                        <div><span class="bj-chip" id="bjCurso">0 en curso</span><span class="bj-chip" id="bjOk">0 con conformidad</span></div>
+                    </div>
+                    <div class="bj-tabs">
+                        <button class="bj-tab warn on" data-t="pend" onclick="bjTab('pend')">Por dar conformidad<i id="bjTp">0</i></button>
+                        <button class="bj-tab" data-t="curso" onclick="bjTab('curso')">En curso<i id="bjTc">0</i></button>
+                        <button class="bj-tab" data-t="ok" onclick="bjTab('ok')">Con conformidad<i id="bjTo">0</i></button>
+                    </div>
+                    <div class="filter-card">
+                        <div class="row g-3">
+                            <div class="col-md-6 col-xl-4">
+                                <label class="form-label fw-600 text-muted small">Buscar por Docente o Curso</label>
+                                <input type="text" id="bjBuscar" class="form-control" placeholder="Ej: Nombre o Contabilidad..." oninput="bjPagina=1; renderBandeja()">
+                            </div>
+                            <div class="col-md-6 col-xl-4">
+                                <label class="form-label fw-600 text-muted small">Programa</label>
+                                <select id="bjPrograma" class="form-select" onchange="bjPagina=1; renderBandeja()">
+                                    <option value="">Todos los programas</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-xl-2">
+                                <label class="form-label fw-600 text-muted small">Inicio desde</label>
+                                <input type="date" id="bjDesde" class="form-control" onchange="bjPagina=1; renderBandeja()">
+                            </div>
+                            <div class="col-6 col-xl-2">
+                                <label class="form-label fw-600 text-muted small">Fin hasta</label>
+                                <input type="date" id="bjHasta" class="form-control" onchange="bjPagina=1; renderBandeja()">
+                            </div>
+                        </div>
+                        <div class="filter-row-2">
+                            <button type="button" class="btn-limpiar-filtros" onclick="bjLimpiar()">
+                                <i class="fa-solid fa-filter-circle-xmark"></i> Limpiar filtros
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="bjLista"></div>
+                    <div class="bj-pager" id="bjPager"></div>
+                </div>
+
+                <div id="vistaTabla">
                 <div class="kpi-strip" id="kpiStrip">
                     <div class="kpi-card kpi-curso">
                         <div class="kpi-icon"><i class="fa-solid fa-chalkboard-user"></i></div>
@@ -128,6 +238,10 @@
                     <div class="kpi-card kpi-iniciar">
                         <div class="kpi-icon"><i class="fa-regular fa-clock"></i></div>
                         <div><div class="kpi-number" id="kpiPorIniciar">—</div><div class="kpi-label">Por Iniciar</div></div>
+                    </div>
+                    <div class="kpi-card kpi-conformar" style="cursor:pointer;" onclick="document.getElementById('filtroDictado').value='por_conformidad'; aplicarFiltros();">
+                        <div class="kpi-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+                        <div><div class="kpi-number" id="kpiPorConformar">—</div><div class="kpi-label">Por dar conformidad</div></div>
                     </div>
                     <div class="kpi-card kpi-culminada">
                         <div class="kpi-icon"><i class="fa-solid fa-flag-checkered"></i></div>
@@ -142,9 +256,9 @@
                             <input type="text" id="searchInput" class="form-control" placeholder="Ej: Nombre o Contabilidad..." oninput="aplicarFiltros()">
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label fw-600 text-muted small">Estado</label>
+                            <label class="form-label fw-600 text-muted small">Estado de la clase</label>
                             <select id="filtroEstado" class="form-select" onchange="aplicarFiltros()">
-                                <option value="">Todos los estados</option>
+                                <option value="">Todos</option>
                             </select>
                         </div>
                         <div class="col-md-2">
@@ -159,6 +273,8 @@
                                 <option value="">Todas</option>
                                 <option value="culminadas">Culminadas</option>
                                 <option value="en_curso">En curso</option>
+                                <option value="por_conformidad">Por dar conformidad</option>
+                                <option value="conformes">Con conformidad</option>
                                 <option value="sabado">Con sábado por confirmar</option>
                             </select>
                         </div>
@@ -184,9 +300,9 @@
                         <thead>
                             <tr>
                                 <th class="sortable" onclick="ordenarPor('nombreDocente')" id="th-docente">DOCENTE <i class="fa-solid fa-sort"></i></th>
-                                <th>CURSO / PROGRAMA</th>
-                                <th class="sortable" onclick="ordenarPor('fechaInicio')" id="th-periodo">PERIODO DE CLASES <i class="fa-solid fa-sort"></i></th>
-                                <th>ESTADO</th>
+                                <th class="sortable" onclick="ordenarPor('fechaInicio')" id="th-periodo" title="Ordenar por fecha de inicio">CURSO / PROGRAMA / PERIODO <i class="fa-solid fa-sort"></i></th>
+                                <th>AVANCE</th>
+                                <th>ESTADO DE LA CLASE</th>
                                 <th>ACCIÓN</th>
                             </tr>
                         </thead>
@@ -196,6 +312,7 @@
                     </table>
                     <div class="pagination-bar" id="paginationBar"></div>
                 </div>
+                </div><!-- /vistaTabla -->
             </div>
         </div>
     </main>
@@ -211,12 +328,167 @@
         let ordenAscendente = true;
 
         const esSoloLectura = localStorage.getItem('userRole') === 'E-learning';
+        const puedeDarConformidad = ['JEFE OSE BGU', 'ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA'].includes(String(localStorage.getItem('userRole') || '').toUpperCase());
+
+        // Vista simplificada "Conformidad": por defecto solo para Jefe OSE BGU (Marisol)
+        let vistaBandeja = String(localStorage.getItem('userRole') || '').toUpperCase() === 'JEFE OSE BGU';
+        let bjTabActual = 'pend';
+        let bjPagina = 1;
+        const BJ_POR_PAGINA = 10;
+
+        function aplicarVista() {
+            document.getElementById('vistaBandeja').style.display = vistaBandeja ? '' : 'none';
+            document.getElementById('vistaTabla').style.display = vistaBandeja ? 'none' : '';
+            const ph = document.querySelector('.page-header');
+            if (ph && puedeDarConformidad) {
+                ph.querySelector('h1').innerText = vistaBandeja ? 'Conformidad de dictados' : 'Gestión de Clases y Sesiones';
+                ph.querySelector('p').innerText = vistaBandeja ? 'Revisa los cursos culminados y da tu conformidad para que se proceda con el pago.' : 'Monitorea los horarios, proporciona los enlaces de acceso y registra la asistencia de las sesiones.';
+            }
+            const barra = document.getElementById('barraVista');
+            barra.style.display = puedeDarConformidad ? '' : 'none';
+            document.getElementById('vsBandeja').classList.toggle('on', vistaBandeja);
+            document.getElementById('vsTabla').classList.toggle('on', !vistaBandeja);
+        }
+        function cambiarVista(a) { vistaBandeja = (typeof a === 'boolean') ? a : !vistaBandeja; aplicarVista(); if (vistaBandeja) renderBandeja(); }
+        function bjTab(t) { bjTabActual = t; bjPagina = 1; document.querySelectorAll('.bj-tab').forEach(b => b.classList.toggle('on', b.dataset.t === t)); renderBandeja(); }
+
+        function fmtDMY(v) {
+            const m = String(v || '').match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+            if (!m) return formatFechaCorta(v) || String(v || '');
+            const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sept','oct','nov','dic'];
+            return `${m[1].padStart(2, '0')} ${meses[+m[2] - 1] || ''} ${m[3]}`;
+        }
+        function bjIrPagina(n) { bjPagina = n; renderBandeja(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+        function bjPintarPager(total, totalPag) {
+            const box = document.getElementById('bjPager');
+            const ini = (bjPagina - 1) * BJ_POR_PAGINA + 1, fin = Math.min(bjPagina * BJ_POR_PAGINA, total);
+            let nums = [];
+            for (let i = 1; i <= totalPag; i++) if (i === 1 || i === totalPag || Math.abs(i - bjPagina) <= 1) nums.push(i);
+            let btns = '', prev = 0;
+            nums.forEach(n => { if (prev && n - prev > 1) btns += '<span class="dots">…</span>'; btns += `<button type="button" class="${n === bjPagina ? 'act' : ''}" onclick="bjIrPagina(${n})">${n}</button>`; prev = n; });
+            box.innerHTML = `<span class="text-muted small">Mostrando ${ini}–${fin} de ${total}</span>` + (totalPag > 1
+                ? `<div class="pg"><button type="button" ${bjPagina === 1 ? 'disabled' : ''} onclick="bjIrPagina(${bjPagina - 1})"><i class="fa-solid fa-chevron-left"></i></button>${btns}<button type="button" ${bjPagina === totalPag ? 'disabled' : ''} onclick="bjIrPagina(${bjPagina + 1})"><i class="fa-solid fa-chevron-right"></i></button></div>` : '');
+        }
+        function bjLimpiar() {
+            ['bjBuscar', 'bjPrograma', 'bjDesde', 'bjHasta'].forEach(id => document.getElementById(id).value = '');
+            bjPagina = 1; renderBandeja();
+        }
+        function bjIniciales(n) { return obtenerIniciales(n); }
+        function renderBandeja() {
+            if (!puedeDarConformidad) return;
+            const pend = clasesGlobal.filter(i => !esCancelada(i) && i.fechaCulminacion && !i.fechaConformidad);
+            const ok = clasesGlobal.filter(i => !esCancelada(i) && i.fechaConformidad);
+            const curso = clasesGlobal.filter(i => !esCancelada(i) && !i.fechaCulminacion);
+            document.getElementById('bjPend').innerText = pend.length;
+            document.getElementById('bjCurso').innerText = curso.length + ' en curso';
+            document.getElementById('bjOk').innerText = ok.length + ' con conformidad';
+            document.getElementById('bjTp').innerText = pend.length; document.getElementById('bjTc').innerText = curso.length; document.getElementById('bjTo').innerText = ok.length;
+            const q = (document.getElementById('bjBuscar').value || '').toLowerCase().trim();
+            let lista = bjTabActual === 'pend' ? pend : bjTabActual === 'ok' ? ok : curso;
+            if (q) lista = lista.filter(i => (i.nombreDocente + ' ' + i.curso).toLowerCase().includes(q));
+
+            // programas disponibles (según todas las clases) y filtros de fecha
+            const selP = document.getElementById('bjPrograma');
+            const progs = [...new Set(clasesGlobal.map(c => c.programa).filter(Boolean))].sort();
+            if (selP.options.length - 1 !== progs.length) {
+                const v = selP.value;
+                selP.innerHTML = '<option value="">Todos los programas</option>' + progs.map(p => `<option value="${escH(p)}">${escH(p)}</option>`).join('');
+                selP.value = v;
+            }
+            if (selP.value) lista = lista.filter(i => i.programa === selP.value);
+            const dv = document.getElementById('bjDesde').value, hv = document.getElementById('bjHasta').value;
+            if (dv || hv) {
+                const d1 = dv ? new Date(dv + 'T00:00:00') : null, d2 = hv ? new Date(hv + 'T23:59:59') : null;
+                // Se compara solo el día (sin hora). Inicio desde: el curso empieza ese día o después. Fin hasta: el curso termina (fin programado) ese día o antes.
+                const ymd = v => { const d = v ? new Date(v) : null; return d && !isNaN(d) ? d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') : ''; };
+                lista = lista.filter(i => {
+                    const ini = ymd(i.fechaInicio), fin = ymd(i.fechaFin);
+                    if (dv && (!ini || ini < dv)) return false;
+                    if (hv && (!fin || fin > hv)) return false;
+                    return true;
+                });
+            }
+            const ts = v => { const d = v ? new Date(v) : null; return d && !isNaN(d) ? d.getTime() : 0; };
+            lista = lista.slice().sort((a, b) => bjTabActual === 'curso' ? ts(a.fechaFin) - ts(b.fechaFin) : String(b.fechaCulminacion).split('/').reverse().join('').localeCompare(String(a.fechaCulminacion).split('/').reverse().join('')));
+            const totalPag = Math.max(1, Math.ceil(lista.length / BJ_POR_PAGINA));
+            if (bjPagina > totalPag) bjPagina = totalPag;
+            const totalLista = lista.length;
+            lista = lista.slice((bjPagina - 1) * BJ_POR_PAGINA, bjPagina * BJ_POR_PAGINA);
+            if (!lista.length) { document.getElementById('bjPager').innerHTML = ''; document.getElementById('bjLista').innerHTML = `<div class="text-center text-muted py-5">${bjTabActual === 'pend' && !q ? '🎉 No tienes nada pendiente.' : 'Sin resultados.'}</div>`; return; }
+            document.getElementById('bjLista').innerHTML = lista.map(inv => {
+                const tot = Number(inv.sesionesTotal) || 0, h = Number(inv.sesionesRealizadas) || 0, pct = tot ? Math.round(h * 100 / tot) : 0;
+                const col = (tot && h >= tot) ? '#1fa463' : '#93c5fd';
+                const ring = `<div class="bj-ring" style="background:conic-gradient(${col} ${pct}%,#e2e8f0 0)"><span>${tot ? h + '/' + tot : '—'}</span></div>`;
+                const f = bjTabActual === 'curso' ? ['termina', formatFechaCorta(inv.fechaFin)] : bjTabActual === 'ok' ? ['conforme', fmtDMY(inv.fechaConformidad)] : ['culminó', fmtDMY(inv.fechaCulminacion)];
+                const der = bjTabActual === 'pend' ? `<button type="button" class="btn-conforme" onclick="darConformidad('${escH(inv.id)}')"><i class="fa-solid fa-circle-check"></i> Dar conformidad</button>`
+                    : bjTabActual === 'ok' ? `<span class="badge-conforme" style="margin:0"><i class="fa-solid fa-circle-check"></i> Conforme</span>`
+                    : '';
+                const ojo = `<a href="academica-detalle.html?invId=${escH(inv.id)}" class="bj-eye" title="Ver detalle de la clase" aria-label="Ver detalle de la clase"><i class="fa-regular fa-eye"></i></a>`;
+                return `<div class="bj-row"><div class="docente-avatar">${bjIniciales(inv.nombreDocente)}</div>
+                    <div class="bj-who"><b>${escH(inv.nombreDocente)}</b><span>${escH(inv.curso)} · ${escH(inv.programa)}</span>${formatPeriodo(inv.fechaInicio, inv.fechaFin) ? `<span class="bj-periodo"><i class="fa-regular fa-calendar"></i> Periodo: ${formatPeriodo(inv.fechaInicio, inv.fechaFin)}</span>` : ''}${inv.observacionConformidad && bjTabActual === 'ok' ? `<span class="bj-obs">“${escH(inv.observacionConformidad)}”</span>` : ''}</div>
+                    ${ring}<div class="bj-fecha"><b>${f[1] || '—'}</b>${f[0]}</div>${der}${ojo}</div>`;
+            }).join('');
+            bjPintarPager(totalLista, totalPag);
+        }
+
+        function escH(t) { return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+        function avanceHtml(inv) {
+            const tot = Number(inv.sesionesTotal) || 0, hechas = Number(inv.sesionesRealizadas) || 0;
+            if (!tot) return `<div class="avance-cell"><div class="avance-num text-muted" style="font-weight:600;font-size:.8rem;">Sin sesiones</div>${inv.clasesPrevistas ? `<div class="small text-muted">${escH(inv.clasesPrevistas)} previstas</div>` : ''}</div>`;
+            const pct = Math.round(hechas * 100 / tot);
+            return `<div class="avance-cell"><div class="avance-num">${hechas} <small>de ${tot} sesiones</small></div><div class="avance-bar ${hechas >= tot ? 'completo' : ''}"><span style="width:${pct}%"></span></div></div>`;
+        }
+
+        // Guarda y restaura la posición de scroll (el cuadro modal no debe mover la página)
+        function guardarScroll() {
+            const mw = document.querySelector('.main-wrapper');
+            const pos = { y: window.scrollY, mw: mw ? mw.scrollTop : 0 };
+            return () => { window.scrollTo(0, pos.y); if (mw) mw.scrollTop = pos.mw; };
+        }
+
+        async function darConformidad(id) {
+            const inv = clasesGlobal.find(c => String(c.id) === String(id));
+            if (!inv) return;
+            const restaurarScroll = guardarScroll();
+            const r = await Swal.fire({
+                title: 'Conformidad del dictado',
+                html: `<div style="text-align:left;font-size:.9rem;">
+                    <div><b>${escH(inv.nombreDocente)}</b></div>
+                    <div class="text-muted">${escH(inv.curso)}</div>
+                    <div style="margin:8px 0 12px;">Sesiones: <b>${inv.sesionesRealizadas} de ${inv.sesionesTotal}</b> realizadas</div>
+                    <label style="font-weight:600;font-size:.8rem;">Acotación sobre el dictado (opcional, uso interno)</label>
+                    <textarea id="swObsConf" class="swal2-textarea" style="margin:6px 0 0;width:100%;" placeholder="Ej: Dictado sin observaciones / se atrasó una sesión..."></textarea>
+                    <div style="margin-top:12px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 12px;font-size:.82rem;color:#92400e;">Al confirmar, <b>se enviará al docente el correo</b> avisando que se procederá con su pago.</div>
+                </div>`,
+                showCancelButton: true, confirmButtonText: 'Dar conformidad y notificar', cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#34b27b', reverseButtons: true, focusConfirm: false, heightAuto: false, scrollbarPadding: false, returnFocus: false,
+                didOpen: () => { restaurarScroll(); requestAnimationFrame(restaurarScroll); },
+                didClose: () => { restaurarScroll(); requestAnimationFrame(restaurarScroll); },
+                preConfirm: () => (document.getElementById('swObsConf').value || '').trim()
+            });
+            if (!r.isConfirmed) return;
+            Swal.fire({ title: 'Registrando...', heightAuto: false, scrollbarPadding: false, allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({
+                    action: 'set_conformidad_dictado', idInvitacion: id, observacion: r.value || '',
+                    rol: localStorage.getItem('userRole'), nombreUsuario: localStorage.getItem('userName')
+                }) }).then(x => x.json());
+                if (res.status !== 'success') { Swal.fire({ title: 'No se pudo', text: res.message || 'Intenta de nuevo.', icon: 'error', heightAuto: false, scrollbarPadding: false }); return; }
+                inv.fechaConformidad = res.fechaConformidad; inv.observacionConformidad = r.value || '';
+                inv.conformidadPor = localStorage.getItem('userName') || '';
+                try { localStorage.setItem('cache_get_all_invitations_global_global', JSON.stringify(clasesGlobal)); } catch (e) {}
+                renderKPIs(); aplicarFiltros();
+                Swal.fire({ heightAuto: false, scrollbarPadding: false, icon: 'success', title: 'Conformidad registrada', text: res.correoEnviado ? 'Ya se notificó al docente sobre su pago.' : 'Se registró, pero no se pudo enviar el correo al docente (¿sin correo registrado?).', confirmButtonColor: '#2563eb' });
+            } catch (e) { Swal.fire({ title: 'Error de conexión', text: 'Intenta de nuevo.', icon: 'error', heightAuto: false, scrollbarPadding: false }); }
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             const name = localStorage.getItem('userName') || "Usuario";
             document.getElementById('userName').innerText = name;
             document.getElementById('userInitial').innerText = name.trim().substring(0, 2).toUpperCase();
 
+            aplicarVista();
             const rolActual = localStorage.getItem('userRole');
             document.getElementById('userRoleLabel').innerText = rolActual === 'E-learning' ? 'E-learning (solo lectura)' : (rolActual || 'Usuario');
             if (rolActual === 'Jefe OSE BGU' || rolActual === 'Administrador') {
@@ -262,17 +534,25 @@
             return mismoAnio ? `${iniTxt} – ${finTxt}` : `${dIni.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).replace('.', '')} – ${finTxt}`;
         }
 
-        function badgeEstado(estadoRaw) {
-            if (String(estadoRaw || '').trim().toLowerCase() === 'pendiente aprobación sábado') estadoRaw = 'Aceptado'; // estado ya sin uso
-            const e = (estadoRaw || '').toLowerCase().trim();
-            let clase = 'badge-default';
-            if (e === 'enviado') clase = 'badge-enviado';
-            else if (e === 'aceptado' || e === 'respondido') clase = 'badge-aceptado';
-            else if (e === 'documentos generados') clase = 'badge-docs';
-            else if (e.includes('pendiente firma')) clase = 'badge-pendiente-firma';
-            else if (e.includes('firmado')) clase = 'badge-firmado';
-            else if (e === 'completado' || e === 'formalizado') clase = 'badge-completado';
-            return `<span class="badge-estado ${clase}">${estadoRaw}</span>`;
+        function esCancelada(inv) { return String(inv.estado || '').trim().toLowerCase() === 'cancelado'; }
+
+        // Estado SOLO DE VISTA para asesoras y Marisol (no toca el estado real de la invitación en la hoja):
+        // Pendiente = enviada y el docente aún no la acepta · Aceptada = el docente ya aceptó (cualquier etapa posterior)
+        // Culminada = el dictado terminó · Conforme = Marisol ya dio su conformidad
+        function estadoVista(inv) {
+            if (String(inv.estado || '').trim().toLowerCase() === 'cancelado') return 'Cancelado';
+            if (inv.fechaConformidad) return 'Conforme';
+            if (inv.fechaCulminacion) return 'Culminada';
+            const e = String(inv.estado || '').trim().toLowerCase();
+            if (!e || e === 'enviado' || e === 'pendiente') return 'Esperando al docente';
+            return 'Aceptada';
+        }
+
+        function badgeEstado(inv) {
+            const v = estadoVista(inv);
+            const clase = { 'Esperando al docente': 'badge-pendiente-main', 'Aceptada': 'badge-aceptado', 'Culminada': 'badge-culminada-main', 'Conforme': 'badge-conforme-main', 'Cancelado': 'badge-cancelado-main' }[v];
+            const ayuda = { 'Esperando al docente': 'Invitación enviada; el docente aún no la acepta', 'Aceptada': 'El docente aceptó la invitación', 'Culminada': 'El dictado ya terminó', 'Conforme': 'Dictado con conformidad de OSE', 'Cancelado': 'La invitación fue cancelada' }[v];
+            return `<span class="badge-estado ${clase}" title="${ayuda}">${v}</span>`;
         }
 
         async function cargarDatosOptimizadosAdmin(actionName, payload, callbackRenderizado) {
@@ -315,7 +595,7 @@
                     data.forEach(inv => { if (String(inv.estado || '').trim().toLowerCase() === 'pendiente aprobación sábado') inv.estado = 'Aceptado'; });
                     clasesGlobal = data.filter(inv => {
                         const est = (inv.estado || '').toLowerCase();
-                        return est !== 'guardado' && est !== 'cancelado';
+                        return est !== 'guardado';
                     });
                     poblarFiltros();
                     aplicarFiltros();
@@ -329,6 +609,7 @@
 
             let enCurso = 0, porIniciar = 0, culminadas = 0;
             clasesGlobal.forEach(inv => {
+                if (esCancelada(inv)) return;
                 if (inv.fechaCulminacion) {
                     culminadas++;
                     return; // una clase culminada no cuenta como "por iniciar"
@@ -341,12 +622,14 @@
             document.getElementById('kpiEnCurso').innerText = enCurso;
             document.getElementById('kpiPorIniciar').innerText = porIniciar;
             document.getElementById('kpiCulminadas').innerText = culminadas;
+            document.getElementById('kpiPorConformar').innerText = clasesGlobal.filter(i => !esCancelada(i) && i.fechaCulminacion && !i.fechaConformidad).length;
+            renderBandeja();
         }
 
         function poblarFiltros() {
             const selEstado = document.getElementById('filtroEstado');
-            selEstado.innerHTML = '<option value="">Todos los estados</option>';
-            const estadosUnicos = [...new Set(clasesGlobal.map(c => c.estado))].sort();
+            selEstado.innerHTML = '<option value="">Todos</option>';
+            const estadosUnicos = ['Esperando al docente', 'Aceptada', 'Culminada', 'Conforme', 'Cancelado'];
             estadosUnicos.forEach(est => selEstado.insertAdjacentHTML('beforeend', `<option value="${est}">${est}</option>`));
 
             const selPrograma = document.getElementById('filtroPrograma');
@@ -369,13 +652,15 @@
 
             clasesFiltradas = clasesGlobal.filter(inv => {
                 const matchTexto = !busqueda || (inv.nombreDocente + ' ' + inv.curso).toLowerCase().includes(busqueda);
-                const matchEstado = !estado || inv.estado === estado;
+                const matchEstado = !estado || estadoVista(inv) === estado;
                 const matchPrograma = !programa || inv.programa === programa;
                 // fechaCulminacion viene del backend; vacío = en curso, con fecha = culminada
-                const matchDictado = !dictado
-                    || (dictado === 'culminadas' && !!inv.fechaCulminacion)
+                const matchDictado = !dictado || (!esCancelada(inv) && (
+                    (dictado === 'culminadas' && !!inv.fechaCulminacion)
                     || (dictado === 'en_curso' && !inv.fechaCulminacion)
-                    || (dictado === 'sabado' && !!inv.sabadoPorConfirmar);
+                    || (dictado === 'por_conformidad' && !!inv.fechaCulminacion && !inv.fechaConformidad)
+                    || (dictado === 'conformes' && !!inv.fechaConformidad)
+                    || (dictado === 'sabado' && !!inv.sabadoPorConfirmar)));
 
                 // NUEVO: si hay rango elegido, la fecha de inicio de la clase debe caer dentro
                 let matchFecha = true;
@@ -476,7 +761,7 @@
             pageItems.forEach(inv => {
                 const periodoTxt = formatPeriodo(inv.fechaInicio, inv.fechaFin);
                 const periodoHtml = periodoTxt
-                    ? `<div class="periodo-cell"><i class="fa-regular fa-calendar"></i> ${periodoTxt}</div>`
+                    ? `<div class="periodo-cell"><i class="fa-regular fa-calendar"></i> Periodo: ${periodoTxt}</div>`
                     : `<div class="periodo-cell sin-fecha"><i class="fa-regular fa-calendar"></i> Sin fecha</div>`;
 
                 html += `<tr>
@@ -486,10 +771,10 @@
                             <div class="fw-bold text-dark">${inv.nombreDocente}</div>
                         </div>
                     </td>
-                    <td><div class="fw-bold text-primary-dark">${inv.curso}</div><div class="small text-muted">${inv.programa}</div></td>
-                    <td>${periodoHtml}</td>
-                    <td>${badgeEstado(inv.estado)}${inv.sabadoPorConfirmar ? `<span class="badge-sabado" title="El docente eligió sábado y falta confirmarlo. Ábrelo en Gestionar Clase."><i class="fa-solid fa-calendar-day"></i> Sábado por confirmar</span>` : ''}${inv.fechaCulminacion ? `<span class="badge-culminada" title="Culminada el ${formatFechaCorta(inv.fechaCulminacion) || inv.fechaCulminacion}"><i class="fa-solid fa-flag-checkered"></i> Culminada</span>` : ''}</td>
-                    <td><a href="academica-detalle.html?invId=${inv.id}" class="btn-gestionar"><i class="${iconoBoton}"></i> ${textoBoton}</a></td>
+                    <td><div class="fw-bold text-primary-dark">${inv.curso}</div><div class="small text-muted">${inv.programa}</div>${periodoHtml}</td>
+                    <td>${avanceHtml(inv)}</td>
+                    <td>${badgeEstado(inv)}${inv.sabadoPorConfirmar ? `<span class="badge-sabado" title="El docente eligió sábado y falta confirmarlo. Ábrelo en Gestionar Clase."><i class="fa-solid fa-calendar-day"></i> Sábado por confirmar</span>` : ''}${(inv.fechaCulminacion && !inv.fechaConformidad) ? `<span class="badge-porconformar"><i class="fa-regular fa-hourglass-half"></i> Falta conformidad</span>` : ''}</td>
+                    <td><div class="acciones-cell"><a href="academica-detalle.html?invId=${inv.id}" class="btn-gestionar"><i class="${iconoBoton}"></i> ${textoBoton}</a>${(puedeDarConformidad && inv.fechaCulminacion && !inv.fechaConformidad) ? `<button type="button" class="btn-conforme" onclick="darConformidad('${escH(inv.id)}')"><i class="fa-solid fa-circle-check"></i> Dar conformidad</button>` : ''}</div></td>
                 </tr>`;
             });
             tbody.innerHTML = html;

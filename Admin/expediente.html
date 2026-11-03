@@ -2388,6 +2388,43 @@
             if (cursoPrevio) selC.value = cursoPrevio;
         }
 
+        // ===== Validación del rango de fechas de clases (el fin no puede ser anterior al inicio) =====
+        function configurarRangoFechas(idIni, idFin) {
+            const ini = document.getElementById(idIni), fin = document.getElementById(idFin);
+            if (!ini || !fin) return;
+            const sync = () => {
+                fin.min = ini.value || '';
+                const malo = !!(ini.value && fin.value && fin.value < ini.value);
+                fin.classList.toggle('is-invalid', malo);
+                ini.classList.toggle('is-invalid', false);
+                return malo;
+            };
+            const corregir = (cual) => {
+                if (sync()) {
+                    fin.value = '';
+                    fin.classList.remove('is-invalid');
+                    showToast(cual === 'ini' ? 'El inicio quedó después del fin. Elige de nuevo la fecha de fin.' : 'El fin de clases no puede ser anterior al inicio. Elige una fecha igual o posterior.', 'danger');
+                }
+                fin.min = ini.value || '';
+            };
+            ini.addEventListener('change', () => corregir('ini'));
+            fin.addEventListener('change', () => corregir('fin'));
+            ['focus', 'click'].forEach(ev => fin.addEventListener(ev, () => { fin.min = ini.value || ''; }));
+            sync();
+        }
+        function validarRangoFechas(idIni, idFin) {
+            const ini = document.getElementById(idIni), fin = document.getElementById(idFin);
+            if (ini.value && fin.value && fin.value < ini.value) {
+                fin.classList.add('is-invalid');
+                showToast('La fecha de fin de clases no puede ser anterior a la de inicio.', 'danger');
+                fin.focus();
+                return false;
+            }
+            return true;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => configurarRangoFechas('editFechaInicio', 'editFechaFin'));
+
         async function guardarEdicionInvitacion() {
             if (leerCantidadClases('editCantClases') === null) { showToast('La cantidad de sesiones debe ser un número entero (ej: 4).', 'danger'); return; }
             const selP = document.getElementById('editSelPrograma');
@@ -2397,6 +2434,7 @@
                 showToast("Completa Programa, Curso y Fecha de Inicio.", "danger");
                 return;
             }
+            if (!validarRangoFechas('editFechaInicio', 'editFechaFin')) return;
 
             const btnGuardar = document.getElementById('btnGuardarEdicionInv');
             btnGuardar.disabled = true;
@@ -2437,6 +2475,7 @@
         }
 
         async function enviarCorreoActualizacionInvitacion() {
+            if (!validarRangoFechas('editFechaInicio', 'editFechaFin')) return;
             const btn = document.getElementById('btnEnviarCorreoActualizacion');
             btn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-paper-plane fa-bounce"></i> Enviando...';

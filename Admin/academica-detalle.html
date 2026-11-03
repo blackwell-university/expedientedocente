@@ -100,6 +100,18 @@
         .material-categoria { background: #eef2ff; color: #4338ca; font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; }
         .btn-gestionar { background: #eff6ff; color: var(--primary); font-weight: 700; font-size: 0.8rem; border: none; padding: 8px 16px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: 0.2s; white-space: nowrap; }
         .btn-gestionar:hover { background: var(--primary); color: white; }
+        /* Enlaces de la clase: título | enlace | acción, siempre alineados en una sola línea */
+        .link-row { display: grid; grid-template-columns: minmax(150px, 220px) minmax(0, 1fr) auto; gap: 10px 12px; align-items: center; padding: 12px 14px; background: #f8fafc; border: 1px solid var(--gray-border); border-radius: 12px; }
+        .link-row .link-fecha { grid-column: 1 / -1; }
+        .link-row .form-control { background: #fff; }
+        .link-row .link-accion { display: flex; justify-content: flex-end; min-width: 36px; }
+        .link-row .btn-material-ver { height: 38px; }
+        .estado-conformidad { margin-top: 10px; border-radius: 10px; padding: 10px 16px; font-size: 0.82rem; font-weight: 600; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; width: fit-content; max-width: 100%; }
+        .estado-conformidad.ok { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+        .estado-conformidad.pend { background: #fffbeb; border: 1px solid #fde68a; color: #b45309; }
+        .estado-conformidad .obs { flex-basis: 100%; font-weight: 500; font-style: italic; color: #475569; }
+        .btn-dar-conf { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-weight: 700; font-size: 0.78rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; transition: .2s; }
+        .btn-dar-conf:hover { background: #d1fae5; }
         .btn-material-ver { background: #f8fafc; color: var(--text-main); border: 1px solid var(--gray-border); font-weight: 700; font-size: 0.8rem; padding: 8px 16px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: 0.2s; white-space: nowrap; }
         .btn-material-ver:hover { background: #f1f5f9; color: var(--text-main); }
         /* NUEVO: botón "Abrir" -- reemplaza el comportamiento que antes tenía "Descargar"
@@ -143,6 +155,19 @@
         .dd-estado-box { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; background: #f8fafc; border: 1px solid var(--gray-border); border-radius: 14px; padding: 14px 18px; font-size: 0.85rem; color: var(--text-main); }
         .dd-estado-box .dd-estado-link { font-weight: 700; color: var(--primary); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
         .dd-estado-box .dd-estado-link:hover { text-decoration: underline; }
+        .dd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px 18px; }
+        .dd-grid .dd-item .info-label { margin-bottom: 3px; display: block; }
+        .dd-grid .dd-valor { font-size: 0.92rem; font-weight: 600; color: var(--text-main); word-break: break-word; }
+        .dd-grid .dd-valor.falta { color: #b91c1c; font-style: italic; font-weight: 500; font-size: 0.84rem; }
+        .dd-pill { font-size: 0.74rem; font-weight: 700; padding: 5px 12px; border-radius: 30px; }
+        .dd-pill.ok { background: #ecfdf5; color: #047857; }
+        .dd-pill.falta { background: #fef2f2; color: #b91c1c; }
+        .btn-dd-editar { background: #eff6ff; color: var(--primary); border: 1px solid #bfdbfe; font-weight: 700; font-size: 0.82rem; padding: 8px 16px; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px; transition: .2s; }
+        .btn-dd-editar:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .btn-dd-cancelar { background: #f1f5f9; color: #475569; border: none; font-weight: 700; font-size: 0.82rem; padding: 9px 18px; border-radius: 10px; }
+        .btn-dd-cancelar:hover { background: #e2e8f0; }
+        .dd-aviso-info { display: flex; gap: 10px; align-items: flex-start; background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; font-size: 0.82rem; line-height: 1.5; padding: 12px 16px; border-radius: 12px; }
+        .dd-aviso-info i { margin-top: 3px; }
         .dd-aviso-firmado { display: flex; align-items: center; gap: 10px; background: #fffbeb; border: 1px solid #fde68a; color: #b45309; font-size: 0.83rem; font-weight: 600; padding: 12px 16px; border-radius: 12px; }
         .dd-resultado { border-radius: 14px; padding: 16px 18px; font-size: 0.83rem; border: 1px solid var(--gray-border); background: #fff; }
         .dd-resultado .dd-res-title { font-weight: 700; font-size: 0.8rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
@@ -183,7 +208,8 @@
             .btn-save-local { justify-content: center; width: 100%; }
 
             /* NUEVO: el botón de eliminar enlace no se ve bien centrado solo en su columna al apilarse */
-            .link-row .col-md-1 { justify-content: flex-start !important; margin-top: -4px; }
+            .link-row { grid-template-columns: 1fr auto; }
+            .link-row .inp-titulo { grid-column: 1 / -1; }
 
             .session-card { padding: 16px; }
             .session-badge-num { font-size: 0.68rem; }
@@ -257,6 +283,7 @@
                     <div id="avisoCulminada" style="display:none; margin-top:10px; background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; font-size:0.82rem; font-weight:600; padding:10px 16px; border-radius:10px; align-items:center; gap:8px; width:fit-content;">
                         <i class="fa-solid fa-circle-check"></i> <span id="txtAvisoCulminada"></span>
                     </div>
+                    <div id="estadoConformidad" style="display:none;"></div>
                 </div>
 
                 <div class="row g-4">
@@ -374,33 +401,37 @@
 
                             <!-- NUEVO: pestaña "Información Bancaria" — solo Jefe OSE BGU / Administrador -->
                             <div class="tab-pane fade" id="tab-bancaria" role="tabpanel">
+
+                                <!-- Documento Direct Deposit -->
                                 <div class="form-card">
                                     <div class="form-card-header">
                                         <span class="section-badge m-0" style="background:#fef2f2; color:#b91c1c;"><i class="fa-solid fa-file-invoice-dollar me-2"></i>Documento Direct Deposit</span>
-                                        <button type="button" class="btn-save-local" id="btnActualizarDD" onclick="actualizarDirectDeposit()" style="display:none;">
-                                            <i class="fa-solid fa-arrows-rotate"></i> Actualizar Documento
-                                        </button>
                                     </div>
-
-                                    <!-- Estado del documento actual — esto se queda visible -->
                                     <div id="ddEstadoBox" class="dd-estado-box mb-3">
                                         <i class="fa-solid fa-spinner fa-spin"></i> Buscando documento...
                                     </div>
+                                    <p class="text-muted small mb-0">Revisa el documento con el enlace de arriba. Si ya tenía datos y hay que corregir algo, edítalo directamente ahí. Para regenerarlo con los datos actuales del docente, pídeselo a la Ejecutiva Académica.</p>
+                                </div>
 
-                                    <p class="text-muted small mb-0">Revisa el documento con el enlace de arriba. Si falta algún dato o hay que corregir algo, edítalo directamente ahí, en el propio documento.</p>
+                                <!-- Datos de pago del docente: ver y editar -->
+                                <div class="form-card">
+                                    <div class="form-card-header">
+                                        <span class="section-badge m-0" style="background:#eff6ff; color:#1d4ed8;"><i class="fa-solid fa-building-columns me-2"></i>Datos de pago del docente</span>
+                                        <span class="dd-pill" id="ddPillCompleto">-</span>
+                                    </div>
+                                    <p class="text-muted small mb-3">Son los datos del docente y son los mismos para todos sus cursos.</p>
+
+                                    <div id="ddDatosVista">
+                                        <div class="dd-grid" id="ddGridVista"></div>
+                                        <div class="text-end mt-3">
+                                            <button type="button" class="btn-dd-editar" id="btnEditarDD" onclick="abrirEdicionDD()"><i class="fa-solid fa-pen"></i> Editar datos</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Resultado de la última actualización -->
+                                    <div id="ddResultado" class="dd-resultado mt-3" style="display:none;"></div>
 
                                     <div id="dd-edicion-temporal" style="display:none;">
-                                        <p class="text-muted small mb-3 mt-3">Estos datos son del docente (son los mismos en todos sus cursos). Al actualizar, se rellenan en el documento solo los campos que aún muestran <code>{'{{...}}'}</code> sin llenar — lo que ya tenía un valor no se toca.</p>
-
-                                        <!-- Aviso si el documento ya está firmado -->
-                                        <div id="ddAvisoFirmado" class="dd-aviso-firmado mb-4" style="display:none;">
-                                            <i class="fa-solid fa-triangle-exclamation"></i>
-                                            Este documento ya fue firmado. Solo se completarán los campos que sigan vacíos; lo ya firmado no se modifica.
-                                        </div>
-
-                                        <!-- Resultado de la última actualización -->
-                                        <div id="ddResultado" class="dd-resultado mb-4" style="display:none;"></div>
-
                                         <div class="row g-3">
                                             <div class="col-md-6">
                                                 <label class="info-label">Banco</label>
@@ -408,14 +439,18 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="info-label">Moneda</label>
-                                                <input type="text" class="form-control" id="ddMoneda" placeholder="Ej. USD / PEN">
+                                                <select class="form-select" id="ddMoneda">
+                                                    <option value="">Seleccione...</option>
+                                                    <option value="Dólares">Dólares (USD)</option>
+                                                    <option value="Soles">Soles (PEN)</option>
+                                                </select>
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="info-label">Tipo de Cuenta</label>
                                                 <select class="form-select" id="ddTipoCuenta">
                                                     <option value="">Seleccione...</option>
-                                                    <option value="Ahorros">Ahorros</option>
-                                                    <option value="Corriente">Corriente</option>
+                                                    <option value="Checking (Cuenta corriente)">Checking (Corriente)</option>
+                                                    <option value="Savings (Cuenta de Ahorro)">Savings (Ahorro)</option>
                                                 </select>
                                             </div>
                                             <div class="col-md-6">
@@ -428,12 +463,23 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="info-label">Tipo de Ruta</label>
-                                                <input type="text" class="form-control" id="ddTipoRuta" placeholder="Ej. Routing / ABA">
+                                                <select class="form-select" id="ddTipoRuta">
+                                                    <option value="">Seleccione el tipo...</option>
+                                                    <option value="Cuenta de EE. UU. (ACH)">Ruta EE.UU. (ABA/ACH)</option>
+                                                    <option value="Cuenta Europea (IBAN)">Europa (IBAN)</option>
+                                                    <option value="Cuenta Internacional (SWIFT)">Internacional (SWIFT/BIC)</option>
+                                                </select>
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="info-label">Código de Ruta</label>
                                                 <input type="text" class="form-control" id="ddCodigoRuta" placeholder="Código de ruta">
                                             </div>
+                                        </div>
+                                        <div class="d-flex justify-content-end gap-2 mt-4 flex-wrap">
+                                            <button type="button" class="btn-dd-cancelar" onclick="cerrarEdicionDD()">Cancelar</button>
+                                            <button type="button" class="btn-save-local" id="btnActualizarDD" onclick="actualizarDirectDeposit()">
+                                                <i class="fa-solid fa-floppy-disk"></i> Guardar datos
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -456,6 +502,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         let arrayEnlaces = [];
         let arraySesiones = [];
         let availableSlots = [];
+        let fechaConformidad = "", conformidadPor = "", observacionConformidad = "";
         let fechaCulminacion = "";   // NUEVO: vacío = clase en curso; con fecha = clase culminada (bloqueada)
 
         // El rol E-learning solo puede visualizar: no debe poder editar enlaces ni asistencias/reprogramaciones
@@ -463,6 +510,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         const esSoloLectura = rolActual === 'E-learning';
         const puedeCulminar = (rolActual === 'Asesora Academica' || rolActual === 'Jefe OSE BGU' || rolActual === 'Administrador' || rolActual === 'Administrativo' || rolActual === 'Ejecutiva Academica');
         const puedeReabrir = (rolActual === 'Jefe OSE BGU' || rolActual === 'Administrador');
+        const puedeDarConformidad = ['Jefe OSE BGU', 'Administrador', 'ADMIN', 'Ejecutiva Academica'].includes(rolActual);
         const puedeVerDirectDeposit = (rolActual === 'Jefe OSE BGU' || rolActual === 'Administrador');
 
         function edicionBloqueada() { return esSoloLectura || !!fechaCulminacion; }
@@ -605,6 +653,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     const doc = datos.docente;
 
                     fechaCulminacion = inv.fechaCulminacion || "";
+                    fechaConformidad = inv.fechaConformidad || ""; conformidadPor = inv.conformidadPor || ""; observacionConformidad = inv.observacionConformidad || "";
                     renderBannerSabados(inv.sabadosPorConfirmar || []);
 
                     document.getElementById('txtCursoNombre').innerText = inv.cursoNombre;
@@ -774,6 +823,29 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             return d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
         }
 
+        async function darConformidadDetalle() {
+            const r = await Swal.fire({
+                title: 'Conformidad del dictado',
+                html: `<div style="text-align:left;font-size:.9rem;">
+                    <label style="font-weight:600;font-size:.8rem;">Acotación sobre el dictado (opcional, uso interno)</label>
+                    <textarea id="swObsConf" class="swal2-textarea" style="margin:6px 0 0;width:100%;" placeholder="Ej: Dictado sin observaciones..."></textarea>
+                    <div style="margin-top:12px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 12px;font-size:.82rem;color:#92400e;">Al confirmar, <b>se enviará al docente el correo</b> avisando que se procederá con su pago.</div></div>`,
+                showCancelButton: true, confirmButtonText: 'Dar conformidad y notificar', cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#34b27b', reverseButtons: true, focusConfirm: false, heightAuto: false, scrollbarPadding: false, returnFocus: false,
+                preConfirm: () => (document.getElementById('swObsConf').value || '').trim()
+            });
+            if (!r.isConfirmed) return;
+            Swal.fire({ title: 'Registrando...', heightAuto: false, scrollbarPadding: false, allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'set_conformidad_dictado', idInvitacion: invId, observacion: r.value || '', rol: localStorage.getItem('userRole'), nombreUsuario: localStorage.getItem('userName') }) }).then(x => x.json());
+                if (res.status !== 'success') { Swal.fire({ title: 'No se pudo', text: res.message || 'Intenta de nuevo.', icon: 'error', heightAuto: false, scrollbarPadding: false }); return; }
+                fechaConformidad = res.fechaConformidad; conformidadPor = localStorage.getItem('userName') || ''; observacionConformidad = r.value || '';
+                try { localStorage.removeItem('cache_get_all_invitations_global_global'); localStorage.removeItem('cache_asesora_course_detail_' + invId); } catch (e) {}
+                actualizarZonaCulminacion();
+                Swal.fire({ icon: 'success', title: 'Conformidad registrada', text: res.correoEnviado ? 'Ya se notificó al docente sobre su pago.' : 'Se registró, pero no se pudo enviar el correo al docente.', confirmButtonColor: '#2563eb', heightAuto: false, scrollbarPadding: false });
+            } catch (e) { Swal.fire({ title: 'Error de conexión', text: 'Intenta de nuevo.', icon: 'error', heightAuto: false, scrollbarPadding: false }); }
+        }
+
         function actualizarZonaCulminacion() {
             const zona = document.getElementById('zonaCulminacion');
             const aviso = document.getElementById('avisoCulminada');
@@ -782,10 +854,17 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             if (fechaCulminacion) {
                 aviso.style.display = 'flex';
                 txtAviso.innerText = `Clase culminada el ${formatFechaCorta(fechaCulminacion)}`;
-                zona.innerHTML = puedeReabrir
+                zona.innerHTML = (puedeReabrir && !fechaConformidad)
                     ? `<button type="button" class="btn-reabrir" onclick="reabrirClase()"><i class="fa-solid fa-rotate-left"></i> Reabrir Clase</button>`
                     : '';
+                const box = document.getElementById('estadoConformidad');
+                const esc = t => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                box.style.display = 'block';
+                box.innerHTML = fechaConformidad
+                    ? `<div class="estado-conformidad ok"><i class="fa-solid fa-clipboard-check"></i><span>Conformidad de pagos dada el ${formatFechaCorta(fechaConformidad)}${conformidadPor ? ' por ' + esc(conformidadPor) : ''}</span>${observacionConformidad ? `<span class="obs">“${esc(observacionConformidad)}”</span>` : ''}</div>`
+                    : `<div class="estado-conformidad pend"><i class="fa-regular fa-hourglass-half"></i><span>Pendiente de la conformidad de pagos</span>${puedeDarConformidad ? `<button type="button" class="btn-dar-conf" onclick="darConformidadDetalle()"><i class="fa-solid fa-circle-check"></i> Dar conformidad</button>` : ''}</div>`;
             } else {
+                document.getElementById('estadoConformidad').style.display = 'none';
                 aviso.style.display = 'none';
                 // El botón de culminar ahora vive solo al final de "Asistencias" (recuadro verde), para que no haya dos
                 zona.innerHTML = '';
@@ -893,53 +972,97 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             });
         }
 
-        // NUEVO: pestaña "Información Bancaria" — estado del documento + formulario (solo Jefe OSE BGU / Administrador)
+        // Pestaña "Información Bancaria": estado del documento + datos de pago del docente (ver y editar). Solo Jefe OSE BGU / Administrador
+        const CAMPOS_DD = [
+            { key: 'banco', id: 'ddBanco', label: 'Banco' },
+            { key: 'moneda', id: 'ddMoneda', label: 'Moneda' },
+            { key: 'tipo_cuenta', id: 'ddTipoCuenta', label: 'Tipo de cuenta' },
+            { key: 'cuenta', id: 'ddCuenta', label: 'N° de cuenta' },
+            { key: 'cci', id: 'ddCci', label: 'CCI' },
+            { key: 'tipo_ruta', id: 'ddTipoRuta', label: 'Tipo de ruta' },
+            { key: 'codigo_ruta', id: 'ddCodigoRuta', label: 'Código de ruta' }
+        ];
+        let bancarioActual = {};
+
+        function escHDD(t) { return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+        function pintarVistaDD() {
+            const faltan = CAMPOS_DD.filter(c => !String(bancarioActual[c.key] || '').trim());
+            document.getElementById('ddGridVista').innerHTML = CAMPOS_DD.map(c => {
+                const v = String(bancarioActual[c.key] || '').trim();
+                return `<div class="dd-item"><span class="info-label">${c.label}</span><div class="dd-valor ${v ? '' : 'falta'}">${v ? escHDD(v) : 'Sin llenar'}</div></div>`;
+            }).join('');
+            const pill = document.getElementById('ddPillCompleto');
+            pill.textContent = faltan.length === 0 ? 'Completo' : `Faltan ${faltan.length}`;
+            pill.className = 'dd-pill ' + (faltan.length === 0 ? 'ok' : 'falta');
+        }
+
         function renderInfoBancaria(directDeposit, bancario) {
             const estadoBox = document.getElementById('ddEstadoBox');
-            const avisoFirmado = document.getElementById('ddAvisoFirmado');
             const url = directDeposit && directDeposit.url ? directDeposit.url : '';
             const estadoDoc = directDeposit && directDeposit.estado ? directDeposit.estado : '';
 
             if (url) {
                 estadoBox.innerHTML = `<span><i class="fa-solid fa-circle-check" style="color:#16a34a;"></i> Documento encontrado${estadoDoc ? ' · ' + estadoDoc : ''}</span>
                     <a href="${url}" target="_blank" class="dd-estado-link"><i class="fa-solid fa-arrow-up-right-from-square"></i> Ver documento actual</a>`;
-                avisoFirmado.style.display = estadoDoc.toLowerCase().includes('firmado') ? 'flex' : 'none';
+                
             } else {
                 estadoBox.innerHTML = `<span><i class="fa-regular fa-circle-question"></i> Este docente todavía no tiene un documento Direct Deposit generado para esta clase.</span>`;
-                avisoFirmado.style.display = 'none';
             }
 
-            const b = bancario || {};
-            document.getElementById('ddBanco').value = b.banco || '';
-            document.getElementById('ddMoneda').value = b.moneda || '';
-            document.getElementById('ddTipoCuenta').value = b.tipo_cuenta || '';
-            document.getElementById('ddCuenta').value = b.cuenta || '';
-            document.getElementById('ddCci').value = b.cci || '';
-            document.getElementById('ddTipoRuta').value = b.tipo_ruta || '';
-            document.getElementById('ddCodigoRuta').value = b.codigo_ruta || '';
-
-            document.getElementById('ddResultado').style.display = 'none';
+            bancarioActual = Object.assign({}, bancario || {});
+            pintarVistaDD();
         }
 
-        function actualizarDirectDeposit() {
+        function abrirEdicionDD() {
+            CAMPOS_DD.forEach(c => {
+                const el = document.getElementById(c.id);
+                const v = String(bancarioActual[c.key] || '').trim();
+                if (el.tagName === 'SELECT' && v && ![...el.options].some(o => o.value === v)) el.insertAdjacentHTML('beforeend', `<option value="${escHDD(v)}">${escHDD(v)}</option>`);
+                el.value = v;
+            });
+            document.getElementById('ddResultado').style.display = 'none';
+            document.getElementById('ddDatosVista').style.display = 'none';
+            document.getElementById('dd-edicion-temporal').style.display = 'block';
+        }
+
+        function cerrarEdicionDD() {
+            document.getElementById('dd-edicion-temporal').style.display = 'none';
+            document.getElementById('ddDatosVista').style.display = 'block';
+        }
+
+        async function actualizarDirectDeposit() {
             if (!puedeVerDirectDeposit) return;
 
             const payload = {
-                action: 'actualizar_direct_deposit',
+                action: 'actualizar_datos_pago_docente',
                 idInvitacion: invId,
+                rol: localStorage.getItem('userRole'),
+                nombreUsuario: localStorage.getItem('userName') || '',
                 banco: document.getElementById('ddBanco').value.trim(),
-                moneda: document.getElementById('ddMoneda').value.trim(),
+                moneda: document.getElementById('ddMoneda').value,
                 tipo_cuenta: document.getElementById('ddTipoCuenta').value,
                 cuenta: document.getElementById('ddCuenta').value.trim(),
                 cci: document.getElementById('ddCci').value.trim(),
-                tipo_ruta: document.getElementById('ddTipoRuta').value.trim(),
+                tipo_ruta: document.getElementById('ddTipoRuta').value,
                 codigo_ruta: document.getElementById('ddCodigoRuta').value.trim()
             };
+
+            const cambio = CAMPOS_DD.some(c => String(payload[c.key] || '') !== String(bancarioActual[c.key] || '').trim());
+            if (!cambio) { cerrarEdicionDD(); return; }
+
+            const ok = await Swal.fire({
+                icon: 'question', title: '¿Guardar los datos de pago?',
+                html: 'Se actualizarán los datos de pago del docente. El documento Direct Deposit no se modificará.',
+                showCancelButton: true, confirmButtonText: 'Sí, guardar', cancelButtonText: 'Revisar',
+                confirmButtonColor: '#2563eb', reverseButtons: true, heightAuto: false, scrollbarPadding: false
+            });
+            if (!ok.isConfirmed) return;
 
             const btn = document.getElementById('btnActualizarDD');
             const textoOriginal = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Actualizando...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
 
             fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) })
                 .then(res => res.json())
@@ -947,44 +1070,26 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     btn.disabled = false;
                     btn.innerHTML = textoOriginal;
                     if (json.status !== 'success') {
-                        Swal.fire('No se pudo actualizar', json.message || 'Inténtalo nuevamente.', 'error');
+                        Swal.fire({ title: 'No se pudo actualizar', text: json.message || 'Inténtalo nuevamente.', icon: 'error', heightAuto: false, scrollbarPadding: false });
                         return;
                     }
-                    mostrarResultadoDD(json);
+                    CAMPOS_DD.forEach(c => { bancarioActual[c.key] = payload[c.key]; });
+                    pintarVistaDD();
+                    cerrarEdicionDD();
+                    mostrarResultadoDD();
                     localStorage.removeItem(`cache_asesora_course_detail_${invId}`);
                 })
                 .catch(() => {
                     btn.disabled = false;
                     btn.innerHTML = textoOriginal;
-                    Swal.fire('Error de conexión', 'No se pudo conectar con el servidor.', 'error');
+                    Swal.fire({ title: 'Error de conexión', text: 'No se pudo conectar con el servidor.', icon: 'error', heightAuto: false, scrollbarPadding: false });
                 });
         }
 
-        function mostrarResultadoDD(json) {
+        function mostrarResultadoDD() {
             const box = document.getElementById('ddResultado');
-            const actualizados = json.actualizados || [];
-            const noActualizados = json.noActualizados || [];
-
-            if (!json.documentoEncontrado) {
-                box.innerHTML = `<div class="dd-res-title"><i class="fa-regular fa-circle-question"></i> Datos guardados</div>
-                    <p class="m-0">Se guardaron los datos del docente. Todavía no hay un documento Direct Deposit generado para esta clase, así que no había nada que actualizar en el texto.</p>`;
-                box.style.display = 'block';
-                return;
-            }
-
-            let html = '';
-            if (actualizados.length > 0) {
-                html += `<div class="dd-res-title dd-res-ok"><i class="fa-solid fa-circle-check"></i> Se actualizaron en el documento</div>
-                    <ul class="dd-res-list">${actualizados.map(c => `<li>${c}</li>`).join('')}</ul>`;
-            } else {
-                html += `<div class="dd-res-title dd-res-ok"><i class="fa-solid fa-circle-check"></i> Datos guardados</div>
-                    <p class="m-0">Se guardaron los datos del docente.</p>`;
-            }
-            if (noActualizados.length > 0) {
-                html += `<div class="dd-res-title dd-res-warn"><i class="fa-solid fa-triangle-exclamation"></i> No se tocaron en el documento (ya tenían un valor — corrígelos manualmente ahí si hace falta)</div>
-                    <ul class="dd-res-list">${noActualizados.map(c => `<li>${c}</li>`).join('')}</ul>`;
-            }
-            box.innerHTML = html;
+            box.innerHTML = `<div class="dd-res-title dd-res-ok"><i class="fa-solid fa-circle-check"></i> Datos guardados</div>
+                <p class="m-0">Se actualizaron los datos de pago del docente. El documento Direct Deposit no se modificó.</p>`;
             box.style.display = 'block';
         }
 
@@ -1009,18 +1114,13 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             const soloLecturaAttr = bloqueado ? 'disabled' : '';
             arrayEnlaces.forEach((enlace, idx) => {
                 html += `
-                <div class="row g-2 align-items-center link-row" data-index="${idx}">
-                    <div class="col-md-4">
-                        <input type="text" class="form-control inp-titulo" placeholder="Ej. Clase 1 - Zoom" value="${enlace.titulo}" ${soloLecturaAttr}>
-                    </div>
-                    <div class="col-md-${bloqueado ? '8' : '7'}">
-                        <input type="url" class="form-control inp-url" placeholder="https://..." value="${enlace.url}" ${soloLecturaAttr}>
-                    </div>
-                    ${bloqueado ? `<div class="col-md-auto d-flex justify-content-end">${enlace.url ? `<a href="${enlace.url}" target="_blank" class="btn-material-ver"><i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir</a>` : ''}</div>` : `
-                    <div class="col-md-1 d-flex justify-content-end">
-                        <button class="btn-delete" onclick="eliminarEnlaceUI(${idx})"><i class="fa-solid fa-trash"></i></button>
-                    </div>`}
-                    ${enlace.fechaRegistro ? `<div class="col-12"><small class="text-muted" style="font-size:0.74rem;"><i class="fa-regular fa-clock me-1"></i>Registrado el ${enlace.fechaRegistro}</small></div>` : ''}
+                <div class="link-row" data-index="${idx}">
+                    <input type="text" class="form-control inp-titulo" placeholder="Ej. Clase 1 - Zoom" value="${enlace.titulo}" ${soloLecturaAttr}>
+                    <input type="url" class="form-control inp-url" placeholder="https://..." value="${enlace.url}" ${soloLecturaAttr}>
+                    <div class="link-accion">${bloqueado
+                        ? (enlace.url ? `<a href="${enlace.url}" target="_blank" class="btn-material-ver"><i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir</a>` : '')
+                        : `<button class="btn-delete" onclick="eliminarEnlaceUI(${idx})"><i class="fa-solid fa-trash"></i></button>`}</div>
+                    ${enlace.fechaRegistro ? `<div class="link-fecha"><small class="text-muted" style="font-size:0.74rem;"><i class="fa-regular fa-clock me-1"></i>Registrado el ${enlace.fechaRegistro}</small></div>` : ''}
                 </div>`;
             });
             container.innerHTML = html || '<p class="text-muted m-0" id="noLinksText">No se han registrado enlaces de acceso virtual.</p>';

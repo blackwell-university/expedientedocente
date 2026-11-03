@@ -269,11 +269,20 @@
         .btn-delete-session:hover { background: #ef4444; color: white; transform: scale(1.05); }
 
         /* BOTONES PRINCIPALES DE ACCIÓN */
-        .btn-continue { background: var(--primary); color: white; border: none; font-weight: 600; font-size: 1.05rem; padding: 16px 40px; border-radius: 14px; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer;}
-        .btn-continue:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(30, 64, 175, 0.25); background: var(--primary-dark); }
+        .btn-continue { background: var(--primary); color: white; border: none; font-weight: 700; font-size: 0.9rem; padding: 11px 24px; border-radius: 10px; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer;}
+        .btn-continue:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(30, 64, 175, 0.2); background: var(--primary-dark); }
         .btn-continue:disabled { opacity: 0.6; cursor: not-allowed; }
-        .btn-cancel { background: #f8fafc; color: #475569; border: 1px solid var(--border-color); font-weight: 600; font-size: 1.05rem; padding: 15px 35px; border-radius: 14px; transition: 0.2s; display: flex; align-items: center; justify-content: center; text-decoration: none;}
+        .btn-cancel { background: #f8fafc; color: #475569; border: 1px solid var(--border-color); font-weight: 700; font-size: 0.9rem; padding: 10px 22px; border-radius: 10px; transition: 0.2s; display: flex; align-items: center; justify-content: center; text-decoration: none;}
         .btn-cancel:hover { background: #f1f5f9; color: var(--text-main); }
+
+        /* Estado de la invitación: mensaje claro para el docente */
+        .estado-pill { display: inline-flex; align-items: center; gap: 7px; font-weight: 700; font-size: 0.82rem; padding: 7px 14px; border-radius: 30px; border: 1px solid; white-space: nowrap; }
+        .estado-pill.pend { background: #fffbeb; border-color: #fcd34d; color: #92400e; }
+        .estado-pill.ok { background: #ecfdf5; border-color: #a7f3d0; color: #047857; }
+        .estado-ayuda { margin-top: 14px; display: flex; gap: 10px; align-items: flex-start; font-size: 0.86rem; line-height: 1.5; border-radius: 10px; padding: 10px 14px; }
+        .estado-ayuda.pend { background: #fffbeb; color: #92400e; }
+        .estado-ayuda.ok { background: #ecfdf5; color: #047857; }
+        .estado-ayuda i { margin-top: 3px; }
 
         .loader-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 0; color: var(--primary); }
 
@@ -288,7 +297,7 @@
             .day-pill { width: 62px; padding: 10px 4px; }
             .time-slot-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
             .action-buttons-flex { flex-direction: column-reverse; gap: 12px !important; }
-            .btn-continue, .btn-cancel { width: 100%; }
+            .btn-continue, .btn-cancel { width: 100%; padding: 11px 18px; }
         }
     
         /* ===== ENCABEZADO MÓVIL v3: barra compacta fija + menú lateral (solo celular) ===== */
@@ -479,8 +488,8 @@
                                 <div class="course-title" id="inv-curso-nombre">Cargando curso...</div>
                                 <div class="course-program" id="inv-programa-nombre">Programa Académico</div>
                             </div>
-                            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning fw-bold px-3 py-2 rounded-pill" id="badge-estado-inv">
-                                Pendiente de Confirmación
+                            <span class="estado-pill pend" id="badge-estado-inv">
+                                <i class="fa-regular fa-clock"></i> <span id="badge-estado-txt">Falta tu respuesta</span>
                             </span>
                         </div>
                         
@@ -497,6 +506,11 @@
                                 <span>Remuneración Total</span>
                                 <strong class="text-success" id="inv-pago">-</strong>
                             </div>
+                        </div>
+
+                        <div class="estado-ayuda pend" id="estado-ayuda">
+                            <i class="fa-solid fa-circle-info"></i>
+                            <span>Aún no has respondido esta invitación. Elige abajo las fechas de tus clases y pulsa <b>«Confirmar Horario y Aceptar Invitación»</b>.</span>
                         </div>
                     </div>
 
@@ -651,8 +665,10 @@
 
                 const est = (invitacionData.estado || "").toLowerCase();
                 if (['respondido', 'aceptado', 'completado', 'formalizado', 'pendiente aprobación sábado'].includes(est)) {
-                    document.getElementById('badge-estado-inv').innerText = "Respuesta Registrada";
-                    document.getElementById('badge-estado-inv').className = "badge bg-success bg-opacity-10 text-success border border-success fw-bold px-3 py-2 rounded-pill";
+                    document.getElementById('badge-estado-inv').className = "estado-pill ok";
+                    document.getElementById('badge-estado-inv').innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>Respuesta enviada</span>';
+                    document.getElementById('estado-ayuda').className = "estado-ayuda ok";
+                    document.getElementById('estado-ayuda').innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>Ya registraste tus fechas. Gracias por confirmar tu horario.</span>';
                 }
 
                 // Inicializar Widget de Calendario
