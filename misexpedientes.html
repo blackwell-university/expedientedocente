@@ -326,6 +326,7 @@
         }
     
     </style>
+<link rel="stylesheet" href="bgu-loader.css">
 </head>
 <body>
 
@@ -480,8 +481,8 @@
 
         // --- 2. CONEXIÓN A BASE DE DATOS REAL (FETCH SIMULTÁNEO) ---
         async function cargarDatos(idDocente) {
-            document.getElementById('container-invitaciones').innerHTML = `<div class="loader-container"><span class="material-symbols-rounded" style="font-size: 3rem; animation: spin 1s linear infinite;">autorenew</span><h5 class="fw-bold text-dark mt-3">Cargando Invitaciones...</h5></div>`;
-            document.getElementById('container-expedientes').innerHTML = `<div class="loader-container"><span class="material-symbols-rounded" style="font-size: 3rem; animation: spin 1s linear infinite;">autorenew</span><h5 class="fw-bold text-dark mt-3">Cargando Contratos...</h5></div><style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>`;
+            document.getElementById('container-invitaciones').innerHTML = `<div class="bgu-loader"><div class="bgu-spin"></div><p class="bgu-t">Cargando tus invitaciones<span class="bgu-dots"></span></p><p class=bgu-s>Esto tomará solo un momento</p></div>`;
+            document.getElementById('container-expedientes').innerHTML = `<div class="bgu-loader"><div class="bgu-spin"></div><p class="bgu-t">Cargando tus expedientes<span class="bgu-dots"></span></p><p class=bgu-s>Esto tomará solo un momento</p></div>`;
 
             try {
                 // Fetch de ambas tablas a la vez para optimizar velocidad

@@ -1,0 +1,25 @@
+/* ===== Indicador de carga moderno (vista del docente) ===== */
+.bgu-loader { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 64px 16px; width: 100%; text-align: center; }
+.bgu-spin { position: relative; width: 56px; height: 56px; border-radius: 50%; border: 5px solid #e0e7ff; box-sizing: border-box; margin-bottom: 12px; }
+.bgu-spin::before { content: ""; position: absolute; inset: -5px; border-radius: 50%;
+    background: conic-gradient(from 0deg, rgba(30,64,175,0) 0deg, var(--primary, #1e40af) 300deg, #60a5fa 360deg);
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
+            mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
+    animation: bgu-rot .9s linear infinite; }
+.bgu-spin::after { content: ""; position: absolute; inset: 17px; border-radius: 50%; background: var(--primary, #1e40af); opacity: .18; animation: bgu-pulse 1.4s ease-in-out infinite; }
+.bgu-loader .bgu-t { font-weight: 700; font-size: 1rem; color: #1e293b; letter-spacing: -0.01em; margin: 0; }
+.bgu-loader .bgu-s { font-size: .82rem; color: #64748b; margin: 0; }
+.bgu-dots::after { content: ""; display: inline-block; width: 1.2em; text-align: left; animation: bgu-dots 1.4s steps(4, end) infinite; }
+@keyframes bgu-rot { to { transform: rotate(360deg); } }
+@keyframes bgu-pulse { 0%, 100% { transform: scale(.6); opacity: .12; } 50% { transform: scale(1); opacity: .3; } }
+@keyframes bgu-dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75%, 100% { content: "..."; } }
+
+/* Spinners pequeños (Font Awesome): anillo fino en vez del engranaje */
+.fa-spinner.fa-spin::before { content: ""; display: inline-block; width: 1em; height: 1em; box-sizing: border-box; vertical-align: -0.125em; border-radius: 50%;
+    border: 2px solid rgba(100, 116, 139, .25); border-top-color: currentColor; }
+.spinner-border { border-width: .16em; }
+
+@media (prefers-reduced-motion: reduce) {
+    .bgu-spin::before { animation-duration: 2.4s; }
+    .bgu-spin::after, .bgu-dots::after { animation: none; }
+}

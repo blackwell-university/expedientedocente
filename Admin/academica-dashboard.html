@@ -60,6 +60,21 @@
         .bj-fecha{font-size:.78rem;color:var(--text-muted);width:110px;flex-shrink:0}.bj-fecha b{display:block;color:var(--text-main);font-size:.82rem}
         .bj-obs{font-size:.74rem;color:var(--text-muted);font-style:italic}
         .bj-link{font-size:.82rem;font-weight:600;color:var(--primary);cursor:pointer;background:none;border:0;text-decoration:underline;padding:0}
+        .bj-acc{display:flex;gap:8px;align-items:center;flex-shrink:0}
+        .btn-rec{background:#eff6ff;color:var(--primary);font-weight:700;font-size:.8rem;border:none;padding:8px 14px;border-radius:8px;display:inline-flex;align-items:center;gap:6px;text-decoration:none;transition:.2s;cursor:pointer;white-space:nowrap}
+        .btn-rec:hover{background:var(--primary);color:#fff}
+        .btn-rec.sec{background:#fff;border:1px solid var(--gray-border);color:var(--text-main)}
+        .btn-rec.sec:hover{background:#f8fafc;color:var(--primary);border-color:#bfdbfe}
+        .rec-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:30px;font-size:.72rem;font-weight:700;white-space:nowrap;background:#ecfdf5;color:#047857;flex-shrink:0}
+        .rec-modal{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:4000;display:none;align-items:center;justify-content:center;padding:20px}
+        .rec-modal.on{display:flex}
+        .rec-card{background:#fff;border-radius:16px;width:min(980px,100%);height:min(88vh,860px);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.3)}
+        .rec-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid var(--gray-border);flex-wrap:wrap}
+        .rec-head b{font-size:.95rem;display:block}.rec-head small{color:var(--text-muted);font-size:.75rem}
+        .rec-frame{flex:1;position:relative;background:#f1f5f9}
+        .rec-frame iframe{width:100%;height:100%;border:0;display:block}
+        .rec-mask{position:absolute;top:0;right:0;width:58px;height:58px;background:#fff}
+        @media (max-width:768px){.rec-modal{padding:0}.rec-card{height:100dvh;border-radius:0}.bj-row .bj-acc{margin-left:auto}}
         .bj-pager{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:14px}
         .bj-pager .pg{display:flex;gap:6px;flex-wrap:wrap}
         .bj-pager button{background:#fff;border:1px solid var(--gray-border);color:var(--text-main);font-weight:600;font-size:.82rem;min-width:36px;padding:6px 10px;border-radius:8px}
@@ -192,12 +207,13 @@
                     <div class="bj-hero">
                         <div class="big" id="bjPend">0</div>
                         <div class="tx"><b>cursos esperan tu conformidad</b><p>Al darla, el docente recibe el aviso de pago.</p></div>
-                        <div><span class="bj-chip" id="bjCurso">0 en curso</span><span class="bj-chip" id="bjOk">0 con conformidad</span></div>
+                        <div><span class="bj-chip" id="bjCurso">0 en curso</span><span class="bj-chip" id="bjOk">0 con conformidad</span><span class="bj-chip" id="bjRec">0 recibos</span></div>
                     </div>
                     <div class="bj-tabs">
                         <button class="bj-tab warn on" data-t="pend" onclick="bjTab('pend')">Por dar conformidad<i id="bjTp">0</i></button>
                         <button class="bj-tab" data-t="curso" onclick="bjTab('curso')">En curso<i id="bjTc">0</i></button>
                         <button class="bj-tab" data-t="ok" onclick="bjTab('ok')">Con conformidad<i id="bjTo">0</i></button>
+                        <button class="bj-tab" data-t="rec" onclick="bjTab('rec')">Recibos<i id="bjTr">0</i></button>
                     </div>
                     <div class="filter-card">
                         <div class="row g-3">
@@ -319,6 +335,19 @@
         </div>
     </main>
 
+    <div class="rec-modal" id="recModal" onclick="if(event.target===this)cerrarRecibo()">
+        <div class="rec-card">
+            <div class="rec-head">
+                <div><b id="recTitulo">Recibo por honorarios</b><small id="recSub"></small></div>
+                <div class="bj-acc">
+                    <a class="btn-rec" id="recDescargar" href="#" target="_blank" rel="noopener"><i class="fa-solid fa-download"></i> Descargar</a>
+                    <button type="button" class="btn-rec sec" onclick="cerrarRecibo()"><i class="fa-solid fa-xmark"></i> Cerrar</button>
+                </div>
+            </div>
+            <div class="rec-frame"><iframe id="recFrame" title="Recibo por honorarios"></iframe><div class="rec-mask" aria-hidden="true"></div></div>
+        </div>
+    </div>
+
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
         let clasesGlobal = [];
@@ -330,6 +359,7 @@
         let ordenAscendente = true;
 
         const esSoloLectura = localStorage.getItem('userRole') === 'E-learning';
+        const puedeVerRecibo = ['JEFE OSE BGU', 'EJECUTIVA ACADEMICA'].includes(String(localStorage.getItem('userRole') || '').toUpperCase()); // solo Marisol y Rosy abren el recibo
         const puedeDarConformidad = ['JEFE OSE BGU', 'ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA'].includes(String(localStorage.getItem('userRole') || '').toUpperCase());
 
         // Vista simplificada "Conformidad": por defecto solo para Jefe OSE BGU (Marisol)
@@ -393,15 +423,20 @@
         function bjIniciales(n) { return obtenerIniciales(n); }
         function renderBandeja() {
             if (!puedeDarConformidad) return;
+            const tabRec = document.querySelector('.bj-tab[data-t="rec"]'); if (tabRec) tabRec.style.display = puedeVerRecibo ? '' : 'none';
+            const chipRec = document.getElementById('bjRec'); if (chipRec) chipRec.style.display = puedeVerRecibo ? '' : 'none';
             const pend = clasesGlobal.filter(i => !esCancelada(i) && i.fechaCulminacion && !i.fechaConformidad);
             const ok = clasesGlobal.filter(i => !esCancelada(i) && i.fechaConformidad);
             const curso = clasesGlobal.filter(i => !esCancelada(i) && !i.fechaCulminacion);
+            const rec = puedeVerRecibo ? clasesGlobal.filter(i => !esCancelada(i) && i.reciboUrl) : [];
+            document.getElementById('bjRec').innerText = rec.length + (rec.length === 1 ? ' recibo' : ' recibos');
+            document.getElementById('bjTr').innerText = rec.length;
             document.getElementById('bjPend').innerText = pend.length;
             document.getElementById('bjCurso').innerText = curso.length + ' en curso';
             document.getElementById('bjOk').innerText = ok.length + ' con conformidad';
             document.getElementById('bjTp').innerText = pend.length; document.getElementById('bjTc').innerText = curso.length; document.getElementById('bjTo').innerText = ok.length;
             const q = (document.getElementById('bjBuscar').value || '').toLowerCase().trim();
-            let lista = bjTabActual === 'pend' ? pend : bjTabActual === 'ok' ? ok : curso;
+            let lista = bjTabActual === 'pend' ? pend : bjTabActual === 'ok' ? ok : bjTabActual === 'rec' ? rec : curso;
             if (q) lista = lista.filter(i => (i.nombreDocente + ' ' + i.curso).toLowerCase().includes(q));
 
             // programas disponibles (según todas las clases) y filtros de fecha
@@ -426,18 +461,19 @@
                 });
             }
             const ts = v => { const d = v ? new Date(v) : null; return d && !isNaN(d) ? d.getTime() : 0; };
-            lista = lista.slice().sort((a, b) => bjTabActual === 'curso' ? ts(a.fechaFin) - ts(b.fechaFin) : ((parseFechaHora(b.fechaCulminacion) || 0) - (parseFechaHora(a.fechaCulminacion) || 0)));
+            lista = lista.slice().sort((a, b) => bjTabActual === 'rec' ? ((parseFechaHora(b.reciboFecha) || 0) - (parseFechaHora(a.reciboFecha) || 0)) : bjTabActual === 'curso' ? ts(a.fechaFin) - ts(b.fechaFin) : ((parseFechaHora(b.fechaCulminacion) || 0) - (parseFechaHora(a.fechaCulminacion) || 0)));
             const totalPag = Math.max(1, Math.ceil(lista.length / BJ_POR_PAGINA));
             if (bjPagina > totalPag) bjPagina = totalPag;
             const totalLista = lista.length;
             lista = lista.slice((bjPagina - 1) * BJ_POR_PAGINA, bjPagina * BJ_POR_PAGINA);
-            if (!lista.length) { document.getElementById('bjPager').innerHTML = ''; document.getElementById('bjLista').innerHTML = `<div class="text-center text-muted py-5">${bjTabActual === 'pend' && !q ? '🎉 No tienes nada pendiente.' : 'Sin resultados.'}</div>`; return; }
+            if (!lista.length) { document.getElementById('bjPager').innerHTML = ''; document.getElementById('bjLista').innerHTML = `<div class="text-center text-muted py-5">${bjTabActual === 'pend' && !q ? '🎉 No tienes nada pendiente.' : bjTabActual === 'rec' && !q ? 'Aún no hay recibos por honorarios enviados.' : 'Sin resultados.'}</div>`; return; }
             document.getElementById('bjLista').innerHTML = lista.map(inv => {
                 const tot = Number(inv.sesionesTotal) || 0, h = Number(inv.sesionesRealizadas) || 0, pct = tot ? Math.round(h * 100 / tot) : 0;
                 const col = (tot && h >= tot) ? '#1fa463' : '#93c5fd';
                 const ring = `<div class="bj-ring" style="background:conic-gradient(${col} ${pct}%,#e2e8f0 0)"><span>${tot ? h + '/' + tot : '—'}</span></div>`;
-                const f = bjTabActual === 'curso' ? ['termina', formatFechaCorta(inv.fechaFin)] : bjTabActual === 'ok' ? ['conforme', fmtDMY(inv.fechaConformidad)] : ['culminó', fmtDMY(inv.fechaCulminacion)];
-                const der = bjTabActual === 'pend' ? `<button type="button" class="btn-conforme" onclick="darConformidad('${escH(inv.id)}')"><i class="fa-solid fa-circle-check"></i> Dar conformidad</button>`
+                const f = bjTabActual === 'rec' ? ['enviado', fmtDMY(inv.reciboFecha)] : bjTabActual === 'curso' ? ['termina', formatFechaCorta(inv.fechaFin)] : bjTabActual === 'ok' ? ['conforme', fmtDMY(inv.fechaConformidad)] : ['culminó', fmtDMY(inv.fechaCulminacion)];
+                const der = bjTabActual === 'rec' ? `<span class="rec-badge"><i class="fa-solid fa-circle-check"></i> Recibido</span><div class="bj-acc"><button type="button" class="btn-rec" onclick="verRecibo('${escH(inv.id)}')"><i class="fa-solid fa-eye"></i> Ver</button><a class="btn-rec sec" href="${escH(urlDescargaRecibo(inv.reciboUrl))}" target="_blank" rel="noopener" title="Descargar PDF"><i class="fa-solid fa-download"></i> Descargar</a></div>`
+                    : bjTabActual === 'pend' ? `<button type="button" class="btn-conforme" onclick="darConformidad('${escH(inv.id)}')"><i class="fa-solid fa-circle-check"></i> Dar conformidad</button>`
                     : bjTabActual === 'ok' ? `<span class="badge-conforme" style="margin:0"><i class="fa-solid fa-circle-check"></i> Conforme</span>`
                     : '';
                 const ojo = `<a href="academica-detalle.html?invId=${escH(inv.id)}" class="bj-eye" title="Ver detalle de la clase" aria-label="Ver detalle de la clase"><i class="fa-regular fa-eye"></i></a>`;
@@ -448,6 +484,19 @@
             bjPintarPager(totalLista, totalPag);
         }
 
+        function idDriveRec(u) { const m = String(u || '').match(/[-\w]{25,}/); return m ? m[0] : ''; }
+        function urlDescargaRecibo(u) { const id = idDriveRec(u); return id ? 'https://drive.google.com/uc?export=download&id=' + id : u; }
+        function verRecibo(invId) {
+            const inv = clasesGlobal.find(c => String(c.id) === String(invId)); if (!inv || !inv.reciboUrl) return;
+            const id = idDriveRec(inv.reciboUrl);
+            document.getElementById('recTitulo').textContent = inv.nombreDocente + ' — Recibo por honorarios';
+            document.getElementById('recSub').textContent = (inv.curso || '') + (inv.reciboFecha ? ' · Enviado el ' + fmtDMYH(inv.reciboFecha) : '');
+            document.getElementById('recDescargar').href = urlDescargaRecibo(inv.reciboUrl);
+            document.getElementById('recFrame').src = id ? 'https://drive.google.com/file/d/' + id + '/preview' : inv.reciboUrl;
+            document.getElementById('recModal').classList.add('on');
+        }
+        function cerrarRecibo() { document.getElementById('recModal').classList.remove('on'); document.getElementById('recFrame').src = 'about:blank'; }
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarRecibo(); });
         function escH(t) { return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 
         function avanceHtml(inv) {
@@ -606,7 +655,7 @@
         function cargarClases() {
             cargarDatosOptimizadosAdmin(
                 'get_all_invitations_global',
-                {},
+                { rol: localStorage.getItem('userRole') },
                 (data, isLoading) => {
                     if (isLoading || !data) return;
                     data.forEach(inv => { if (String(inv.estado || '').trim().toLowerCase() === 'pendiente aprobación sábado') inv.estado = 'Aceptado'; });
@@ -790,7 +839,7 @@
                     </td>
                     <td><div class="fw-bold text-primary-dark">${inv.curso}</div><div class="small text-muted">${inv.programa}</div>${periodoHtml}</td>
                     <td>${avanceHtml(inv)}</td>
-                    <td>${badgeEstado(inv)}${inv.sabadoPorConfirmar ? `<span class="badge-sabado" title="El docente eligió sábado y falta confirmarlo. Ábrelo en Gestionar Clase."><i class="fa-solid fa-calendar-day"></i> Sábado por confirmar</span>` : ''}${(inv.fechaCulminacion && !inv.fechaConformidad) ? `<span class="badge-porconformar"><i class="fa-regular fa-hourglass-half"></i> Falta conformidad</span>` : ''}${inv.reciboUrl ? `<a class="badge-recibo" href="${escH(inv.reciboUrl)}" target="_blank" rel="noopener" title="Ver el recibo por honorarios"><i class="fa-solid fa-receipt"></i> Recibo recibido</a>` : ''}</td>
+                    <td>${badgeEstado(inv)}${inv.sabadoPorConfirmar ? `<span class="badge-sabado" title="El docente eligió sábado y falta confirmarlo. Ábrelo en Gestionar Clase."><i class="fa-solid fa-calendar-day"></i> Sábado por confirmar</span>` : ''}${(inv.fechaCulminacion && !inv.fechaConformidad) ? `<span class="badge-porconformar"><i class="fa-regular fa-hourglass-half"></i> Falta conformidad</span>` : ''}${inv.reciboUrl ? `<a class="badge-recibo" href="${escH(inv.reciboUrl)}" target="_blank" rel="noopener" title="Ver el recibo por honorarios"><i class="fa-solid fa-receipt"></i> Recibo recibido</a>` : (inv.reciboEnviado ? `<span class="badge-recibo" style="cursor:default"><i class="fa-solid fa-receipt"></i> Recibo recibido</span>` : '')}</td>
                     <td><div class="acciones-cell"><a href="academica-detalle.html?invId=${inv.id}" class="btn-gestionar"><i class="${iconoBoton}"></i> ${textoBoton}</a>${(puedeDarConformidad && inv.fechaCulminacion && !inv.fechaConformidad) ? `<button type="button" class="btn-conforme" onclick="darConformidad('${escH(inv.id)}')"><i class="fa-solid fa-circle-check"></i> Dar conformidad</button>` : ''}</div></td>
                 </tr>`;
             });

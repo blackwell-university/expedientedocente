@@ -322,6 +322,7 @@
         }
     
     </style>
+<link rel="stylesheet" href="bgu-loader.css">
 </head>
 <body>
 
@@ -529,7 +530,7 @@
 
         async function cargarCursos(idDocente) {
             const container = document.getElementById('cards-container');
-            container.innerHTML = `<div class="col-12 loader-container"><span class="material-symbols-rounded" style="font-size: 3rem; animation: spin 1s linear infinite;">autorenew</span><h5 class="fw-bold text-dark mt-3">Buscando información...</h5></div><style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>`;
+            container.innerHTML = `<div class="col-12"><div class="bgu-loader"><div class="bgu-spin"></div><p class="bgu-t">Buscando tus clases<span class="bgu-dots"></span></p><p class=bgu-s>Esto tomará solo un momento</p></div></div>`;
 
             try {
                 // NUEVO: se piden también los expedientes para saber cuáles están cancelados (si falla, no bloquea la página)

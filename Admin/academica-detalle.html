@@ -504,7 +504,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         let arrayEnlaces = [];
         let arraySesiones = [];
         let availableSlots = [];
-        let fechaConformidad = "", conformidadPor = "", observacionConformidad = "", reciboUrl = "", reciboFecha = "";
+        let fechaConformidad = "", conformidadPor = "", observacionConformidad = "", reciboUrl = "", reciboFecha = "", reciboEnviado = false;
         let fechaCulminacion = "";   // NUEVO: vacío = clase en curso; con fecha = clase culminada (bloqueada)
 
         // El rol E-learning solo puede visualizar: no debe poder editar enlaces ni asistencias/reprogramaciones
@@ -630,7 +630,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 renderDetalleClase(JSON.parse(cachedData));
             }
 
-            fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_asesora_course_detail', idInvitacion: invId }) })
+            fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_asesora_course_detail', idInvitacion: invId, rol: localStorage.getItem('userRole') }) })
                 .then(res => res.json())
                 .then(response => {
                     if (response.status === 'success') {
@@ -656,7 +656,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     const doc = datos.docente;
 
                     fechaCulminacion = inv.fechaCulminacion || "";
-                    fechaConformidad = inv.fechaConformidad || ""; conformidadPor = inv.conformidadPor || ""; observacionConformidad = inv.observacionConformidad || ""; reciboUrl = inv.reciboUrl || ""; reciboFecha = inv.reciboFecha || "";
+                    fechaConformidad = inv.fechaConformidad || ""; conformidadPor = inv.conformidadPor || ""; observacionConformidad = inv.observacionConformidad || ""; reciboUrl = inv.reciboUrl || ""; reciboEnviado = !!inv.reciboEnviado || !!inv.reciboUrl; reciboFecha = inv.reciboFecha || "";
                     renderBannerSabados(inv.sabadosPorConfirmar || []);
 
                     document.getElementById('txtCursoNombre').innerText = inv.cursoNombre;
@@ -880,8 +880,8 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 box.style.display = 'block';
                 box.innerHTML = fechaConformidad
                     ? `<div class="estado-conformidad ok"><i class="fa-solid fa-clipboard-check"></i><span>Conformidad de pagos dada el ${fmtFechaHora(fechaConformidad)}${conformidadPor ? ' por ' + esc(conformidadPor) : ''}</span>${observacionConformidad ? `<span class="obs">“${esc(observacionConformidad)}”</span>` : ''}</div>`
-                        + (reciboUrl
-                            ? `<div class="estado-conformidad recibo-ok"><i class="fa-solid fa-receipt"></i><span>Recibo por honorarios enviado el ${fmtFechaHora(reciboFecha)}</span><a class="btn-ver-recibo" href="${esc(reciboUrl)}" target="_blank" rel="noopener"><i class="fa-solid fa-up-right-from-square"></i> Ver recibo</a></div>`
+                        + (reciboEnviado
+                            ? `<div class="estado-conformidad recibo-ok"><i class="fa-solid fa-receipt"></i><span>Recibo por honorarios enviado el ${fmtFechaHora(reciboFecha)}</span>${reciboUrl ? `<a class="btn-ver-recibo" href="${esc(reciboUrl)}" target="_blank" rel="noopener"><i class="fa-solid fa-up-right-from-square"></i> Ver recibo</a>` : ''}</div>`
                             : `<div class="estado-conformidad pend"><i class="fa-regular fa-hourglass-half"></i><span>Esperando el recibo por honorarios del docente</span></div>`)
                     : `<div class="estado-conformidad pend"><i class="fa-regular fa-hourglass-half"></i><span>Pendiente de la conformidad de pagos</span>${puedeDarConformidad ? `<button type="button" class="btn-dar-conf" onclick="darConformidadDetalle()"><i class="fa-solid fa-circle-check"></i> Dar conformidad</button>` : ''}</div>`;
             } else {
