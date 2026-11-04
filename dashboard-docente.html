@@ -698,6 +698,12 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     agregar('invfirma:' + inv.id, { tipo: 'firma', icono: 'edit_document', titulo: `Firma los documentos de "${inv.curso || 'tu curso'}"`, sub: 'Invitación a dictado', href: `contrato-detalle.html?inv=${inv.id}`, cta: 'Firmar' });
                 }
             });
+            // 1b) Recibo por honorarios pendiente (conformidad dada, aún sin recibo)
+            invitaciones.forEach(inv => {
+                if (inv.conformidadDada && !inv.reciboEnviado) {
+                    agregar('recibo:' + inv.id, { tipo: 'invitacion', icono: 'receipt_long', titulo: `Sube tu recibo por honorarios de "${inv.curso || 'tu curso'}"`, sub: 'Necesario para gestionar tu pago', href: `documentos-curso.html?inv=${inv.id}`, cta: 'Subir recibo' });
+                }
+            });
             // 2) Invitaciones por aceptar
             invitaciones.forEach(inv => {
                 if (!inv.horarioConfirmado) {

@@ -109,6 +109,8 @@
         .estado-conformidad { margin-top: 10px; border-radius: 10px; padding: 10px 16px; font-size: 0.82rem; font-weight: 600; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; width: fit-content; max-width: 100%; }
         .estado-conformidad.ok { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
         .estado-conformidad.pend { background: #fffbeb; border: 1px solid #fde68a; color: #b45309; }
+        .estado-conformidad.recibo-ok { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+        .btn-ver-recibo { color: #166534; font-weight: 700; text-decoration: underline; margin-left: 4px; }
         .estado-conformidad .obs { flex-basis: 100%; font-weight: 500; font-style: italic; color: #475569; }
         .btn-dar-conf { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-weight: 700; font-size: 0.78rem; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; transition: .2s; }
         .btn-dar-conf:hover { background: #d1fae5; }
@@ -502,7 +504,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         let arrayEnlaces = [];
         let arraySesiones = [];
         let availableSlots = [];
-        let fechaConformidad = "", conformidadPor = "", observacionConformidad = "";
+        let fechaConformidad = "", conformidadPor = "", observacionConformidad = "", reciboUrl = "", reciboFecha = "";
         let fechaCulminacion = "";   // NUEVO: vacío = clase en curso; con fecha = clase culminada (bloqueada)
 
         // El rol E-learning solo puede visualizar: no debe poder editar enlaces ni asistencias/reprogramaciones
@@ -511,6 +513,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         const puedeCulminar = (rolActual === 'Asesora Academica' || rolActual === 'Jefe OSE BGU' || rolActual === 'Administrador' || rolActual === 'Administrativo' || rolActual === 'Ejecutiva Academica');
         const puedeReabrir = (rolActual === 'Jefe OSE BGU' || rolActual === 'Administrador');
         const puedeDarConformidad = ['Jefe OSE BGU', 'Administrador', 'ADMIN', 'Ejecutiva Academica'].includes(rolActual);
+        const puedeConfirmarSabado = ['Asesora Academica', 'Jefe OSE BGU', 'Administrador', 'ADMIN'].includes(rolActual);
         const puedeVerDirectDeposit = (rolActual === 'Jefe OSE BGU' || rolActual === 'Administrador');
 
         function edicionBloqueada() { return esSoloLectura || !!fechaCulminacion; }
@@ -653,7 +656,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     const doc = datos.docente;
 
                     fechaCulminacion = inv.fechaCulminacion || "";
-                    fechaConformidad = inv.fechaConformidad || ""; conformidadPor = inv.conformidadPor || ""; observacionConformidad = inv.observacionConformidad || "";
+                    fechaConformidad = inv.fechaConformidad || ""; conformidadPor = inv.conformidadPor || ""; observacionConformidad = inv.observacionConformidad || ""; reciboUrl = inv.reciboUrl || ""; reciboFecha = inv.reciboFecha || "";
                     renderBannerSabados(inv.sabadosPorConfirmar || []);
 
                     document.getElementById('txtCursoNombre').innerText = inv.cursoNombre;
@@ -788,7 +791,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         function renderBannerSabados(lista) {
             const cont = document.getElementById('bannerSabados');
             if (!cont) return;
-            if (!lista || !lista.length || edicionBloqueada()) { cont.innerHTML = ''; return; }
+            if (!puedeConfirmarSabado || !lista || !lista.length || edicionBloqueada()) { cont.innerHTML = ''; return; }
             const fechas = lista.map(s => `${s.fecha}${s.slot ? ' · ' + s.slot : ''}`).join('  |  ');
             cont.innerHTML = `<div class="banner-sabado">
                 <div class="bs-ico"><i class="fa-solid fa-calendar-day"></i></div>
@@ -804,7 +807,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             const c = await Swal.fire({ title: '¿Confirmar sábado(s)?', html: 'Confirmas que ya coordinaste con el docente y que dictará clase esos sábados. Queda registrado con tu nombre.', icon: 'question', showCancelButton: true, confirmButtonColor: '#15803d', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, confirmar', cancelButtonText: 'Cancelar', reverseButtons: true });
             if (!c.isConfirmed) return;
             try {
-                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'confirmar_sabados_invitacion', idInvitacion: invId, usuarioNombre: localStorage.getItem('userName') || '' }) });
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'confirmar_sabados_invitacion', idInvitacion: invId, usuarioNombre: localStorage.getItem('userName') || '', rol: localStorage.getItem('userRole') || '' }) });
                 const j = await res.json();
                 if (j.status === 'success') { showToast('Sábado(s) confirmado(s).', 'success'); cargarDetalleClase(); }
                 else Swal.fire('No se pudo confirmar', j.message || 'Inténtalo de nuevo.', 'error');
@@ -877,6 +880,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 box.style.display = 'block';
                 box.innerHTML = fechaConformidad
                     ? `<div class="estado-conformidad ok"><i class="fa-solid fa-clipboard-check"></i><span>Conformidad de pagos dada el ${fmtFechaHora(fechaConformidad)}${conformidadPor ? ' por ' + esc(conformidadPor) : ''}</span>${observacionConformidad ? `<span class="obs">“${esc(observacionConformidad)}”</span>` : ''}</div>`
+                        + (reciboUrl
+                            ? `<div class="estado-conformidad recibo-ok"><i class="fa-solid fa-receipt"></i><span>Recibo por honorarios enviado el ${fmtFechaHora(reciboFecha)}</span><a class="btn-ver-recibo" href="${esc(reciboUrl)}" target="_blank" rel="noopener"><i class="fa-solid fa-up-right-from-square"></i> Ver recibo</a></div>`
+                            : `<div class="estado-conformidad pend"><i class="fa-regular fa-hourglass-half"></i><span>Esperando el recibo por honorarios del docente</span></div>`)
                     : `<div class="estado-conformidad pend"><i class="fa-regular fa-hourglass-half"></i><span>Pendiente de la conformidad de pagos</span>${puedeDarConformidad ? `<button type="button" class="btn-dar-conf" onclick="darConformidadDetalle()"><i class="fa-solid fa-circle-check"></i> Dar conformidad</button>` : ''}</div>`;
             } else {
                 document.getElementById('estadoConformidad').style.display = 'none';

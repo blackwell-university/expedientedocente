@@ -572,7 +572,7 @@
 
                         documentosDisponibles = docsFirmablesInvitacion
                             .map(nombre => ({ nombre, ...(docs[nombre] || {}) }))
-                            .filter(d => d.url && d.tieneFirmaDocente !== false);
+                            .filter(d => d.url); // los 5 documentos de la lista se muestran siempre (el backend los firma todos)
 
                         const primerPendiente = documentosDisponibles.findIndex(d => !d.estado || !d.estado.includes('Firmado'));
                         indiceDocActual = primerPendiente !== -1 ? primerPendiente : 0;

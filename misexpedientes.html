@@ -33,7 +33,9 @@
             -webkit-font-feature-settings: 'liga';
             -webkit-font-smoothing: antialiased;
         }
-    </style>
+            .btn-mis-docs { display:inline-flex; align-items:center; gap:6px; font-size:.78rem; font-weight:700; color:#475569; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:8px; padding:6px 10px; cursor:pointer; }
+        .btn-mis-docs:hover { background:#e2e8f0; color:#1e293b; }
+</style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -589,6 +591,15 @@
                     estadoVisual = 'Firma Requerida';
                     badgeClass = 'status-firmar'; icon = 'edit_document'; color = '#2563eb'; 
                     actionText = 'Firmar documentos'; actionLink = `contrato-detalle.html?inv=${inv.id}`; accentClass = 'accent-blue';
+                } else if (inv.conformidadDada && !inv.reciboEnviado) {
+                    // Conformidad dada: el docente debe subir su recibo por honorarios
+                    estadoVisual = 'Sube tu recibo';
+                    badgeClass = 'status-pendiente'; icon = 'receipt_long'; color = '#ea580c';
+                    actionText = 'Subir recibo por honorarios'; actionLink = `documentos-curso.html?inv=${inv.id}`; accentClass = 'accent-orange';
+                } else if (inv.conformidadDada && inv.reciboEnviado) {
+                    estadoVisual = 'Recibo enviado';
+                    badgeClass = 'status-completado'; icon = 'task_alt'; color = '#16a34a';
+                    actionText = 'Ver mis documentos'; actionLink = `documentos-curso.html?inv=${inv.id}`; accentClass = 'accent-green';
                 } else if (inv.revisionPendiente) {
                     // NUEVO: aceptó la invitación pero aún no confirma que sus datos estén al día
                     estadoVisual = 'Revisar mis datos';
@@ -605,12 +616,17 @@
                     } else {
                         actionText = 'Ver estado'; actionLink = 'javascript:void(0)'; infoInv = 'proceso';
                     }
+                } else if (estadoLower === 'firmado por docente') {
+                    // Invitación sin expediente: el docente ya firmó, falta la firma de directivos
+                    estadoVisual = 'Firmado';
+                    badgeClass = 'status-completado'; icon = 'check_circle'; color = '#16a34a';
+                    actionText = 'Ver mis documentos'; actionLink = `documentos-curso.html?inv=${inv.id}`; accentClass = 'accent-green';
                 } else {
                     // Firmado, Formalizado
                     estadoVisual = 'Completado';
                     badgeClass = 'status-completado'; icon = 'check_circle'; color = '#16a34a'; 
-                    actionText = 'Ver detalles'; actionLink = 'javascript:void(0)'; accentClass = 'accent-green';
-                    infoInv = 'completado';
+                    // Completada: lleva a los documentos firmados del curso (y al recibo, si aplica)
+                    actionText = 'Ver mis documentos'; actionLink = `documentos-curso.html?inv=${inv.id}`; accentClass = 'accent-green';
                 }
 
                 html += `
@@ -640,6 +656,7 @@
                         
                         ${(expVinc && horarioOk) ? `<div class="nota-exp"><span class="material-symbols-rounded" style="font-size:1rem;">folder_shared</span> Expediente de este curso: <strong>${textoEstadoExpediente(expVinc)}</strong></div>` : ''}
 
+                        ${(inv.tieneDocsFirmados && String(actionLink).indexOf('documentos-curso') === -1) ? `<div class="mt-2"><span class="btn-mis-docs" role="link" tabindex="0" onclick="event.preventDefault(); event.stopPropagation(); window.location.href='documentos-curso.html?inv=${encodeURIComponent(inv.id)}'"><span class="material-symbols-rounded" style="font-size:1rem;">description</span> Mis documentos firmados</span></div>` : ''}
                         <div class="docs-container">
                             <span class="text-muted" style="font-size: 0.8rem;">ID: ${inv.id}</span>
                             <span class="btn-text-action" style="color: ${color};">

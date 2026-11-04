@@ -223,7 +223,8 @@
         .action-btn:hover { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
         .action-btn-primary { background: var(--primary-dark); border-color: var(--primary-dark); color: white; }
         .action-btn-primary i { color: white; }
-        .action-btn-primary:hover { background: #1e40af; }
+        .action-btn-primary:hover:not(:disabled) { background: #1e40af; border-color: #1e40af; color: #fff; }
+        .action-btn-primary:hover:not(:disabled) i { color: #fff; }
 
         /* Resumen */
         .summary-stats { display: flex; gap: 24px; margin-bottom: 24px; flex-wrap: wrap; }
@@ -1704,7 +1705,16 @@
         }
 
         // NUEVO: widget de aprobación de sábado -- misma lógica que invitacion.html
+        const ROLES_SABADO = ['ASESORA ACADEMICA', 'JEFE OSE BGU', 'ADMINISTRADOR', 'ADMIN'];
+        const PUEDE_GESTIONAR_SABADO = ROLES_SABADO.indexOf(String(localStorage.getItem('userRole') || '').trim().toUpperCase()) > -1;
+
         function renderSabadosPendientes(lista) {
+            // Solo asesoras académicas y Jefe OSE gestionan sábados; las demás vistas no muestran este aviso
+            if (!PUEDE_GESTIONAR_SABADO) {
+                const w0 = document.getElementById('wrapperSabadosPendientes');
+                if (w0) w0.classList.add('d-none');
+                return;
+            }
             const wrapper = document.getElementById('wrapperSabadosPendientes');
             const cont = document.getElementById('listaSabadosPendientes');
             const hayPendientes = lista && lista.length > 0;
@@ -1790,7 +1800,7 @@
             try {
                 const res = await fetch(GAS_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'confirmar_sabados_invitacion', idInvitacion: idInvitacionActual, fechas: [fecha], usuarioNombre: localStorage.getItem('userName') || '' })
+                    body: JSON.stringify({ action: 'confirmar_sabados_invitacion', idInvitacion: idInvitacionActual, fechas: [fecha], usuarioNombre: localStorage.getItem('userName') || '', rol: localStorage.getItem('userRole') || '' })
                 });
                 const data = await res.json();
                 if (data.status === 'success') {

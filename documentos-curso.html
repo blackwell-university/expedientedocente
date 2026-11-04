@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script>
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        const userRole = localStorage.getItem('userRole');
+        if (isLoggedIn !== 'true' || userRole !== 'Docente') {
+            window.location.href = "index.html";
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Documentos y recibo | Blackwell University</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Íconos Minimalistas y delgados -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,300,0,0" />
+    <style>
+        .material-symbols-rounded {
+            font-family: 'Material Symbols Rounded';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            --primary: #1e40af; 
+            --primary-light: #eff6ff;
+            --bg-body: #f4f7fa;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --primary-dark: #1e3a8a;
+            --card-radius: 24px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; letter-spacing: -0.01em; }
+
+        /* --- TOP NAVIGATION (Escritorio) --- */
+        .top-nav {
+            flex-shrink: 0; height: 70px;
+            background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 40px; z-index: 1000;
+        }
+        .nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .logo-box { width: 38px; height: 38px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; }
+        .brand-text { font-weight: 800; font-size: 1.2rem; color: var(--primary); letter-spacing: -0.5px; }
+        .nav-links-desktop { display: flex; gap: 8px; position: absolute; left: 50%; transform: translateX(-50%); }
+        .nav-item { text-decoration: none; color: var(--text-muted); font-weight: 600; font-size: 0.9rem; padding: 10px 20px; border-radius: 12px; transition: var(--transition); display: flex; align-items: center; gap: 8px; }
+        .nav-item:hover, .nav-item.active { background: #eff6ff; color: var(--primary); }
+        .nav-user { position: relative; cursor: pointer; }
+        .user-trigger { display: flex; align-items: center; gap: 12px; padding: 6px 6px 6px 15px; background: #fff; border: 1px solid var(--border-color); border-radius: 50px; }
+        .user-trigger span { font-weight: 700; font-size: 0.85rem; }
+        .user-avatar { width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem; }
+
+        /* --- BOTTOM NAVIGATION (Móvil) — rediseño en píldora dinámica --- */
+        .bottom-nav {
+            position: fixed; left: 16px; right: 16px; bottom: 14px; height: 68px;
+            background: rgba(255,255,255,0.92);
+            -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+            border-radius: 26px;
+            box-shadow: 0 12px 32px rgba(15,23,42,0.14), 0 2px 8px rgba(15,23,42,0.05);
+            border: 1px solid rgba(226,232,240,0.8);
+            display: none; justify-content: space-around; align-items: center;
+            padding: 0 10px; padding-bottom: env(safe-area-inset-bottom); z-index: 1000;
+        }
+        .bottom-item {
+            display: flex; flex-direction: row; align-items: center; justify-content: center;
+            flex: 0 0 auto; gap: 0; height: 46px; padding: 0 16px; border-radius: 23px;
+            text-decoration: none; color: #94a3b8; position: relative;
+            transition: background 0.35s cubic-bezier(.34,1.56,.64,1), padding 0.35s cubic-bezier(.34,1.56,.64,1), color 0.25s ease;
+        }
+        .bottom-item .icon-wrap { display: flex; align-items: center; justify-content: center; }
+        .bottom-item .material-symbols-rounded, .bottom-item i {
+            font-size: 1.32rem; line-height: 1;
+            font-variation-settings: 'FILL' 0, 'wght' 400;
+            transition: font-variation-settings 0.25s ease;
+            transform: none;
+        }
+        .bottom-item > span:last-child {
+            font-size: 0; max-width: 0; opacity: 0; overflow: hidden; white-space: nowrap;
+            font-weight: 800; margin-left: 0; line-height: 1;
+            transition: font-size 0.25s ease, max-width 0.3s ease, opacity 0.25s ease, margin-left 0.25s ease;
+        }
+        .bottom-item.active {
+            background: var(--primary-light, #eff6ff);
+            color: var(--primary-dark, #1e3a8a);
+            padding: 0 18px;
+        }
+        .bottom-item.active .material-symbols-rounded,
+        .bottom-item.active i { font-variation-settings: 'FILL' 1, 'wght' 500; }
+        .bottom-item.active > span:last-child { font-size: 0.78rem; max-width: 120px; opacity: 1; margin-left: 7px; }
+        .bottom-item:active { transform: scale(0.94); }
+
+        /* --- CONTENEDOR PRINCIPAL SPLIT --- */
+        .split-wrapper { flex-grow: 1; display: flex; width: 100%; height: calc(100vh - 70px); overflow: hidden; }
+
+        /* PANEL IZQUIERDO: VISOR PDF */
+        .pdf-panel { 
+            width: 50%; height: 100%; 
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            display: flex; flex-direction: column; padding: 2rem; position: relative;
+        }
+        .pdf-header-title {
+            color: rgba(255, 255, 255, 0.9); font-size: 1.05rem; font-weight: 600;
+            margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;
+            letter-spacing: 0.5px; flex-shrink: 0;
+        }
+        .pdf-expand-btn {
+            margin-left: auto; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+            color: #fff; width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transition: var(--transition);
+        }
+        .pdf-expand-btn:hover { background: rgba(255,255,255,0.3); }
+        .pdf-expand-btn .material-symbols-rounded { font-size: 20px; }
+        .pdf-expand-btn .btn-expand-label { display: none; font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
+        @media (max-width: 992px) {
+            .pdf-expand-btn { width: auto; padding: 0 14px; }
+            .pdf-expand-btn .btn-expand-label { display: inline; }
+        }
+        .pdf-container {
+            flex: 1; width: 100%; background: white;
+            border-radius: 12px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+            border: 1px solid rgba(255,255,255,0.1); display: flex; position: relative;
+        }
+        .pdf-container iframe { width: 100%; height: 100%; border: none; display: block; }
+  
+        .pdf-drive-btn-mask {
+            position: absolute; top: 0; right: 0; width: 58px; height: 58px;
+            background: #ffffff; border-bottom-left-radius: 12px; z-index: 5;
+        }
+        .pdf-panel.is-fullscreen .pdf-drive-btn-mask { width: 64px; height: 64px; }
+        .pdf-panel.is-fullscreen {
+            position: fixed; inset: 0; width: 100% !important; height: 100% !important;
+            z-index: 3000; padding: 1rem; border-radius: 0;
+        }
+        .pdf-panel.is-fullscreen .pdf-header-title { margin-bottom: 0.75rem; }
+
+        /* PANEL DERECHO: FORMULARIO Y FIRMA */
+        .form-panel { 
+            width: 50%; height: 100%; background: white; padding: 3rem 4rem; 
+            overflow-y: auto; display: flex; flex-direction: column; box-shadow: -10px 0 30px rgba(0,0,0,0.05); z-index: 10; 
+        }
+
+        .breadcrumb-nav { margin-bottom: 1.5rem; font-size: 13px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+        .font-ctrl { display: inline-flex; align-items: center; gap: 2px; background: #f1f5f9; border: 1px solid var(--border-color); border-radius: 999px; padding: 3px; flex-shrink: 0; }
+        .font-ctrl button { border: none; background: #fff; color: var(--primary-dark); font-weight: 800; border-radius: 999px; min-width: 40px; height: 36px; padding: 0 10px; font-size: 14px; line-height: 1; cursor: pointer; box-shadow: 0 1px 2px rgba(15,23,42,.08); }
+        .font-ctrl button:active { transform: scale(.95); }
+        .font-ctrl button:disabled { opacity: .35; cursor: default; }
+        .font-ctrl .font-pct { min-width: 46px; text-align: center; font-size: 12px; font-weight: 700; color: var(--text-muted); }
+        .back-link { text-decoration: none; color: var(--text-muted); display: flex; align-items: center; gap: 6px; font-weight: 600; transition: 0.2s;}
+        .back-link:hover { color: var(--primary); }
+
+        .form-header h1 { color: var(--primary-dark); font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+        .form-header p { color: var(--text-muted); font-size: 0.92rem; line-height: 1.5; margin-bottom: 1.5rem; }
+
+        .section-badge { background: #eff6ff; color: var(--primary); padding: 6px 14px; border-radius: 8px; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; display: inline-flex; align-items: center; margin-bottom: 1.5rem; width: fit-content; }
+
+        /* Documentos seleccionables */
+        .select-doc-card { background: white; border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
+        .select-doc-card:hover { border-color: var(--primary); background: var(--primary-light); }
+        .select-doc-card.active { border-color: var(--primary); background: var(--primary-light); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.05); }
+        .select-doc-card input[type="radio"] { width: 18px; height: 18px; accent-color: var(--primary); }
+
+        /* Panel de Firma */
+        .signature-wrapper { position: relative; background: #f8fafc; border: 1.5px solid var(--border-color); border-radius: 12px; overflow: hidden; margin-bottom: 1.5rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+        #signature-pad-canvas { width: 100%; height: 200px; cursor: crosshair; touch-action: none; display: block; background: white;}
+        .clear-btn { position: absolute; top: 10px; right: 10px; background: rgba(226, 232, 240, 0.8); border: none; padding: 5px 12px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: 0.2s; z-index: 5; }
+        .clear-btn:hover { background: #cbd5e1; color: var(--primary-dark); }
+
+        .btn-sign { background-color: var(--primary-dark); color: white; width: 100%; padding: 13px 20px; border-radius: 12px; font-weight: 700; border: none; font-size: 0.92rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15); }
+        .btn-sign .fa-file-signature { font-size: 0.9rem; }
+        .btn-sign:hover { background-color: var(--primary); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(37, 99, 235, 0.2); }
+
+        .doc-carousel { display: flex; align-items: center; gap: 10px; }
+        .doc-nav-arrow {
+            flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%;
+            border: 1px solid var(--border-color); background: white; color: var(--text-muted);
+            display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition);
+        }
+        .doc-nav-arrow:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+        .doc-nav-arrow:disabled { opacity: 0.25; cursor: default; }
+
+        .doc-current-card {
+            flex: 1; min-width: 0; background: white; border: 1.5px solid var(--primary); border-radius: 14px;
+            padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.08); transition: var(--transition);
+        }
+        .doc-current-card.is-signed { border-color: #86efac; background: #f0fdf4; box-shadow: 0 4px 14px rgba(21, 128, 61, 0.06); }
+        .doc-current-card .doc-name { font-weight: 700; font-size: 0.94rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .doc-current-card .doc-meta { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+        .doc-current-card .doc-badge { flex-shrink: 0; font-size: 0.68rem; font-weight: 700; padding: 5px 12px; border-radius: 20px; background: #fef3c7; color: #b45309; white-space: nowrap; }
+        .doc-current-card.is-signed .doc-badge { background: #dcfce7; color: #15803d; }
+
+        .doc-dots { display: flex; justify-content: center; align-items: center; gap: 6px; flex-wrap: wrap; margin: 12px 0 1.5rem; }
+        .doc-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-color); cursor: pointer; transition: var(--transition); border: none; padding: 0; }
+        .doc-dot:hover { background: #94a3b8; }
+        .doc-dot.active { background: var(--primary); width: 22px; border-radius: 5px; }
+        .doc-dot.is-signed:not(.active) { background: #86efac; }
+
+        .signed-doc-notice { text-align: center; padding: 1.75rem 1rem; background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 14px; }
+        .all-signed-notice { text-align: center; padding: 2.5rem 1rem; }
+
+        /* RESPONSIVE */
+        @media (max-width: 992px) {
+            .nav-links-desktop { display: none; }
+            .split-wrapper { flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; height: auto; padding-bottom: calc(140px + env(safe-area-inset-bottom)); }
+            .pdf-panel { width: 100%; height: 500px; padding: 1.5rem; }
+            .form-panel { width: 100%; padding: 2rem 1.5rem; overflow-y: visible; box-shadow: none; border-radius: 24px 24px 0 0; margin-top: -20px; z-index: 20;}
+            .top-nav { padding: 0 20px; }
+            .bottom-nav { display: flex; } /* FIX: antes solo aparecía debajo de 768px, dejando un hueco sin menú entre 769px y 992px */
+            .signature-wrapper { margin-bottom: 2rem; }
+            .btn-sign { margin-bottom: calc(90px + env(safe-area-inset-bottom)); }
+            .firma-imagen-dropzone, .firma-imagen-preview-wrap { margin-bottom: 1.25rem; }
+        }
+        @media (max-width: 768px) {
+            .top-nav { display: none !important; }
+            .bottom-nav { display: flex; }
+            .split-wrapper { height: 100vh; height: 100dvh; -webkit-overflow-scrolling: touch; padding-bottom: calc(130px + env(safe-area-inset-bottom)); }
+            .pdf-panel { 
+                height: 480px; 
+                padding: 1.25rem 1rem; 
+            }
+        }
+        @media (max-width: 480px) {
+            .pdf-panel { 
+                height: 450px; 
+                padding: 1rem 0.75rem; 
+            }
+            #signature-pad-canvas { 
+                height: 170px; 
+            }
+        }
+
+        /* ===== AJUSTES MÓVIL: tolerancia al tamaño de letra del celular ===== */
+        html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+        #i18nSwitch { display: none !important; }
+        .lang-ctrl button { min-width: 36px; } .lang-ctrl button.on { background: var(--primary-dark); color: #fff; }
+        .doc-current-card .doc-name { overflow-wrap: anywhere; }
+        @media (max-width: 992px) {
+            /* Los paneles nunca se encogen: si el texto crece, la página hace scroll en vez de montarse */
+            .pdf-panel, .form-panel { flex-shrink: 0; }
+            .split-wrapper { overflow-y: auto; overflow-x: hidden; }
+            .pdf-panel { height: clamp(300px, 52dvh, 480px); }
+            .form-panel { height: auto !important; min-height: 0; }
+            .doc-current-card { flex-wrap: wrap; }
+            .doc-current-card .doc-name { white-space: normal; }
+            .form-header h1 { font-size: clamp(1.25rem, 5.2vw, 1.8rem); overflow-wrap: anywhere; }
+            /* Espacio generoso al final: la barra inferior flotante nunca tapa el botón de firma */
+            .split-wrapper { padding-bottom: 0 !important; }
+            .form-panel { padding-bottom: calc(var(--nav-h, 110px) + 48px) !important; }
+            .btn-sign { margin-bottom: 24px !important; min-height: 52px; flex-wrap: wrap; text-align: center; }
+            .bottom-nav { height: auto; min-height: 64px; padding-top: 6px; padding-bottom: calc(6px + env(safe-area-inset-bottom)); transition: transform .25s ease, opacity .2s ease; }
+            .bottom-item { height: auto; min-height: 44px; }
+            .bottom-item.active > span:last-child { font-size: 12px; }
+            /* Mientras el docente dibuja su firma, la barra se oculta para no estorbar */
+            body.is-signing .bottom-nav { transform: translateY(140%); opacity: 0; pointer-events: none; }
+            .signature-wrapper { scroll-margin-bottom: 120px; }
+        }
+        @media (max-width: 480px) {
+            .pdf-panel { height: clamp(280px, 46dvh, 450px); }
+            .form-panel { padding: 1.5rem 1rem; }
+            .doc-nav-arrow { width: 36px; height: 36px; }
+            #signature-pad-canvas { height: clamp(150px, 26dvh, 190px); }
+        }
+
+        /* --- REDISEÑO DE SWEETALERT2 (UI Corporativa) --- */
+        div:where(.swal2-container) div:where(.swal2-popup) {
+            border-radius: 16px !important;
+            padding: 24px !important;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
+            font-family: 'Inter', sans-serif !important;
+            border: 1px solid rgba(0,0,0,0.05) !important;
+        }
+        div:where(.swal2-container) h2:where(.swal2-title) {
+            font-size: 1.35rem !important;
+            color: var(--primary-dark) !important;
+            font-weight: 700 !important;
+            padding: 0 !important;
+        }
+        div:where(.swal2-container) div:where(.swal2-html-container) {
+            font-size: 0.95rem !important;
+            color: var(--text-muted) !important;
+            margin: 16px 0 0 0 !important;
+            line-height: 1.5 !important;
+        }
+        div:where(.swal2-container) .swal2-actions {
+            margin-top: 24px !important;
+            gap: 12px !important;
+        }
+        div:where(.swal2-container) button:where(.swal2-styled) {
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            padding: 10px 24px !important;
+            font-size: 0.9rem !important;
+            transition: all 0.2s ease !important;
+            box-shadow: none !important;
+        }
+        div:where(.swal2-container) button:where(.swal2-styled):hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+        }
+
+        /* ===== Recibo por honorarios ===== */
+        .recibo-box { border: 1.5px solid var(--border-color); background: #fff; border-radius: 16px; padding: 18px 18px 20px; }
+        .recibo-box.is-locked { background: #f8fafc; }
+        .recibo-box.is-sent { background: #f0fdf4; border-color: #86efac; }
+        .recibo-title { font-weight: 800; color: var(--primary-dark); font-size: 1rem; display: flex; align-items: center; gap: 8px; margin: 0 0 6px; }
+        .recibo-help { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0 0 14px; }
+        .recibo-drop { border: 2px dashed #cbd5e1; border-radius: 12px; padding: 22px 14px; text-align: center; cursor: pointer; background: #f8fafc; transition: var(--transition); }
+        .recibo-drop:hover, .recibo-drop.drag { border-color: var(--primary); background: var(--primary-light); }
+        .recibo-drop i { font-size: 1.6rem; color: var(--primary); margin-bottom: 6px; }
+        .recibo-drop .nm { font-weight: 700; font-size: .9rem; word-break: break-all; }
+        .recibo-aviso { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; border-radius: 10px; padding: 10px 14px; font-size: .82rem; margin-bottom: 14px; }
+        .recibo-datos { background: #f1f5f9; border-radius: 10px; padding: 12px 14px; font-size: .82rem; color: #334155; margin-bottom: 14px; line-height: 1.6; }
+        .btn-link-doc { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: .85rem; color: var(--primary); text-decoration: none; }
+        .btn-link-doc:hover { text-decoration: underline; }
+        .btn-sec { background: #fff; color: var(--primary-dark); border: 1.5px solid var(--border-color); border-radius: 10px; padding: 9px 16px; font-weight: 700; font-size: .85rem; }
+        .btn-sec:hover { border-color: var(--primary); }
+
+        .bloques { display: flex; flex-direction: column; }
+        .bloques > section { display: block; }
+        .pdf-toggle-btn { display: none; width: auto; padding: 0 14px; margin-left: auto; margin-right: 8px; }
+        .pdf-toggle-btn .btn-expand-label { display: inline; }
+        @media (max-width: 992px) {
+            .pdf-toggle-btn { display: inline-flex; }
+            .pdf-panel.is-collapsed { height: auto !important; padding-bottom: 1rem; }
+            .pdf-panel.is-collapsed .pdf-container { display: none; }
+            .pdf-panel.is-collapsed .pdf-expand-btn:not(.pdf-toggle-btn) { display: none; }
+        }
+        /* --- Recibo: tarjeta compacta --- */
+        .recibo-title { font-size: .98rem; }
+        .recibo-help { font-size: .82rem; margin-bottom: 12px; }
+        .recibo-aviso { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: .8rem; padding: 8px 12px; }
+        .recibo-aviso a { font-weight: 700; color: #92400e; text-decoration: underline; }
+        .fact-det { border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 14px; background: #fff; }
+        .fact-det summary { cursor: pointer; padding: 9px 12px; font-size: .82rem; font-weight: 700; color: var(--primary-dark); list-style: none; display: flex; align-items: center; justify-content: space-between; }
+        .fact-det summary::-webkit-details-marker { display: none; }
+        .fact-det summary::after { content: '+'; font-size: 1.1rem; line-height: 1; color: var(--text-muted); }
+        .fact-det[open] summary::after { content: '–'; }
+        .fact-det .fact-body { padding: 0 12px 12px; font-size: .8rem; color: #334155; line-height: 1.55; }
+        .fact-row { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; padding: 6px 0; border-top: 1px dashed #e2e8f0; }
+        .fact-row span { color: var(--text-muted); flex-shrink: 0; }
+        .fact-row b { text-align: right; font-weight: 600; overflow-wrap: anywhere; }
+        .btn-copy { border: 1px solid var(--border-color); background: #f8fafc; border-radius: 6px; font-size: .7rem; font-weight: 700; padding: 2px 8px; color: var(--primary-dark); cursor: pointer; margin-left: 6px; }
+        /* --- Zona de subida --- */
+        .up-zone { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; padding: 26px 16px; border: 1.5px dashed #94a3b8; border-radius: 14px; background: linear-gradient(180deg, #f8fafc, #f1f5f9); cursor: pointer; transition: var(--transition); }
+        .up-zone:hover, .up-zone.drag { border-color: var(--primary); background: var(--primary-light); transform: translateY(-1px); }
+        .up-ico { width: 52px; height: 52px; border-radius: 16px; background: #fff; box-shadow: 0 4px 12px rgba(30,64,175,.12); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.35rem; margin-bottom: 6px; }
+        .up-main { font-weight: 800; font-size: .92rem; color: var(--text-main); }
+        .up-main u { color: var(--primary); text-decoration: none; border-bottom: 1.5px solid var(--primary); }
+        .up-hint { font-size: .74rem; color: var(--text-muted); }
+        .up-file { display: none; align-items: center; gap: 12px; padding: 12px 14px; border: 1.5px solid #86efac; background: #f0fdf4; border-radius: 14px; }
+        .up-file .up-ico { width: 42px; height: 42px; font-size: 1.1rem; margin: 0; color: #dc2626; box-shadow: none; background: #fff; flex-shrink: 0; }
+        .up-file .fn { flex: 1; min-width: 0; }
+        .up-file .fn b { display: block; font-size: .86rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .up-file .fn small { color: var(--text-muted); font-size: .72rem; }
+        .up-file .up-x { border: none; background: #fff; width: 32px; height: 32px; border-radius: 50%; color: var(--text-muted); cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,.1); flex-shrink: 0; }
+        .up-file .up-x:hover { color: #dc2626; }
+        #btnEnviarRecibo { margin-top: 16px !important; margin-bottom: 0 !important; }
+        .btn-sign:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* ===== Versión de una columna ===== */
+        body { overflow: hidden; }
+        .split-wrapper { display: block !important; overflow-y: auto !important; overflow-x: hidden; flex: 1; height: auto !important; padding-bottom: 0 !important; }
+        .form-panel { width: 100% !important; max-width: 940px; height: auto !important; margin: 0 auto !important; background: transparent !important; box-shadow: none !important; border-radius: 0 !important; padding: 2rem 1.25rem calc(var(--nav-h, 40px) + 60px) !important; overflow: visible !important; display: block !important; }
+        .bloques { display: flex; flex-direction: column; gap: 1.75rem; }
+        .sec-title { font-size: .8rem; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; color: var(--text-muted); margin: 0 0 .75rem; display: flex; align-items: center; gap: 8px; }
+        .recibo-box { box-shadow: 0 4px 16px rgba(15,23,42,.04); }
+        .recibo-box .btn-sign { max-width: 360px; }
+        .recibo-lead { font-size: .88rem; color: #475569; line-height: 1.55; margin: 0 0 14px; }
+
+        /* Tabla de documentos */
+        .doc-tabla { background: #fff; border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 16px rgba(15,23,42,.04); }
+        .dt-head, .dt-row { display: grid; grid-template-columns: 1fr 150px 110px; align-items: center; gap: 12px; padding: 12px 18px; }
+        .dt-head { background: #f8fafc; font-size: .7rem; font-weight: 800; letter-spacing: .6px; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid var(--border-color); }
+        .dt-item + .dt-item { border-top: 1px solid #f1f5f9; }
+        .dt-name { font-weight: 700; font-size: .92rem; display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .dt-name i { color: #dc2626; }
+        .dt-name span { overflow-wrap: anywhere; }
+        .dt-badge { justify-self: start; background: #dcfce7; color: #15803d; font-size: .7rem; font-weight: 700; padding: 4px 11px; border-radius: 20px; white-space: nowrap; }
+        .dt-badge.env { background: #dbeafe; color: #1d4ed8; }
+        .btn-ver { justify-self: end; background: #fff; border: 1.5px solid var(--border-color); color: var(--primary-dark); font-weight: 700; font-size: .8rem; border-radius: 9px; padding: 7px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: var(--transition); }
+        .btn-ver:hover, .btn-ver.on { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+        .dt-item.open { background: #fafcff; }
+
+        /* Visor desplegable */
+        .visor-box { margin: 0 18px 18px; border: 1px solid var(--border-color); border-radius: 14px; overflow: hidden; background: #fff; }
+        .visor-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; background: #1e3a8a; color: #fff; font-size: .82rem; font-weight: 700; }
+        .visor-bar .acc { display: flex; gap: 6px; }
+        .visor-bar button { border: none; background: rgba(255,255,255,.18); color: #fff; font-weight: 700; font-size: .75rem; border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+        .visor-bar button:hover { background: rgba(255,255,255,.3); }
+        .visor-frame { position: relative; height: 560px; background: #fff; }
+        .visor-frame iframe { width: 100%; height: 100%; border: none; display: block; }
+        .visor-box.is-full { position: fixed; inset: 0; z-index: 3000; margin: 0; border-radius: 0; display: flex; flex-direction: column; }
+        .visor-box.is-full .visor-frame { flex: 1; height: auto; }
+        @media (max-width: 640px) {
+            .dt-head { display: none; }
+            .dt-row { grid-template-columns: 1fr auto; row-gap: 8px; }
+            .dt-row .dt-badge { grid-row: 2; grid-column: 1; }
+            .dt-row .btn-ver { grid-row: 1 / span 2; grid-column: 2; align-self: center; }
+            .visor-box { margin: 0 10px 14px; }
+            .visor-frame { height: 62dvh; }
+            .form-panel { padding-top: 1.25rem !important; }
+        }
+
+        /* ===== Estándar de tablas del portal (igual que Área Académica) ===== */
+        .sec-head { display: flex; align-items: center; gap: 12px; margin: 0 0 14px; }
+        .sec-ico { width: 38px; height: 38px; border-radius: 11px; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+        .sec-head h2 { font-size: 1.12rem; font-weight: 800; letter-spacing: -0.02em; color: var(--primary-dark); margin: 0; line-height: 1.2; }
+        .sec-head p { margin: 2px 0 0; font-size: .82rem; color: var(--text-muted); }
+        .sec-count { background: var(--primary-light); color: var(--primary); font-size: .72rem; font-weight: 800; padding: 3px 10px; border-radius: 30px; margin-left: 6px; vertical-align: middle; }
+
+        .doc-tabla { background: #fff; border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.01); }
+        .dt-head, .dt-row { display: grid; grid-template-columns: minmax(0, 1fr) 170px 120px; align-items: center; gap: 12px; padding: 0 20px; }
+        .dt-head { background: #f8fafc; border-bottom: 1px solid var(--border-color); padding-top: 14px; padding-bottom: 14px; font-size: .72rem; font-weight: 700; letter-spacing: .4px; color: #64748b; text-transform: uppercase; }
+        .dt-row { padding-top: 14px; padding-bottom: 14px; transition: background-color .12s; }
+        .dt-item { border-bottom: 1px solid #f1f5f9; }
+        .dt-item:last-child { border-bottom: none; }
+        .dt-item:not(.open) .dt-row:hover { background: #f8fafc; }
+        .dt-item.open { background: #fff; }
+        .dt-item + .dt-item { border-top: none; }
+        .dt-name { display: flex; align-items: center; gap: 12px; min-width: 0; font-weight: 700; font-size: .9rem; color: var(--text-main); }
+        .dt-ico { width: 36px; height: 36px; border-radius: 10px; background: #fef2f2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: .95rem; flex-shrink: 0; }
+        .dt-ico.env { background: #eff6ff; color: var(--primary); }
+        .dt-name .tx { min-width: 0; line-height: 1.25; }
+        .dt-name .tx b { display: block; font-weight: 700; overflow-wrap: anywhere; }
+        .dt-name .tx small { display: block; font-weight: 500; font-size: .74rem; color: var(--text-muted); margin-top: 2px; }
+        .dt-badge { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 30px; font-size: .72rem; font-weight: 700; white-space: nowrap; background: #ecfdf5; color: #047857; justify-self: start; }
+        .dt-badge.env { background: #eff6ff; color: #1d4ed8; }
+        .dt-acc { justify-self: end; }
+        .btn-ver { background: #eff6ff; color: var(--primary); font-weight: 700; font-size: .8rem; border: none; padding: 8px 16px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: .2s; cursor: pointer; }
+        .btn-ver:hover, .btn-ver.on { background: var(--primary); color: #fff; border: none; }
+        .btn-sec { background: #eff6ff; color: var(--primary); font-weight: 700; font-size: .8rem; border: none; padding: 8px 16px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; transition: .2s; }
+        .btn-sec:hover { background: var(--primary); color: #fff; }
+
+        .visor-box { margin: 0 20px 18px; border-radius: 12px; border: 1px solid var(--border-color); }
+        .visor-bar { background: var(--primary-dark); padding: 10px 14px; }
+        .visor-bar span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .recibo-box { border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.01); }
+        @media (max-width: 640px) {
+            .dt-row { grid-template-columns: minmax(0, 1fr) auto; row-gap: 10px; padding: 14px 16px; }
+            .dt-row .dt-badge { grid-row: 2; grid-column: 1; }
+            .dt-row .dt-acc { grid-row: 1 / span 2; grid-column: 2; align-self: center; }
+            .visor-box { margin: 0 12px 14px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVEGACIÓN SUPERIOR (ESCRITORIO) -->
+    <nav class="top-nav d-none d-md-flex">
+        <a href="dashboard-docente.html" class="nav-brand">
+            <div class="logo-box"><span class="material-symbols-rounded">school</span></div>
+            <span class="brand-text">Blackwell</span>
+        </a>
+        <div class="nav-links-desktop">
+            <a href="dashboard-docente.html" class="nav-item"><span class="material-symbols-rounded">home</span> Dashboard</a>
+            <a href="misexpedientes.html" class="nav-item active"><span class="material-symbols-rounded">folder_open</span> Expedientes</a>
+            <a href="miscursos.html" class="nav-item"><span class="material-symbols-rounded">co_present</span> Mis Clases</a>
+        </div>
+        <div class="nav-user d-flex gap-3 align-items-center" onclick="logout()">
+            <div class="user-trigger">
+                <span id="userNameNav">Cargando...</span>
+                <div class="user-avatar" id="userInitialNav">DC</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- NAVEGACIÓN INFERIOR (MÓVIL) -->
+    <nav class="bottom-nav">
+        <a href="dashboard-docente.html" class="bottom-item">
+            <span class="icon-wrap"><span class="material-symbols-rounded">home</span></span><span>Inicio</span>
+        </a>
+        <a href="misexpedientes.html" class="bottom-item active">
+            <span class="icon-wrap"><span class="material-symbols-rounded">folder_open</span></span><span>Expedientes</span>
+        </a>
+        <a href="miscursos.html" class="bottom-item">
+            <span class="icon-wrap"><span class="material-symbols-rounded">co_present</span></span><span>Mis Clases</span>
+        </a>
+        <a href="#" onclick="logout()" class="bottom-item"> 
+            <span class="icon-wrap"><span class="material-symbols-rounded">logout</span></span><span>Salir</span>
+        </a>
+    </nav>
+
+    <!-- UNA SOLA COLUMNA: recibo + tabla de documentos con visor desplegable -->
+    <div class="split-wrapper">
+        <div class="form-panel">
+            <div class="breadcrumb-nav">
+                <a href="misexpedientes.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Volver a mis expedientes</a>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <div class="font-ctrl lang-ctrl" role="group" aria-label="Idioma" translate="no">
+                    <button type="button" data-l="es" onclick="cambiarIdioma('es')">ES</button>
+                    <button type="button" data-l="en" onclick="cambiarIdioma('en')">EN</button>
+                </div>
+                <div class="font-ctrl" role="group" aria-label="Tamaño de letra">
+                    <button type="button" id="btnFontMenos" onclick="cambiarTamanoLetra(-1)" aria-label="Reducir letra">A−</button>
+                    <span class="font-pct" id="fontPct">100%</span>
+                    <button type="button" id="btnFontMas" onclick="cambiarTamanoLetra(1)" aria-label="Aumentar letra" style="font-size:17px;">A+</button>
+                </div>
+                </div>
+            </div>
+
+            <div class="form-header">
+                <h1 id="txtTitulo">Mis documentos</h1>
+                <p id="txtDetalle">Cargando…</p>
+            </div>
+
+            <div class="bloques">
+                <section id="secRecibo">
+                    <div class="sec-head"><div class="sec-ico"><i class="fa-solid fa-receipt"></i></div><div><h2>Recibo por honorarios</h2><p>Documento que nos permite gestionar tu pago.</p></div></div>
+                    <div id="panelRecibo"></div>
+                </section>
+                <section id="secDocs">
+                    <div class="sec-head"><div class="sec-ico"><i class="fa-solid fa-file-circle-check"></i></div><div><h2>Documentos firmados <span class="sec-count" id="docCount">0</span></h2><p>Consulta los documentos que ya firmaste en esta invitación.</p></div></div>
+                    <div class="doc-tabla" id="docTabla"><div class="text-center text-muted py-3"><i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando documentos...</div></div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
+        const urlParams = new URLSearchParams(window.location.search);
+        const invId = urlParams.get('inv') || urlParams.get('invId');
+        const userId = localStorage.getItem('userId');
+
+        let documentosDisponibles = [];
+        let indiceDocActual = 0;
+        let datosPagina = null;
+        let archivoRecibo = null;
+        const MAX_PDF_BYTES = 6 * 1024 * 1024;
+
+        // ---- Tamaño de letra (A− / A+): escala todo lo basado en rem; se recuerda en el dispositivo ----
+        const PASOS_LETRA = [70, 80, 90, 100, 115, 130, 150, 170];
+        let idxLetra = 3;
+        function aplicarTamanoLetra() {
+            document.documentElement.style.fontSize = (16 * PASOS_LETRA[idxLetra] / 100) + 'px';
+            const pct = document.getElementById('fontPct'); if (pct) pct.textContent = PASOS_LETRA[idxLetra] + '%';
+            const m = document.getElementById('btnFontMenos'), M = document.getElementById('btnFontMas');
+            if (m) m.disabled = idxLetra === 0; if (M) M.disabled = idxLetra === PASOS_LETRA.length - 1;
+            medirBarraInferior();
+                    }
+        function cambiarIdioma(l) { if (window.i18n) window.i18n.setLang(l); pintarIdioma(); }
+        function pintarIdioma() {
+            const l = (window.i18n && window.i18n.getLang && window.i18n.getLang()) || 'es';
+            document.querySelectorAll('.lang-ctrl button').forEach(b => b.classList.toggle('on', b.getAttribute('data-l') === l));
+        }
+        window.addEventListener('load', pintarIdioma);
+        window.addEventListener('languagechange-bgu', pintarIdioma);
+        function cambiarTamanoLetra(d) {
+            idxLetra = Math.min(PASOS_LETRA.length - 1, Math.max(0, idxLetra + d));
+            try { localStorage.setItem('contratoFontIdx', String(idxLetra)); } catch (e) {}
+            aplicarTamanoLetra();
+        }
+        // Mide la altura real de la barra inferior para reservar ese espacio y que nunca tape el botón de firma
+        function medirBarraInferior() {
+            const nav = document.querySelector('.bottom-nav');
+            if (!nav) return;
+            const h = nav.offsetParent === null && getComputedStyle(nav).display === 'none' ? 0 : nav.getBoundingClientRect().height;
+            document.documentElement.style.setProperty('--nav-h', Math.ceil(h + 14) + 'px');
+        }
+        window.addEventListener('resize', medirBarraInferior);
+        window.addEventListener('load', medirBarraInferior);
+
+
+        function nombrePila() { return (localStorage.getItem('userName') || '').split(' ')[0]; }
+        function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const fullName = localStorage.getItem('userName') || "Docente";
+            document.getElementById('userNameNav').innerText = fullName.split(' ')[0];
+            document.getElementById('userInitialNav').innerText = fullName.substring(0,2).toUpperCase();
+            if (!invId) {
+                Swal.fire('Error', 'Falta el curso en la dirección.', 'error').then(() => window.location.href = "misexpedientes.html");
+                return;
+            }
+            try { const g = parseInt(localStorage.getItem('contratoFontIdx'), 10); if (!isNaN(g) && g >= 0 && g < PASOS_LETRA.length) idxLetra = g; } catch (e) {}
+            aplicarTamanoLetra();
+            cargar();
+        });
+
+        async function cargar() {
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_documentos_invitacion_docente', idInvitacion: invId, docenteId: userId }) });
+                const r = await res.json();
+                if (r.status !== 'success') {
+                    document.getElementById('txtDetalle').textContent = r.message || 'No se pudo cargar.';
+                    document.getElementById('docCarousel').innerHTML = '';
+                    return;
+                }
+                datosPagina = r;
+                const inv = r.invitacion;
+                document.getElementById('txtTitulo').textContent = inv.curso || 'Mis documentos';
+                document.getElementById('txtDetalle').textContent = `Invitación N° ${inv.idInvitacion}` + (inv.programa ? ` • ${inv.programa}` : '');
+                documentosDisponibles = r.documentos || [];
+                indiceDocActual = 0;
+                renderCarrusel();
+                renderRecibo();
+            } catch (e) {
+                console.error(e);
+                Swal.fire('Error', 'Fallo de conexión al servidor.', 'error');
+            }
+        }
+
+        let visorAbierto = null; // clave de la fila con visor abierto
+
+        function idDrive(url) { const m = String(url || '').match(/[-\w]{25,}/); return m ? m[0] : null; }
+        function urlPreview(url) { const id = idDrive(url); return id ? `https://drive.google.com/file/d/${id}/preview` : url; }
+
+        function filasTabla() {
+            const filas = (documentosDisponibles || []).map((d, i) => ({ key: 'd' + i, nombre: d.nombre, url: d.url, sub: 'Versión ' + (d.version || 1) + (d.estado && d.estado !== 'Firmado' ? ' · ' + d.estado : ''), badge: 'Firmado', env: false }));
+            const rc = (datosPagina && datosPagina.recibo) || {};
+            if (rc.url) filas.push({ key: 'recibo', nombre: 'Recibo por honorarios', url: rc.url, sub: 'Enviado el ' + String(rc.fecha || ''), badge: 'Enviado', env: true });
+            return filas;
+        }
+
+        function renderCarrusel() { renderDocs(); }
+        function renderDocs() {
+            const cont = document.getElementById('docTabla');
+            const filas = filasTabla();
+            if (filas.length === 0) {
+                cont.innerHTML = '<p class="text-muted m-0 text-center py-4 px-3">Aún no tienes documentos firmados en esta invitación.</p>';
+                return;
+            }
+            const cnt = document.getElementById('docCount'); if (cnt) cnt.textContent = (documentosDisponibles || []).length;
+            cont.innerHTML = `<div class="dt-head"><span>Documento</span><span>Estado</span><span></span></div>` + filas.map(f => {
+                const abierto = visorAbierto === f.key;
+                return `<div class="dt-item ${abierto ? 'open' : ''}">
+                    <div class="dt-row">
+                        <div class="dt-name"><div class="dt-ico ${f.env ? 'env' : ''}"><i class="fa-solid ${f.env ? 'fa-receipt' : 'fa-file-pdf'}"></i></div><div class="tx"><b>${esc(f.nombre)}</b><small>${esc(f.sub)}</small></div></div>
+                        <span class="dt-badge ${f.env ? 'env' : ''}"><i class="fa-solid ${f.env ? 'fa-paper-plane' : 'fa-circle-check'}"></i> ${esc(f.badge)}</span>
+                        <div class="dt-acc"><button type="button" class="btn-ver ${abierto ? 'on' : ''}" onclick="alternarVisor('${f.key}')"><i class="fa-solid ${abierto ? 'fa-xmark' : 'fa-eye'}"></i> ${abierto ? 'Cerrar' : 'Ver'}</button></div>
+                    </div>
+                    ${abierto ? `<div class="visor-box" id="visorBox">
+                        <div class="visor-bar"><span>${esc(f.nombre)}</span><div class="acc"><button type="button" onclick="ampliarVisor()" id="btnAmpliar"><i class="fa-solid fa-expand"></i> Ampliar</button><button type="button" onclick="alternarVisor('${f.key}')"><i class="fa-solid fa-xmark"></i> Cerrar</button></div></div>
+                        <div class="visor-frame"><iframe src="${esc(urlPreview(f.url))}"></iframe><div class="pdf-drive-btn-mask" aria-hidden="true"></div></div>
+                    </div>` : ''}
+                </div>`;
+            }).join('');
+            if (visorAbierto) setTimeout(() => { const el = document.getElementById('visorBox'); if (el && !el.dataset.visto) { el.dataset.visto = '1'; el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } }, 60);
+        }
+        function alternarVisor(key) { visorAbierto = (visorAbierto === key) ? null : key; renderDocs(); }
+        function ampliarVisor() {
+            const box = document.getElementById('visorBox'); if (!box) return;
+            const full = box.classList.toggle('is-full');
+            document.getElementById('btnAmpliar').innerHTML = full ? '<i class="fa-solid fa-compress"></i> Reducir' : '<i class="fa-solid fa-expand"></i> Ampliar';
+        }
+
+        // ---------- RECIBO POR HONORARIOS ----------
+        function verRecibo() { visorAbierto = 'recibo'; renderDocs(); const t = document.getElementById('docTabla'); if (t) t.scrollIntoView({ behavior: 'smooth' }); }
+
+        function copiar(texto, btn) {
+            const ok = () => { const t = btn.textContent; btn.textContent = '¡Copiado!'; setTimeout(() => btn.textContent = t, 1200); };
+            try { navigator.clipboard.writeText(texto).then(ok, ok); } catch (e) { ok(); }
+        }
+
+        function renderRecibo() {
+            const box = document.getElementById('panelRecibo');
+            const rc = datosPagina.recibo || {};
+            const faltan = datosPagina.faltanPago || [];
+            const cursoTxt = datosPagina.invitacion.curso || '';
+            const progTxt = datosPagina.invitacion.programa || '';
+            const concepto = `Dictation of Synchronous Classes "${cursoTxt}", "${progTxt}".`;
+            archivoRecibo = null;
+
+            // Si el recibo es la acción pendiente, va primero; si no, primero los documentos
+            const pendiente = rc.habilitado && !rc.url;
+            document.getElementById('secRecibo').style.order = pendiente ? 0 : 2;
+            document.getElementById('secDocs').style.order = pendiente ? 1 : 0;
+
+            if (!rc.habilitado) {
+                box.innerHTML = `<div class="recibo-box is-locked">
+                    <p class="recibo-title"><i class="fa-solid fa-lock" style="color:#94a3b8;"></i> Tu recibo por honorarios se habilitará pronto</p>
+                    <p class="recibo-help mb-0">Cuando la universidad confirme el dictado de tu curso, podrás subir aquí tu recibo por honorarios. Te avisaremos por correo.</p></div>`;
+                return;
+            }
+
+            const avisoPago = faltan.length ? `<div class="recibo-aviso"><i class="fa-solid fa-triangle-exclamation"></i><span>Para poder depositarte, necesitamos tus <b>datos bancarios</b>.</span><a href="perfil.html">Completarlos en mi perfil</a></div>` : '';
+            const fila = (k, v, copy) => `<div class="fact-row"><span>${k}</span><b>${v}${copy ? `<button type="button" class="btn-copy" onclick="copiar(${JSON.stringify(copy).replace(/"/g, '&quot;')}, this)">Copiar</button>` : ''}</b></div>`;
+            const datosFact = `<details class="fact-det"><summary>Datos para tu recibo</summary><div class="fact-body">
+                ${fila('Empresa', 'Global Education LLC', 'Global Education LLC')}
+                ${fila('Dirección', '6100 Lake Ellenor Drive, Suite 100F, Orlando, Florida 32809', '6100 Lake Ellenor Drive, Suite 100F, Orlando, Florida 32809')}
+                ${fila('EIN', '36-5012328', '36-5012328')}
+                ${fila('Concepto', esc(concepto), concepto)}
+            </div></details>`;
+
+            if (rc.url) {
+                box.innerHTML = `<div class="recibo-box is-sent">
+                    <p class="recibo-title"><i class="fa-solid fa-circle-check" style="color:#16a34a;"></i> Recibo enviado</p>
+                    <p class="recibo-help">Lo enviaste el <b>${esc(rc.fecha)}</b> y el área de pagos ya fue notificada. Si necesitas corregirlo, puedes reemplazarlo.</p>
+                    ${avisoPago}
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn-sec" onclick="verRecibo()"><i class="fa-solid fa-eye me-1"></i> Ver mi recibo</button>
+                        <button type="button" class="btn-sec" onclick="mostrarFormularioRecibo()"><i class="fa-solid fa-rotate me-1"></i> Reemplazar</button>
+                    </div>
+                    <div id="formRecibo" style="display:none;margin-top:14px;"></div></div>`;
+                return;
+            }
+            box.innerHTML = `<div class="recibo-box">
+                <p class="recibo-lead">Para gestionar tu pago, adjunta el recibo por honorarios de este curso en formato PDF. Revisa abajo los datos que debe llevar.</p>
+                ${avisoPago}${datosFact}
+                <div id="formRecibo"></div></div>`;
+            mostrarFormularioRecibo();
+        }
+
+        function mostrarFormularioRecibo() {
+            const f = document.getElementById('formRecibo');
+            f.style.display = 'block';
+            f.innerHTML = `
+                <input type="file" id="inpRecibo" accept="application/pdf,.pdf" style="display:none;">
+                <div class="up-zone" id="dropRecibo" onclick="document.getElementById('inpRecibo').click()">
+                    <div class="up-ico"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                    <div class="up-main">Arrastra tu recibo aquí o <u>selecciónalo</u></div>
+                    <div class="up-hint">Formato PDF · hasta 6 MB</div>
+                </div>
+                <div class="up-file" id="fileRecibo">
+                    <div class="up-ico"><i class="fa-solid fa-file-pdf"></i></div>
+                    <div class="fn"><b id="nmRecibo"></b><small id="szRecibo"></small></div>
+                    <button type="button" class="up-x" onclick="quitarArchivo()" title="Quitar"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <button type="button" class="btn-sign mt-3" id="btnEnviarRecibo" onclick="enviarRecibo()" disabled><i class="fa-solid fa-paper-plane"></i> Enviar recibo</button>`;
+            const inp = document.getElementById('inpRecibo'), drop = document.getElementById('dropRecibo');
+            inp.addEventListener('change', () => elegirArchivo(inp.files[0]));
+            ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('drag'); }));
+            ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('drag'); }));
+            drop.addEventListener('drop', e => elegirArchivo(e.dataTransfer.files[0]));
+        }
+
+        function elegirArchivo(file) {
+            if (!file) return;
+            const esPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
+            if (!esPdf) { Swal.fire({ icon: 'warning', title: 'Solo PDF', text: 'Por favor, adjunta tu recibo en formato PDF.', heightAuto: false, scrollbarPadding: false }); return; }
+            if (file.size > MAX_PDF_BYTES) { Swal.fire({ icon: 'warning', title: 'Archivo muy pesado', text: 'El PDF no debe superar los 6 MB. Intenta comprimirlo e inténtalo de nuevo.', heightAuto: false, scrollbarPadding: false }); return; }
+            archivoRecibo = file;
+            document.getElementById('nmRecibo').textContent = file.name;
+            document.getElementById('szRecibo').textContent = (file.size / 1024 < 1024) ? Math.round(file.size / 1024) + ' KB' : (file.size / 1048576).toFixed(1) + ' MB';
+            document.getElementById('dropRecibo').style.display = 'none';
+            document.getElementById('fileRecibo').style.display = 'flex';
+            document.getElementById('btnEnviarRecibo').disabled = false;
+        }
+
+        function quitarArchivo() {
+            archivoRecibo = null;
+            const inp = document.getElementById('inpRecibo'); if (inp) inp.value = '';
+            document.getElementById('dropRecibo').style.display = 'flex';
+            document.getElementById('fileRecibo').style.display = 'none';
+            document.getElementById('btnEnviarRecibo').disabled = true;
+        }
+
+        function leerBase64(file) {
+            return new Promise((ok, ko) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(',')[1]); r.onerror = ko; r.readAsDataURL(file); });
+        }
+
+        async function enviarRecibo() {
+            if (!archivoRecibo) return;
+            const reemplazo = !!(datosPagina.recibo && datosPagina.recibo.url);
+            const c = await Swal.fire({
+                title: reemplazo ? '¿Reemplazar tu recibo?' : '¿Enviar tu recibo?',
+                text: 'Lo recibirá el área de pagos de la universidad. Si necesitas corregirlo, podrás reemplazarlo.',
+                icon: 'question', showCancelButton: true, confirmButtonColor: '#1e3a8a',
+                confirmButtonText: 'Sí, enviar', cancelButtonText: 'Cancelar', reverseButtons: true,
+                heightAuto: false, scrollbarPadding: false
+            });
+            if (!c.isConfirmed) return;
+            const btn = document.getElementById('btnEnviarRecibo');
+            const html = btn.innerHTML; btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Enviando...';
+            try {
+                const b64 = await leerBase64(archivoRecibo);
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'subir_recibo_honorarios', idInvitacion: invId, docenteId: userId, fileBase64: b64, fileName: archivoRecibo.name, mimeType: 'application/pdf' }) });
+                const r = await res.json();
+                if (r.status === 'success') {
+                    await Swal.fire({ icon: 'success', title: '¡Recibo enviado!', text: 'Gracias' + (nombrePila() ? ', ' + nombrePila() : '') + '. Hemos notificado al área de pagos y daremos seguimiento a tu pago.', confirmButtonColor: '#1e3a8a', heightAuto: false, scrollbarPadding: false });
+                    cargar();
+                } else {
+                    Swal.fire({ icon: 'error', title: 'No se pudo enviar', text: r.message || 'Ocurrió un inconveniente. Por favor, inténtalo nuevamente.', heightAuto: false, scrollbarPadding: false });
+                    btn.disabled = false; btn.innerHTML = html;
+                }
+            } catch (e) {
+                Swal.fire({ icon: 'error', title: 'Error de red', text: 'No se pudo conectar con el servidor.', heightAuto: false, scrollbarPadding: false });
+                btn.disabled = false; btn.innerHTML = html;
+            }
+        }
+
+        function logout() {
+            Swal.fire({
+                title: '¿Cerrar sesión?',
+                text: 'Vas a salir del portal del docente.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, cerrar sesión',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    localStorage.clear();
+                    window.location.href = "index.html";
+                }
+            });
+        }
+    </script>
+<script src="docente-menu.js"></script>
+<script src="i18n-en.js"></script>
+<script src="i18n.js"></script>
+</body>
+</html>

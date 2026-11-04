@@ -135,7 +135,9 @@
             .filter-card { padding: 16px; }
             .table-wrapper { overflow-x: auto; }
             .custom-table { min-width: 560px; }
-        }</style>
+        }        .badge-recibo { display:inline-flex; align-items:center; gap:5px; margin-top:4px; font-size:.7rem; font-weight:700; color:#166534; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:20px; padding:2px 9px; text-decoration:none; }
+        .badge-recibo:hover { background:#dcfce7; color:#166534; }
+</style>
 <link rel="stylesheet" href="bgu-sidebar.css">
 </head>
 <body>
@@ -788,7 +790,7 @@
                     </td>
                     <td><div class="fw-bold text-primary-dark">${inv.curso}</div><div class="small text-muted">${inv.programa}</div>${periodoHtml}</td>
                     <td>${avanceHtml(inv)}</td>
-                    <td>${badgeEstado(inv)}${inv.sabadoPorConfirmar ? `<span class="badge-sabado" title="El docente eligió sábado y falta confirmarlo. Ábrelo en Gestionar Clase."><i class="fa-solid fa-calendar-day"></i> Sábado por confirmar</span>` : ''}${(inv.fechaCulminacion && !inv.fechaConformidad) ? `<span class="badge-porconformar"><i class="fa-regular fa-hourglass-half"></i> Falta conformidad</span>` : ''}</td>
+                    <td>${badgeEstado(inv)}${inv.sabadoPorConfirmar ? `<span class="badge-sabado" title="El docente eligió sábado y falta confirmarlo. Ábrelo en Gestionar Clase."><i class="fa-solid fa-calendar-day"></i> Sábado por confirmar</span>` : ''}${(inv.fechaCulminacion && !inv.fechaConformidad) ? `<span class="badge-porconformar"><i class="fa-regular fa-hourglass-half"></i> Falta conformidad</span>` : ''}${inv.reciboUrl ? `<a class="badge-recibo" href="${escH(inv.reciboUrl)}" target="_blank" rel="noopener" title="Ver el recibo por honorarios"><i class="fa-solid fa-receipt"></i> Recibo recibido</a>` : ''}</td>
                     <td><div class="acciones-cell"><a href="academica-detalle.html?invId=${inv.id}" class="btn-gestionar"><i class="${iconoBoton}"></i> ${textoBoton}</a>${(puedeDarConformidad && inv.fechaCulminacion && !inv.fechaConformidad) ? `<button type="button" class="btn-conforme" onclick="darConformidad('${escH(inv.id)}')"><i class="fa-solid fa-circle-check"></i> Dar conformidad</button>` : ''}</div></td>
                 </tr>`;
             });
