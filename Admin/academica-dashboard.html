@@ -352,11 +352,26 @@
         function cambiarVista(a) { vistaBandeja = (typeof a === 'boolean') ? a : !vistaBandeja; aplicarVista(); if (vistaBandeja) renderBandeja(); }
         function bjTab(t) { bjTabActual = t; bjPagina = 1; document.querySelectorAll('.bj-tab').forEach(b => b.classList.toggle('on', b.dataset.t === t)); renderBandeja(); }
 
+        // Convierte "dd/MM/yyyy HH:mm", "dd/MM/yyyy" (registros antiguos) o fecha ISO en un Date
+        function parseFechaHora(v) {
+            if (!v) return null;
+            const t = String(v).trim();
+            const m = t.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2}))?/);
+            if (m) return new Date(+m[3], +m[2] - 1, +m[1], +(m[4] || 0), +(m[5] || 0));
+            const d = new Date(t);
+            return isNaN(d.getTime()) ? null : d;
+        }
         function fmtDMY(v) {
-            const m = String(v || '').match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-            if (!m) return formatFechaCorta(v) || String(v || '');
+            const d = parseFechaHora(v);
+            if (!d) return String(v || '');
             const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sept','oct','nov','dic'];
-            return `${m[1].padStart(2, '0')} ${meses[+m[2] - 1] || ''} ${m[3]}`;
+            return `${String(d.getDate()).padStart(2, '0')} ${meses[d.getMonth()]} ${d.getFullYear()}`;
+        }
+        // Con hora (solo si el registro la tiene), para los textos de ayuda
+        function fmtDMYH(v) {
+            const d = parseFechaHora(v);
+            if (!d) return String(v || '');
+            return (d.getHours() || d.getMinutes()) ? `${fmtDMY(v)}, ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : fmtDMY(v);
         }
         function bjIrPagina(n) { bjPagina = n; renderBandeja(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
         function bjPintarPager(total, totalPag) {
@@ -409,7 +424,7 @@
                 });
             }
             const ts = v => { const d = v ? new Date(v) : null; return d && !isNaN(d) ? d.getTime() : 0; };
-            lista = lista.slice().sort((a, b) => bjTabActual === 'curso' ? ts(a.fechaFin) - ts(b.fechaFin) : String(b.fechaCulminacion).split('/').reverse().join('').localeCompare(String(a.fechaCulminacion).split('/').reverse().join('')));
+            lista = lista.slice().sort((a, b) => bjTabActual === 'curso' ? ts(a.fechaFin) - ts(b.fechaFin) : ((parseFechaHora(b.fechaCulminacion) || 0) - (parseFechaHora(a.fechaCulminacion) || 0)));
             const totalPag = Math.max(1, Math.ceil(lista.length / BJ_POR_PAGINA));
             if (bjPagina > totalPag) bjPagina = totalPag;
             const totalLista = lista.length;
@@ -426,7 +441,7 @@
                 const ojo = `<a href="academica-detalle.html?invId=${escH(inv.id)}" class="bj-eye" title="Ver detalle de la clase" aria-label="Ver detalle de la clase"><i class="fa-regular fa-eye"></i></a>`;
                 return `<div class="bj-row"><div class="docente-avatar">${bjIniciales(inv.nombreDocente)}</div>
                     <div class="bj-who"><b>${escH(inv.nombreDocente)}</b><span>${escH(inv.curso)} · ${escH(inv.programa)}</span>${formatPeriodo(inv.fechaInicio, inv.fechaFin) ? `<span class="bj-periodo"><i class="fa-regular fa-calendar"></i> Periodo: ${formatPeriodo(inv.fechaInicio, inv.fechaFin)}</span>` : ''}${inv.observacionConformidad && bjTabActual === 'ok' ? `<span class="bj-obs">“${escH(inv.observacionConformidad)}”</span>` : ''}</div>
-                    ${ring}<div class="bj-fecha"><b>${f[1] || '—'}</b>${f[0]}</div>${der}${ojo}</div>`;
+                    ${ring}<div class="bj-fecha" title="${escH(bjTabActual === 'ok' ? fmtDMYH(inv.fechaConformidad) : bjTabActual === 'pend' ? fmtDMYH(inv.fechaCulminacion) : '')}"><b>${f[1] || '—'}</b>${f[0]}</div>${der}${ojo}</div>`;
             }).join('');
             bjPintarPager(totalLista, totalPag);
         }
