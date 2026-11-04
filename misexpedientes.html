@@ -594,7 +594,7 @@
                     actionText = 'Firmar documentos'; actionLink = `contrato-detalle.html?inv=${inv.id}`; accentClass = 'accent-blue';
                 } else if (inv.conformidadDada && !inv.reciboEnviado) {
                     // Conformidad dada: el docente debe subir su recibo por honorarios
-                    estadoVisual = 'Sube tu recibo';
+                    estadoVisual = 'Recibo Pendiente';
                     badgeClass = 'status-pendiente'; icon = 'receipt_long'; color = '#ea580c';
                     actionText = 'Subir recibo por honorarios'; actionLink = `documentos-curso.html?inv=${inv.id}`; accentClass = 'accent-orange';
                 } else if (inv.conformidadDada && inv.reciboEnviado) {
