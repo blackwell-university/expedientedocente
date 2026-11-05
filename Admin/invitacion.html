@@ -5,10 +5,7 @@
         const isLoggedIn = localStorage.getItem('isLoggedIn');
         const userRole = localStorage.getItem('userRole');
         
-        const rolesPermitidos = [
-            'Administrativo', 'Administrador', 'Ejecutivo Licenciamiento', 
-            'Ejecutiva Credenciales', 'ADMIN', 'Ejecutiva Academica'
-        ];
+        const rolesPermitidos = ['Administrativo', 'Administrador', 'ADMIN', 'Ejecutiva Academica'];
         
         if (isLoggedIn !== 'true' || !rolesPermitidos.some(rol => userRole && userRole.toLowerCase() === rol.toLowerCase())) {
             window.location.href = "../index.html";

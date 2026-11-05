@@ -7,10 +7,7 @@
         const isLoggedInHead = localStorage.getItem('isLoggedIn');
         const userRoleHead = localStorage.getItem('userRole');
         
-        const rolesAdminAutorizados = [
-            'Administrativo', 'Administrador', 'ADMIN', 'Ejecutiva Academica', 'Ejecutivo Licenciamiento', 
-            'Asesora Academica', 'Ejecutiva Credenciales', 'Jefe OSE BGU'
-        ];
+        const rolesAdminAutorizados = ['Administrativo', 'Administrador', 'ADMIN', 'Ejecutiva Academica'];
 
         if (modeParam === 'admin') {
             document.documentElement.classList.add('admin-mode');
