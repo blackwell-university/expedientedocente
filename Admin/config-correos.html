@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script>
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        const userRole = localStorage.getItem('userRole');
+
+        const rolesPermitidos = ['Administrador', 'ADMIN'];
+
+        if (isLoggedIn !== 'true' || !rolesPermitidos.some(rol => userRole && userRole.toLowerCase() === rol.toLowerCase())) {
+            window.location.href = "../index.html";
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurar correos | Blackwell University</title>
+
+    <!-- Frameworks & Fonts -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        html { font-size: 14px; }
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e3a8a;
+            --bg-body: #f8fafc;
+            --sidebar-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --card-radius: 20px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --sidebar-width: 260px;
+            --sidebar-collapsed-width: 88px;
+            --dynamic-font-size: 1rem;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            letter-spacing: -0.01em;
+        }
+
+        /* --- SIDEBAR MODERNA (idéntica al resto del panel) --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            border-right: 1px solid rgba(0,0,0,0.05);
+            display: flex; flex-direction: column;
+            transition: var(--transition); position: relative;
+            padding: 24px 16px; flex-shrink: 0;
+        }
+        .sidebar.collapsed { width: var(--sidebar-collapsed-width); }
+        .brand-section { display: flex; align-items: center; gap: 12px; padding: 0 12px 32px; text-decoration: none; overflow: hidden; }
+        .logo-box { min-width: 42px; height: 42px; background: var(--primary-dark); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
+        .brand-text { font-weight: 800; font-size: 1.2rem; color: var(--primary-dark); }
+        .sidebar.collapsed .brand-text { opacity: 0; pointer-events: none; }
+        .user-preview { display: flex; align-items: center; gap: 12px; padding: 12px; background: #f1f5f9; border-radius: 16px; margin-bottom: 24px; overflow: hidden; }
+        .avatar { min-width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 13px; }
+        .user-meta { display: flex; flex-direction: column; line-height: 1.2; }
+        .user-meta b { font-size: 13px; white-space: nowrap; } .user-meta span { font-size: 11px; color: var(--text-muted); }
+        .sidebar.collapsed .user-meta { display: none; }
+
+        .nav-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+        .nav-link { display: flex; align-items: center; gap: 16px; padding: 12px 14px; color: var(--text-muted); text-decoration: none; border-radius: 12px; margin-bottom: 6px; transition: var(--transition); white-space: nowrap; }
+        .nav-link i { font-size: 14px; width: 20px; text-align: center; } 
+        .nav-link:hover, .nav-link.active { background: #eff6ff; color: var(--primary); }
+        .nav-link.active { font-weight: 600; }
+        .sidebar.collapsed .link-text { display: none; }
+
+        .collapse-btn { position: absolute; right: -12px; top: 48px; width: 24px; height: 24px; background: white; border: 1px solid #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; font-size: 10px; color: var(--text-muted); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+        /* --- MAIN --- */
+        .main-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        header { padding: 20px 48px; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 5; }
+        .content-area { padding: 40px; display: flex; flex-direction: column; align-items: center; width: 100%; font-size: var(--dynamic-font-size); }
+        .centered-container { width: 100%; max-width: 1150px; text-align: left; }
+
+        .page-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px; flex-wrap: wrap; gap: 16px; }
+        .page-header h1 { font-weight: 800; font-size: 1.6rem; margin-bottom: 8px; letter-spacing: -0.03em; color: var(--primary-dark); }
+        .page-header p { color: var(--text-muted); font-size: 1.1rem; margin: 0; }
+
+        .btn-primary { background: var(--primary); border: none; border-radius: 12px; padding: 11px 22px; font-weight: 700; font-size: 0.875rem; transition: var(--transition); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); color: white; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary:hover { transform: translateY(-2px); background: var(--primary-dark); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35); color: white; }
+
+        /* --- FILTROS --- */
+        .filter-section { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); margin-bottom: 24px; border: 1px solid rgba(0,0,0,0.04); }
+        .search-input-group { position: relative; flex-grow: 1; }
+        .search-input-group i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+        .form-control-custom { padding: 11px 16px 11px 45px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 0.9rem; width: 100%; background: #f8fafc; transition: var(--transition); color: var(--text-main); }
+        .form-control-custom:focus { outline: none; background: white; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+
+        .btn-icon-accion { width: 34px; height: 34px; border-radius: 10px; border: none; background: #f8fafc; color: #94a3b8; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; transition: var(--transition); flex-shrink: 0; }
+        .btn-icon-accion:hover { transform: translateY(-1px); }
+        .btn-icon-accion.btn-editar:hover { background: #eff6ff; color: var(--primary); }
+
+        .btn-cancelar-modal { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 20px; font-weight: 700; font-size: 0.85rem; transition: var(--transition); }
+        .btn-cancelar-modal:hover { background: #f1f5f9; border-color: #cbd5e1; color: #1e293b; }
+
+        .modal-modern .modal-content { border: none; border-radius: 24px; overflow: hidden; }
+        .modal-modern .modal-header { background: #f8fafc; color: var(--primary-dark); border-bottom: 1px solid #e2e8f0; padding: 22px 28px; }
+        .modal-modern .modal-body { padding: 28px; }
+        .input-modern { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 11px 16px; font-size: 0.9rem; color: #334155; }
+        .input-modern:focus { background: white; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37,99,235,0.1); }
+        .input-modern:disabled { background: #f1f5f9; color: #94a3b8; }
+        .form-label-sm { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; display: block; }
+
+        /* --- TABLA --- */
+        .table-card { background: white; border-radius: var(--card-radius); border: 1px solid rgba(0,0,0,0.04); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.02); }
+        .table thead th { background-color: #f8fafc; color: #94a3b8; font-weight: 700; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.06em; padding: 16px 24px; border-bottom: 1px solid #eef1f5; border-top: none; }
+        .table tbody td { padding: 14px 24px; color: var(--text-main); border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+        .table tbody tr:last-child td { border-bottom: none; }
+        .table tbody tr:hover { background-color: #f9fafb; }
+
+        .badge-status { padding: 6px 14px 6px 10px; border-radius: 50px; font-weight: 700; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.3px; display: inline-flex; align-items: center; gap: 6px; }
+        .badge-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: inline-block; }
+        .status-activo { background: #f0fdf4; color: #15803d; }
+        .status-inactivo { background: #fef2f2; color: #b91c1c; }
+
+        .role-badge { padding: 5px 12px; border-radius: 8px; font-weight: 700; font-size: 0.72rem; display: inline-block; white-space: nowrap; }
+        .role-admin { background: #fef3c7; color: #b45309; }
+        .role-staff { background: #eff6ff; color: #1d4ed8; }
+        .role-director { background: #f3e8ff; color: #7e22ce; }
+        .role-academic { background: #f0fdf4; color: #15803d; }
+        .role-other { background: #f1f5f9; color: #475569; }
+
+        /* Paginación */
+        .pagination-container { padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; background: white; border-top: 1px solid #e2e8f0; }
+        .btn-page { padding: 8px 16px; border: 1px solid #e2e8f0; background: white; border-radius: 10px; font-size: 0.85rem; color: var(--text-main); transition: 0.2s; font-weight: 600; }
+        .btn-page:hover:not(:disabled) { background: #f8fafc; border-color: #cbd5e1; }
+        .btn-page:disabled { opacity: 0.4; cursor: not-allowed; }
+        .page-numbers { display: flex; gap: 6px; }
+        .page-num { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 10px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: 0.2s; }
+        .page-num:hover:not(.active) { background: #f1f5f9; }
+        .page-num.active { background: var(--primary); color: white; }
+
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.4); z-index: 999; backdrop-filter: blur(3px); opacity: 0; transition: opacity 0.3s ease; }
+
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; left: -280px; top: 0; height: 100vh; z-index: 1000; width: 260px !important; box-shadow: 10px 0 30px rgba(0,0,0,0.15); }
+            .sidebar.show-mobile { left: 0; }
+            .sidebar.collapsed { width: 260px !important; }
+            .collapse-btn { display: none; }
+            .sidebar-overlay.active { display: block; opacity: 1; }
+            header, .content-area { padding: 16px; }
+            .page-header { flex-direction: column; align-items: flex-start; gap: 16px; margin-bottom: 24px; }
+            .btn-primary { width: 100%; justify-content: center; }
+            .pagination-container { flex-direction: column; gap: 16px; }
+        }
+
+        div:where(.swal2-container) div:where(.swal2-popup) { border-radius: 16px !important; padding: 24px !important; box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important; font-family: 'Inter', sans-serif !important; border: 1px solid rgba(0,0,0,0.05) !important; }
+        div:where(.swal2-container) h2:where(.swal2-title) { font-size: 1.35rem !important; color: var(--primary-dark) !important; font-weight: 700 !important; padding: 0 !important; }
+        div:where(.swal2-container) div:where(.swal2-html-container) { font-size: 0.95rem !important; color: var(--text-muted) !important; margin: 16px 0 0 0 !important; line-height: 1.5 !important; }
+        div:where(.swal2-container) .swal2-actions { margin-top: 24px !important; gap: 12px !important; }
+        div:where(.swal2-container) button:where(.swal2-styled) { border-radius: 8px !important; font-weight: 600 !important; padding: 10px 24px !important; font-size: 0.9rem !important; transition: all 0.2s ease !important; box-shadow: none !important; }
+        div:where(.swal2-container) button:where(.swal2-styled):hover { transform: translateY(-2px) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important; }
+    
+        /* ===== Configurar correos ===== */
+        .grupo-titulo { font-size: .72rem; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; color: var(--text-muted); margin: 26px 0 10px; }
+        .cfg-row { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 16px; align-items: center; padding: 16px 22px; border-bottom: 1px solid #f1f5f9; transition: background-color .12s; }
+        .cfg-row:last-child { border-bottom: none; }
+        .cfg-row:hover { background: #f9fafb; }
+        .cfg-row.off { opacity: .6; }
+        .cfg-name { font-weight: 700; font-size: .95rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .cfg-line { display: flex; align-items: flex-start; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+        .cfg-lbl { width: 46px; flex-shrink: 0; font-size: .68rem; font-weight: 800; letter-spacing: .4px; text-transform: uppercase; color: #94a3b8; padding-top: 4px; }
+        .chips { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
+        .chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 30px; font-size: .74rem; font-weight: 600; background: #eff6ff; color: #1d4ed8; white-space: nowrap; }
+        .chip.fijo { background: #f1f5f9; color: #475569; }
+        .chip.extra { background: #f0fdf4; color: #15803d; }
+        .chip.vacio { background: transparent; color: #94a3b8; font-weight: 500; padding-left: 0; }
+        .chip small { font-weight: 700; opacity: .7; }
+        .cfg-side { display: flex; align-items: center; gap: 14px; }
+        .btn-cfg { background: #eff6ff; color: var(--primary); font-weight: 700; font-size: .8rem; border: none; padding: 8px 16px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; transition: .2s; white-space: nowrap; }
+        .btn-cfg:hover { background: var(--primary); color: #fff; }
+        .form-switch .form-check-input { width: 2.6em; height: 1.4em; cursor: pointer; }
+        .form-switch .form-check-input:checked { background-color: #16a34a; border-color: #16a34a; }
+        .nota-info { background: #eff6ff; border: 1px solid #dbeafe; color: #1e3a8a; border-radius: 14px; padding: 12px 16px; font-size: .85rem; margin-bottom: 20px; display: flex; gap: 10px; align-items: flex-start; }
+        .sec-modal { border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px; margin-bottom: 14px; background: #fff; }
+        .sec-modal h6 { font-size: .8rem; font-weight: 800; letter-spacing: .4px; text-transform: uppercase; color: var(--primary-dark); margin: 0 0 4px; }
+        .sec-modal .ayuda { font-size: .78rem; color: var(--text-muted); margin: 0 0 12px; }
+        .roles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; margin-bottom: 12px; }
+        .rol-op { display: flex; align-items: center; gap: 8px; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 10px; font-size: .82rem; cursor: pointer; background: #f8fafc; }
+        .rol-op:hover { border-color: #bfdbfe; background: #eff6ff; }
+        .rol-op input { accent-color: var(--primary); width: 16px; height: 16px; flex-shrink: 0; }
+        .rol-op small { color: #94a3b8; margin-left: auto; white-space: nowrap; }
+        .rol-op.sin small { color: #f59e0b; }
+        .fijo-box { display: flex; gap: 10px; align-items: center; background: #f1f5f9; border-radius: 10px; padding: 10px 12px; font-size: .84rem; color: #334155; margin-bottom: 12px; }
+        .preview-box { background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 10px 12px; font-size: .78rem; color: #475569; margin-top: 10px; word-break: break-word; }
+        .preview-box b { color: #0f172a; }
+        @media (max-width: 640px) { .cfg-row { grid-template-columns: 1fr; padding: 14px 16px; } .cfg-side { justify-content: space-between; } }
+        .clave-tag { font-family: Consolas, monospace; font-size: .7rem; color: #1e3a8a; background: #eff6ff; border: 1px solid #dbeafe; border-radius: 6px; padding: 1px 7px; margin-left: 6px; font-weight: 600; white-space: nowrap; }
+        .cfg-cuando { font-size: .76rem; color: var(--text-muted); margin: 1px 0 6px; }
+        .mail-mock { border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: #fff; }
+        .mail-mock .mm-head { background: #1e3a8a; color: #fff; text-align: center; font-size: .72rem; font-weight: 700; letter-spacing: .6px; padding: 9px; }
+        .mail-mock .mm-asunto { background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 8px 14px; font-size: .78rem; color: #475569; }
+        .mail-mock .mm-asunto b { color: #0f172a; }
+        .mail-mock .mm-body { padding: 14px 16px; font-size: .82rem; color: #1e293b; line-height: 1.55; }
+        .mail-mock .mm-body p { margin: 0 0 6px; }
+        .mail-mock .mm-btn { display: inline-block; background: #1e3a8a; color: #fff; font-weight: 700; font-size: .76rem; border-radius: 8px; padding: 6px 14px; margin: 4px 0; }
+        .mail-mock .mm-nota { color: #64748b; font-style: italic; font-size: .76rem; }
+    </style>
+<link rel="stylesheet" href="bgu-sidebar.css">
+</head>
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="collapse-btn" onclick="toggleSidebar()">
+            <i class="fa-solid fa-chevron-left" id="toggleIcon"></i>
+        </div>
+
+        <a href="#" class="brand-section">
+            <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div>
+            <span class="brand-text">Blackwell</span>
+        </a>
+
+        <div class="user-preview">
+            <div class="avatar" id="userInitial">AD</div>
+            <div class="user-meta">
+                <b id="userName">Admin User</b>
+                <span id="userRoleLabel">ADMIN</span>
+            </div>
+        </div>
+
+        <ul class="nav-list">
+            <li><a href="administrativo.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
+            <li><a href="gestion-docentes.html" class="nav-link"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
+            <li><a href="gestion-expedientes.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
+            <li><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Catálogo de Cursos</span></a></li>
+            <li><a href="gestion-usuarios.html" class="nav-link"><i class="fa-solid fa-user-gear"></i> <span class="link-text">Gestión de Usuarios</span></a></li>
+            <li><a href="config-correos.html" class="nav-link active"><i class="fa-solid fa-envelope-open-text"></i> <span class="link-text">Configurar correos</span></a></li>
+            <li><a href="faculty-roster.html" class="nav-link"><i class="fa-solid fa-table-list"></i> <span class="link-text">Faculty Rosters</span></a></li>
+        </ul>
+
+        <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;">
+            <i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span>
+        </a>
+    </aside>
+    <script src="bgu-sidebar.js"></script>
+
+    <div class="main-wrapper">
+        <header>
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn border-0 p-0 d-md-none text-dark fs-4" onclick="toggleMobileSidebar()"><i class="fa-solid fa-bars"></i></button>
+                <div>
+                    <h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Configurar correos</h5>
+                    <p class="text-muted small m-0">Portal Administrativo</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-area">
+            <div class="centered-container">
+                <div class="page-header">
+                    <div>
+                        <h1>Correos automáticos</h1>
+                        <p>Elige quién recibe cada correo, quién va en copia y activa o desactiva cada uno.</p>
+                    </div>
+                </div>
+
+                <div class="nota-info"><i class="fa-solid fa-circle-info mt-1"></i><div>Los cambios se aplican desde el <b>siguiente correo</b> que envíe el sistema. Los destinatarios fijos (como el docente) no se pueden quitar. Los roles se resuelven con la hoja <b>Usuarios</b>: reciben el correo las personas <b>activas</b> con ese rol.</div></div>
+
+                <div class="filter-section">
+                    <div class="search-input-group">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="buscar" class="form-control-custom" placeholder="Buscar un correo…" oninput="renderLista()">
+                    </div>
+                </div>
+
+                <div id="lista"><div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><div class="mt-2 text-muted small">Cargando configuración…</div></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade modal-modern" id="modalCfg" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div><h5 class="modal-title fw-bold mb-0" id="mTitulo">Correo</h5><div class="small text-muted" id="mSub"></div></div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body" id="mCuerpo"></div>
+                <div class="modal-footer" style="border-top:1px solid #e2e8f0;">
+                    <button type="button" class="btn-cancelar-modal" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn-primary" id="btnGuardar" onclick="guardarModal()"><i class="fa-solid fa-floppy-disk"></i> Guardar cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
+        const norm = s => String(s || '').trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+        const BOCETOS = {"credenciales_personal": {"cuando": "Cuando se envían las credenciales a una persona del personal", "asunto": "Sus credenciales de acceso - Blackwell Global University", "lineas": ["Hola {nombre},", "Tus credenciales de acceso:", "Usuario: …   Contraseña: …", "[Ingresar al portal]"]}, "credenciales_docente": {"cuando": "Cuando se envían solo las credenciales a un docente", "asunto": "Sus credenciales de acceso - Blackwell Global University", "lineas": ["Hola {nombre},", "Tus credenciales de acceso:", "Usuario: …   Contraseña: …", "[Ingresar al portal]"]}, "credenciales_invitacion": {"cuando": "Al enviar la primera invitación con credenciales (docente nuevo)", "asunto": "Sus credenciales de acceso - Blackwell Global University", "lineas": ["Hola {nombre},", "Tus credenciales de acceso:", "Usuario: …   Contraseña: …", "[Ingresar al portal]", "(se envía justo después de la invitación)"]}, "usuario_institucional": {"cuando": "Cuando se asigna o quita el correo institucional del docente", "asunto": "Tu nuevo usuario de acceso / Cambio en tu usuario de acceso - Blackwell Global University", "lineas": ["🎓 Tu nuevo correo institucional", "Hola {nombre}, la universidad te asignó un correo institucional. Desde ahora este es tu usuario para ingresar.", "Usuario: …   Contraseña: la misma que ya usabas", "[Ingresar al portal]"]}, "soporte": {"cuando": "Cuando el docente envía una solicitud desde el widget de soporte", "asunto": "Solicitud de Soporte — {docente}", "lineas": ["Solicitud de soporte", "Docente: {nombre}  ·  ID: …", "Mensaje: “…texto que escribió el docente…”"]}, "notificacion_masiva": {"cuando": "Cuando alguien envía una notificación masiva desde el panel", "asunto": "El asunto que escribe quien envía", "lineas": ["(El mensaje que redacta quien envía, con el logo y el pie de la universidad)"]}, "expediente_firma_docente": {"cuando": "Cuando el expediente se envía a firma del docente", "asunto": "Expediente de Aprobación de la contratación docente de Blackwell - Listo para Firma {docente}", "lineas": ["Estimado(a) profesor(a) {docente},", "Sus documentos contractuales están listos para firma digital.", "[Revisar y firmar]", "Los directivos estampan la firma final y el expediente queda formalizado."]}, "expediente_firma_directores": {"cuando": "Cuando el docente firma el expediente", "asunto": "Firma Requerida: Expediente {id} - {docente}", "lineas": ["Estimado Director,", "El docente {docente} ya firmó sus documentos. Documentos adjuntos: …", "[Firmar expediente]"]}, "invitacion_docente": {"cuando": "Cuando se envía la invitación a dictar un curso", "asunto": "Invitación a Dictado de Curso: {curso} - Blackwell Global University", "lineas": ["Estimado(a) profesor(a) {docente},", "La Dirección de Asuntos Académicos lo invita a dictar el curso {curso}: modalidad virtual (español), N clases de 90 min, remuneración total S/ …", "Revise el sílabo y confirme día y horario.", "[Ver invitación en el portal]"]}, "invitacion_actualizada": {"cuando": "Cuando se actualiza una invitación ya enviada", "asunto": "Actualización de su Invitación: {curso} - Blackwell Global University", "lineas": ["Estimado(a) profesor(a) {docente},", "Se actualizaron los detalles de su invitación: franjas horarias (GMT-5), estructura y remuneración.", "[Ver invitación en el portal]"]}, "aceptacion_equipo": {"cuando": "Cuando el docente acepta la invitación (aviso al equipo)", "asunto": "Invitación aceptada — {curso} ({docente})   ·   con sábado: Invitación aceptada (incluye sábado) — …", "lineas": ["Hola equipo,", "El docente {docente} aceptó la invitación a {curso}.", "Tabla: día · fecha · hora elegidos", "Si incluye sábado: ⚠ debe confirmarse el sábado."]}, "aceptacion_docente": {"cuando": "Cuando el docente acepta la invitación (acuse al docente)", "asunto": "Hemos recibido la aceptación de su invitación — {curso}", "lineas": ["Estimado(a) profesor(a) {docente},", "Hemos recibido la aceptación de su invitación a {curso}.", "Resumen de su horario: día · fecha · hora"]}, "invitacion_docs_firma": {"cuando": "Cuando se envían a firma los documentos de la invitación", "asunto": "Documentos de Invitación Listos para Firma - Blackwell Global University", "lineas": ["Estimado(a) profesor(a) {docente},", "Los documentos de su invitación están listos para firma digital.", "[Revisar y firmar]", "Los directivos firman al final y recibirá confirmación."]}, "invitacion_firma_directores": {"cuando": "Cuando el docente firma los documentos de la invitación", "asunto": "Firma Requerida: Invitación {id} - {docente}", "lineas": ["Estimado Director,", "El docente {docente} firmó los documentos de la invitación {id}.", "[Firmar documentos]"]}, "curso_culminado": {"cuando": "Cuando se marca el curso como culminado", "asunto": "Curso Culminado: {curso} — {docente}", "lineas": ["Hola equipo,", "Se marcó como culminado el siguiente curso:", "📘 Curso · 🎓 Programa · 👤 Docente · ✅ Sesiones · fecha", "Pendiente la conformidad de Jefatura OSE."]}, "gracias_dictado": {"cuando": "Cuando Jefe OSE da la conformidad del dictado", "asunto": "Gracias por el dictado de su curso — Blackwell Global University", "lineas": ["Estimado(a) profesor(a) {docente},", "Gracias por el dictado de su curso.", "Datos para emitir su recibo por honorarios: …", "[Ir a documentos y recibo]"]}, "recibo_honorarios": {"cuando": "Cuando el docente sube (o reemplaza) su recibo", "asunto": "Recibo por honorarios recibido — {docente} — {curso}  ·  al reemplazar: … actualizado — …", "lineas": ["Hola equipo,", "El docente {docente} envió su recibo por honorarios el {fecha} (hora Perú).", "Curso · Programa · Invitación", "[Ver recibo (PDF)]"]}, "cambio_cuenta_pago": {"cuando": "Cuando el docente registra o cambia su cuenta de pago", "asunto": "Cambio de cuenta de pago — {docente}", "lineas": ["Hola equipo,", "El docente {docente} registró / cambió su cuenta de pago.", "Antes: **** 1234   →   Ahora: **** 5678", "Los pagos deben hacerse a la nueva cuenta."]}};
+        function bocetoHtml(c) {
+            const b = BOCETOS[c.clave]; if (!b) return '';
+            const cuerpo = b.lineas.map(l => l.charAt(0) === '[' ? '<div><span class="mm-btn">' + esc(l.replace(/^\[|\]$/g, '')) + '</span></div>'
+                : l.charAt(0) === '(' ? '<p class="mm-nota">' + esc(l) + '</p>' : '<p>' + esc(l) + '</p>').join('');
+            return `<div class="sec-modal">
+                <h6><i class="fa-solid fa-envelope-open-text me-1"></i> Así es el mensaje</h6>
+                <p class="ayuda">Boceto de referencia: lo que va entre {llaves} lo reemplaza el sistema con los datos reales. Código: <span class="clave-tag" style="margin-left:0">${esc(c.clave)}</span></p>
+                <div class="mail-mock"><div class="mm-head">BLACKWELL GLOBAL UNIVERSITY</div>
+                <div class="mm-asunto"><b>Asunto:</b> ${esc(b.asunto)}</div><div class="mm-body">${cuerpo}</div></div></div>`;
+        }
+        let correos = [];      // [{clave,nombre,grupo,paraFijo,ccDinamico,tieneSabado,config}]
+        let rolesInfo = {};    // NORM -> {rol, correos:[]}
+        let actual = null;     // correo abierto en el modal
+        let modalBS = null;
+
+        function logout() {
+            Swal.fire({ title: '¿Cerrar sesión?', text: 'Vas a salir del portal administrativo.', icon: 'warning', showCancelButton: true,
+                confirmButtonColor: '#2563eb', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, cerrar sesión', cancelButtonText: 'Cancelar', reverseButtons: true,
+                heightAuto: false, scrollbarPadding: false
+            }).then(r => { if (r.isConfirmed) { localStorage.clear(); window.location.href = "../index.html"; } });
+        }
+        function toggleSidebar() {
+            const sb = document.getElementById('sidebar'), icon = document.getElementById('toggleIcon');
+            sb.classList.toggle('collapsed'); icon.classList.toggle('fa-chevron-left'); icon.classList.toggle('fa-chevron-right');
+        }
+        function toggleMobileSidebar() {
+            document.getElementById('sidebar').classList.toggle('show-mobile');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+        }
+
+        function etiquetaRol(k) {
+            const r = rolesInfo[norm(k)];
+            if (r && r.rol) return r.rol;
+            return String(k).toLowerCase().replace(/(^|[\s_-])([a-z])/g, (m, a, b) => a + b.toUpperCase());
+        }
+        function nPersonas(k) { const r = rolesInfo[norm(k)]; return r ? r.correos.length : 0; }
+        function textoPersonas(k) { const n = nPersonas(k); return n === 1 ? '1 persona' : n + ' personas'; }
+        function todosLosRoles() {
+            const set = {};
+            Object.keys(rolesInfo).forEach(k => set[k] = true);
+            correos.forEach(c => ['paraRoles','paraSabadoRoles','ccRoles'].forEach(f => (c.config[f] || []).forEach(r => set[norm(r)] = true)));
+            return Object.keys(set).sort((a, b) => etiquetaRol(a).localeCompare(etiquetaRol(b)));
+        }
+
+        function chipsRoles(roles, extras) {
+            const out = [];
+            (roles || []).forEach(r => out.push(`<span class="chip" title="${esc((rolesInfo[norm(r)] || {correos: []}).correos.join(', ') || 'Sin usuarios activos con este rol')}">${esc(etiquetaRol(r))} <small>${nPersonas(r)}</small></span>`));
+            (extras || []).forEach(e => out.push(`<span class="chip extra"><i class="fa-regular fa-envelope"></i>${esc(e)}</span>`));
+            return out;
+        }
+        function lineaPara(c) {
+            const cfg = c.config, chips = [];
+            if (c.paraFijo) chips.push(`<span class="chip fijo"><i class="fa-solid fa-lock"></i>${esc(c.paraFijo)}</span>`);
+            chipsRoles(c.paraFijo ? [] : cfg.paraRoles, cfg.paraExtra).forEach(x => chips.push(x));
+            if (c.tieneSabado && (cfg.paraSabadoRoles || []).length) chips.push(...chipsRoles(cfg.paraSabadoRoles, []).map(x => x.replace('class="chip"', 'class="chip" style="background:#fef3c7;color:#b45309"').replace('</span>', ' · si hay sábado</span>')));
+            return chips.length ? chips.join('') : '<span class="chip vacio">Nadie</span>';
+        }
+        function lineaCopia(c) {
+            const cfg = c.config, chips = chipsRoles(cfg.ccRoles, cfg.ccExtra);
+            if (c.ccDinamico) chips.push(`<span class="chip fijo"><i class="fa-solid fa-lock"></i>${esc(c.ccDinamico)}</span>`);
+            (cfg.bccExtra || []).forEach(e => chips.push(`<span class="chip fijo" title="Copia oculta"><i class="fa-regular fa-eye-slash"></i>${esc(e)}</span>`));
+            return chips.length ? chips.join('') : '<span class="chip vacio">Nadie</span>';
+        }
+
+        function renderLista() {
+            const q = norm(document.getElementById('buscar').value);
+            const cont = document.getElementById('lista');
+            const visibles = correos.filter(c => !q || norm(c.nombre + ' ' + c.grupo + ' ' + c.clave).indexOf(q) > -1);
+            if (!visibles.length) { cont.innerHTML = '<div class="text-center text-muted py-5">No hay correos que coincidan.</div>'; return; }
+            const grupos = [];
+            visibles.forEach(c => { if (grupos.indexOf(c.grupo) < 0) grupos.push(c.grupo); });
+            cont.innerHTML = grupos.map(g => `<div class="grupo-titulo">${esc(g)}</div><div class="table-card">` +
+                visibles.filter(c => c.grupo === g).map(c => `
+                <div class="cfg-row ${c.config.activo ? '' : 'off'}">
+                    <div style="min-width:0">
+                        <div class="cfg-name">${esc(c.nombre)} <span class="clave-tag">${esc(c.clave)}</span> ${c.config.activo ? '' : '<span class="badge-status status-inactivo">Desactivado</span>'}</div>
+                        ${BOCETOS[c.clave] ? '<div class="cfg-cuando">' + esc(BOCETOS[c.clave].cuando) + '</div>' : ''}
+                        <div class="cfg-line"><span class="cfg-lbl">Para</span><div class="chips">${lineaPara(c)}</div></div>
+                        <div class="cfg-line"><span class="cfg-lbl">Copia</span><div class="chips">${lineaCopia(c)}</div></div>
+                    </div>
+                    <div class="cfg-side">
+                        <div class="form-check form-switch m-0" title="Activar o desactivar este correo">
+                            <input class="form-check-input" type="checkbox" role="switch" ${c.config.activo ? 'checked' : ''} onchange="alternarActivo('${c.clave}', this)">
+                        </div>
+                        <button type="button" class="btn-cfg" onclick="abrirModal('${c.clave}')"><i class="fa-solid fa-sliders"></i> Configurar</button>
+                    </div>
+                </div>`).join('') + `</div>`).join('');
+        }
+
+        async function guardarConfig(clave, config) {
+            const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({
+                action: 'save_config_correo', clave, config,
+                rol: localStorage.getItem('userRole'), usuario: localStorage.getItem('userName') || ''
+            }) });
+            const r = await res.json();
+            if (r.status !== 'success') throw new Error(r.message || 'No se pudo guardar.');
+            aplicarRespuesta(r);
+        }
+        function aplicarRespuesta(r) {
+            correos = r.correos || [];
+            rolesInfo = {};
+            (r.roles || []).forEach(x => rolesInfo[norm(x.rol)] = x);
+        }
+
+        async function alternarActivo(clave, el) {
+            const c = correos.find(x => x.clave === clave); if (!c) return;
+            const nuevo = el.checked;
+            if (!nuevo) {
+                const ok = await Swal.fire({ icon: 'warning', title: '¿Desactivar este correo?', text: 'El sistema dejará de enviar "' + c.nombre + '" hasta que lo vuelvas a activar.',
+                    showCancelButton: true, confirmButtonText: 'Sí, desactivar', cancelButtonText: 'Cancelar', confirmButtonColor: '#1e3a8a', reverseButtons: true, heightAuto: false, scrollbarPadding: false });
+                if (!ok.isConfirmed) { el.checked = true; return; }
+            }
+            try {
+                await guardarConfig(clave, Object.assign({}, c.config, { activo: nuevo }));
+                renderLista();
+            } catch (e) {
+                el.checked = !nuevo;
+                Swal.fire({ icon: 'error', title: 'No se pudo guardar', text: e.message, heightAuto: false, scrollbarPadding: false });
+            }
+        }
+
+        function listaRoles(prefijo, seleccion) {
+            const sel = (seleccion || []).map(norm);
+            return '<div class="roles-grid">' + todosLosRoles().map(k => `
+                <label class="rol-op ${nPersonas(k) ? '' : 'sin'}">
+                    <input type="checkbox" data-grupo="${prefijo}" value="${esc(k)}" ${sel.indexOf(k) > -1 ? 'checked' : ''} onchange="actualizarVista()">
+                    <span>${esc(etiquetaRol(k))}</span><small>${nPersonas(k) ? textoPersonas(k) : 'sin usuarios'}</small>
+                </label>`).join('') + '</div>';
+        }
+        function abrirModal(clave) {
+            actual = correos.find(x => x.clave === clave); if (!actual) return;
+            const c = actual, cfg = c.config;
+            document.getElementById('mTitulo').textContent = c.nombre;
+            document.getElementById('mSub').textContent = c.grupo;
+            document.getElementById('mCuerpo').innerHTML = bocetoHtml(c) + `
+                <div class="sec-modal">
+                    <h6><i class="fa-solid fa-paper-plane me-1"></i> Para</h6>
+                    <p class="ayuda">${c.paraFijo ? 'Quien recibe el correo principal.' : 'Elige los roles que recibirán el correo.'}</p>
+                    ${c.paraFijo ? `<div class="fijo-box"><i class="fa-solid fa-lock text-secondary"></i><div><b>Siempre:</b> ${esc(c.paraFijo)} <span class="text-muted">(fijo, no se puede quitar)</span></div></div>` : listaRoles('paraRoles', cfg.paraRoles)}
+                    ${c.tieneSabado ? `<p class="ayuda mb-2"><b>Además, si el horario incluye sábado</b>, también va en “Para”:</p>${listaRoles('paraSabadoRoles', cfg.paraSabadoRoles)}` : ''}
+                    <label class="form-label-sm">Otros correos en “Para” (opcional)</label>
+                    <textarea class="form-control input-modern" id="paraExtra" rows="2" placeholder="uno@correo.com, otro@correo.com">${esc((cfg.paraExtra || []).join(', '))}</textarea>
+                </div>
+                <div class="sec-modal">
+                    <h6><i class="fa-solid fa-user-group me-1"></i> Con copia</h6>
+                    <p class="ayuda">Roles que reciben una copia visible.${c.ccDinamico ? ' <b>' + esc(c.ccDinamico) + '.</b>' : ''}</p>
+                    ${listaRoles('ccRoles', cfg.ccRoles)}
+                    <label class="form-label-sm">Otros correos con copia (opcional)</label>
+                    <textarea class="form-control input-modern" id="ccExtra" rows="2" placeholder="uno@correo.com, otro@correo.com">${esc((cfg.ccExtra || []).join(', '))}</textarea>
+                </div>
+                <div class="sec-modal">
+                    <h6><i class="fa-regular fa-eye-slash me-1"></i> Copia oculta</h6>
+                    <p class="ayuda">Reciben el correo sin que los demás lo vean.</p>
+                    <textarea class="form-control input-modern" id="bccExtra" rows="2" placeholder="uno@correo.com, otro@correo.com">${esc((cfg.bccExtra || []).join(', '))}</textarea>
+                </div>
+                <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" id="mActivo" ${cfg.activo ? 'checked' : ''}>
+                    <label class="form-check-label fw-semibold" for="mActivo">Correo activo (se envía)</label>
+                </div>
+                <div class="preview-box" id="vistaPrevia"></div>`;
+            ['paraExtra', 'ccExtra', 'bccExtra'].forEach(id => document.getElementById(id).addEventListener('input', actualizarVista));
+            actualizarVista();
+            if (!modalBS) modalBS = new bootstrap.Modal(document.getElementById('modalCfg'));
+            modalBS.show();
+        }
+
+        function marcados(grupo) { return Array.from(document.querySelectorAll('#mCuerpo input[data-grupo="' + grupo + '"]:checked')).map(i => i.value); }
+        function parseCorreos(id) { return String(document.getElementById(id).value || '').split(/[\s,;]+/).map(x => x.trim()).filter(Boolean); }
+        function correosDeRoles(roles) { const out = []; roles.forEach(r => ((rolesInfo[norm(r)] || {correos: []}).correos).forEach(c => { if (out.indexOf(c.toLowerCase()) < 0) out.push(c.toLowerCase()); })); return out; }
+        function leerModal() {
+            return {
+                activo: document.getElementById('mActivo').checked,
+                paraRoles: actual.paraFijo ? [] : marcados('paraRoles'),
+                paraSabadoRoles: actual.tieneSabado ? marcados('paraSabadoRoles') : [],
+                paraExtra: parseCorreos('paraExtra'),
+                ccRoles: marcados('ccRoles'), ccExtra: parseCorreos('ccExtra'), bccExtra: parseCorreos('bccExtra')
+            };
+        }
+        function actualizarVista() {
+            const v = leerModal();
+            const para = correosDeRoles(v.paraRoles).concat(v.paraExtra.map(x => x.toLowerCase()));
+            const cc = correosDeRoles(v.ccRoles).concat(v.ccExtra.map(x => x.toLowerCase())).filter(x => para.indexOf(x) < 0);
+            const fmt = a => a.length ? a.map(esc).join(', ') : '<i>nadie</i>';
+            document.getElementById('vistaPrevia').innerHTML =
+                '<b>Hoy lo recibirían</b><br>' +
+                '<b>Para:</b> ' + (actual.paraFijo ? esc(actual.paraFijo) + (para.length ? ' + ' : '') : '') + (actual.paraFijo && !para.length ? '' : fmt(para)) + '<br>' +
+                '<b>Copia:</b> ' + fmt(cc) + (v.bccExtra.length ? '<br><b>Copia oculta:</b> ' + fmt(v.bccExtra.map(x => x.toLowerCase())) : '');
+        }
+
+        async function guardarModal() {
+            const v = leerModal();
+            const malos = [].concat(v.paraExtra, v.ccExtra, v.bccExtra).filter(c => !/^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(c));
+            if (malos.length) { Swal.fire({ icon: 'warning', title: 'Revisa los correos', text: 'No parecen válidos: ' + malos.join(', '), heightAuto: false, scrollbarPadding: false }); return; }
+            if (!actual.paraFijo && !v.paraRoles.length && !v.paraExtra.length) {
+                Swal.fire({ icon: 'warning', title: 'Falta un destinatario', text: 'Este correo necesita al menos un rol o correo en “Para”.', heightAuto: false, scrollbarPadding: false }); return;
+            }
+            const btn = document.getElementById('btnGuardar'), html = btn.innerHTML;
+            btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Guardando...';
+            try {
+                await guardarConfig(actual.clave, v);
+                modalBS.hide(); renderLista();
+                Swal.fire({ icon: 'success', title: 'Guardado', text: 'Se aplicará desde el próximo correo.', timer: 1800, showConfirmButton: false, heightAuto: false, scrollbarPadding: false });
+            } catch (e) {
+                Swal.fire({ icon: 'error', title: 'No se pudo guardar', text: e.message, heightAuto: false, scrollbarPadding: false });
+            } finally { btn.disabled = false; btn.innerHTML = html; }
+        }
+
+        async function cargar() {
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_config_correos', rol: localStorage.getItem('userRole') }) });
+                const r = await res.json();
+                if (r.status !== 'success') throw new Error(r.message || 'No se pudo cargar.');
+                aplicarRespuesta(r); renderLista();
+            } catch (e) {
+                document.getElementById('lista').innerHTML = '<div class="text-center text-danger py-5">' + esc(e.message || 'Error de conexión') + '</div>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const name = localStorage.getItem('userName') || "Admin";
+            document.getElementById('userName').innerText = name;
+            document.getElementById('userRoleLabel').innerText = localStorage.getItem('userRole') || "ADMIN";
+            document.getElementById('userInitial').innerText = name.trim().substring(0, 2).toUpperCase();
+            cargar();
+        });
+    </script>
+<script src="i18n-en.js"></script>
+<script src="i18n.js"></script>
+</body>
+</html>

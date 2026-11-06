@@ -365,6 +365,7 @@
             <li id="navReportesDocentes" style="display:none;"><a href="reportes-docentes.html" class="nav-link"><i class="fa-solid fa-chart-column"></i> <span class="link-text">Reportes de Docentes</span></a></li>
             <li id="navGestionClases" style="display:none;"><a href="academica-dashboard.html" class="nav-link"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Gestión de Clases</span></a></li>
             <li id="navGestionUsuarios" style="display:none;"><a href="gestion-usuarios.html" class="nav-link"><i class="fa-solid fa-user-gear"></i> <span class="link-text">Gestión de Usuarios</span></a></li>
+            <li id="navConfigCorreos" style="display:none;"><a href="config-correos.html" class="nav-link"><i class="fa-solid fa-envelope-open-text"></i> <span class="link-text">Configurar correos</span></a></li>
         </ul>
 
         <a href="#" onclick="logout()" class="nav-link" style="color: #f43f5e; margin-top: auto;">
@@ -735,5 +736,6 @@
     </script>
 <script src="i18n-en.js"></script>
 <script src="i18n.js"></script>
+<script>(function(){var r=String(localStorage.getItem('userRole')||'').toUpperCase();var n=document.getElementById('navConfigCorreos');if(n&&(r==='ADMINISTRADOR'||r==='ADMIN'))n.style.display='';})();</script>
 </body>
 </html>
