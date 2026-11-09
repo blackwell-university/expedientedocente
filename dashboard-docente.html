@@ -9,6 +9,9 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
     <title>Dashboard Docente | Blackwell University</title>
     
     <!-- Frameworks & Fonts -->
@@ -434,7 +437,97 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
         }
     </style>
+<style>
+/* ===== REDISEÑO DEL DASHBOARD DEL DOCENTE ===== */
+/* Barra superior: blanca, con la marca en azul */
+body { background: #f3f6fc; }
+.top-nav .logo-box { background: #234a9c; }
+.top-nav .brand-text { color: #234a9c; font-weight: 700; }
+.top-nav .nav-item:hover, .top-nav .nav-item.active { background: #eaf0fd; color: #234a9c; }
+.mobile-header .mh-avatar { background: #234a9c; }
+/* Aviso "Requiere tu atención": compacto */
+.atencion-wrap { margin-bottom: 18px; }
+.atencion-wrap .section-title { font-size: .72rem; text-transform: uppercase; letter-spacing: .6px; color: var(--text-muted); margin-bottom: 8px; }
+.atencion-list { gap: 8px; }
+.atencion-item, .atencion-item.firma, .atencion-item.invitacion, .atencion-item.expediente { padding: 10px 14px; border-radius: 18px; gap: 12px; background: #e3ecfc; border: 1px solid #cfdcf6; box-shadow: 0 6px 18px rgba(35,74,156,.08); }
+.atencion-item .atencion-title { color: #1b3470; } .atencion-item .atencion-sub { color: #5b719f; }
+.atencion-item .atencion-icon, .atencion-item.firma .atencion-icon, .atencion-item.invitacion .atencion-icon, .atencion-item.expediente .atencion-icon { background: #fff; color: #234a9c; box-shadow: 0 2px 6px rgba(35,74,156,.12); }
+.atencion-count { background: #234a9c; }
+.atencion-icon { width: 34px; height: 34px; border-radius: 11px; }
+.atencion-icon .material-symbols-rounded { font-size: 18px; }
+.atencion-title { font-size: .86rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.atencion-sub { font-size: .72rem; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.atencion-cta { background: #fff; color: #234a9c; border: 1px solid #c3d3f2; padding: 6px 12px; border-radius: 12px; font-size: .78rem; }
+.atencion-ok { padding: 9px 14px; border-radius: 14px; font-size: .85rem; }
+@media (max-width: 576px) { .atencion-item { flex-wrap: nowrap; } .atencion-cta { width: auto; } .atencion-cta .material-symbols-rounded { display: none; } .atencion-title { white-space: normal; } }
+/* Indicadores (3) */
+.kpi-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 12px; margin-bottom: 20px; }
+.kpi-card { flex-direction: row; align-items: center; gap: 12px; padding: 14px 16px; }
+.kpi-icon { margin-bottom: 0; flex-shrink: 0; }
+.kpi-icon.green { background: #ecfdf5; color: #059669; }
+.kpi-label { margin-top: 3px; }
+@media (max-width: 576px) { .kpi-grid { gap: 8px; } .kpi-card { flex-direction: column; align-items: flex-start; gap: 8px; padding: 12px; } }
+/* Panel de clases + calendario */
+.dash-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 900px) { .dash-grid { grid-template-columns: minmax(0, 1fr); } }
+.dash-grid .section-title { margin-top: 0; }
+.sec-row { display: flex; justify-content: space-between; align-items: center; margin: 0 0 12px; }
+.sec-row .section-title { margin: 0 !important; }
+.sec-row a { font-size: .78rem; font-weight: 700; color: #2563eb; text-decoration: none; }
+.dcard { background: #fff; border-radius: 24px; box-shadow: 0 10px 30px rgba(35,74,156,.08); border: 1px solid rgba(35,74,156,.04); }
+.next-card { display: grid; grid-template-columns: auto 1fr; background: linear-gradient(180deg, #f1f5fe, #fff 70%); color: var(--text-main); padding: 0; position: relative; overflow: hidden; text-decoration: none; border: 1px solid rgba(35,74,156,.06); margin-bottom: 8px; transition: transform .2s ease, box-shadow .2s ease; }
+a.next-card:hover { color: var(--text-main); transform: translateY(-2px); box-shadow: 0 14px 28px rgba(35,74,156,.14); }
+.nc-big { padding: 20px 22px; border-right: 1px dashed #d6e0f4; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; min-width: 128px; }
+.nc-big b { font-size: 2rem; font-weight: 700; letter-spacing: -.03em; line-height: 1; color: #234a9c; }
+.nc-big small { display: block; margin-top: 6px; font-size: .72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+.nc-big em { font-style: normal; margin-top: 8px; font-size: .7rem; font-weight: 700; background: #fdf1d3; color: #8a5a0a; border-radius: 20px; padding: 3px 10px; }
+.nc-big em.urg { background: #fdf1d3; } .nc-big em.nor { background: #e4edfd; color: #2447a3; }
+.nc-inf { padding: 18px 20px; min-width: 0; }
+.next-card.solo { display: block; padding: 18px 20px; }
+.nc-chips { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+.nc-chip { font-size: .68rem; font-weight: 600; padding: 3px 10px; border-radius: 20px; background: #e4edfd; color: #2447a3; }
+.nc-chip.y { background: #fdf1d3; color: #8a5a0a; } .nc-chip.o { background: #fdf1d3; color: #8a5a0a; } .nc-chip.g { background: #e3f5ea; color: #1c7a45; }
+.next-card h2 { margin: 0 0 12px; font-size: 1.12rem; font-weight: 700; line-height: 1.3; color: var(--text-main); }
+.nc-row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; font-size: .84rem; font-weight: 500; color: #4b5a78; }
+.nc-row > span { display: flex; gap: 6px; align-items: center; }
+.nc-row .material-symbols-rounded { font-size: 18px; color: var(--text-muted); } .nc-btn .material-symbols-rounded { color: #fff !important; }
+.nc-btn { background: #2f64e0; color: #fff !important; font-weight: 600; font-size: .85rem; padding: 9px 14px; border-radius: 14px; display: inline-flex; gap: 6px; align-items: center; box-shadow: 0 8px 18px rgba(47,100,224,.28); margin-top: 12px; }
+@media (max-width: 576px) { .next-card { grid-template-columns: 1fr; } .nc-big { border-right: none; border-bottom: 1px dashed #d6e0f4; flex-direction: row; gap: 12px; justify-content: flex-start; padding: 14px 18px; } .nc-big small { margin: 0; } .nc-big em { margin: 0 0 0 auto; } .nc-big b { font-size: 1.6rem; } .nc-btn { width: 100%; justify-content: center; } }
+.clases-list { padding: 6px 8px; }
+.cl-item { display: flex; align-items: center; gap: 12px; padding: 11px 10px; border-radius: 14px; text-decoration: none; color: var(--text-main); }
+.cl-item:hover { background: #f8fafc; color: var(--text-main); }
+.cl-item + .cl-item { border-top: 1px solid #f1f5f9; }
+.cl-date { width: 46px; text-align: center; border-radius: 12px; padding: 6px 0; flex-shrink: 0; }
+.cl-date b { display: block; font-size: 1.05rem; line-height: 1; font-weight: 800; } .cl-date small { font-size: .6rem; font-weight: 800; text-transform: uppercase; }
+.cl-m { flex: 1; min-width: 0; } .cl-m b { display: block; font-size: .88rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .cl-m span { font-size: .76rem; color: var(--text-muted); }
+.cl-tag { font-size: .68rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; background: #e4edfd; color: #2447a3; white-space: nowrap; }
+.cl-vacio { text-align: center; color: var(--text-muted); font-size: .85rem; padding: 18px 12px; }
+.cal { padding: 18px; }
+.cal-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.cal-top b { font-size: 1rem; font-weight: 800; color: var(--primary-dark); text-transform: capitalize; }
+.cal-top button { border: none; background: #f1f5f9; border-radius: 9px; width: 30px; height: 30px; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; }
+.cal-top button:hover { background: #e2e8f0; }
+.cal-dow, .cal-days { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; }
+.cal-dow span { font-size: .64rem; font-weight: 800; color: #94a3b8; padding: 4px 0; }
+.cal-d { aspect-ratio: 1; max-height: 44px; margin: 2px; border-radius: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: .82rem; font-weight: 600; position: relative; border: none; background: none; font-family: inherit; color: var(--text-main); padding: 0; }
+.cal-d.out { color: #cbd5e1; } .cal-d.has { cursor: pointer; font-weight: 800; } .cal-d.has:hover { background: #eff6ff; }
+.cal-d.hoy { background: #234a9c; color: #fff; } .cal-d.sel { outline: 2px solid #2563eb; }
+.cal-dots { display: flex; gap: 2px; position: absolute; bottom: 4px; } .cal-dots i { width: 5px; height: 5px; border-radius: 50%; }
+.cal-leg { display: flex; gap: 12px; flex-wrap: wrap; margin: 10px 0 0; font-size: .7rem; color: var(--text-muted); font-weight: 600; }
+.cal-leg i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
+.cal-det { margin-top: 12px; border-top: 1px dashed var(--border-color); padding-top: 12px; font-size: .84rem; }
+.cal-det .s { display: flex; gap: 10px; align-items: center; padding: 7px 0; } .cal-det .s i { width: 4px; height: 32px; border-radius: 4px; flex-shrink: 0; }
+.cal-det .s b { display: block; font-weight: 700; } .cal-det .s span { color: var(--text-muted); font-size: .76rem; }
+.cal-vacio { color: var(--text-muted); font-size: .8rem; text-align: center; padding: 4px 0; }
+</style>
 <link rel="stylesheet" href="bgu-loader.css">
+<style id="gv-bottomnav">
+/* Menú inferior: cada botón muestra su nombre */
+.bottom-nav { height: auto !important; padding: 6px 8px !important; border-radius: 22px !important; justify-content: space-between !important; gap: 2px; }
+.bottom-item, .bottom-item.active { flex: 1 1 0 !important; flex-direction: column !important; height: auto !important; min-height: 52px; padding: 7px 0 6px !important; gap: 3px !important; border-radius: 16px !important; min-width: 0; }
+.bottom-item > span:last-child, .bottom-item.active > span:last-child { font-size: .66rem !important; max-width: none !important; opacity: 1 !important; margin-left: 0 !important; font-weight: 600 !important; line-height: 1.1 !important; }
+.bottom-item.active { background: #eaf0fd !important; color: #234a9c !important; }
+</style>
 </head>
 <body>
 
@@ -442,7 +535,7 @@
     <nav class="top-nav d-none d-md-flex">
         <a href="#" class="nav-brand">
             <div class="logo-box"><span class="material-symbols-rounded">school</span></div>
-            <span class="brand-text">Blackwell</span>
+            <span class="brand-text">GlobalView</span>
         </a>
         <div class="nav-links-desktop">
             <a href="dashboard-docente.html" class="nav-item active"><span class="material-symbols-rounded">home</span> Dashboard</a>
@@ -496,7 +589,7 @@
                 <div class="page-header d-none d-md-flex justify-content-between align-items-end mb-4">
                     <div>
                         <h1 id="welcomeMessage">¡Hola, Docente!</h1>
-                        <p>Resumen de tu actividad académica y estado de expedientes.</p>
+                        <p id="resumenSemana">Resumen de tu actividad académica y estado de expedientes.</p>
                     </div>
                 </div>
 
@@ -546,55 +639,67 @@
                     <div class="atencion-list" id="atencionList"></div>
                 </div>
 
-                <!-- TARJETAS DE INDICADORES (KPI Grid) -->
+                <!-- INDICADORES -->
                 <div class="kpi-grid">
                     <div class="kpi-card">
                         <div class="kpi-icon blue"><i class="fa-solid fa-chalkboard-user"></i></div>
-                        <div class="kpi-val skeleton-text" id="kpiCursosVal">&nbsp;</div>
-                        <div class="kpi-label">Cursos Asignados</div>
+                        <div><div class="kpi-val skeleton-text" id="kpiCursosVal">&nbsp;</div><div class="kpi-label">Cursos Asignados</div></div>
                     </div>
                     <div class="kpi-card">
                         <div class="kpi-icon yellow"><i class="fa-regular fa-file-lines"></i></div>
-                        <div class="kpi-val text-warning skeleton-text" id="kpiDocsVal">&nbsp;</div>
-                        <div class="kpi-label">Docs Pendientes</div>
+                        <div><div class="kpi-val text-warning skeleton-text" id="kpiDocsVal">&nbsp;</div><div class="kpi-label">Docs Pendientes</div></div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon green"><i class="fa-regular fa-calendar-check"></i></div>
+                        <div><div class="kpi-val skeleton-text" id="kpiMesVal">&nbsp;</div><div class="kpi-label">Clases este mes</div></div>
                     </div>
                 </div>
 
-                <!-- SECCIÓN: PRÓXIMAS CLASES (Estilo Priority Cards Horizontal) -->
-                <h3 class="section-title">Próximas Clases</h3>
-                <div class="card-slider" id="cardSliderCursos">
-                    <!-- Skeleton de carga: se reemplaza por datos reales en cargarCursosReales() -->
-                    <div class="app-card app-card-skeleton">
-                        <div class="skeleton-line" style="width: 40%; height: 20px; border-radius: 20px;"></div>
-                        <div class="skeleton-line" style="width: 70%; height: 22px; margin-top: 20px;"></div>
-                        <div class="app-card-footer" style="border-top: 1px solid rgba(0,0,0,0.05);">
-                            <div class="skeleton-line" style="width: 90px; height: 14px;"></div>
-                            <div class="skeleton-line" style="width: 70px; height: 14px;"></div>
+                <div class="dash-grid">
+                    <div>
+                        <div class="sec-row"><h3 class="section-title" id="secNextTitle">Tu próxima clase</h3></div>
+                        <div id="nextClass">
+                            <div class="app-card app-card-skeleton" style="max-width:none;">
+                                <div class="skeleton-line" style="width: 40%; height: 20px; border-radius: 20px;"></div>
+                                <div class="skeleton-line" style="width: 70%; height: 22px; margin-top: 20px;"></div>
+                                <div class="app-card-footer" style="border-top: 1px solid rgba(0,0,0,0.05);">
+                                    <div class="skeleton-line" style="width: 90px; height: 14px;"></div>
+                                    <div class="skeleton-line" style="width: 70px; height: 14px;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="sec-row" style="margin-top:20px;"><h3 class="section-title" id="secAfterTitle">Después</h3><a href="miscursos.html">Ver todas mis clases</a></div>
+                        <div class="dcard clases-list" id="listaClases"></div>
+                    </div>
+
+                    <div>
+                        <div class="sec-row"><h3 class="section-title">Calendario de clases</h3></div>
+                        <div class="dcard cal">
+                            <div class="cal-top">
+                                <button type="button" onclick="calMes(-1)" aria-label="Mes anterior"><span class="material-symbols-rounded" style="font-size:20px">chevron_left</span></button>
+                                <b id="calMesTxt"></b>
+                                <button type="button" onclick="calMes(1)" aria-label="Mes siguiente"><span class="material-symbols-rounded" style="font-size:20px">chevron_right</span></button>
+                            </div>
+                            <div class="cal-dow"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+                            <div class="cal-days" id="calDias"></div>
+                            <div class="cal-leg" id="calLeyenda"></div>
+                            <div class="cal-det" id="calDetalle"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- SECCIÓN: ATAJOS RÁPIDOS (Reemplazo de Actividad Reciente, estilo "Popular Language") -->
-                <h3 class="section-title">Atajos Docente</h3>
+                <!-- ATAJOS -->
+                <h3 class="section-title">Atajos</h3>
                 <div class="shortcut-list">
-
-                    <a href="#" class="shortcut-item">
-                        <div class="shortcut-left">
-                            <div class="shortcut-icon bg-blue">AV</div>
-                            <span class="shortcut-text">Aula Virtual</span>
-                        </div>
-                        <i class="fa-solid fa-arrow-right shortcut-arrow"></i>
-                    </a>
-
-
                     <a href="misexpedientes.html" class="shortcut-item">
-                        <div class="shortcut-left">
-                            <div class="shortcut-icon bg-purple">EX</div>
-                            <span class="shortcut-text">Mis Expedientes</span>
-                        </div>
+                        <div class="shortcut-left"><div class="shortcut-icon bg-purple">EX</div><span class="shortcut-text">Mis Expedientes</span></div>
                         <i class="fa-solid fa-arrow-right shortcut-arrow"></i>
                     </a>
-
+                    <a href="miscursos.html" class="shortcut-item">
+                        <div class="shortcut-left"><div class="shortcut-icon bg-blue">CL</div><span class="shortcut-text">Mis Clases</span></div>
+                        <i class="fa-solid fa-arrow-right shortcut-arrow"></i>
+                    </a>
                 </div>
 
             </div>
@@ -642,7 +747,7 @@
                     <div style="width: 80px; height: 80px; background: #eff6ff; color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 20px;">
                         <i class="fa-solid fa-hand-sparkles"></i>
                     </div>
-                    <h3 class="fw-bold text-primary-dark mb-3">¡Bienvenido a Blackwell!</h3>
+                    <h3 class="fw-bold text-primary-dark mb-3">¡Bienvenido a GlobalView!</h3>
                     <p class="text-muted" style="font-size: 0.95rem;">Hemos detectado que es tu primer ingreso al portal. Para habilitar tus clases y formalizar tu expediente, es necesario completar tu registro de datos.</p>
                     
                     <div class="bg-light p-3 rounded-3 text-start mb-4 mt-4">
@@ -942,9 +1047,119 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
         }
         const ESTADOS_CURSO_CONFIRMADO = ['respondido', 'completado', 'aprobado', 'aceptado', 'pendiente firma docente', 'firmado por docente', 'pendiente firma directores'];
 
+
+        // ===== PANEL DE CLASES + CALENDARIO =====
+        const COLORES_CURSO = ['#2f64e0', '#0f8a7e', '#7c4dbd', '#c27a10', '#c2547a', '#0b7ea6'];
+        const MESES_ES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+        const DIAS_ES = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+        let SESIONES = [], SESIONES_FUT = [], calM = new Date().getMonth(), calA = new Date().getFullYear(), calSel = null;
+
+        function sesionesDeCurso(c) {
+            return (c.horaElegida || '').split('|').map(x => x.trim()).filter(Boolean).map(seg => {
+                const m = seg.match(/(\d{2})\/(\d{2})\/(\d{4})\s*:\s*(.+)/);
+                return m ? { f: new Date(parseInt(m[3]), parseInt(m[2]) - 1, parseInt(m[1])), h: m[4].trim() } : null;
+            }).filter(Boolean).sort((a, b) => a.f - b.f);
+        }
+        function fmtFecha(d) { return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear(); }
+        // Confirmado -> panel del curso; ya eligió horario -> en espera; si no -> aceptar la invitación (igual que Mis Clases)
+        function destinoCurso(c) {
+            const confirmado = ESTADOS_CURSO_CONFIRMADO.includes(String(c.estado || '').toLowerCase());
+            const yaEligio = !!(String(c.diaElegido || '').trim() && String(c.horaElegida || '').trim());
+            const enEspera = !confirmado && yaEligio;
+            return {
+                confirmado, enEspera,
+                href: confirmado ? `curso.html?id=${c.idInvitacion}` : (enEspera ? 'javascript:void(0)' : `registroinvitacion.html?inv=${c.idInvitacion}`),
+                onclick: enEspera ? ' onclick="avisoHorarioEnEspera(); return false;"' : '',
+                boton: confirmado ? 'Ver clase' : (enEspera ? 'Horario en revisión' : 'Aceptar invitación')
+            };
+        }
+
+        function renderPanelClases(cursos) {
+            const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+            const next = document.getElementById('nextClass'), lista = document.getElementById('listaClases');
+            SESIONES = [];
+            cursos.forEach((c, i) => {
+                const d = destinoCurso(c), ses = sesionesDeCurso(c);
+                ses.forEach((x, k) => SESIONES.push({ f: x.f, h: x.h, k: k + 1, tot: ses.length, c, col: COLORES_CURSO[i % COLORES_CURSO.length], d }));
+            });
+            SESIONES.sort((a, b) => a.f - b.f);
+            SESIONES_FUT = SESIONES.filter(x => x.f >= hoy);
+
+            // Indicador: clases de este mes + resumen de la semana
+            const kMes = document.getElementById('kpiMesVal');
+            if (kMes) { kMes.classList.remove('skeleton-text'); kMes.innerText = SESIONES.filter(x => x.f.getMonth() === hoy.getMonth() && x.f.getFullYear() === hoy.getFullYear()).length; }
+            const semana = SESIONES_FUT.filter(x => Math.round((x.f - hoy) / 86400000) < 7).length;
+            const rs = document.getElementById('resumenSemana');
+            if (rs) rs.innerText = semana > 0 ? `Tienes ${semana} ${semana === 1 ? 'clase' : 'clases'} esta semana.` : 'No tienes clases programadas esta semana.';
+
+            if (cursos.length === 0) {
+                next.innerHTML = `<div class="dcard cl-vacio" style="padding:28px 16px;"><i class="fa-regular fa-calendar-xmark mb-2" style="font-size:1.9rem; color:#cbd5e1;"></i><p class="m-0 fw-semibold">Aún no tienes cursos asignados</p><p class="m-0 small">Cuando la universidad te asigne un curso, aparecerá aquí.</p></div>`;
+                lista.innerHTML = '<div class="cl-vacio">Sin clases por ahora.</div>';
+            } else if (SESIONES_FUT.length) {
+                const p = SESIONES_FUT[0], r = chipRelativo(p.f);
+                const chips = `<span class="nc-chip">${p.c.programaTipo || 'Curso'}</span>` +
+                    (!p.d.confirmado ? '<span class="nc-chip o">Por confirmar</span>' : (r ? `<span class="nc-chip ${r.clase === 'urgente' ? 'y' : ''}">${r.txt}</span>` : '')) +
+                    `<span class="nc-chip">Sesión ${p.k} de ${p.tot}</span>`;
+                const hIni = String(p.h || '').split(' a ')[0];
+                const rel = r ? `<em class="${r.clase === 'urgente' ? 'urg' : 'nor'}">${r.txt}</em>` : '';
+                const chips2 = `<span class="nc-chip">${p.c.programaTipo || 'Curso'}</span><span class="nc-chip g">Sesión ${p.k} de ${p.tot}</span>` + (!p.d.confirmado ? '<span class="nc-chip o">Por confirmar</span>' : '');
+                next.innerHTML = `<a href="${p.d.href}"${p.d.onclick} class="dcard next-card"><div class="nc-big"><b>${hIni}</b><small>${DIAS_ES[p.f.getDay()].slice(0, 3)} ${p.f.getDate()} ${MESES_ES[p.f.getMonth()].slice(0, 3)}</small>${rel}</div>
+                    <div class="nc-inf"><div class="nc-chips">${chips2}</div><h2>${p.c.cursoNombre || 'Curso sin nombre'}</h2>
+                    <div class="nc-row"><span><span class="material-symbols-rounded">schedule</span>${p.h}</span></div><span class="nc-btn">${p.d.boton} <span class="material-symbols-rounded" style="font-size:18px">arrow_forward</span></span></div></a>`;
+                lista.innerHTML = SESIONES_FUT.slice(1, 5).map(x => {
+                    const rr = chipRelativo(x.f);
+                    return `<a href="${x.d.href}"${x.d.onclick} class="cl-item"><div class="cl-date" style="background:${x.col}1a; color:${x.col};"><b>${x.f.getDate()}</b><small>${MESES_ES[x.f.getMonth()].slice(0, 3)}</small></div>
+                        <div class="cl-m"><b>${x.c.cursoNombre || 'Curso'}</b><span>${DIAS_ES[x.f.getDay()]} · ${x.h}</span></div><span class="cl-tag">${rr ? rr.txt : fmtFecha(x.f)}</span></a>`;
+                }).join('') || '<div class="cl-vacio">No hay más clases programadas después de esta.</div>';
+            } else if (SESIONES.length) {
+                // Todas las sesiones ya pasaron: el docente terminó sus clases, no hay "próxima clase"
+                document.getElementById('secNextTitle').innerText = 'Última clase';
+                document.getElementById('secAfterTitle').innerText = 'Clases realizadas';
+                const u = SESIONES[SESIONES.length - 1];
+                next.innerHTML = `<a href="${u.d.href}"${u.d.onclick} class="dcard next-card"><div class="nc-big"><b>${u.h.split(' a ')[0]}</b><small>${DIAS_ES[u.f.getDay()].slice(0, 3)} ${u.f.getDate()} ${MESES_ES[u.f.getMonth()].slice(0, 3)}</small><em class="nor">Realizada</em></div>
+                    <div class="nc-inf"><div class="nc-chips"><span class="nc-chip">${u.c.programaTipo || 'Curso'}</span><span class="nc-chip g">Sesión ${u.k} de ${u.tot}</span></div><h2>${u.c.cursoNombre || 'Curso sin nombre'}</h2>
+                    <div class="nc-row"><span><span class="material-symbols-rounded">task_alt</span>Completaste tus clases. Por ahora no tienes sesiones pendientes.</span></div><span class="nc-btn">Ver curso <span class="material-symbols-rounded" style="font-size:18px">arrow_forward</span></span></div></a>`;
+                lista.innerHTML = SESIONES.slice().reverse().slice(1, 5).map(x => `<a href="${x.d.href}"${x.d.onclick} class="cl-item"><div class="cl-date" style="background:${x.col}1a; color:${x.col};"><b>${x.f.getDate()}</b><small>${MESES_ES[x.f.getMonth()].slice(0, 3)}</small></div>
+                        <div class="cl-m"><b>${x.c.cursoNombre || 'Curso'}</b><span>${DIAS_ES[x.f.getDay()]} · ${x.h}</span></div><span class="cl-tag">Realizada</span></a>`).join('') || '<div class="cl-vacio">No hay más clases anteriores.</div>';
+            } else {
+                // Hay cursos pero ya no quedan sesiones con fecha: se muestra el primer curso con su franja general
+                const c = cursos[0], d = destinoCurso(c);
+                next.innerHTML = `<a href="${d.href}"${d.onclick} class="dcard next-card solo"><div class="nc-chips"><span class="nc-chip">${c.programaTipo || 'Curso'}</span>${d.confirmado ? '' : '<span class="nc-chip o">Por confirmar</span>'}</div><h2>${c.cursoNombre || 'Curso sin nombre'}</h2>
+                    <div class="nc-row"><span><span class="material-symbols-rounded">schedule</span>${c.franjas || c.horaElegida || 'Horario por confirmar'}</span><span class="nc-btn">${d.boton} <span class="material-symbols-rounded" style="font-size:18px">arrow_forward</span></span></div></a>`;
+                lista.innerHTML = '<div class="cl-vacio">No tienes más sesiones programadas.</div>';
+            }
+            document.getElementById('calLeyenda').innerHTML = cursos.map((c, i) => `<span><i style="background:${COLORES_CURSO[i % COLORES_CURSO.length]}"></i>${String(c.cursoNombre || 'Curso').length > 26 ? String(c.cursoNombre).slice(0, 24) + '…' : (c.cursoNombre || 'Curso')}</span>`).join('');
+            calM = hoy.getMonth(); calA = hoy.getFullYear(); calSel = null;
+            pintarCalendario();
+        }
+
+        function calMes(n) { calM += n; if (calM < 0) { calM = 11; calA--; } if (calM > 11) { calM = 0; calA++; } calSel = null; pintarCalendario(); }
+        function calElegir(t) { calSel = new Date(t); pintarCalendario(); }
+        function pintarCalendario() {
+            const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+            document.getElementById('calMesTxt').textContent = MESES_ES[calM] + ' ' + calA;
+            const ini = (new Date(calA, calM, 1).getDay() + 6) % 7, tot = new Date(calA, calM + 1, 0).getDate(), prev = new Date(calA, calM, 0).getDate();
+            const filas = Math.ceil((ini + tot) / 7) * 7;
+            let h = '';
+            for (let i = 0; i < filas; i++) {
+                let dia, out = false, f;
+                if (i < ini) { dia = prev - ini + i + 1; out = true; f = new Date(calA, calM - 1, dia); }
+                else if (i - ini >= tot) { dia = i - ini - tot + 1; out = true; f = new Date(calA, calM + 1, dia); }
+                else { dia = i - ini + 1; f = new Date(calA, calM, dia); }
+                const ss = SESIONES.filter(x => +x.f === +f), esHoy = +f === +hoy, esSel = calSel && +calSel === +f;
+                h += `<button type="button" class="cal-d ${out ? 'out' : ''} ${ss.length ? 'has' : ''} ${esHoy ? 'hoy' : ''} ${esSel ? 'sel' : ''}" ${ss.length ? `onclick="calElegir(${f.getTime()})"` : 'disabled'}>${dia}${ss.length ? `<span class="cal-dots">${[...new Set(ss.map(x => x.col))].map(c => `<i style="background:${esHoy ? '#fff' : c}"></i>`).join('')}</span>` : ''}</button>`;
+            }
+            document.getElementById('calDias').innerHTML = h;
+            const base = calSel || (SESIONES_FUT[0] && SESIONES_FUT[0].f.getMonth() === calM && SESIONES_FUT[0].f.getFullYear() === calA ? SESIONES_FUT[0].f : null);
+            const el = document.getElementById('calDetalle');
+            if (!base) { el.innerHTML = '<div class="cal-vacio">No hay clases este mes. Toca un día con punto para ver el detalle.</div>'; return; }
+            el.innerHTML = `<b style="color:var(--primary-dark); font-size:.8rem;">${DIAS_ES[base.getDay()]} ${base.getDate()} de ${MESES_ES[base.getMonth()]}</b>` +
+                SESIONES.filter(x => +x.f === +base).map(x => `<div class="s"><i style="background:${x.col}"></i><div><b>${x.c.cursoNombre || 'Curso'}</b><span>${x.h} · sesión ${x.k} de ${x.tot}${x.d.confirmado ? '' : ' · por confirmar'}</span></div></div>`).join('');
+        }
+
         // --- CARGA DE CURSOS/CLASES REALES  ---
         async function cargarCursosReales(idDocente) {
-            const slider = document.getElementById('cardSliderCursos');
+            const slider = document.getElementById('nextClass');
             const kpiCursos = document.getElementById('kpiCursosVal');
             const kpiDocs = document.getElementById('kpiDocsVal');
 
@@ -973,56 +1188,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                         kpiCursos.innerText = cursos.length;
                     }
 
-                    if (cursos.length === 0) {
-                        slider.innerHTML = `
-                            <div class="text-center w-100 py-5" style="background: white; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
-                                <i class="fa-regular fa-calendar-xmark mb-3" style="font-size: 1.9rem; color: #cbd5e1;"></i>
-                                <p class="text-muted fw-semibold m-0">Aún no tienes cursos asignados</p>
-                                <p class="text-muted small m-0">Cuando la universidad te asigne un curso, aparecerá aquí.</p>
-                            </div>`;
-                    } else {
-                        const paletas = ['app-card-blue', 'app-card-dark'];
-                        const hoyRef = new Date(); hoyRef.setHours(0, 0, 0, 0);
-                        // NUEVO: ordenadas por la próxima sesión (las que tienen fecha primero, la más cercana arriba)
-                        const conSesion = cursos.map(c => ({ c, sesion: obtenerProximaSesion(c) }));
-                        conSesion.sort((a, b) => {
-                            const fa = a.sesion.hayFecha ? a.sesion.fechaObj.getTime() : Infinity;
-                            const fb = b.sesion.hayFecha ? b.sesion.fechaObj.getTime() : Infinity;
-                            return fa - fb;
-                        });
-                        slider.innerHTML = conSesion.slice(0, 6).map(({ c, sesion }, idx) => {
-                            const clase = paletas[idx % paletas.length];
-                            const confirmado = ESTADOS_CURSO_CONFIRMADO.includes(String(c.estado || '').toLowerCase());
-
-                            // Chip de la esquina: prioridad = por confirmar > hoy/mañana/en N días > finalizado
-                            let chip = '';
-                            const fFin = c.fechaFin ? new Date(c.fechaFin) : null;
-                            if (!confirmado) chip = `<span class="card-chip pendiente">Por confirmar</span>`;
-                            else if (sesion.hayFecha) { const r = chipRelativo(sesion.fechaObj); if (r) chip = `<span class="card-chip ${r.clase}">${r.txt}</span>`; }
-                            else if (fFin && !isNaN(fFin) && fFin < hoyRef) chip = `<span class="card-chip fin">Finalizado</span>`;
-
-                            // Confirmado -> panel del curso; sin confirmar -> aceptar la invitación (igual que Mis Clases)
-                            // Si el docente YA eligió día y hora (queda "por confirmar" por la universidad, p. ej. pendiente de aprobación de sábado),
-                            // no lo mandamos de nuevo a aceptar la invitación: solo se le avisa que está en espera.
-                            const yaEligioHorario = !!(String(c.diaElegido || '').trim() && String(c.horaElegida || '').trim());
-                            const enEspera = !confirmado && yaEligioHorario;
-                            const href = confirmado ? `curso.html?id=${c.idInvitacion}` : (enEspera ? 'javascript:void(0)' : `registroinvitacion.html?inv=${c.idInvitacion}`);
-                            const onclickEspera = enEspera ? ` onclick="avisoHorarioEnEspera(); return false;"` : '';
-                            return `
-                            <a href="${href}"${onclickEspera} class="app-card ${clase}">
-                                <div class="card-top">
-                                    <div class="card-pill">${c.programaTipo || 'Curso'}</div>
-                                    ${chip}
-                                </div>
-                                <h3>${c.cursoNombre || 'Curso sin nombre'}</h3>
-                                <div class="app-card-footer">
-                                    ${sesion.hayFecha ? `<div><i class="fa-regular fa-calendar"></i> ${sesion.fecha}</div>` : ''}
-                                    <div><i class="fa-regular fa-clock"></i> ${sesion.hora}</div>
-                                    <i class="fa-solid fa-arrow-right"></i>
-                                </div>
-                            </a>`;
-                        }).join('');
-                    }
+                    renderPanelClases(cursos);
                 }
             } catch (e) {
                 console.error("Error al cargar cursos reales:", e);

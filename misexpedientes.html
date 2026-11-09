@@ -9,6 +9,9 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
     <title>Expedientes | Blackwell University</title>
     
     <!-- Frameworks & Fonts -->
@@ -327,6 +330,13 @@
     
     </style>
 <link rel="stylesheet" href="bgu-loader.css">
+<style id="gv-bottomnav">
+/* Menú inferior: cada botón muestra su nombre */
+.bottom-nav { height: auto !important; padding: 6px 8px !important; border-radius: 22px !important; justify-content: space-between !important; gap: 2px; }
+.bottom-item, .bottom-item.active { flex: 1 1 0 !important; flex-direction: column !important; height: auto !important; min-height: 52px; padding: 7px 0 6px !important; gap: 3px !important; border-radius: 16px !important; min-width: 0; }
+.bottom-item > span:last-child, .bottom-item.active > span:last-child { font-size: .66rem !important; max-width: none !important; opacity: 1 !important; margin-left: 0 !important; font-weight: 600 !important; line-height: 1.1 !important; }
+.bottom-item.active { background: #eaf0fd !important; color: #234a9c !important; }
+</style>
 </head>
 <body>
 
@@ -334,7 +344,7 @@
     <nav class="top-nav d-none d-md-flex">
         <a href="#" class="nav-brand">
             <div class="logo-box"><span class="material-symbols-rounded">school</span></div>
-            <span class="brand-text">Blackwell</span>
+            <span class="brand-text">GlobalView</span>
         </a>
         <div class="nav-links-desktop">
             <a href="dashboard-docente.html" class="nav-item"><span class="material-symbols-rounded">home</span> Dashboard</a>
@@ -594,7 +604,7 @@
                     actionText = 'Firmar documentos'; actionLink = `contrato-detalle.html?inv=${inv.id}`; accentClass = 'accent-blue';
                 } else if (inv.conformidadDada && !inv.reciboEnviado) {
                     // Conformidad dada: el docente debe subir su recibo por honorarios
-                    estadoVisual = 'Recibo Pendiente';
+                    estadoVisual = 'Sube tu recibo';
                     badgeClass = 'status-pendiente'; icon = 'receipt_long'; color = '#ea580c';
                     actionText = 'Subir recibo por honorarios'; actionLink = `documentos-curso.html?inv=${inv.id}`; accentClass = 'accent-orange';
                 } else if (inv.conformidadDada && inv.reciboEnviado) {

@@ -8,6 +8,9 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
     <title>Mi Perfil | Blackwell University</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -336,6 +339,70 @@
     
     </style>
 <link rel="stylesheet" href="bgu-loader.css">
+<style id="gv-bottomnav">
+/* Menú inferior: cada botón muestra su nombre */
+.bottom-nav { height: auto !important; padding: 6px 8px !important; border-radius: 22px !important; justify-content: space-between !important; gap: 2px; }
+.bottom-item, .bottom-item.active { flex: 1 1 0 !important; flex-direction: column !important; height: auto !important; min-height: 52px; padding: 7px 0 6px !important; gap: 3px !important; border-radius: 16px !important; min-width: 0; }
+.bottom-item > span:last-child, .bottom-item.active > span:last-child { font-size: .66rem !important; max-width: none !important; opacity: 1 !important; margin-left: 0 !important; font-weight: 600 !important; line-height: 1.1 !important; }
+.bottom-item.active { background: #eaf0fd !important; color: #234a9c !important; }
+</style>
+<style id="gv-perfil">
+/* ===== Perfil: estilo unificado (minimalista, como dashboard y curso) ===== */
+.page-header h1 { font-weight: 800; font-size: 1.9rem; letter-spacing: -0.03em; color: var(--primary-dark); margin-bottom: 6px; }
+.page-header p { color: var(--text-muted); font-size: 1rem; margin: 0; }
+.form-card { border-radius: 24px; border: 1px solid rgba(35,74,156,.05); box-shadow: 0 10px 30px rgba(35,74,156,.07); }
+/* Encabezado de cada tarjeta */
+.section-badge { display: flex !important; align-items: center; gap: 12px; background: none !important; padding: 0 !important; margin-bottom: 18px !important; font-size: 1rem !important; font-weight: 700 !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--text-main) !important; }
+.section-badge i { width: 36px; height: 36px; border-radius: 11px; background: #e4edfd; color: var(--primary); display: inline-flex; align-items: center; justify-content: center; font-size: .9rem; margin: 0 !important; flex-shrink: 0; }
+.d-flex > .section-badge { margin-bottom: 14px !important; }
+/* Tarjeta principal */
+.perfil-hero { padding: 0 !important; overflow: hidden; position: relative; }
+.perfil-hero-band { height: 92px; background: linear-gradient(180deg, #eaf0fd, #f5f8fe); border-bottom: 1px solid #e3eaf7; }
+.perfil-hero-body { display: flex; align-items: flex-start; gap: 22px; padding: 0 28px 24px; flex-wrap: wrap; }
+.perfil-hero .profile-photo-wrap { margin-top: -52px; }
+.perfil-hero .profile-photo-wrap { width: 108px; height: 108px; }
+.perfil-hero .profile-photo { width: 108px; height: 108px; border: 4px solid #fff; box-shadow: 0 8px 22px rgba(35,74,156,.18); background: #e4edfd; }
+.perfil-hero-info { flex: 1; min-width: 220px; padding-top: 16px; }
+.perfil-hero-info h2 { margin: 0 0 4px; font-size: 1.55rem; font-weight: 700; letter-spacing: -.02em; color: var(--primary-dark); line-height: 1.2; }
+.perfil-mail { display: flex; align-items: center; gap: 6px; margin: 0 0 12px; color: var(--text-muted); font-size: .92rem; word-break: break-all; }
+.perfil-mail .material-symbols-rounded { font-size: 18px; }
+.perfil-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.perfil-chip { display: inline-flex; align-items: center; gap: 6px; background: #e4edfd; color: #2447a3; border: none; border-radius: 20px; padding: 6px 14px; font: 600 .8rem 'Inter', sans-serif; }
+.perfil-chip .material-symbols-rounded { font-size: 17px; }
+@media (max-width: 576px) {
+  .perfil-hero-band { height: 70px; }
+  .perfil-hero-body { flex-direction: column; align-items: center; text-align: center; padding: 0 18px 20px; gap: 6px; }
+  .perfil-hero .profile-photo-wrap { margin-top: -46px; }
+  .perfil-hero-info { padding-top: 6px; }
+  .perfil-hero .profile-photo-wrap, .perfil-hero .profile-photo { width: 92px; height: 92px; }
+  .perfil-mail, .perfil-chips { justify-content: center; }
+}
+/* Campos de lectura: mismo estilo que los inputs */
+.dato-campo .dato-valor { background: #f5f8fd; border: 1px solid #e8eef8; border-radius: 12px; padding: 9px 14px; min-height: 40px; font-size: .9rem; font-weight: 500; display: flex; align-items: center; }
+.dato-campo .dato-valor.dato-falta { background: #fff5f5; border-color: #fbdcdc; color: #b91c1c; font-size: .82rem; }
+.pago-item .pago-valor { background: #f5f8fd; border: 1px solid #e8eef8; border-radius: 12px; padding: 9px 14px; min-height: 40px; display: flex; align-items: center; }
+.pago-item .pago-valor.falta { background: #fff5f5; border-color: #fbdcdc; }
+.form-control, .form-select { background: #f5f8fd; border-color: #e3eaf6; }
+/* Estados en tonos suaves */
+.badge-campo-ok { background: #e3f5ea; color: #1c7a45; }
+.badge-campo-falta { background: #fdecec; color: #b91c1c; }
+.accordion-item { border-radius: 18px !important; box-shadow: none; border-color: #e6ecf7; }
+.accordion-button:not(.collapsed) { background: #eef3fd; }
+.diploma-mini-card { background: #f9fbfe; border-color: #e6ecf7; border-radius: 16px; }
+.card-icon-tile { background: #e4edfd; }
+.aviso-box { border-radius: 16px; }
+
+/* ===== Botones: mismo estilo que el resto del portal (píldora, azul, peso 700) ===== */
+.btn, .btn-sm { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 40px !important; padding: .55rem 1.35rem !important; font-size: .88rem !important; font-weight: 700 !important; line-height: 1.2; letter-spacing: 0; border-width: 1px; transition: all .2s ease !important; }
+.btn i { margin: 0 !important; font-size: .85em; }
+.btn-primary, .btn-primary:focus { background: var(--primary) !important; border-color: var(--primary) !important; color: #fff !important; box-shadow: 0 4px 12px rgba(30,64,175,.18) !important; }
+.btn-primary:hover, .btn-primary:active { background: #1c3a9a !important; border-color: #1c3a9a !important; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37,99,235,.25) !important; }
+.btn-soft { background: #fff !important; color: var(--primary) !important; border: 1px solid #cfdcf6 !important; box-shadow: none !important; }
+.btn-soft:hover { background: #eef3fd !important; border-color: var(--primary) !important; color: var(--primary-dark) !important; transform: translateY(-2px); }
+.btn:disabled, .btn.disabled { opacity: .55; transform: none !important; box-shadow: none !important; }
+.aviso-box .btn { padding: .5rem 1.2rem !important; }
+.confirma-pago { border-radius: 14px; background: #f5f8fd; border-color: #e3eaf6; }
+</style>
 </head>
 <body>
 
@@ -343,7 +410,7 @@
     <nav class="top-nav d-none d-md-flex">
         <a href="#" class="nav-brand">
             <div class="logo-box"><span class="material-symbols-rounded">school</span></div>
-            <span class="brand-text">Blackwell</span>
+            <span class="brand-text">GlobalView</span>
         </a>
         <div class="nav-links-desktop">
             <a href="dashboard-docente.html" class="nav-item"><span class="material-symbols-rounded">home</span> Dashboard</a>
@@ -431,7 +498,7 @@
 
                 <div class="page-header d-none d-md-block">
                     <h1>Mi Perfil</h1>
-                    <p>Aquí puedes ver un resumen de todos tus datos registrados y cambiar tu foto de perfil.</p>
+                    <p>Revisa tus datos registrados, tu CV y tus datos de pago. Puedes cambiar tu foto de perfil.</p>
                 </div>
 
                 <!-- RECORDATORIO: datos de pago incompletos -->
@@ -442,18 +509,24 @@
                 </div>
 
                 <!-- TARJETA DE FOTO + RESUMEN -->
-                <div class="form-card mb-4 d-flex align-items-center gap-4 flex-wrap">
-                    <div class="profile-photo-wrap">
-                        <div class="profile-photo" id="fotoPerfilGrande">DC</div>
-                        <label class="btn-change-photo" title="Cambiar foto de perfil">
-                            <span class="material-symbols-rounded" style="font-size: 1.1rem;">photo_camera</span>
-                            <input type="file" id="inputFotoPerfil" accept="image/png, image/jpeg, image/jpg" onchange="subirFotoPerfil(this)">
-                        </label>
-                    </div>
-                    <div>
-                        <h4 class="fw-bold m-0" id="nombreCompletoPerfil" style="color: var(--primary-dark);">Cargando...</h4>
-                        <p class="text-muted m-0" id="correoPerfil">-</p>
-                        <p class="text-muted m-0" style="font-size: 0.8rem;">ID Docente: <span id="idDocentePerfil">-</span></p>
+                <div class="form-card perfil-hero mb-4">
+                    <div class="perfil-hero-band"></div>
+                    <div class="perfil-hero-body">
+                        <div class="profile-photo-wrap">
+                            <div class="profile-photo" id="fotoPerfilGrande">DC</div>
+                            <label class="btn-change-photo" title="Cambiar foto de perfil">
+                                <span class="material-symbols-rounded" style="font-size: 1.1rem;">photo_camera</span>
+                                <input type="file" id="inputFotoPerfil" accept="image/png, image/jpeg, image/jpg" onchange="subirFotoPerfil(this)">
+                            </label>
+                        </div>
+                        <div class="perfil-hero-info">
+                            <h2 id="nombreCompletoPerfil">Cargando...</h2>
+                            <p class="perfil-mail"><span class="material-symbols-rounded">mail</span><span id="correoPerfil">-</span></p>
+                            <div class="perfil-chips">
+                                <span class="perfil-chip"><span class="material-symbols-rounded">school</span>Docente</span>
+                                <span id="idDocentePerfil" hidden>-</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -730,6 +803,13 @@
             </div>`;
         }
 
+        // El estado interno "Actualizado en Perfil - Pendiente de Procesar" no lo cambia ningún proceso,
+        // así que al docente se le muestra solo "Actualizado" (el valor real sigue guardado en la hoja).
+        function estadoCvVisible(est) {
+            const e = String(est || '').trim();
+            return /^actualizado/i.test(e) ? 'Actualizado' : (e || 'Subido');
+        }
+
         function llenarAcordeonDatosDocente(d, drafts) {
             const paisEsEEUU = /estados unidos|united states|^usa$/i.test((d.pais || '').trim());
 
@@ -778,7 +858,7 @@
             const cvVerLink = document.getElementById('cvVerLink');
             if (d.url_cv) {
                 cvNombre.innerText = 'Curriculum Vitae';
-                cvEstado.innerHTML = `Estado: <b>${d.estado_cv || 'Subido'}</b>`;
+                cvEstado.innerHTML = `Estado: <b>${estadoCvVisible(d.estado_cv)}</b>`;
                 cvVerLink.href = d.url_cv;
                 cvVerLink.classList.remove('d-none');
             } else {
@@ -1031,7 +1111,7 @@
 
                     if (res.status === 'success') {
                         document.getElementById('cvNombreArchivo').innerText = 'Curriculum Vitae';
-                        document.getElementById('cvEstadoTexto').innerHTML = `Estado: <b>${res.estado || 'Actualizado - Pendiente de Procesar'}</b>`;
+                        document.getElementById('cvEstadoTexto').innerHTML = `Estado: <b>${estadoCvVisible(res.estado || 'Actualizado')}</b>`;
                         const cvVerLink = document.getElementById('cvVerLink');
                         cvVerLink.href = res.url;
                         cvVerLink.classList.remove('d-none');

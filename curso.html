@@ -9,6 +9,9 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
     <title>Detalle del Curso | Blackwell University</title>
     
     <!-- Frameworks & Fonts -->
@@ -285,7 +288,7 @@
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         .course-main-title {
-            font-size: 2.5rem;
+            font-size: 1.9rem;
             font-weight: 800 !important;
             color: var(--primary-dark);
             letter-spacing: -0.03em;
@@ -313,7 +316,7 @@
             .bottom-nav { display: flex; }
             .content-area { padding: 20px; }
             .mobile-header { display: flex; }
-            .course-main-title { font-size: 1.6rem; }
+            .course-main-title { font-size: 1.5rem; }
         }
     
         /* ===== ENCABEZADO MÓVIL v3: barra compacta fija + menú lateral (solo celular) ===== */
@@ -398,6 +401,65 @@
     
     </style>
 <link rel="stylesheet" href="bgu-loader.css">
+<style id="gv-bottomnav">
+/* Menú inferior: cada botón muestra su nombre */
+.bottom-nav { height: auto !important; padding: 6px 8px !important; border-radius: 22px !important; justify-content: space-between !important; gap: 2px; }
+.bottom-item, .bottom-item.active { flex: 1 1 0 !important; flex-direction: column !important; height: auto !important; min-height: 52px; padding: 7px 0 6px !important; gap: 3px !important; border-radius: 16px !important; min-width: 0; }
+.bottom-item > span:last-child, .bottom-item.active > span:last-child { font-size: .66rem !important; max-width: none !important; opacity: 1 !important; margin-left: 0 !important; font-weight: 600 !important; line-height: 1.1 !important; }
+.bottom-item.active { background: #eaf0fd !important; color: #234a9c !important; }
+</style>
+<style id="gv-curso">
+/* ===== Curso: estilo unificado con el resto del sistema ===== */
+.card-modern { border-radius: 24px !important; box-shadow: 0 10px 30px rgba(35,74,156,.08) !important; border: 1px solid rgba(35,74,156,.05) !important; }
+.gv-chip { display: inline-block; font-size: .74rem; font-weight: 700; letter-spacing: .02em; padding: 5px 12px; border-radius: 20px; }
+.gv-chip.info { background: #e4edfd; color: #2447a3; }
+.gv-chip.ok { background: #e3f5ea; color: #1c7a45; }
+.gv-chip.neutral { background: #eef1f6; color: #55627a; }
+.program-badge.gv-chip { font-size: .78rem; font-weight: 600; text-align: left; }
+.stat-item { background: #f5f8fd; border-color: #e8eef8; }
+/* Agenda */
+.agenda-list { background: #f5f8fd; border-color: #e8eef8; border-radius: 16px; }
+.agenda-time { font-family: inherit; font-variant-numeric: tabular-nums; font-weight: 500; }
+.agenda-item { gap: 8px; }
+.agenda-item .agenda-text { flex: 1; text-align: center; }
+.agenda-item.past { opacity: .55; }
+.agenda-item.next { background: #e4edfd; border-radius: 12px; border-bottom: none; padding: 9px 10px; margin: 0 -4px; }
+.agenda-item.next .agenda-badge { background: #1e40af; color: #fff; }
+.agenda-badge, .agenda-time { white-space: nowrap; }
+.ag-tag { font-size: .62rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; background: #1e40af; color: #fff; border-radius: 20px; padding: 2px 8px; margin-left: 2px; }
+.ag-ok { font-size: 1.05rem; color: #1c7a45; }
+/* Modal */
+.modal-backdrop.show { opacity: .45; }
+.gv-modal { border: 1px solid rgba(0,0,0,.05) !important; border-radius: 16px !important; box-shadow: 0 20px 40px rgba(0,0,0,.12) !important; padding: 24px; font-family: 'Inter', sans-serif; }
+.gv-modal-head { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 20px; }
+.gv-modal-ic { width: 42px; height: 42px; border-radius: 12px; background: #e4edfd; color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.gv-modal-ic .material-symbols-rounded { font-size: 24px; }
+.gv-modal-title { margin: 0; font-size: 1.35rem; font-weight: 700; color: var(--primary-dark); line-height: 1.2; }
+.gv-modal-sub { margin: 3px 0 0; font-size: .85rem; color: var(--text-muted); }
+.gv-modal-x { border: none; background: #f1f5f9; width: 32px; height: 32px; border-radius: 50%; color: #64748b; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+.gv-modal-x:hover { background: #e2e8f0; }
+.gv-modal-x .material-symbols-rounded { font-size: 18px; }
+.gv-label { display: block; font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #64748b; margin-bottom: 8px; }
+.gv-select-wrap { position: relative; }
+.gv-select-wrap .material-symbols-rounded { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
+.gv-select { width: 100%; appearance: none; -webkit-appearance: none; background: #f5f8fd; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 40px 12px 14px; font: 600 .9rem 'Inter', sans-serif; color: var(--text-main); outline: none; }
+.gv-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30,64,175,.12); }
+.upload-zone { border: 1.5px dashed #c3d0e8; border-radius: 14px; padding: 26px 16px; background: #f9fbfe; text-align: center; cursor: pointer; transition: all .2s; }
+.upload-zone:hover, .upload-zone.drag { border-color: var(--primary); background: #eef3fd; }
+.upload-zone .uz-ic { width: 52px; height: 52px; border-radius: 16px; background: #e4edfd; color: var(--primary); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+.upload-zone .uz-ic .material-symbols-rounded { font-size: 28px; }
+.upload-zone h6 { margin: 0 0 4px; font-size: 1rem; font-weight: 700; color: var(--text-main); word-break: break-word; }
+.upload-zone .uz-sub { font-size: .78rem; color: var(--text-muted); font-weight: 500; }
+.upload-zone.has-file { border-style: solid; border-color: #b9ccf0; background: #eef3fd; }
+.upload-zone.has-file h6 { color: var(--primary-dark); }
+.gv-modal-foot { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+.gv-btn { border-radius: 8px; font: 600 .9rem 'Inter', sans-serif; padding: 10px 24px; border: none; cursor: pointer; transition: all .2s ease; }
+.gv-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.15); }
+.gv-btn-light { background: #f1f5f9; color: #334155; }
+.gv-btn-primary { background: var(--primary); color: #fff; }
+.gv-btn-primary:disabled { background: #b4c0d8; cursor: not-allowed; }
+@media (max-width: 576px) { .gv-modal { padding: 18px; } .gv-modal-foot .gv-btn { flex: 1; } }
+</style>
 </head>
 <body>
 
@@ -405,7 +467,7 @@
     <nav class="top-nav d-none d-md-flex">
         <a href="#" class="nav-brand">
             <div class="logo-box"><span class="material-symbols-rounded">school</span></div>
-            <span class="brand-text">Blackwell</span>
+            <span class="brand-text">GlobalView</span>
         </a>
         <div class="nav-links-desktop">
             <a href="dashboard-docente.html" class="nav-item"><span class="material-symbols-rounded">home</span> Dashboard</a>
@@ -501,7 +563,7 @@
                             <span class="material-symbols-rounded me-1" style="font-size: 1.2rem;">arrow_back</span> Volver al menú
                         </a>
                         <h1 class="course-main-title mb-1" id="ui-titulo">Cargando...</h1>
-                        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-1 fw-bold program-badge" id="ui-programa">...</span>
+                        <span class="gv-chip info program-badge" id="ui-programa">...</span>
                     </div>
                     <div id="ui-estado-badge"></div>
                 </div>
@@ -640,32 +702,39 @@
     <!-- MODAL UPLOAD -->
     <div class="modal fade" id="uploadModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border-radius:28px; border:none; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);">
-          <div class="modal-header border-bottom-0 px-4 pt-4">
-            <h5 class="modal-title fw-bold d-flex align-items-center"><span class="material-symbols-rounded text-primary me-2" style="font-size: 1.8rem;">cloud_upload</span> Subir documento</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-content gv-modal">
+          <div class="gv-modal-head">
+            <span class="gv-modal-ic"><span class="material-symbols-rounded">cloud_upload</span></span>
+            <div class="flex-grow-1">
+              <h5 class="gv-modal-title">Subir documento</h5>
+              <p class="gv-modal-sub">Comparte material para tus alumnos.</p>
+            </div>
+            <button type="button" class="gv-modal-x" data-bs-dismiss="modal" aria-label="Cerrar"><span class="material-symbols-rounded">close</span></button>
           </div>
-          <div class="modal-body px-4 pb-4">
-              <div class="mb-3">
-                  <label class="form-label fw-bold small text-muted text-uppercase letter-spacing-1">Categoría</label>
-                  <select id="modal-cat" class="form-select shadow-none bg-light border rounded-3 fw-semibold" style="font-size:0.9rem; padding: 12px;">
-                        <option value="Material del Curso">📘 Material del curso (PPT, separata)</option>
-                        <option value="Material Extra">📚 Material extra / lecturas opcionales</option>
-                        <option value="Banco de Preguntas">📝 Banco de preguntas</option>
-                   </select>
-              </div>
 
-              <div class="upload-zone text-center" id="btn-select-file" onclick="document.getElementById('fileUploadInput').click()">
-                  <span class="material-symbols-rounded text-muted mb-2 d-block" style="font-size: 3.5rem;">upload_file</span>
-                  <h6 class="fw-bold mb-1" id="uploadNameFile" style="font-size: 1.1rem;">Seleccionar archivo</h6>
-                  <span class="text-muted small fw-semibold">PDF, PPT, PPTX, DOC, DOCX</span>
-              </div>
-              <input type="file" id="fileUploadInput" class="d-none" accept=".pdf,.ppt,.pptx,.doc,.docx" onchange="actualizarCaja(this)">
+          <div class="gv-modal-body">
+            <label class="gv-label" for="modal-cat">Categoría</label>
+            <div class="gv-select-wrap">
+              <select id="modal-cat" class="gv-select">
+                <option value="Material del Curso">Material del curso (PPT, separata)</option>
+                <option value="Material Extra">Material extra / lecturas opcionales</option>
+                <option value="Banco de Preguntas">Banco de preguntas</option>
+              </select>
+              <span class="material-symbols-rounded">expand_more</span>
+            </div>
+
+            <label class="gv-label" style="margin-top:18px;">Archivo</label>
+            <div class="upload-zone" id="btn-select-file" onclick="document.getElementById('fileUploadInput').click()">
+              <span class="uz-ic"><span class="material-symbols-rounded" id="uzIcon">upload_file</span></span>
+              <h6 id="uploadNameFile">Seleccionar archivo</h6>
+              <span class="uz-sub" id="uploadSubFile">Haz clic o arrastra tu archivo aquí · PDF, PPT, PPTX, DOC, DOCX</span>
+            </div>
+            <input type="file" id="fileUploadInput" class="d-none" accept=".pdf,.ppt,.pptx,.doc,.docx" onchange="actualizarCaja(this)">
           </div>
-          
-          <div class="modal-footer border-top-0 px-4 pb-4 pt-0">
-            <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancelar</button>
-            <button type="button" class="btn btn-primary px-4 shadow-sm" id="btnUploadSubmit" onclick="subirArchivoCourse()">Subir ahora</button>
+
+          <div class="gv-modal-foot">
+            <button type="button" class="gv-btn gv-btn-light" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="gv-btn gv-btn-primary" id="btnUploadSubmit" onclick="subirArchivoCourse()" disabled>Subir ahora</button>
           </div>
         </div>
       </div>
@@ -871,11 +940,11 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     }
                     
                     let estadoVal = String(data.estado).trim().toLowerCase();
-                    let eCol = 'bg-secondary';
-                    if (estadoVal.includes('respondido')) eCol = 'bg-primary';
-                    else if (estadoVal.includes('completado') || estadoVal.includes('aprobado') || estadoVal.includes('aceptado')) eCol = 'bg-success';
+                    let eCol = 'neutral';
+                    if (estadoVal.includes('respondido')) eCol = 'info';
+                    else if (estadoVal.includes('completado') || estadoVal.includes('aprobado') || estadoVal.includes('aceptado')) eCol = 'ok';
                     
-                    document.getElementById('ui-estado-badge').innerHTML = `<span class="badge ${eCol} px-3 py-2 fw-bold" style="border-radius: 10px; font-size: 0.8rem; letter-spacing: 0.5px;">${data.estado.toUpperCase()}</span>`;
+                    document.getElementById('ui-estado-badge').innerHTML = `<span class="gv-chip ${eCol}">${data.estado}</span>`;
 
                     if(data.silabo) {
                         const silaboDOM = document.getElementById('link-silabo');
@@ -891,14 +960,24 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                             const horasArr = parts[1].split('|').map(s => s.trim());
 
                             let htmlAgenda = '<div class="agenda-list">';
+                            const hoyA = new Date(); hoyA.setHours(0, 0, 0, 0);
+                            let proxMarcada = false;
                             diasArr.forEach((dia, idx) => {
                                 let horaStr = horasArr[idx] || "";
                                 if(horaStr.includes(': ')) horaStr = horaStr.split(/:\s*(.*)/s)[1].trim();
+                                let cls = '', tag = '';
+                                const mf = String(dia).match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                                if (mf) {
+                                    const fd = new Date(+mf[3], +mf[2] - 1, +mf[1]);
+                                    if (fd < hoyA) { cls = ' past'; }
+                                    else if (!proxMarcada) { proxMarcada = true; cls = ' next'; }
+                                }
                                 htmlAgenda += `
-                                <div class="agenda-item">
+                                <div class="agenda-item${cls}">
                                     <span class="agenda-badge">Sesión ${idx + 1}</span>
                                     <span class="agenda-text">${dia}</span>
                                     <span class="agenda-time">${horaStr}</span>
+                                    ${tag}
                                 </div>`;
                             });
                             htmlAgenda += '</div>';
@@ -987,15 +1066,34 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
             listCont.innerHTML = ht;
         }
 
+        const EXT_OK = ['pdf', 'ppt', 'pptx', 'doc', 'docx'];
+        function fmtTam(n) { return n >= 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB'; }
+        function resetUpload() {
+            const inp = document.getElementById('fileUploadInput'); inp.value = '';
+            selectedFileBlob = null; selectedFileDetails = null;
+            document.getElementById('uploadNameFile').innerHTML = 'Seleccionar archivo';
+            document.getElementById('uploadSubFile').innerHTML = 'Haz clic o arrastra tu archivo aquí · PDF, PPT, PPTX, DOC, DOCX';
+            document.getElementById('uzIcon').innerText = 'upload_file';
+            document.getElementById('btn-select-file').classList.remove('has-file');
+            document.getElementById('btnUploadSubmit').disabled = true;
+        }
         function actualizarCaja(input) {
             const btnSubir = document.getElementById('btnUploadSubmit');
-            const textoTitle = document.getElementById('uploadNameFile');
-            
+            const zona = document.getElementById('btn-select-file');
             if (input.files.length > 0) {
                 const f = input.files[0];
-                textoTitle.innerHTML = `<span class="text-primary">${f.name}</span>`;
+                const ext = (f.name.split('.').pop() || '').toLowerCase();
+                if (!EXT_OK.includes(ext)) {
+                    resetUpload();
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'warning', title: 'Formato no permitido. Usa PDF, PPT, PPTX, DOC o DOCX.', showConfirmButton: false, timer: 3500 });
+                    return;
+                }
+                document.getElementById('uploadNameFile').innerText = f.name;
+                document.getElementById('uploadSubFile').innerText = fmtTam(f.size) + ' · Clic para cambiar';
+                document.getElementById('uzIcon').innerText = 'description';
+                zona.classList.add('has-file');
                 selectedFileDetails = { name: f.name, type: f.type || "application/octet-stream" };
-                
+                btnSubir.disabled = true;
                 const reader = new FileReader();
                 reader.readAsDataURL(f);
                 reader.onload = () => {
@@ -1003,11 +1101,16 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     btnSubir.disabled = false;
                 };
             } else {
-                textoTitle.innerHTML = "Seleccionar archivo";
-                btnSubir.disabled = true;
-                selectedFileBlob = null;
+                resetUpload();
             }
         }
+        (function () {
+            const z = document.getElementById('btn-select-file'), inp = document.getElementById('fileUploadInput');
+            ['dragenter', 'dragover'].forEach(ev => z.addEventListener(ev, e => { e.preventDefault(); z.classList.add('drag'); }));
+            ['dragleave', 'drop'].forEach(ev => z.addEventListener(ev, e => { e.preventDefault(); z.classList.remove('drag'); }));
+            z.addEventListener('drop', e => { if (e.dataTransfer && e.dataTransfer.files.length) { inp.files = e.dataTransfer.files; actualizarCaja(inp); } });
+            document.getElementById('uploadModal').addEventListener('hidden.bs.modal', resetUpload);
+        })();
 
         async function subirArchivoCourse() {
             const btn = document.getElementById('btnUploadSubmit');
@@ -1045,8 +1148,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                     
                     fetchDetalle();
                     
-                    document.getElementById('fileUploadInput').value = '';
-                    document.getElementById('uploadNameFile').innerHTML = "Seleccionar archivo";
+                    resetUpload();
 
                 } else {
                     Swal.fire('Error', res.message, 'error');
@@ -1055,7 +1157,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OEST
                 Swal.fire('Error', 'No se pudo subir el archivo', 'error');
             } finally {
                 btn.innerHTML = ogHtml;
-                btn.disabled = false;
+                btn.disabled = !selectedFileBlob;
             }
         }
     </script>
