@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script>
+        // Solo Administrador / ADMIN
+        (function () {
+            var ok = localStorage.getItem('isLoggedIn') === 'true';
+            var r = String(localStorage.getItem('userRole') || '').toUpperCase();
+            if (!ok || (r !== 'ADMINISTRADOR' && r !== 'ADMIN')) window.location.href = '../index.html';
+        })();
+    </script>
+    <script src="bgu-shell.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seguimiento de invitaciones | Blackwell University</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="bgu-shell.css">
+    <style>
+        html { font-size: 14px; }
+        .form-control, .form-select { border-radius: 10px; border-color: #cbd5e1; font-size: 0.9rem; }
+        .form-control:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        .main-wrapper { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; min-width: 0; }
+        .centered-container { width: 100%; max-width: 1500px; text-align: left; }
+        .page-header h1 { font-weight: 800; font-size: 1.6rem; color: var(--primary-dark); letter-spacing: -0.03em; margin-bottom: 8px; }
+        .page-header p { color: var(--text-muted); font-size: 1.05rem; margin-bottom: 22px; }
+        .filtros { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 14px 16px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+        .filtros .form-control { max-width: 340px; } .filtros .form-select { max-width: 220px; }
+        .leyenda { font-size: .76rem; color: #64748b; display: flex; gap: 14px; flex-wrap: wrap; margin: 0 0 10px; }
+        .leyenda i { font-style: normal; display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+        .tabla-wrap { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: auto; max-height: 70vh; }
+        table.seg { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 1250px; font-size: .8rem; }
+        table.seg th { position: sticky; top: 0; z-index: 3; background: #f8fafc; color: #475569; font-size: .68rem; text-transform: uppercase; letter-spacing: .4px; padding: 10px 8px; border-bottom: 1px solid #e2e8f0; text-align: center; white-space: nowrap; }
+        table.seg td { padding: 9px 8px; border-bottom: 1px solid #f1f5f9; text-align: center; vertical-align: middle; }
+        table.seg th.c1, table.seg td.c1 { position: sticky; left: 0; z-index: 2; background: #fff; text-align: left; min-width: 250px; max-width: 280px; box-shadow: 1px 0 0 #e2e8f0; }
+        table.seg th.c1 { z-index: 4; background: #f8fafc; }
+        table.seg tbody tr { cursor: pointer; } table.seg tbody tr:hover td { background: #f8fafc; }
+        .doc-n { font-weight: 700; color: #0f172a; } .doc-c { color: #475569; font-size: .74rem; line-height: 1.25; } .doc-i { color: #94a3b8; font-size: .68rem; font-family: Consolas, monospace; }
+        .h-ok { color: #047857; font-weight: 700; line-height: 1.2; } .h-ok small { display: block; color: #64748b; font-weight: 600; font-size: .68rem; }
+        .h-ant { color: #64748b; font-weight: 600; line-height: 1.2; } .h-ant small { display: block; color: #94a3b8; font-size: .66rem; }
+        .h-no { color: #cbd5e1; }
+        .est { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: .68rem; font-weight: 700; background: #eff6ff; color: #1d4ed8; white-space: nowrap; }
+        .pag { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+    </style>
+<link rel="stylesheet" href="bgu-sidebar.css">
+</head>
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <a href="#" class="brand-section">
+            <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div><span class="brand-text">Blackwell</span>
+        </a>
+        <div class="user-preview">
+            <div class="avatar" id="userInitial">AA</div><div class="user-meta"><b id="userName">Asesora Académica</b><span id="userRoleLabel">Catálogo de Cursos</span></div>
+        </div>
+        <ul class="nav-list">
+            <li id="navDashboardAdmin" style="display:none;"><a href="administrativo.html" class="nav-link"><i class="fa-solid fa-border-all"></i> <span class="link-text">Dashboard</span></a></li>
+            <li id="navGestionDocentes" style="display:none;"><a href="gestion-docentes.html" class="nav-link"><i class="fa-solid fa-users"></i> <span class="link-text">Gestión de Docentes</span></a></li>
+            <li id="navExpedientesAdmin" style="display:none;"><a href="gestion-expedientes.html" class="nav-link"><i class="fa-solid fa-folder-tree"></i> <span class="link-text">Expedientes</span></a></li>
+            <li id="navGestionCursosAdmin" style="display:none;"><a href="gestion-cursos.html" class="nav-link"><i class="fa-solid fa-book-open"></i> <span class="link-text">Catálogo de Cursos</span></a></li>
+            <li id="navFacultyRoster" style="display:none;"><a href="faculty-roster.html" class="nav-link"><i class="fa-solid fa-table-list"></i> <span class="link-text">Faculty Rosters</span></a></li>
+            <li id="navReportesDocentes" style="display:none;"><a href="reportes-docentes.html" class="nav-link"><i class="fa-solid fa-chart-column"></i> <span class="link-text">Reportes de Docentes</span></a></li>
+            <li><a href="academica-dashboard.html" class="nav-link"><i class="fa-solid fa-chalkboard-user"></i> <span class="link-text">Gestión de Clases</span></a></li>
+            <li><a href="academica-seguimiento.html" class="nav-link active"><i class="fa-solid fa-clock-rotate-left"></i> <span class="link-text">Seguimiento de invitaciones</span></a></li>
+            <li id="navGestionAsesoras" style="display:none;"><a href="gestion-asesoras.html" class="nav-link"><i class="fa-solid fa-people-arrows"></i> <span class="link-text">Gestionar Asesoras</span></a></li>
+            <li id="navGestionUsuariosAcad" style="display:none;"><a href="gestion-usuarios.html" class="nav-link"><i class="fa-solid fa-user-gear"></i> <span class="link-text">Gestión de Usuarios</span></a></li>
+            <li id="navConfigCorreos" style="display:none;"><a href="config-correos.html" class="nav-link"><i class="fa-solid fa-envelope-open-text"></i> <span class="link-text">Configurar correos</span></a></li>
+        </ul>
+        <a href="#" onclick="logout('portal académico')" class="nav-link" style="color: #f43f5e; margin-top: auto;"><i class="fa-solid fa-right-from-bracket"></i> <span class="link-text">Cerrar Sesión</span></a>
+    </aside>
+    <script src="bgu-sidebar.js"></script>
+
+    <main class="main-wrapper">
+        <header>
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn border-0 p-0 d-md-none text-dark fs-4" onclick="toggleMobileSidebar()"><i class="fa-solid fa-bars"></i></button>
+                <div><h5 class="fw-bold mb-0" style="color: var(--primary-dark)">Área Académica</h5><p class="text-muted small m-0">Seguimiento de invitaciones</p></div>
+            </div>
+        </header>
+        <div class="content-area">
+            <div class="centered-container">
+                <div class="page-header">
+                    <h1>Seguimiento de invitaciones</h1>
+                    <p>Cuándo pasó cada paso, desde que se invitó al docente hasta que envió su recibo por honorarios. Pulsa una fila para ver el detalle.</p>
+                </div>
+
+                <div class="filtros">
+                    <input type="text" id="fBuscar" class="form-control" placeholder="Buscar docente, curso, programa o ID…">
+                    <select id="fEstado" class="form-select"><option value="">Todos los estados</option></select>
+                    <select id="fFalta" class="form-select">
+                        <option value="">Cualquier avance</option>
+                        <option value="invitacion_aceptada">Aún no aceptó</option>
+                        <option value="docente_firmo">Aún no firma el docente</option>
+                        <option value="firma_zamudio">Falta firma Zamudio</option>
+                        <option value="firma_ernesto">Falta firma Ernesto</option>
+                        <option value="curso_culminado">Aún no culmina</option>
+                        <option value="conformidad_dictado">Sin conformidad</option>
+                        <option value="recibo_subido">Sin recibo</option>
+                    </select>
+                    <button class="btn btn-light border" onclick="cargar()" title="Actualizar"><i class="fa-solid fa-rotate"></i></button>
+                    <span class="text-muted small ms-auto" id="contador"></span>
+                </div>
+                <div class="leyenda"><span><i style="background:#047857"></i>Registrado con fecha y hora</span><span><i style="background:#94a3b8"></i>Dato anterior al historial (puede no tener hora)</span><span><i style="background:#cbd5e1"></i>Pendiente</span></div>
+
+                <div class="tabla-wrap">
+                    <table class="seg">
+                        <thead><tr id="encabezado"></tr></thead>
+                        <tbody id="cuerpo"><tr><td colspan="13" class="text-muted py-4">Cargando…</td></tr></tbody>
+                    </table>
+                </div>
+                <div class="pag" id="paginacion"></div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal fade" id="modalHist" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content" style="border-radius: 20px; border: none;">
+                <div class="modal-header" style="border-bottom: 1px solid #f1f5f9;">
+                    <div><h5 class="fw-bold m-0" id="mhTitulo">Historial</h5><p class="text-muted small m-0 mt-1" id="mhSub"></p></div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body"><div id="mhCuerpo"></div></div>
+                <div class="modal-footer" style="border-top: 1px solid #f1f5f9;" id="mhPie"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="historial-linea.js"></script>
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
+        const COLS = [
+            ['invitacion_enviada', 'Invitada', 'invitacion_creada'], ['invitacion_aceptada', 'Aceptó'], ['registro_enviado', 'Registró y envió su info'],
+            ['docs_enviados_docente', 'Docs enviados'], ['docente_firmo', 'Firmó docente'], ['firma_zamudio', 'Firma Zamudio'], ['firma_ernesto', 'Firma Ernesto'],
+            ['curso_culminado', 'Culminado'], ['conformidad_dictado', 'Conformidad'], ['recibo_subido', 'Recibo']
+        ];
+        const POR_PAGINA = 25;
+        let filas = [], vista = [], pagina = 1;
+        const rolUp = String(localStorage.getItem('userRole') || '').toUpperCase();
+        const puedeAbrir = ['EJECUTIVA ACADEMICA', 'ADMINISTRADOR', 'ADMIN', 'ADMINISTRATIVO'].indexOf(rolUp) > -1;
+        const esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        const norm = t => String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+        document.getElementById('encabezado').innerHTML = '<th class="c1">Docente · curso</th><th>Estado</th>' + COLS.map(c => '<th>' + c[1] + '</th>').join('');
+
+        function celda(f, col) {
+            const h = f.hitos[col[0]] || (col[2] ? f.hitos[col[2]] : null);
+            if (!h) return '<td><span class="h-no">—</span></td>';
+            const partes = String(h.cuando).split(' ');
+            const hora = partes[1] ? '<small>' + esc(partes[1]) + '</small>' : '';
+            return '<td><div class="' + (h.anterior ? 'h-ant' : 'h-ok') + '">' + esc(partes[0]) + hora + '</div></td>';
+        }
+        function pintar() {
+            const total = vista.length, paginas = Math.max(1, Math.ceil(total / POR_PAGINA));
+            if (pagina > paginas) pagina = paginas;
+            const ini = (pagina - 1) * POR_PAGINA, trozo = vista.slice(ini, ini + POR_PAGINA);
+            document.getElementById('contador').textContent = total + ' invitaciones';
+            document.getElementById('cuerpo').innerHTML = trozo.length ? trozo.map(f => {
+                const i = filas.indexOf(f);
+                return '<tr onclick="abrir(' + i + ')"><td class="c1"><div class="doc-n">' + esc(f.nombreDocente) + '</div><div class="doc-c">' + esc(f.curso) + (f.programa ? ' · ' + esc(f.programa) : '') + '</div>' +
+                    '<div class="doc-i">' + esc(f.id) + (f.idExpediente ? ' · ' + esc(f.idExpediente) : '') + '</div></td><td><span class="est">' + esc(f.estado || '—') + '</span></td>' + COLS.map(c => celda(f, c)).join('') + '</tr>';
+            }).join('') : '<tr><td colspan="12" class="text-muted py-4">No hay invitaciones con ese filtro.</td></tr>';
+            document.getElementById('paginacion').innerHTML = total > POR_PAGINA ? '<span class="text-muted small">Página ' + pagina + ' de ' + paginas + '</span><div class="d-flex gap-2"><button class="btn btn-sm btn-light border" ' + (pagina <= 1 ? 'disabled' : '') + ' onclick="irA(' + (pagina - 1) + ')"><i class="fa-solid fa-chevron-left"></i></button><button class="btn btn-sm btn-light border" ' + (pagina >= paginas ? 'disabled' : '') + ' onclick="irA(' + (pagina + 1) + ')"><i class="fa-solid fa-chevron-right"></i></button></div>' : '';
+        }
+        function irA(n) { pagina = n; pintar(); }
+        function filtrar() {
+            const q = norm(document.getElementById('fBuscar').value), est = document.getElementById('fEstado').value, falta = document.getElementById('fFalta').value;
+            vista = filas.filter(f => (!q || norm([f.nombreDocente, f.curso, f.programa, f.id, f.idExpediente].join(' ')).indexOf(q) > -1) && (!est || f.estado === est) && (!falta || !f.hitos[falta]));
+            pagina = 1; pintar();
+        }
+        async function cargar() {
+            document.getElementById('cuerpo').innerHTML = '<tr><td colspan="12" class="text-muted py-4">Cargando…</td></tr>';
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_seguimiento_invitaciones', rol: localStorage.getItem('userRole') }) });
+                const r = await res.json();
+                if (r.status !== 'success') throw new Error(r.message || 'Error');
+                filas = r.data || [];
+                const sel = document.getElementById('fEstado'), actual = sel.value;
+                sel.innerHTML = '<option value="">Todos los estados</option>' + [...new Set(filas.map(f => f.estado).filter(Boolean))].sort().map(e => '<option>' + esc(e) + '</option>').join('');
+                sel.value = actual; filtrar();
+            } catch (e) { document.getElementById('cuerpo').innerHTML = '<tr><td colspan="12" class="text-danger py-4">No se pudo cargar el seguimiento.</td></tr>'; }
+        }
+        function abrir(i) {
+            const f = filas[i]; if (!f) return;
+            document.getElementById('mhTitulo').textContent = f.nombreDocente;
+            document.getElementById('mhSub').textContent = f.curso + (f.programa ? ' · ' + f.programa : '') + ' · ' + f.id + (f.idExpediente ? ' · ' + f.idExpediente : '');
+            document.getElementById('mhPie').innerHTML = puedeAbrir ? '<a class="btn btn-sm btn-outline-primary" href="invitacion.html?invId=' + encodeURIComponent(f.id) + '"><i class="fa-solid fa-envelope-open-text me-1"></i>Abrir invitación</a>' +
+                (f.idExpediente ? '<a class="btn btn-sm btn-outline-secondary" href="expediente.html?expId=' + encodeURIComponent(f.idExpediente) + '"><i class="fa-solid fa-folder-open me-1"></i>Abrir expediente</a>' : '') : '';
+            new bootstrap.Modal(document.getElementById('modalHist')).show();
+            BGUHistorial.cargar(document.getElementById('mhCuerpo'), GAS_URL, { idInvitacion: f.id, idExpediente: f.idExpediente, modo: 'invitacion' });
+        }
+        ['fBuscar'].forEach(id => document.getElementById(id).addEventListener('input', filtrar));
+        ['fEstado', 'fFalta'].forEach(id => document.getElementById(id).addEventListener('change', filtrar));
+        document.addEventListener('DOMContentLoaded', function () {
+            const r = rolUp; const mostrar = (id, roles) => { const n = document.getElementById(id); if (n && roles.indexOf(r) > -1) n.style.display = ''; };
+            mostrar('navFacultyRoster', ['ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA', 'ADMINISTRATIVO', 'ASESORA ACADEMICA', 'JEFE OSE BGU', 'E-LEARNING', 'DIRECTOR_ZAMUDIO', 'DIRECTOR_ERNESTO']);
+            mostrar('navReportesDocentes', ['ADMINISTRATIVO', 'ADMINISTRADOR', 'ADMIN', 'EJECUTIVA ACADEMICA']);
+            mostrar('navConfigCorreos', ['ADMINISTRADOR', 'ADMIN']);
+            cargar();
+        });
+        function logout() {
+            Swal.fire({ title: '¿Cerrar sesión?', text: 'Vas a salir del portal administrativo.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#2563eb', cancelButtonColor: '#64748b', confirmButtonText: 'Sí, cerrar sesión', cancelButtonText: 'Cancelar', reverseButtons: true, heightAuto: false, scrollbarPadding: false })
+                .then(r => { if (r.isConfirmed) { sessionStorage.clear(); localStorage.clear(); window.location.href = "../index.html"; } });
+        }
+    </script>
+<script src="i18n-en.js"></script>
+<script src="i18n.js"></script>
+</body>
+</html>

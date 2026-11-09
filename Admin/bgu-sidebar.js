@@ -37,10 +37,42 @@
     var SECS=[
       ['General',['administrativo.html']],
       ['Docentes',['gestion-docentes.html','gestion-expedientes.html','faculty-roster.html','reportes-docentes.html']],
-      ['Académico',['gestion-cursos.html','academica-dashboard.html','gestion-asesoras.html']],
-      ['Administración',['gestion-usuarios.html']],
+      ['Académico',['gestion-cursos.html','academica-dashboard.html','academica-seguimiento.html','gestion-asesoras.html']],
+      ['Administración',['gestion-usuarios.html','config-correos.html']],
       ['Firmas',['director-dashboard.html']]
     ];
+    /* MENÚ CENTRAL: cada página trae su propia lista (a veces incompleta). Aquí se completan los
+       ítems que falten y se decide por rol quién ve cada uno, para que el lateral sea igual en todas. */
+    var ADM=['ADMINISTRATIVO','ADMINISTRADOR','ADMIN','EJECUTIVA ACADEMICA'];
+    var SOLO_ADMIN=['ADMINISTRADOR','ADMIN'];
+    var MENU=[
+      {h:'administrativo.html',t:'Dashboard',i:'fa-border-all',id:'navDashboardAdmin',r:ADM},
+      {h:'gestion-docentes.html',t:'Gestión de Docentes',i:'fa-users',id:'navGestionDocentes',r:ADM},
+      {h:'gestion-expedientes.html',t:'Expedientes',i:'fa-folder-tree',id:'navExpedientesAdmin',r:ADM},
+      {h:'faculty-roster.html',t:'Faculty Rosters',i:'fa-table-list',id:'navFacultyRoster',r:ADM.concat(['ASESORA ACADEMICA','JEFE OSE BGU','E-LEARNING','DIRECTOR_ZAMUDIO','DIRECTOR_ERNESTO'])},
+      {h:'reportes-docentes.html',t:'Reportes de Docentes',i:'fa-chart-column',id:'navReportesDocentes',r:ADM},
+      {h:'gestion-cursos.html',t:'Catálogo de Cursos',i:'fa-book-open',id:'navGestionCursosAdmin',r:ADM},
+      {h:'academica-dashboard.html',t:'Gestión de Clases',i:'fa-chalkboard-user',id:'navGestionClases',r:ADM.concat(['ASESORA ACADEMICA','JEFE OSE BGU','E-LEARNING'])},
+      {h:'academica-seguimiento.html',t:'Seguimiento de invitaciones',i:'fa-clock-rotate-left',id:'navSeguimiento',r:SOLO_ADMIN},
+      {h:'gestion-asesoras.html',t:'Gestionar Asesoras',i:'fa-people-arrows',id:'navGestionAsesoras',r:SOLO_ADMIN.concat(['JEFE OSE BGU'])},
+      {h:'gestion-usuarios.html',t:'Gestión de Usuarios',i:'fa-user-gear',id:'navGestionUsuarios',r:SOLO_ADMIN},
+      {h:'config-correos.html',t:'Configurar correos',i:'fa-envelope-open-text',id:'navConfigCorreos',r:SOLO_ADMIN}
+    ];
+    function hrefLi(li){var a=li.querySelector&&li.querySelector('a.nav-link');return a?(a.getAttribute('href')||'').split('?')[0].split('/').pop():'';}
+    var esMenuAdmin=[].slice.call(ul.children).some(function(li){var h=hrefLi(li);return MENU.some(function(m){return m.h===h;});});
+    if(esMenuAdmin){ // en páginas con otro menú (p. ej. directores) no se toca nada
+      var rolU=String(localStorage.getItem('userRole')||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+      var paginaActual=(location.pathname||'').split('/').pop();
+      MENU.forEach(function(m){
+        var li=null;[].slice.call(ul.children).forEach(function(x){if(!li&&hrefLi(x)===m.h)li=x;});
+        if(!li){
+          li=document.createElement('li');if(!document.getElementById(m.id))li.id=m.id;
+          li.innerHTML='<a href="'+m.h+'" class="nav-link'+(paginaActual===m.h?' active':'')+'"><i class="fa-solid '+m.i+'"></i> <span class="link-text">'+m.t+'</span></a>';
+          ul.appendChild(li);
+        }
+        li.style.display=m.r.indexOf(rolU)>-1?'':'none';
+      });
+    }
     var items=[].slice.call(ul.children).filter(function(li){return li.querySelector&&li.querySelector('a.nav-link');});
     var others=[].slice.call(ul.children).filter(function(li){return items.indexOf(li)<0;});
     function hrefOf(li){return (li.querySelector('a.nav-link').getAttribute('href')||'').split('?')[0].split('/').pop();}
@@ -86,6 +118,8 @@
     'gestion-cursos.html':'<path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/>',
     'academica-dashboard.html':'<rect x="3" y="4" width="18" height="12" rx="2"/><line x1="8" y1="20" x2="16" y2="20"/><line x1="12" y1="16" x2="12" y2="20"/>',
     'gestion-asesoras.html':'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/>',
+    'academica-seguimiento.html':'<circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/>',
+    'config-correos.html':'<rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3 7 12 13 21 7"/>',
     'gestion-usuarios.html':'<circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/>',
     '__logout':'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
     '__logo':'<path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/>'

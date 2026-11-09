@@ -821,6 +821,9 @@
                     <li class="nav-item">
                         <button class="nav-link" data-bs-toggle="tab" data-bs-target="#generados">Documentos de Expediente</button>
                     </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#historialExp" id="btnTabHistorialExp"><i class="fa-solid fa-clock-rotate-left me-1"></i>Historial</button>
+                    </li>
                 </ul>
 
                 <div class="tab-content">
@@ -964,6 +967,15 @@
                     </div>
 
                     <!-- PESTAÑA 2: DOCUMENTOS GENERADOS -->
+                    <!-- PESTAÑA: HISTORIAL -->
+                    <div class="tab-pane fade" id="historialExp">
+                        <div class="form-card" style="padding: 24px; max-width: 720px;">
+                            <h5 class="fw-bold mb-1" style="color: var(--primary-dark);"><i class="fa-solid fa-clock-rotate-left me-2"></i>Historial del expediente</h5>
+                            <p class="text-muted small mb-3">Qué pasó y cuándo con este expediente y su invitación: envío de documentos, firma del docente y de los directores.</p>
+                            <div id="histExpCuerpo"></div>
+                        </div>
+                    </div>
+
                     <div class="tab-pane fade" id="generados">
                         <div class="form-card" style="padding: 24px;">
                             <!-- Barra de acciones (minimalista) -->
@@ -2081,6 +2093,8 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            const bhe = document.getElementById('btnTabHistorialExp');
+            if (bhe) bhe.addEventListener('shown.bs.tab', () => BGUHistorial.cargar(document.getElementById('histExpCuerpo'), GAS_URL, { idExpediente: expId, modo: 'expediente' }));
             const name = localStorage.getItem('userName') || "Admin";
             const rol = localStorage.getItem('userRole') || "ADMIN";
             document.getElementById('userName').innerText = name;
@@ -3509,6 +3523,7 @@
         });
     </script>
     <div id="tooltipGlobal" class="tooltip-datos-global"></div>
+<script src="historial-linea.js"></script>
 <script src="i18n-en.js"></script>
 <script src="i18n.js"></script>
 <script>(function(){var r=String(localStorage.getItem('userRole')||'').toUpperCase();var n=document.getElementById('navConfigCorreos');if(n&&(r==='ADMINISTRADOR'||r==='ADMIN'))n.style.display='';})();</script>

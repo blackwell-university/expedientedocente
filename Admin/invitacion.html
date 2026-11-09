@@ -464,6 +464,9 @@
                     <li class="nav-item">
                         <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-documentos">Documentos de Contrato</button>
                     </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-historial" id="btnTabHistorial"><i class="fa-solid fa-clock-rotate-left me-1"></i>Historial</button>
+                    </li>
                 </ul>
 
                 <div class="tab-content">
@@ -531,6 +534,15 @@
                     </div>
 
                     <!-- PESTAÑA 2: DOCUMENTOS -->
+                    <!-- PESTAÑA: HISTORIAL -->
+                    <div class="tab-pane fade" id="tab-historial">
+                        <div class="form-card" style="padding: 24px; max-width: 720px;">
+                            <h5 class="fw-bold mb-1" style="color: var(--primary-dark);"><i class="fa-solid fa-clock-rotate-left me-2"></i>Historial de la invitación</h5>
+                            <p class="text-muted small mb-3">Qué pasó y cuándo, desde que se invitó al docente hasta su recibo por honorarios.</p>
+                            <div id="histInvCuerpo"></div>
+                        </div>
+                    </div>
+
                     <div class="tab-pane fade" id="tab-documentos">
                         <div class="form-card" style="padding: 24px;">
                             
@@ -760,6 +772,8 @@
         ];
 
         document.addEventListener('DOMContentLoaded', () => {
+            const bh = document.getElementById('btnTabHistorial');
+            if (bh) bh.addEventListener('shown.bs.tab', () => BGUHistorial.cargar(document.getElementById('histInvCuerpo'), GAS_URL, { idInvitacion: invId, modo: 'invitacion' }));
             const dzNotif = document.getElementById('dropzoneAdjuntosNotif');
             if(dzNotif) activarDropzone(dzNotif, (files) => { agregarAdjuntosUI(files); });
 
@@ -1994,6 +2008,7 @@
         });
     </script>
     <div id="tooltipGlobal" class="tooltip-datos-global"></div>
+<script src="historial-linea.js"></script>
 <script src="i18n-en.js"></script>
 <script src="i18n.js"></script>
 <script>(function(){var r=String(localStorage.getItem('userRole')||'').toUpperCase();var n=document.getElementById('navConfigCorreos');if(n&&(r==='ADMINISTRADOR'||r==='ADMIN'))n.style.display='';})();</script>

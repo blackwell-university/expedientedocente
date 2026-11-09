@@ -13,6 +13,9 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
     <title>Configurar correos | Blackwell University</title>
 
     <!-- Frameworks & Fonts -->
@@ -219,7 +222,7 @@
 
         <a href="#" class="brand-section">
             <div class="logo-box"><i class="fa-solid fa-graduation-cap"></i></div>
-            <span class="brand-text">Blackwell</span>
+            <span class="brand-text">GlobalView</span>
         </a>
 
         <div class="user-preview">
@@ -496,7 +499,7 @@
             const v = leerModal();
             const malos = [].concat(v.paraExtra, v.ccExtra, v.bccExtra).filter(c => !/^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(c));
             if (malos.length) { Swal.fire({ icon: 'warning', title: 'Revisa los correos', text: 'No parecen válidos: ' + malos.join(', '), heightAuto: false, scrollbarPadding: false }); return; }
-            if (!actual.paraFijo && !v.paraRoles.length && !v.paraExtra.length) {
+            if (!actual.paraFijo && !actual.tieneSabado && !v.paraRoles.length && !v.paraExtra.length) {
                 Swal.fire({ icon: 'warning', title: 'Falta un destinatario', text: 'Este correo necesita al menos un rol o correo en “Para”.', heightAuto: false, scrollbarPadding: false }); return;
             }
             const btn = document.getElementById('btnGuardar'), html = btn.innerHTML;

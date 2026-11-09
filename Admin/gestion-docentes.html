@@ -435,9 +435,9 @@
                                 <tr>
                                     <th>Docente</th>
                                     <th>Información de Contacto</th>
-                                    <th>Estado de Cuenta</th>
+                                    <th style="white-space:nowrap;">Estado de Cuenta</th>
                                     <th class="text-center">Cursos</th>
-                                    <th class="text-center">Acciones</th>
+                                    <th class="text-end" style="white-space:nowrap;">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="tabla-docentes-body">
@@ -584,8 +584,8 @@
                             <span class="fw-bold" style="color: var(--primary); font-size: 0.9rem;">${d.cursosCount}</span>
                         </div>
                     </td>
-                    <td class="text-center">
-                        <div class="d-flex gap-2 justify-content-center align-items-center flex-wrap">
+                    <td class="text-end" style="white-space:nowrap;">
+                        <div class="d-flex gap-2 justify-content-end align-items-center flex-nowrap">
                             <a href="detallesdocente.html?id=${d.id}" class="btn-expediente-link" title="Ver expediente">
                                 <i class="fa-regular fa-folder-open"></i> Expediente
                             </a>

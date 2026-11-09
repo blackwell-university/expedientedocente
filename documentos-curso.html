@@ -422,6 +422,78 @@
             .form-panel { padding-top: 1.25rem !important; }
         }
 
+        .user-dropdown { position: absolute; top: calc(100% + 10px); right: 0; width: 220px; background: white; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 8px; opacity: 0; visibility: hidden; transform: translateY(10px); transition: var(--transition); }
+        .user-dropdown.show { opacity: 1; visibility: visible; transform: translateY(0); }
+        .dropdown-link { display: flex; align-items: center; gap: 12px; padding: 12px 15px; text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 0.85rem; border-radius: 10px; transition: 0.2s; }
+        .dropdown-link:hover { background: #eff6ff; color: var(--primary); }
+        .dropdown-link.logout { color: #ef4444; } .dropdown-link.logout:hover { background: #fef2f2; color: #ef4444; }
+
+        .font-controls {
+            display: flex; align-items: center; background: white;
+            border: 1px solid var(--border-color); border-radius: 20px;
+            height: 40px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+        .btn-font-action {
+            background: transparent; border: none; height: 100%; padding: 0 14px;
+            color: var(--text-main); font-weight: 800; cursor: pointer; transition: 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn-font-action:hover { background: #eff6ff; color: var(--primary); }
+        .btn-font-action.a-minus { font-size: 0.9rem; }
+        .btn-font-action.a-plus { font-size: 1.25rem; }
+        .font-separator { width: 1px; height: 20px; background: var(--border-color); }
+
+        .mobile-header { display: none; margin-bottom: 25px; align-items: center; justify-content: space-between; }
+        .mh-profile { display: flex; align-items: center; gap: 14px; }
+        .mh-avatar { width: 50px; height: 50px; background-color: var(--border-color); border-radius: 50%; display: flex; justify-content: center; align-items: center; overflow: hidden; font-weight: 700; color: var(--primary-dark); font-size: 1.2rem; }
+        .mh-text h1 { font-size: 1.3rem; font-weight: 800; letter-spacing: -1px; color: var(--primary-dark); margin: 0; }
+        .mh-text p { font-size: 0.85rem; color: var(--text-muted); margin: 0; margin-top: 2px; }
+        .mh-actions { display: flex; gap: 10px; }
+        .btn-circle { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border-color); background: white; display: flex; align-items: center; justify-content: center; color: var(--text-main); cursor: pointer; transition: 0.2s; }
+        @media (max-width: 768px) { .mobile-header { display: flex; } }
+        /* ===== ENCABEZADO MÓVIL v3: barra compacta fija + menú lateral (solo celular) ===== */
+        .mh-overlay, .mh-drawer { display: none; }
+        @media (max-width: 768px) {
+            
+            .mobile-header {
+                position: relative; flex-shrink: 0; height: 56px; margin: 0; padding: 0 14px;
+                background: rgba(255,255,255,0.97); border-bottom: 1px solid var(--border-color);
+                box-shadow: 0 2px 12px rgba(15,23,42,0.06); z-index: auto; gap: 10px;
+            }
+            .mobile-header .mh-profile { gap: 10px; min-width: 0; }
+            .mobile-header .mh-avatar { width: 34px; height: 34px; background: var(--primary); color: #fff; font-size: 0.78rem; flex-shrink: 0; }
+            .mobile-header .mh-text { min-width: 0; }
+            .mobile-header .mh-text h1 { font-size: 1rem; letter-spacing: -0.4px; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .mobile-header .mh-text p { font-size: 0.7rem; margin: 0; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .mobile-header .mh-actions { gap: 8px; flex-shrink: 0; }
+            .mobile-header .mh-menu-btn { width: 38px; height: 38px; background: var(--primary-light); border: 1px solid #dbe7ff; color: var(--primary); }
+            .mobile-header .mh-menu-btn .material-symbols-rounded { font-size: 22px; }
+
+            .mh-overlay { display: block; position: fixed; inset: 0; background: rgba(15,23,42,0.45); opacity: 0; visibility: hidden; transition: opacity 0.25s ease, visibility 0.25s; z-index: 1290; }
+            .mh-overlay.open { opacity: 1; visibility: visible; }
+            .mh-drawer {
+                display: flex; flex-direction: column; position: fixed; top: 0; right: 0; bottom: 0;
+                width: 82%; max-width: 310px; background: #fff; z-index: 1300;
+                border-radius: 22px 0 0 22px; box-shadow: -12px 0 40px rgba(15,23,42,0.2);
+                transform: translateX(105%); transition: transform 0.3s cubic-bezier(.4,0,.2,1); padding: 20px 18px 24px;
+            }
+            .mh-drawer.open { transform: translateX(0); }
+            .mh-drawer-head { display: flex; align-items: center; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); margin-bottom: 14px; }
+            .mh-drawer-head .mh-avatar { width: 46px; height: 46px; background: var(--primary); color: #fff; font-size: 1rem; flex-shrink: 0; }
+            .mh-drawer-hello { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; line-height: 1.2; }
+            .mh-drawer-name { font-size: 1.02rem; font-weight: 800; color: var(--primary-dark); line-height: 1.2; }
+            .mh-drawer-close { margin-left: auto; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border-color); background: #fff; color: var(--text-muted); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+            .mh-drawer-link { display: flex; align-items: center; gap: 12px; padding: 13px 12px; border-radius: 12px; text-decoration: none; color: var(--text-main); font-weight: 700; font-size: 0.92rem; background: transparent; border: 0; width: 100%; text-align: left; cursor: pointer; }
+            .mh-drawer-link .material-symbols-rounded { font-size: 22px; color: var(--primary); }
+            .mh-drawer-link:active { background: var(--primary-light); }
+            .mh-drawer-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; font-weight: 700; font-size: 0.92rem; color: var(--text-main); }
+            .mh-drawer-row .font-controls { height: 38px; }
+            .mh-drawer-sep { height: 1px; background: var(--border-color); margin: 10px 0; }
+            .mh-drawer-link.logout, .mh-drawer-link.logout .material-symbols-rounded { color: #ef4444; }
+            .mh-drawer-link.logout { margin-top: auto; background: #fef2f2; justify-content: center; }
+        }
+
+
         /* ===== Estándar de tablas del portal (igual que Área Académica) ===== */
         .sec-head { display: flex; align-items: center; gap: 12px; margin: 0 0 14px; }
         .sec-ico { width: 38px; height: 38px; border-radius: 11px; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
@@ -478,13 +550,57 @@
             <a href="misexpedientes.html" class="nav-item active"><span class="material-symbols-rounded">folder_open</span> Expedientes</a>
             <a href="miscursos.html" class="nav-item"><span class="material-symbols-rounded">co_present</span> Mis Clases</a>
         </div>
-        <div class="nav-user d-flex gap-3 align-items-center" onclick="logout()">
-            <div class="user-trigger">
+        <div class="nav-user d-flex gap-3 align-items-center">
+            <div class="user-trigger" id="userDropdownTrigger">
                 <span id="userNameNav">Cargando...</span>
                 <div class="user-avatar" id="userInitialNav">DC</div>
             </div>
+            <div class="user-dropdown" id="userDropdownMenu">
+                <a href="perfil.html" class="dropdown-link"><span class="material-symbols-rounded">person</span> Ver mi Perfil</a>
+                <a href="#" class="dropdown-link"><span class="material-symbols-rounded">settings</span> Configuración</a>
+                <div style="border-top: 1px solid var(--border-color); margin: 5px 0;"></div>
+                <a href="#" onclick="logout()" class="dropdown-link logout"><span class="material-symbols-rounded">logout</span> Cerrar Sesión</a>
+            </div>
         </div>
     </nav>
+
+    <!-- ENCABEZADO MÓVIL: barra superior + menú lateral (idioma y tamaño de letra van aquí) -->
+    <div class="mobile-header">
+        <a href="perfil.html" class="mh-profile" style="text-decoration:none; color:inherit;">
+            <div class="mh-avatar" id="userInitialMobile">DC</div>
+            <div class="mh-text">
+                <h1>Mis documentos</h1>
+                <p>Documentos y recibo</p>
+            </div>
+        </a>
+        <div class="mh-actions">
+            <button class="btn-circle mh-menu-btn" onclick="abrirMenuMovil()" aria-label="Abrir menú" title="Menú">
+                <span class="material-symbols-rounded">menu</span>
+            </button>
+        </div>
+        <div class="mh-overlay" id="mhOverlay" onclick="cerrarMenuMovil()"></div>
+        <aside class="mh-drawer" id="mhDrawer" aria-label="Menú">
+            <div class="mh-drawer-head">
+                <div class="mh-avatar" id="mhDrawerInitial">DC</div>
+                <div>
+                    <div class="mh-drawer-hello">Hola,</div>
+                    <div class="mh-drawer-name" id="mhNombre">Docente</div>
+                </div>
+                <button class="mh-drawer-close" onclick="cerrarMenuMovil()" aria-label="Cerrar menú"><span class="material-symbols-rounded" style="font-size:20px;">close</span></button>
+            </div>
+            <a href="perfil.html" class="mh-drawer-link"><span class="material-symbols-rounded">person</span> Ver mi perfil</a>
+            <div class="mh-drawer-sep"></div>
+            <div class="mh-drawer-row">
+                <span>Tamaño de letra</span>
+                <div class="font-controls">
+                    <button class="btn-font-action a-minus" onclick="changeFontSize(-1)">A-</button>
+                    <div class="font-separator"></div>
+                    <button class="btn-font-action a-plus" onclick="changeFontSize(1)">A+</button>
+                </div>
+            </div>
+            <button class="mh-drawer-link logout" onclick="cerrarMenuMovil(); logout();"><span class="material-symbols-rounded">logout</span> Cerrar sesión</button>
+        </aside>
+    </div>
 
     <!-- NAVEGACIÓN INFERIOR (MÓVIL) -->
     <nav class="bottom-nav">
@@ -507,17 +623,6 @@
         <div class="form-panel">
             <div class="breadcrumb-nav">
                 <a href="misexpedientes.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Volver a mis expedientes</a>
-                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                <div class="font-ctrl lang-ctrl" role="group" aria-label="Idioma" translate="no">
-                    <button type="button" data-l="es" onclick="cambiarIdioma('es')">ES</button>
-                    <button type="button" data-l="en" onclick="cambiarIdioma('en')">EN</button>
-                </div>
-                <div class="font-ctrl" role="group" aria-label="Tamaño de letra">
-                    <button type="button" id="btnFontMenos" onclick="cambiarTamanoLetra(-1)" aria-label="Reducir letra">A−</button>
-                    <span class="font-pct" id="fontPct">100%</span>
-                    <button type="button" id="btnFontMas" onclick="cambiarTamanoLetra(1)" aria-label="Aumentar letra" style="font-size:17px;">A+</button>
-                </div>
-                </div>
             </div>
 
             <div class="form-header">
@@ -551,28 +656,21 @@
         let archivoRecibo = null;
         const MAX_PDF_BYTES = 6 * 1024 * 1024;
 
-        // ---- Tamaño de letra (A− / A+): escala todo lo basado en rem; se recuerda en el dispositivo ----
-        const PASOS_LETRA = [70, 80, 90, 100, 115, 130, 150, 170];
-        let idxLetra = 3;
-        function aplicarTamanoLetra() {
-            document.documentElement.style.fontSize = (16 * PASOS_LETRA[idxLetra] / 100) + 'px';
-            const pct = document.getElementById('fontPct'); if (pct) pct.textContent = PASOS_LETRA[idxLetra] + '%';
-            const m = document.getElementById('btnFontMenos'), M = document.getElementById('btnFontMas');
-            if (m) m.disabled = idxLetra === 0; if (M) M.disabled = idxLetra === PASOS_LETRA.length - 1;
+        // ---- Tamaño de letra: se cambia desde el menú del usuario (docente-menu.js lo agrega y lo recuerda) ----
+        let currentSizeLevel = 0;
+        const fontSizes = ["16px", "18px", "20px", "22px"];
+        function changeFontSize(step) {
+            currentSizeLevel = Math.max(0, Math.min(fontSizes.length - 1, currentSizeLevel + step));
+            document.documentElement.style.fontSize = fontSizes[currentSizeLevel];
             medirBarraInferior();
-                    }
-        function cambiarIdioma(l) { if (window.i18n) window.i18n.setLang(l); pintarIdioma(); }
-        function pintarIdioma() {
-            const l = (window.i18n && window.i18n.getLang && window.i18n.getLang()) || 'es';
-            document.querySelectorAll('.lang-ctrl button').forEach(b => b.classList.toggle('on', b.getAttribute('data-l') === l));
         }
-        window.addEventListener('load', pintarIdioma);
-        window.addEventListener('languagechange-bgu', pintarIdioma);
-        function cambiarTamanoLetra(d) {
-            idxLetra = Math.min(PASOS_LETRA.length - 1, Math.max(0, idxLetra + d));
-            try { localStorage.setItem('contratoFontIdx', String(idxLetra)); } catch (e) {}
-            aplicarTamanoLetra();
-        }
+        function abrirMenuMovil()  { document.getElementById('mhOverlay').classList.add('open');    document.getElementById('mhDrawer').classList.add('open'); }
+        function cerrarMenuMovil() { document.getElementById('mhOverlay').classList.remove('open'); document.getElementById('mhDrawer').classList.remove('open'); }
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarMenuMovil(); });
+        (function () {
+            const t = document.getElementById('userDropdownTrigger'), m = document.getElementById('userDropdownMenu');
+            if (t && m) { t.addEventListener('click', e => { e.stopPropagation(); m.classList.toggle('show'); }); document.addEventListener('click', () => m.classList.remove('show')); }
+        })();
         // Mide la altura real de la barra inferior para reservar ese espacio y que nunca tape el botón de firma
         function medirBarraInferior() {
             const nav = document.querySelector('.bottom-nav');
@@ -595,8 +693,10 @@
                 Swal.fire('Error', 'Falta el curso en la dirección.', 'error').then(() => window.location.href = "misexpedientes.html");
                 return;
             }
-            try { const g = parseInt(localStorage.getItem('contratoFontIdx'), 10); if (!isNaN(g) && g >= 0 && g < PASOS_LETRA.length) idxLetra = g; } catch (e) {}
-            aplicarTamanoLetra();
+            const ini = fullName.substring(0,2).toUpperCase();
+            ['userInitialMobile','mhDrawerInitial'].forEach(id => { const el = document.getElementById(id); if (el) el.innerText = ini; });
+            const mhN = document.getElementById('mhNombre'); if (mhN) mhN.innerText = fullName.split(' ')[0];
+            medirBarraInferior();
             cargar();
         });
 
@@ -606,7 +706,7 @@
                 const r = await res.json();
                 if (r.status !== 'success') {
                     document.getElementById('txtDetalle').textContent = r.message || 'No se pudo cargar.';
-                    document.getElementById('docCarousel').innerHTML = '';
+                    document.getElementById('docTabla').innerHTML = '';
                     return;
                 }
                 datosPagina = r;
