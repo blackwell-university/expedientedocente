@@ -683,6 +683,19 @@
                                 </select>
                             </div>
                             
+                            <div class="col-12 d-none" id="avisoExpPrograma">
+                                <div style="display:flex;gap:12px;align-items:flex-start;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:12px;padding:14px 16px;font-size:.88rem;line-height:1.5;">
+                                    <i class="fa-solid fa-triangle-exclamation" style="margin-top:3px;"></i>
+                                    <div style="flex:1;">
+                                        <b id="avisoExpTitulo">Falta el expediente de este tipo de programa</b>
+                                        <div id="avisoExpTexto" class="mt-1"></div>
+                                        <button type="button" class="btn-step step-2 mt-2" onclick="cambiarAModoExpediente()" style="padding:8px 16px;font-size:.82rem;">
+                                            <i class="fa-solid fa-folder-plus"></i> Crear Expediente + Invitación de este tipo de programa
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="col-md-4">
                                 <label class="label-aesthetic">Inicio de Clases</label>
                                 <input type="date" id="invFechaInicio" class="form-control input-aesthetic" required>
@@ -1325,6 +1338,41 @@
             window.open(`../registroexpediente.html?doc=${docenteId}&mode=admin`, '_blank');
         }
 
+        // ===== Regla: para invitar a un curso, el docente debe tener un expediente vigente del MISMO TIPO DE PROGRAMA (columna E de Cursos) =====
+        let verifExpToken = 0;
+        function mostrarAvisoExpPrograma(info) {
+            const box = document.getElementById('avisoExpPrograma');
+            const btnG = document.getElementById('btnGuardarSistema');
+            if (!info) {
+                box.classList.add('d-none');
+                if (btnG && !currentInvitacionId) btnG.disabled = false;
+                return;
+            }
+            document.getElementById('avisoExpTitulo').innerText = info.estado === 'vencido' ? 'El expediente de este tipo de programa venció' : 'Falta el expediente de este tipo de programa';
+            document.getElementById('avisoExpTexto').innerText = info.message || '';
+            box.classList.remove('d-none');
+            if (btnG) btnG.disabled = true;
+        }
+        async function verificarExpedientePrograma() {
+            const token = ++verifExpToken;
+            const selP = document.getElementById('selPrograma');
+            if (modoAccionActual === 'expediente' || !selP || selP.selectedIndex <= 0 || !selP.value) { mostrarAvisoExpPrograma(null); return; }
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'check_programa_expediente', docenteId: docenteId, programa: selP.options[selP.selectedIndex].text }) });
+                const r = await res.json();
+                if (token !== verifExpToken) return;
+                mostrarAvisoExpPrograma(r && r.status === 'success' && r.estado !== 'ok' ? r : null);
+            } catch (e) { if (token === verifExpToken) mostrarAvisoExpPrograma(null); }
+        }
+        function cambiarAModoExpediente() {
+            modoAccionActual = 'expediente';
+            document.getElementById('modalInvTitle').innerHTML = '<i class="fa-solid fa-folder-plus me-2 text-primary"></i>Crear Expediente e Invitación';
+            document.getElementById('docs-section').style.display = 'block';
+            document.getElementById('btnEnviarCorreo').innerHTML = '<i class="fa-regular fa-paper-plane"></i> Enviar Correo';
+            mostrarAvisoExpPrograma(null);
+            showToast('Completa los datos: se creará el expediente de este tipo de programa junto con la invitación.', 'success');
+        }
+
         async function abrirModalInvitacion(modo) {
             modoAccionActual = modo;
             currentInvitacionId = null; 
@@ -1355,6 +1403,8 @@
             const modalElement = document.getElementById('modalInvitacion');
             const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
             modalInstance.show();
+            mostrarAvisoExpPrograma(null);
+            verificarExpedientePrograma();
 
             if(catalogoCursos.length === 0) {
                 const selP = document.getElementById('selPrograma');
@@ -1389,7 +1439,8 @@
             const selP = document.getElementById('selPrograma');
             const selC = document.getElementById('selCurso');
             selC.innerHTML = '<option value="">Seleccionar curso</option>';
-            if (selP.selectedIndex === 0 || !selP.value) return;
+            if (selP.selectedIndex === 0 || !selP.value) { verificarExpedientePrograma(); return; }
+            verificarExpedientePrograma();
             const progId = String(selP.value).trim();
             const progName = String(selP.options[selP.selectedIndex].text).trim();
             catalogoCursos.filter(c => c.idPrograma === progId || c.idPrograma === progName).forEach(c => { 
@@ -1491,6 +1542,7 @@
                 } else {
                     Swal.fire('No se pudo guardar', result.message || 'Ocurrió un error al guardar la invitación.', 'warning');
                     btnGuardar.disabled = false;
+                    if (result.codigo === 'SIN_EXPEDIENTE_PROGRAMA') verificarExpedientePrograma();
                     btnGuardar.innerHTML = '<i class="fa-regular fa-floppy-disk"></i> Guardar Invitación';
                 }
             } catch(e) { 
