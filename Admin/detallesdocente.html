@@ -755,7 +755,7 @@
                         Cancelar
                     </button>
                     <button type="button" class="btn-step step-2" id="btnGuardarSistema" onclick="guardarInvitacion()" style="flex: 0 0 auto; padding: 12px 22px;">
-                        <i class="fa-regular fa-floppy-disk"></i> Guardar Invitación
+                        <i class="fa-regular fa-floppy-disk"></i> Guardar Expediente
                     </button>
                     <button type="button" class="btn-step step-2 d-none" id="btnEnviarCorreo" onclick="enviarCorreoInvitacion()" style="flex: 0 0 auto; padding: 12px 22px;">
                         <i class="fa-regular fa-paper-plane"></i> Enviar Correo
@@ -1333,6 +1333,8 @@
 
         let catalogoCursos =[], currentInvitacionId = null;
         let modoAccionActual = 'expediente'; 
+        // Texto del botón de guardado según el modo del modal: expediente (con invitación) o solo invitación
+        function htmlBotonGuardar() { return '<i class="fa-regular fa-floppy-disk"></i> ' + (modoAccionActual === 'expediente' ? 'Guardar Expediente' : 'Guardar Invitación'); }
 
         function subirInformacionSinCurso() {
             window.open(`../registroexpediente.html?doc=${docenteId}&mode=admin`, '_blank');
@@ -1369,6 +1371,7 @@
             document.getElementById('modalInvTitle').innerHTML = '<i class="fa-solid fa-folder-plus me-2 text-primary"></i>Crear Expediente e Invitación';
             document.getElementById('docs-section').style.display = 'block';
             document.getElementById('btnEnviarCorreo').innerHTML = '<i class="fa-regular fa-paper-plane"></i> Enviar Correo';
+            document.getElementById('btnGuardarSistema').innerHTML = htmlBotonGuardar();
             mostrarAvisoExpPrograma(null);
             showToast('Completa los datos: se creará el expediente de este tipo de programa junto con la invitación.', 'success');
         }
@@ -1384,7 +1387,7 @@
             const btnEnviar = document.getElementById('btnEnviarCorreo');
             
             btnGuardar.style.display = 'block'; 
-            btnGuardar.innerHTML = '<i class="fa-regular fa-floppy-disk"></i> Guardar Invitación';
+            btnGuardar.innerHTML = htmlBotonGuardar();
             btnGuardar.disabled = false;
             
             btnEnviar.classList.add('d-none'); 
@@ -1543,12 +1546,12 @@
                     Swal.fire('No se pudo guardar', result.message || 'Ocurrió un error al guardar la invitación.', 'warning');
                     btnGuardar.disabled = false;
                     if (result.codigo === 'SIN_EXPEDIENTE_PROGRAMA') verificarExpedientePrograma();
-                    btnGuardar.innerHTML = '<i class="fa-regular fa-floppy-disk"></i> Guardar Invitación';
+                    btnGuardar.innerHTML = htmlBotonGuardar();
                 }
             } catch(e) { 
                 showToast("Error al guardar.", "danger"); 
                 btnGuardar.disabled = false;
-                btnGuardar.innerHTML = '<i class="fa-regular fa-floppy-disk"></i> Guardar Invitación';
+                btnGuardar.innerHTML = htmlBotonGuardar();
             } 
         }
 

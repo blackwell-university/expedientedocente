@@ -765,9 +765,9 @@
                             <ul class="dropdown-menu shadow-sm border-0" style="border-radius: 12px; font-size: 0.85rem;">
                                 <li><h6 class="dropdown-header text-primary fw-bold">1. Recopilación</h6></li>
                                 <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('En proceso')">En proceso</a></li>
-                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('Recibido')">Recibido</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><h6 class="dropdown-header text-primary fw-bold">2. Revisión</h6></li>
+                                <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('Recibido')">Recibido</a></li>
                                 <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('En revisión')">En revisión</a></li>
                                 <li><a class="dropdown-item" href="#" onclick="cambiarEstadoExpediente('Verificado')">Verificado</a></li>
                                 <li><hr class="dropdown-divider"></li>
@@ -981,6 +981,8 @@
 
                     <div class="tab-pane fade" id="generados">
                         <div class="form-card" style="padding: 24px;">
+                            <!-- Nota de la fase (indicación para quien gestiona el expediente) -->
+                            <div id="nota-fase-expediente"></div>
                             <!-- Barra de acciones (minimalista) -->
                             <div class="action-toolbar" id="dynamic-action-toolbar">
                                 <!-- Los botones se inyectarán aquí mediante JS según la etapa del expediente -->
@@ -1320,6 +1322,7 @@
         let docenteCorreoActual = "";
         let catalogoCursosEdit = [];
         let documentTrace = [];
+        let estadoExpActual = ''; // estado vigente, para volver a pintar los botones cuando cambian los documentos
         let pollingTraducciones = null;
 
         let perfilCompletoGlobal = null;
@@ -2196,9 +2199,9 @@
                     ];
                     stages.forEach(s => s.className = 'stage-step step-gray');
                     
-                    if (['Por enviar', 'Enviado', 'En proceso', 'Recibido'].includes(estadoExp)) {
+                    if (['Por enviar', 'Enviado', 'En proceso'].includes(estadoExp)) {
                         stages[0].classList.replace('step-gray', 'step-green');
-                    } else if (['En revisión', 'Verificado'].includes(estadoExp)) {
+                    } else if (['Recibido', 'En revisión', 'Verificado'].includes(estadoExp)) {
                         stages[0].classList.replace('step-gray', 'step-green');
                         stages[1].classList.replace('step-gray', 'step-yellow');
                     } else if (['Pendiente firma directores', 'Firmado por Docente', 'Expediente enviado', 'Contratado'].includes(estadoExp)) {
@@ -2210,6 +2213,7 @@
                         stages[0].classList.replace('step-gray', 'step-red');
                     }
 
+                    estadoExpActual = estadoExp;
                     renderBotonesDinamicos(estadoExp);
 
                     // Datos de la invitación (mismo formato que Admin/invitacion.html)
@@ -2617,6 +2621,33 @@
             }
         }
 
+        // ==================== CONFIRMAR DATOS COMPLETOS (pasa a revisión) ====================
+        async function confirmarDatosCompletos() {
+            const c = await Swal.fire({
+                title: 'Confirmar datos completos',
+                text: '¿Confirma que la información del docente está completa? Con ello el expediente pasará a revisión y se habilitará la generación de documentos.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, confirmar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#2563eb'
+            });
+            if (!c.isConfirmed) return;
+            showToast('Actualizando expediente...', 'info');
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'update_expediente_status', id: expId, estado: 'Recibido' }) });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    showToast('Datos confirmados. Ya puede generar los documentos.', 'success');
+                    cargarExpediente();
+                } else {
+                    showToast('No se pudo actualizar el expediente.', 'danger');
+                }
+            } catch (e) {
+                showToast('Error de conexión.', 'danger');
+            }
+        }
+
         // ==================== CAMBIAR ESTADO MANUALMENTE ====================
         async function cambiarEstadoExpediente(nuevoEstado) {
             if(!confirm(`¿Seguro que deseas cambiar el estado del expediente a "${nuevoEstado}"?`)) return;
@@ -2980,6 +3011,8 @@
                 }
             });
             renderizarTabla();
+            // Los botones dependen de cuántos documentos hay con enlace: se vuelven a pintar sin recargar la página
+            renderBotonesDinamicos(estadoExpActual);
         }
 
         // ==================== GENERACIÓN DE DOCUMENTOS ====================
@@ -3126,30 +3159,55 @@
             // Verificamos si ya existen documentos generados en el expediente
             const tieneDocsGenerados = documentTrace.some(d => d.url && d.url.trim() !== "");
 
+            // Documentos con enlace (generados o subidos). Con más de 2 ya se considera que hay documentos generados.
+            const docsConEnlace = documentTrace.filter(d => d.url && String(d.url).trim() !== "").length;
+            const hayDocsGenerados = docsConEnlace > 2;
+
             // ETAPAS 1 y 2 (Recopilación y Revisión)
             const etapa1y2 = ['Por enviar', 'Enviado', 'En proceso', 'Recibido', 'En revisión', 'Verificado'];
-            if (etapa1y2.includes(estadoExp) || estadoExp === '') {
-                
-                // Lógica de bloqueo si el docente aún no ha empezado
-                const deshabilitado = ['Por enviar', 'Enviado'].includes(estadoExp) || estadoExp === '';
-                const opacidad = deshabilitado ? '0.5' : '1';
-                const cursor = deshabilitado ? 'not-allowed' : 'pointer';
-                const mensaje = deshabilitado ? "El docente aún no empieza a rellenar sus datos (Debe estar 'En proceso')." : "";
+            // "Recibido" ya cuenta como revisión: el docente envió su información (o la ejecutiva confirmó que está completa).
+            const enRevision = ['Recibido', 'En revisión', 'Verificado'].includes(estadoExp);
+            const aunRecopilando = ['Enviado', 'En proceso'].includes(estadoExp);
+            const notaFase = document.getElementById('nota-fase-expediente');
+            if (notaFase) notaFase.innerHTML = '';
 
-                if (tieneDocsGenerados) {
-                    html += `<button class="action-btn" onclick="generarDocumentos()"><i class="fa-solid fa-rotate"></i> Regenerar documentos</button>`;
-                } else {
-                    html += `<button class="action-btn action-btn-primary" 
-                                onclick="${deshabilitado ? 'return false;' : 'generarDocumentos()'}" 
-                                style="opacity: ${opacidad}; cursor: ${cursor};" 
-                                title="${mensaje}">
-                                <i class="fa-solid fa-file-lines"></i> Generar documentos
+            if (etapa1y2.includes(estadoExp) || estadoExp === '') {
+
+                // Confirmación de datos completos (pasa a la fase de revisión). Solo mientras se recopila la información.
+                if (aunRecopilando) {
+                    html += `<button class="action-btn action-btn-primary" onclick="confirmarDatosCompletos()">
+                                <i class="fa-solid fa-circle-check"></i> Confirmar datos completos
                              </button>`;
+                    if (notaFase) {
+                        const titulo = estadoExp === 'Enviado'
+                            ? 'El docente aún no ha empezado a completar su información'
+                            : 'El docente aún está completando su información';
+                        notaFase.innerHTML = `<div class="mb-3 d-flex align-items-start gap-3" style="background:#fffbeb; border:1px solid #fde68a; border-radius:12px; padding:12px 16px;">
+                                <i class="fa-regular fa-clock mt-1" style="color:#b45309; font-size:1rem;"></i>
+                                <div>
+                                    <div style="font-weight:700; color:#92400e; font-size:0.88rem;">${titulo}</div>
+                                    <div style="color:#78350f; font-size:0.82rem; margin-top:1px;">Cuando los datos estén completos, confirme para continuar.</div>
+                                </div>
+                            </div>`;
+                    }
                 }
+
+                // Generar documentos: solo desde la fase de revisión
+                const bloqueado = !enRevision;
+                const msgBloqueo = estadoExp === 'Por enviar' || estadoExp === ''
+                    ? 'Primero debe enviarse la invitación al docente.'
+                    : 'Para generar los documentos, primero confirme que la información del docente está completa.';
+                const etiqueta = hayDocsGenerados
+                    ? '<i class="fa-solid fa-rotate"></i> Regenerar documentos'
+                    : '<i class="fa-solid fa-file-lines"></i> Generar documentos';
+                const clase = (hayDocsGenerados || bloqueado) ? 'action-btn' : 'action-btn action-btn-primary';
+                html += `<button class="${clase}" ${bloqueado ? 'disabled' : 'onclick="generarDocumentos()"'}
+                            style="${bloqueado ? 'opacity:0.5; cursor:not-allowed;' : ''}"
+                            title="${bloqueado ? msgBloqueo : ''}">${etiqueta}</button>`;
             }
 
-            // ETAPA 2 (Revisión y avance a Firma de Docente)
-            if ((['En proceso', 'Recibido', 'En revisión', 'Verificado'].includes(estadoExp) && tieneDocsGenerados) || estadoExp === 'Enviado') {
+            // ETAPA 2 (Revisión y avance a Firma de Docente): solo con documentos generados
+            if (enRevision && hayDocsGenerados) {
                 html += `<button class="action-btn" style="background:#0284c7; color:white; border-color:#0284c7;" onclick="enviarContratoDocente()">
                             <i class="fa-solid fa-pen-nib"></i> Enviar para firma (Docente)
                          </button>`;
