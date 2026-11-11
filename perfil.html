@@ -982,6 +982,22 @@
             { key: 'codigo_ruta', label: 'Código de ruta',        sensible: true  }
         ];
         let datosPagoActuales = {};
+        // Mismas opciones (y mismos valores guardados) que el formulario de registro
+        const OPCIONES_PAGO = {
+            moneda: [
+                { valor: 'Dólares', texto: 'Dólares (USD)' },
+                { valor: 'Soles', texto: 'Soles (PEN)' }
+            ],
+            tipo_cuenta: [
+                { valor: 'Checking (Cuenta corriente)', texto: 'Checking (Corriente)' },
+                { valor: 'Savings (Cuenta de Ahorro)', texto: 'Savings (Ahorro)' }
+            ],
+            tipo_ruta: [
+                { valor: 'Cuenta de EE. UU. (ACH)', texto: 'Ruta EE.UU. (ABA/ACH)' },
+                { valor: 'Cuenta Europea (IBAN)', texto: 'Europa (IBAN)' },
+                { valor: 'Cuenta Internacional (SWIFT)', texto: 'Internacional (SWIFT/BIC)' }
+            ]
+        };
 
         function enmascarar(v) {
             const t = String(v || '').replace(/\s+/g, '');
@@ -1013,11 +1029,27 @@
         }
 
         function abrirEdicionPago(scroll) {
-            document.getElementById('pagoCampos').innerHTML = CAMPOS_PAGO.map(c => `
+            document.getElementById('pagoCampos').innerHTML = CAMPOS_PAGO.map(c => {
+                const actual = datosPagoActuales[c.key];
+                const lista = OPCIONES_PAGO[c.key];
+                if (!lista) {
+                    return `
                 <div class="col-md-4 dato-campo">
                     <span class="info-label">${c.label}</span>
-                    <input type="text" class="form-control form-control-sm" id="pago-${c.key}" value="${escAttr(datosPagoActuales[c.key])}" autocomplete="off">
-                </div>`).join('');
+                    <input type="text" class="form-control form-control-sm" id="pago-${c.key}" value="${escAttr(actual)}" autocomplete="off">
+                </div>`;
+                }
+                // Si el valor guardado no está en la lista (datos antiguos), se agrega para no perderlo
+                const opciones = lista.slice();
+                if (actual && !opciones.some(o => o.valor === actual)) opciones.push({ valor: actual, texto: actual });
+                const html = ['<option value="">Seleccione...</option>'].concat(opciones.map(o =>
+                    `<option value="${escAttr(o.valor)}"${o.valor === actual ? ' selected' : ''}>${escAttr(o.texto)}</option>`)).join('');
+                return `
+                <div class="col-md-4 dato-campo">
+                    <span class="info-label">${c.label}</span>
+                    <select class="form-select form-select-sm" id="pago-${c.key}">${html}</select>
+                </div>`;
+            }).join('');
             document.getElementById('chkConfirmaPago').checked = false;
             const hayDatos = CAMPOS_PAGO.some(c => datosPagoActuales[c.key]);
             document.getElementById('avisoCambioCuenta').querySelector('div').innerHTML = hayDatos
