@@ -627,9 +627,12 @@
                             "Direct Deposit Authorization Form", "Confidentiality Agreement", "Job Description"
                         ];
 
-                        documentosDisponibles = docsFirmablesExpediente
+                        const todosLosDocs = docsFirmablesExpediente
                             .map(nombre => ({ nombre, ...(exp.urls[nombre] || {}) }))
                             .filter(d => d.url);
+
+                        const soloPendientes = todosLosDocs.filter(d => !d.estado || !d.estado.includes('Firmado'));
+                        documentosDisponibles = (OCULTAR_FIRMADOS && soloPendientes.length > 0) ? soloPendientes : todosLosDocs;
 
                         const primerPendiente = documentosDisponibles.findIndex(d => !d.estado || !d.estado.includes('Firmado'));
                         indiceDocActual = primerPendiente !== -1 ? primerPendiente : 0;
@@ -644,6 +647,9 @@
                 Swal.fire('Error', 'Fallo de conexión al servidor.', 'error');
             }
         }
+
+        // Interruptor: true = el docente ve solo los documentos por firmar; false = ve todos (como antes).
+        const OCULTAR_FIRMADOS = true;
 
         function renderCarrusel() {
             const wrapper = document.getElementById('docCarousel');
