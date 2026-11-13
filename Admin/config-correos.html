@@ -209,6 +209,38 @@
         .mail-mock .mm-body p { margin: 0 0 6px; }
         .mail-mock .mm-btn { display: inline-block; background: #1e3a8a; color: #fff; font-weight: 700; font-size: .76rem; border-radius: 8px; padding: 6px 14px; margin: 4px 0; }
         .mail-mock .mm-nota { color: #64748b; font-style: italic; font-size: .76rem; }
+        /* ===== Diseño del correo ===== */
+        .dis-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 18px; align-items: start; }
+        @media (max-width: 991px) { .dis-grid { grid-template-columns: 1fr; } }
+        .dis-editor { width: 100%; min-height: 430px; height: 52vh; resize: vertical; font-family: Consolas, 'Courier New', monospace; font-size: .78rem; line-height: 1.5; tab-size: 2; white-space: pre; overflow: auto; }
+        .dis-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+        .dis-chip { border: 1px solid #dbeafe; background: #eff6ff; color: #1d4ed8; border-radius: 30px; padding: 3px 11px; font-size: .74rem; font-weight: 700; cursor: pointer; transition: .15s; font-family: Consolas, monospace; }
+        .dis-chip:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .dis-chip.si { background: #fef3c7; border-color: #fde68a; color: #b45309; }
+        .dis-chip.si:hover { background: #b45309; color: #fff; border-color: #b45309; }
+        .dis-chip.html { background: #f3e8ff; border-color: #e9d5ff; color: #7e22ce; }
+        .dis-chip.html:hover { background: #7e22ce; color: #fff; border-color: #7e22ce; }
+        .dis-chip .obl { color: #dc2626; margin-left: 2px; }
+        .dis-estado { font-size: .8rem; border-radius: 10px; padding: 8px 12px; margin-top: 8px; display: flex; gap: 8px; align-items: flex-start; }
+        .dis-estado.ok { background: #f0fdf4; color: #15803d; }
+        .dis-estado.err { background: #fef2f2; color: #b91c1c; }
+        .dis-estado.cambio { background: #fffbeb; color: #b45309; }
+        .dis-prev-wrap { background: #e8edf5; border-radius: 14px; padding: 14px; border: 1px solid #dbe3ef; }
+        .dis-prev-asunto { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 12px; font-size: .8rem; color: #475569; margin-bottom: 10px; word-break: break-word; }
+        .dis-prev-asunto b { color: #0f172a; }
+        .dis-frame { width: 100%; height: 56vh; min-height: 420px; border: 1px solid #dbe3ef; border-radius: 10px; background: #f1f5f9; display: block; margin: 0 auto; transition: width .2s; }
+        .dis-frame.movil { width: 380px; max-width: 100%; }
+        .dis-toggles { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 10px; }
+        .dis-toggles label { display: flex; align-items: center; gap: 6px; font-size: .78rem; color: #475569; cursor: pointer; }
+        .dis-toggles input { accent-color: #b45309; }
+        .btn-seg { border: 1px solid #e2e8f0; background: #fff; color: #64748b; font-size: .75rem; font-weight: 700; padding: 5px 12px; }
+        .btn-seg:first-child { border-radius: 8px 0 0 8px; } .btn-seg:last-child { border-radius: 0 8px 8px 0; border-left: none; }
+        .btn-seg.activo { background: #eff6ff; color: var(--primary); border-color: #bfdbfe; }
+        .btn-sec { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 16px; font-weight: 700; font-size: .82rem; transition: var(--transition); display: inline-flex; align-items: center; gap: 6px; }
+        .btn-sec:hover { background: #f1f5f9; border-color: #cbd5e1; color: #1e293b; }
+        .btn-sec.peligro:hover { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
+        .ayuda-sintaxis { font-size: .78rem; color: #475569; }
+        .ayuda-sintaxis code { background: #eff6ff; color: #1e3a8a; padding: 1px 6px; border-radius: 6px; font-size: .74rem; }
     </style>
 <link rel="stylesheet" href="bgu-sidebar.css">
 </head>
@@ -299,13 +331,69 @@
         </div>
     </div>
 
+    <div class="modal fade modal-modern" id="modalDis" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div><h5 class="modal-title fw-bold mb-0" id="dTitulo">Diseño del correo</h5><div class="small text-muted" id="dSub"></div></div>
+                    <button type="button" class="btn-close" onclick="cerrarDiseno()" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <details class="sec-modal mb-3">
+                        <summary class="fw-bold" style="cursor:pointer;font-size:.85rem;color:var(--primary-dark)"><i class="fa-solid fa-circle-question me-1"></i> ¿Cómo se edita?</summary>
+                        <div class="ayuda-sintaxis mt-2">
+                            Escribe el HTML del correo. Lo que va entre llaves lo reemplaza el sistema con los datos reales:<br>
+                            • <code>{{variable}}</code> inserta un texto (por ejemplo <code>{{docente}}</code>). &nbsp;• <code>{{{variable}}}</code> inserta un bloque HTML que arma el sistema (tablas, listas).<br>
+                            • <code>{{#condicion}}…{{/condicion}}</code> muestra el contenido solo si se cumple; <code>{{^condicion}}…{{/condicion}}</code> solo si no se cumple.<br>
+                            • Toca una variable de la lista para insertarla donde está el cursor. Las marcadas con <span class="text-danger fw-bold">*</span> son obligatorias (el correo no debe salir sin ellas).<br>
+                            • La vista previa usa datos de ejemplo. Antes de guardar puedes enviarte un correo de prueba. Si algo sale mal, “Restaurar original” devuelve el diseño de fábrica.
+                        </div>
+                    </details>
+                    <div class="dis-grid">
+                        <div>
+                            <label class="form-label-sm">Asunto</label>
+                            <input type="text" class="form-control input-modern mb-3" id="dAsunto" autocomplete="off">
+                            <label class="form-label-sm">Variables (toca para insertar)</label>
+                            <div class="dis-chips" id="dChips"></div>
+                            <label class="form-label-sm">Diseño HTML</label>
+                            <textarea class="form-control input-modern dis-editor" id="dHtml" spellcheck="false"></textarea>
+                            <div id="dEstado"></div>
+                        </div>
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                                <label class="form-label-sm m-0">Vista previa</label>
+                                <div><button type="button" class="btn-seg activo" id="dBtnPc" onclick="anchoPrevia(false)"><i class="fa-solid fa-desktop"></i> Escritorio</button><button type="button" class="btn-seg" id="dBtnMovil" onclick="anchoPrevia(true)"><i class="fa-solid fa-mobile-screen"></i> Móvil</button></div>
+                            </div>
+                            <div class="dis-toggles" id="dToggles"></div>
+                            <div class="dis-prev-wrap">
+                                <div class="dis-prev-asunto"><b>Asunto:</b> <span id="dPrevAsunto"></span></div>
+                                <iframe class="dis-frame" id="dFrame" sandbox="" title="Vista previa del correo"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top:1px solid #e2e8f0; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button type="button" class="btn-sec peligro" id="dBtnRestaurar" onclick="restaurarDiseno()"><i class="fa-solid fa-rotate-left"></i> Restaurar original</button>
+                        <button type="button" class="btn-sec" onclick="cargarOriginalEnEditor()"><i class="fa-solid fa-file-import"></i> Cargar el original en el editor</button>
+                        <button type="button" class="btn-sec" onclick="enviarPrueba()"><i class="fa-solid fa-paper-plane"></i> Enviarme una prueba</button>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn-cancelar-modal" onclick="cerrarDiseno()">Cerrar</button>
+                        <button type="button" class="btn-primary" id="dBtnGuardar" onclick="guardarDiseno()"><i class="fa-solid fa-floppy-disk"></i> Guardar diseño</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwkSKl0QriWo-qHWBL5OESTZe609-l_Q0pgpnU1pMcvW3UK8HrXlXdUjRECId7tAxHA/exec";
         const norm = s => String(s || '').trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         const esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-        const BOCETOS = {"credenciales_personal": {"cuando": "Cuando se envían las credenciales a una persona del personal", "asunto": "Sus credenciales de acceso - Blackwell Global University", "lineas": ["Hola {nombre},", "Tus credenciales de acceso:", "Usuario: …   Contraseña: …", "[Ingresar al portal]"]}, "credenciales_docente": {"cuando": "Cuando se envían solo las credenciales a un docente", "asunto": "Sus credenciales de acceso - Blackwell Global University", "lineas": ["Hola {nombre},", "Tus credenciales de acceso:", "Usuario: …   Contraseña: …", "[Ingresar al portal]"]}, "credenciales_invitacion": {"cuando": "Al enviar la primera invitación con credenciales (docente nuevo)", "asunto": "Sus credenciales de acceso - Blackwell Global University", "lineas": ["Hola {nombre},", "Tus credenciales de acceso:", "Usuario: …   Contraseña: …", "[Ingresar al portal]", "(se envía justo después de la invitación)"]}, "usuario_institucional": {"cuando": "Cuando se asigna o quita el correo institucional del docente", "asunto": "Tu nuevo usuario de acceso / Cambio en tu usuario de acceso - Blackwell Global University", "lineas": ["🎓 Tu nuevo correo institucional", "Hola {nombre}, la universidad te asignó un correo institucional. Desde ahora este es tu usuario para ingresar.", "Usuario: …   Contraseña: la misma que ya usabas", "[Ingresar al portal]"]}, "soporte": {"cuando": "Cuando el docente envía una solicitud desde el widget de soporte", "asunto": "Solicitud de Soporte — {docente}", "lineas": ["Solicitud de soporte", "Docente: {nombre}  ·  ID: …", "Mensaje: “…texto que escribió el docente…”"]}, "notificacion_masiva": {"cuando": "Cuando alguien envía una notificación masiva desde el panel", "asunto": "El asunto que escribe quien envía", "lineas": ["(El mensaje que redacta quien envía, con el logo y el pie de la universidad)"]}, "expediente_firma_docente": {"cuando": "Cuando el expediente se envía a firma del docente", "asunto": "Expediente de Aprobación de la contratación docente de Blackwell - Listo para Firma {docente}", "lineas": ["Estimado(a) profesor(a) {docente},", "Sus documentos contractuales están listos para firma digital.", "[Revisar y firmar]", "Los directivos estampan la firma final y el expediente queda formalizado."]}, "expediente_firma_directores": {"cuando": "Cuando el docente firma el expediente", "asunto": "Firma Requerida: Expediente {id} - {docente}", "lineas": ["Estimado Director,", "El docente {docente} ya firmó sus documentos. Documentos adjuntos: …", "[Firmar expediente]"]}, "invitacion_docente": {"cuando": "Cuando se envía la invitación a dictar un curso", "asunto": "Invitación a Dictado de Curso: {curso} - Blackwell Global University", "lineas": ["Estimado(a) profesor(a) {docente},", "La Dirección de Asuntos Académicos lo invita a dictar el curso {curso}: modalidad virtual (español), N clases de 90 min, remuneración total S/ …", "Revise el sílabo y confirme día y horario.", "[Ver invitación en el portal]"]}, "invitacion_actualizada": {"cuando": "Cuando se actualiza una invitación ya enviada", "asunto": "Actualización de su Invitación: {curso} - Blackwell Global University", "lineas": ["Estimado(a) profesor(a) {docente},", "Se actualizaron los detalles de su invitación: franjas horarias (GMT-5), estructura y remuneración.", "[Ver invitación en el portal]"]}, "aceptacion_equipo": {"cuando": "Cuando el docente acepta la invitación (aviso al equipo)", "asunto": "Invitación aceptada — {curso} ({docente})   ·   con sábado: Invitación aceptada (incluye sábado) — …", "lineas": ["Hola equipo,", "El docente {docente} aceptó la invitación a {curso}.", "Tabla: día · fecha · hora elegidos", "Si incluye sábado: ⚠ debe confirmarse el sábado."]}, "aceptacion_docente": {"cuando": "Cuando el docente acepta la invitación (acuse al docente)", "asunto": "Hemos recibido la aceptación de su invitación — {curso}", "lineas": ["Estimado(a) profesor(a) {docente},", "Hemos recibido la aceptación de su invitación a {curso}.", "Resumen de su horario: día · fecha · hora"]}, "invitacion_docs_firma": {"cuando": "Cuando se envían a firma los documentos de la invitación", "asunto": "Documentos de Invitación Listos para Firma - Blackwell Global University", "lineas": ["Estimado(a) profesor(a) {docente},", "Los documentos de su invitación están listos para firma digital.", "[Revisar y firmar]", "Los directivos firman al final y recibirá confirmación."]}, "invitacion_firma_directores": {"cuando": "Cuando el docente firma los documentos de la invitación", "asunto": "Firma Requerida: Invitación {id} - {docente}", "lineas": ["Estimado Director,", "El docente {docente} firmó los documentos de la invitación {id}.", "[Firmar documentos]"]}, "curso_culminado": {"cuando": "Cuando se marca el curso como culminado", "asunto": "Curso Culminado: {curso} — {docente}", "lineas": ["Hola equipo,", "Se marcó como culminado el siguiente curso:", "📘 Curso · 🎓 Programa · 👤 Docente · ✅ Sesiones · fecha", "Pendiente la conformidad de Jefatura OSE."]}, "gracias_dictado": {"cuando": "Cuando Jefe OSE da la conformidad del dictado", "asunto": "Gracias por el dictado de su curso — Blackwell Global University", "lineas": ["Estimado(a) profesor(a) {docente},", "Gracias por el dictado de su curso.", "Datos para emitir su recibo por honorarios: …", "[Ir a documentos y recibo]"]}, "recibo_honorarios": {"cuando": "Cuando el docente sube (o reemplaza) su recibo", "asunto": "Recibo por honorarios recibido — {docente} — {curso}  ·  al reemplazar: … actualizado — …", "lineas": ["Hola equipo,", "El docente {docente} envió su recibo por honorarios el {fecha} (hora Perú).", "Curso · Programa · Invitación", "[Ver recibo (PDF)]"]}, "cambio_cuenta_pago": {"cuando": "Cuando el docente registra o cambia su cuenta de pago", "asunto": "Cambio de cuenta de pago — {docente}", "lineas": ["Hola equipo,", "El docente {docente} registró / cambió su cuenta de pago.", "Antes: **** 1234   →   Ahora: **** 5678", "Los pagos deben hacerse a la nueva cuenta."]}};
+        const BOCETOS = {"credenciales_personal": {"cuando": "Cuando se envían las credenciales a una persona del personal", "asunto": "Sus credenciales de acceso - Blackwell Global University", "lineas": ["Hola {nombre},", "Tus credenciales de acceso:", "Usuario: …   Contraseña: …", "[Ingresar al portal]"]}, "credenciales_docente": {"cuando": "Cuando se envían solo las credenciales a un docente", "asunto": "Sus credenciales de acceso - Blackwell Global University", "lineas": ["Hola {nombre},", "Tus credenciales de acceso:", "Usuario: …   Contraseña: …", "[Ingresar al portal]"]}, "credenciales_invitacion": {"cuando": "Al enviar la primera invitación con credenciales (docente nuevo)", "asunto": "Sus credenciales de acceso - Blackwell Global University", "lineas": ["Hola {nombre},", "Tus credenciales de acceso:", "Usuario: …   Contraseña: …", "[Ingresar al portal]", "(se envía justo después de la invitación)"]}, "usuario_institucional": {"cuando": "Cuando se asigna o quita el correo institucional del docente", "asunto": "Tu nuevo usuario de acceso / Cambio en tu usuario de acceso - Blackwell Global University", "lineas": ["🎓 Tu nuevo correo institucional", "Hola {nombre}, la universidad te asignó un correo institucional. Desde ahora este es tu usuario para ingresar.", "Usuario: …   Contraseña: la misma que ya usabas", "[Ingresar al portal]"]}, "soporte": {"cuando": "Cuando el docente envía una solicitud desde el widget de soporte", "asunto": "Solicitud de Soporte — {docente}", "lineas": ["Solicitud de soporte", "Docente: {nombre}  ·  ID: …", "Mensaje: “…texto que escribió el docente…”"]}, "notificacion_masiva": {"cuando": "Cuando alguien envía una notificación masiva desde el panel", "asunto": "El asunto que escribe quien envía", "lineas": ["(El mensaje que redacta quien envía, con el logo y el pie de la universidad)"]}, "expediente_firma_docente": {"cuando": "Cuando el expediente se envía a firma del docente", "asunto": "Expediente de Aprobación de la contratación docente de Blackwell - Listo para Firma {docente}", "lineas": ["Estimado(a) profesor(a) {docente},", "Sus documentos contractuales están listos para firma digital.", "[Revisar y firmar]", "Los directivos estampan la firma final y el expediente queda formalizado."]}, "expediente_firma_directores": {"cuando": "Cuando el docente firma el expediente", "asunto": "Firma Requerida: Expediente {id} - {docente}", "lineas": ["Estimado Director,", "El docente {docente} ya firmó sus documentos. Documentos adjuntos: …", "[Firmar expediente]"]}, "invitacion_docente": {"cuando": "Cuando se envía la invitación a dictar un curso", "asunto": "Invitación a Dictado de Curso: {curso} - Blackwell Global University", "lineas": ["Estimado(a) profesor(a) {docente},", "La Dirección de Asuntos Académicos lo invita a dictar el curso {curso}: modalidad virtual (español), N clases de 90 min, remuneración total S/ …", "Revise el sílabo y confirme día y horario.", "[Ver invitación en el portal]"]}, "invitacion_actualizada": {"cuando": "Cuando se actualiza una invitación ya enviada", "asunto": "Actualización de su Invitación: {curso} - Blackwell Global University", "lineas": ["Estimado(a) profesor(a) {docente},", "Se actualizaron los detalles de su invitación: franjas horarias (GMT-5), estructura y remuneración.", "[Ver invitación en el portal]"]}, "aceptacion_equipo": {"cuando": "Cuando el docente acepta la invitación (aviso al equipo)", "asunto": "Invitación aceptada — {curso} ({docente})   ·   con sábado: Invitación aceptada (incluye sábado) — …", "lineas": ["Hola equipo,", "El docente {docente} aceptó la invitación a {curso}.", "Tabla: día · fecha · hora elegidos", "Si incluye sábado: ⚠ debe confirmarse el sábado."]}, "aceptacion_docente": {"cuando": "Cuando el docente acepta la invitación (acuse al docente)", "asunto": "Hemos recibido la aceptación de su invitación — {curso}", "lineas": ["Estimado(a) profesor(a) {docente},", "Hemos recibido la aceptación de su invitación a {curso}.", "Resumen de su horario: día · fecha · hora"]}, "invitacion_docs_firma": {"cuando": "Cuando se envían a firma los documentos de la invitación", "asunto": "Documentos de Invitación Listos para Firma - Blackwell Global University", "lineas": ["Estimado(a) profesor(a) {docente},", "Los documentos de su invitación están listos para firma digital.", "[Revisar y firmar]", "Los directivos firman al final y recibirá confirmación."]}, "invitacion_firma_directores": {"cuando": "Cuando el docente firma los documentos de la invitación", "asunto": "Firma Requerida: Invitación {id} - {docente}", "lineas": ["Estimado Director,", "El docente {docente} firmó los documentos de la invitación {id}.", "[Firmar documentos]"]}, "curso_culminado": {"cuando": "Cuando se marca el curso como culminado", "asunto": "Curso Culminado: {curso} — {docente}", "lineas": ["Hola equipo,", "Se marcó como culminado el siguiente curso:", "📘 Curso · 🎓 Programa · 👤 Docente · ✅ Sesiones · fecha", "Pendiente la conformidad de Jefatura OSE."]}, "fin_dictado_docente": {"cuando": "15 minutos después de terminar la última sesión del curso del docente", "asunto": "Gracias por su última sesión — {curso}", "lineas": ["Estimado(a) profesor(a) {docente},", "Gracias por el dictado de la última sesión del curso {curso}. Con ella concluye su participación.", "Se continuará con el siguiente proceso: por favor espere la comunicación del área encargada."]}, "gracias_dictado": {"cuando": "Cuando Jefe OSE da la conformidad del dictado", "asunto": "Gracias por el dictado de su curso — Blackwell Global University", "lineas": ["Estimado(a) profesor(a) {docente},", "Gracias por el dictado de su curso.", "Datos para emitir su recibo por honorarios: …", "[Ir a documentos y recibo]"]}, "recibo_honorarios": {"cuando": "Cuando el docente sube (o reemplaza) su recibo", "asunto": "Recibo por honorarios recibido — {docente} — {curso}  ·  al reemplazar: … actualizado — …", "lineas": ["Hola equipo,", "El docente {docente} envió su recibo por honorarios el {fecha} (hora Perú).", "Curso · Programa · Invitación", "[Ver recibo (PDF)]"]}, "cambio_cuenta_pago": {"cuando": "Cuando el docente registra o cambia su cuenta de pago", "asunto": "Cambio de cuenta de pago — {docente}", "lineas": ["Hola equipo,", "El docente {docente} registró / cambió su cuenta de pago.", "Antes: **** 1234   →   Ahora: **** 5678", "Los pagos deben hacerse a la nueva cuenta."]}};
         function bocetoHtml(c) {
             const b = BOCETOS[c.clave]; if (!b) return '';
             const cuerpo = b.lineas.map(l => l.charAt(0) === '[' ? '<div><span class="mm-btn">' + esc(l.replace(/^\[|\]$/g, '')) + '</span></div>'
@@ -381,7 +469,7 @@
                 visibles.filter(c => c.grupo === g).map(c => `
                 <div class="cfg-row ${c.config.activo ? '' : 'off'}">
                     <div style="min-width:0">
-                        <div class="cfg-name">${esc(c.nombre)} <span class="clave-tag">${esc(c.clave)}</span> ${c.config.activo ? '' : '<span class="badge-status status-inactivo">Desactivado</span>'}</div>
+                        <div class="cfg-name">${esc(c.nombre)} <span class="clave-tag">${esc(c.clave)}</span> ${c.plantilla ? '<span class="chip extra" title="Este correo usa un diseño editado"><i class="fa-solid fa-pen-ruler"></i>Diseño editado</span>' : ''} ${c.config.activo ? '' : '<span class="badge-status status-inactivo">Desactivado</span>'}</div>
                         ${BOCETOS[c.clave] ? '<div class="cfg-cuando">' + esc(BOCETOS[c.clave].cuando) + '</div>' : ''}
                         <div class="cfg-line"><span class="cfg-lbl">Para</span><div class="chips">${lineaPara(c)}</div></div>
                         <div class="cfg-line"><span class="cfg-lbl">Copia</span><div class="chips">${lineaCopia(c)}</div></div>
@@ -391,6 +479,7 @@
                             <input class="form-check-input" type="checkbox" role="switch" ${c.config.activo ? 'checked' : ''} onchange="alternarActivo('${c.clave}', this)">
                         </div>
                         <button type="button" class="btn-cfg" onclick="abrirModal('${c.clave}')"><i class="fa-solid fa-sliders"></i> Configurar</button>
+                        ${c.plantillaDefault ? `<button type="button" class="btn-cfg" onclick="abrirDiseno('${c.clave}')"><i class="fa-solid fa-pen-ruler"></i> Diseño</button>` : ''}
                     </div>
                 </div>`).join('') + `</div>`).join('');
         }
@@ -511,6 +600,193 @@
             } catch (e) {
                 Swal.fire({ icon: 'error', title: 'No se pudo guardar', text: e.message, heightAuto: false, scrollbarPadding: false });
             } finally { btn.disabled = false; btn.innerHTML = html; }
+        }
+
+        // ==================== DISEÑO DEL CORREO (editor HTML + vista previa) ====================
+        let dis = null;        // { c, valores:{variable:ejemplo}, base:{asunto,html} (lo guardado), movil }
+        let modalDis = null, timerPrevia = null;
+        const escHtmlTxt = t => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        const esVerdadero = x => !(x === undefined || x === null || x === false || x === '' || x === 0 || x === '0' || x === 'false');
+
+        // Mismo motor que usa el servidor al enviar el correo real
+        function renderPlantilla(texto, vars, esHtml) {
+            let s = String(texto || '');
+            for (let i = 0; i < 8; i++) {
+                const antes = s;
+                s = s.replace(/\{\{([#^])\s*(\w+)\s*\}\}([\s\S]*?)\{\{\/\s*\2\s*\}\}/g, (m, tipo, nombre, dentro) => ((tipo === '#') === esVerdadero(vars[nombre])) ? dentro : '');
+                if (s === antes) break;
+            }
+            return s.replace(/\{\{\{\s*(\w+)\s*\}\}\}|\{\{\s*(\w+)\s*\}\}/g, (m, crudo, normal) => {
+                const n = crudo || normal, v = (vars[n] === undefined || vars[n] === null) ? '' : String(vars[n]);
+                return (crudo || !esHtml) ? v : escHtmlTxt(v);
+            });
+        }
+
+        // Mismas reglas que valida el servidor. Devuelve '' si todo bien.
+        function validarDiseno(asunto, html, variables) {
+            if (!asunto.trim()) return 'El asunto no puede estar vacío.';
+            if (!html.trim()) return 'El diseño del correo no puede estar vacío.';
+            if (html.length > 30000) return 'El diseño es demasiado largo (máximo 30 000 caracteres).';
+            if (/<script/i.test(html) || /javascript:/i.test(html)) return 'El diseño no puede incluir scripts.';
+            const conocidas = {}; variables.forEach(v => conocidas[v.k] = true);
+            const abiertas = {}, cerradas = {};
+            const re = /\{\{\{?\s*([#^\/]?)\s*([^\s{}#^\/][^\s{}]*)\s*\}?\}\}/g; let m;
+            const juntos = asunto + '\n' + html;
+            while ((m = re.exec(juntos)) !== null) {
+                if (!conocidas[m[2]]) return 'Variable desconocida: ' + m[2] + '. Usa solo las variables de la lista.';
+                if (m[1] === '#' || m[1] === '^') abiertas[m[2]] = (abiertas[m[2]] || 0) + 1;
+                if (m[1] === '/') cerradas[m[2]] = (cerradas[m[2]] || 0) + 1;
+            }
+            for (const n of Object.keys(abiertas).concat(Object.keys(cerradas))) {
+                if ((abiertas[n] || 0) !== (cerradas[n] || 0)) return 'El bloque {{#' + n + '}} no está bien cerrado con {{/' + n + '}}.';
+            }
+            for (const v of variables) {
+                if (v.obl && !new RegExp('\\{\\{\\{?\\s*' + v.k + '\\s*\\}?\\}\\}').test(html)) return 'Falta la variable obligatoria {{' + v.k + '}} (' + v.d + ').';
+            }
+            return '';
+        }
+
+        function abrirDiseno(clave) {
+            const c = correos.find(x => x.clave === clave); if (!c || !c.plantillaDefault) return;
+            const valores = {}; c.variables.forEach(v => valores[v.k] = v.ej);
+            const base = c.plantilla || c.plantillaDefault;
+            dis = { c: c, valores: valores, base: { asunto: base.asunto, html: base.html }, movil: false };
+            document.getElementById('dTitulo').textContent = 'Diseño: ' + c.nombre;
+            document.getElementById('dSub').innerHTML = esc(c.grupo) + (c.plantilla ? ' · <b>usa un diseño editado</b>' : ' · usa el diseño original');
+            document.getElementById('dAsunto').value = base.asunto;
+            document.getElementById('dHtml').value = base.html;
+            document.getElementById('dBtnRestaurar').style.display = c.plantilla ? '' : 'none';
+            // variables
+            document.getElementById('dChips').innerHTML = c.variables.map(v => {
+                const cls = v.t === 'si' ? 'si' : (v.t === 'html' ? 'html' : '');
+                const txt = v.t === 'si' ? '#' + v.k : v.k;
+                return `<button type="button" class="dis-chip ${cls}" onclick="insertarVariable('${v.k}')" title="${esc(v.d)}">${esc(txt)}${v.obl ? '<span class="obl">*</span>' : ''}</button>`;
+            }).join('');
+            // interruptores de condiciones para la vista previa
+            const sis = c.variables.filter(v => v.t === 'si');
+            document.getElementById('dToggles').innerHTML = sis.length ? sis.map(v =>
+                `<label title="${esc(v.d)}"><input type="checkbox" ${esVerdadero(v.ej) ? 'checked' : ''} onchange="dis.valores['${v.k}'] = this.checked; pintarPrevia()"> Ver caso: ${esc(v.d.length > 70 ? v.k : v.d)}</label>`).join('') : '';
+            anchoPrevia(false);
+            if (!modalDis) {
+                modalDis = new bootstrap.Modal(document.getElementById('modalDis'), { focus: false });
+                document.getElementById('dHtml').addEventListener('input', programarPrevia);
+                document.getElementById('dAsunto').addEventListener('input', programarPrevia);
+                document.getElementById('dHtml').addEventListener('keydown', e => {
+                    if (e.key === 'Tab') { e.preventDefault(); const t = e.target, a = t.selectionStart; t.setRangeText('  ', a, t.selectionEnd, 'end'); programarPrevia(); }
+                });
+            }
+            pintarPrevia();
+            modalDis.show();
+        }
+        function programarPrevia() { clearTimeout(timerPrevia); timerPrevia = setTimeout(pintarPrevia, 200); }
+        function disSucio() {
+            if (!dis) return false;
+            return document.getElementById('dAsunto').value !== dis.base.asunto || document.getElementById('dHtml').value !== dis.base.html;
+        }
+        function pintarPrevia() {
+            if (!dis) return;
+            const asunto = document.getElementById('dAsunto').value, html = document.getElementById('dHtml').value;
+            let cuerpo = '', asuntoFinal = '';
+            try { cuerpo = renderPlantilla(html, dis.valores, true); asuntoFinal = renderPlantilla(asunto, dis.valores, false).replace(/[\r\n]+/g, ' '); }
+            catch (e) { cuerpo = '<p style="color:#b91c1c">No se pudo mostrar la vista previa: ' + escHtmlTxt(e.message) + '</p>'; }
+            document.getElementById('dPrevAsunto').textContent = asuntoFinal;
+            document.getElementById('dFrame').srcdoc = '<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;padding:18px;background:#f1f5f9;}</style></head><body>' + cuerpo + '</body></html>';
+            const err = validarDiseno(asunto, html, dis.c.variables);
+            const est = document.getElementById('dEstado');
+            if (err) est.innerHTML = '<div class="dis-estado err"><i class="fa-solid fa-triangle-exclamation mt-1"></i><div>' + esc(err) + '</div></div>';
+            else if (disSucio()) est.innerHTML = '<div class="dis-estado cambio"><i class="fa-solid fa-pen mt-1"></i><div>Hay cambios sin guardar.</div></div>';
+            else est.innerHTML = '<div class="dis-estado ok"><i class="fa-solid fa-circle-check mt-1"></i><div>Sin cambios pendientes.</div></div>';
+            document.getElementById('dBtnGuardar').disabled = !!err || !disSucio();
+        }
+        function anchoPrevia(movil) {
+            if (dis) dis.movil = movil;
+            document.getElementById('dFrame').classList.toggle('movil', movil);
+            document.getElementById('dBtnPc').classList.toggle('activo', !movil);
+            document.getElementById('dBtnMovil').classList.toggle('activo', movil);
+        }
+        function insertarVariable(k) {
+            const v = dis.c.variables.find(x => x.k === k); if (!v) return;
+            const t = document.getElementById('dHtml'), a = t.selectionStart, b = t.selectionEnd, sel = t.value.slice(a, b);
+            let texto;
+            if (v.t === 'si') texto = '{{#' + k + '}}' + (sel || 'contenido que se muestra si se cumple') + '{{/' + k + '}}';
+            else if (v.t === 'html') texto = '{{{' + k + '}}}';
+            else texto = '{{' + k + '}}';
+            t.focus(); t.setRangeText(texto, a, b, 'end'); pintarPrevia();
+        }
+        function cargarOriginalEnEditor() {
+            if (!dis) return;
+            document.getElementById('dAsunto').value = dis.c.plantillaDefault.asunto;
+            document.getElementById('dHtml').value = dis.c.plantillaDefault.html;
+            pintarPrevia();
+        }
+        async function cerrarDiseno() {
+            if (disSucio()) {
+                const ok = await Swal.fire({ icon: 'warning', title: '¿Salir sin guardar?', text: 'Tienes cambios en el diseño que aún no se guardaron.', showCancelButton: true,
+                    confirmButtonText: 'Salir sin guardar', cancelButtonText: 'Seguir editando', confirmButtonColor: '#1e3a8a', reverseButtons: true, heightAuto: false, scrollbarPadding: false });
+                if (!ok.isConfirmed) return;
+            }
+            modalDis.hide();
+        }
+        async function llamarPlantilla(payload) {
+            const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(Object.assign({ rol: localStorage.getItem('userRole'), usuario: localStorage.getItem('userName') || '' }, payload)) });
+            const r = await res.json();
+            if (r.status !== 'success') throw new Error(r.message || 'No se pudo completar.');
+            return r;
+        }
+        async function guardarDiseno() {
+            const asunto = document.getElementById('dAsunto').value, html = document.getElementById('dHtml').value;
+            const err = validarDiseno(asunto, html, dis.c.variables);
+            if (err) { Swal.fire({ icon: 'warning', title: 'Revisa el diseño', text: err, heightAuto: false, scrollbarPadding: false }); return; }
+            const btn = document.getElementById('dBtnGuardar'), htmlBtn = btn.innerHTML;
+            btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Guardando...';
+            try {
+                const r = await llamarPlantilla({ action: 'save_plantilla_correo', clave: dis.c.clave, asunto: asunto, html: html });
+                aplicarRespuesta(r); renderLista();
+                dis.base = { asunto: asunto, html: html };
+                dis.c = correos.find(x => x.clave === dis.c.clave);
+                document.getElementById('dBtnRestaurar').style.display = '';
+                document.getElementById('dSub').innerHTML = esc(dis.c.grupo) + ' · <b>usa un diseño editado</b>';
+                pintarPrevia();
+                Swal.fire({ icon: 'success', title: 'Diseño guardado', text: 'Se usará desde el próximo correo que envíe el sistema.', timer: 2000, showConfirmButton: false, heightAuto: false, scrollbarPadding: false });
+            } catch (e) {
+                Swal.fire({ icon: 'error', title: 'No se pudo guardar', text: e.message, heightAuto: false, scrollbarPadding: false });
+            } finally { btn.innerHTML = htmlBtn; pintarPrevia(); }
+        }
+        async function restaurarDiseno() {
+            const ok = await Swal.fire({ icon: 'warning', title: '¿Restaurar el diseño original?', text: 'Se descartará el diseño editado de este correo y volverá a usarse el de fábrica.', showCancelButton: true,
+                confirmButtonText: 'Sí, restaurar', cancelButtonText: 'Cancelar', confirmButtonColor: '#1e3a8a', reverseButtons: true, heightAuto: false, scrollbarPadding: false });
+            if (!ok.isConfirmed) return;
+            try {
+                const r = await llamarPlantilla({ action: 'save_plantilla_correo', clave: dis.c.clave, restaurar: true });
+                aplicarRespuesta(r); renderLista();
+                dis.c = correos.find(x => x.clave === dis.c.clave);
+                dis.base = { asunto: dis.c.plantillaDefault.asunto, html: dis.c.plantillaDefault.html };
+                document.getElementById('dAsunto').value = dis.base.asunto;
+                document.getElementById('dHtml').value = dis.base.html;
+                document.getElementById('dBtnRestaurar').style.display = 'none';
+                document.getElementById('dSub').innerHTML = esc(dis.c.grupo) + ' · usa el diseño original';
+                pintarPrevia();
+                Swal.fire({ icon: 'success', title: 'Diseño restaurado', timer: 1800, showConfirmButton: false, heightAuto: false, scrollbarPadding: false });
+            } catch (e) {
+                Swal.fire({ icon: 'error', title: 'No se pudo restaurar', text: e.message, heightAuto: false, scrollbarPadding: false });
+            }
+        }
+        async function enviarPrueba() {
+            const asunto = document.getElementById('dAsunto').value, html = document.getElementById('dHtml').value;
+            const err = validarDiseno(asunto, html, dis.c.variables);
+            if (err) { Swal.fire({ icon: 'warning', title: 'Revisa el diseño', text: err, heightAuto: false, scrollbarPadding: false }); return; }
+            const pre = (localStorage.getItem('userEmail') || '').indexOf('@') > -1 ? localStorage.getItem('userEmail') : '';
+            const r = await Swal.fire({ title: 'Enviar correo de prueba', text: 'Se enviará con los datos de ejemplo de la vista previa, con el asunto marcado como [PRUEBA].', input: 'email', inputValue: pre, inputPlaceholder: 'tu@correo.com',
+                showCancelButton: true, confirmButtonText: 'Enviar prueba', cancelButtonText: 'Cancelar', confirmButtonColor: '#2563eb', reverseButtons: true, heightAuto: false, scrollbarPadding: false,
+                inputValidator: v => (!v || !/^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(v.trim())) ? 'Escribe un correo válido.' : undefined });
+            if (!r.isConfirmed) return;
+            try {
+                Swal.fire({ title: 'Enviando…', allowOutsideClick: false, didOpen: () => Swal.showLoading(), heightAuto: false, scrollbarPadding: false });
+                await llamarPlantilla({ action: 'send_test_correo', clave: dis.c.clave, para: r.value.trim(), asunto: asunto, html: html, vars: dis.valores });
+                Swal.fire({ icon: 'success', title: 'Prueba enviada', text: 'Revisa la bandeja de ' + r.value.trim() + ' (y la carpeta de spam).', heightAuto: false, scrollbarPadding: false });
+            } catch (e) {
+                Swal.fire({ icon: 'error', title: 'No se pudo enviar la prueba', text: e.message, heightAuto: false, scrollbarPadding: false });
+            }
         }
 
         async function cargar() {
